@@ -3,7 +3,7 @@
 This project contains tools to parse content from the
 [TechInfoDepot Wiki][techinfodepot] and [WikiDevi][wikidevi] websites.
 
-It parsers the content from an XML dump, tries to convert the data into
+It parses the content from an XML dump, tries to convert the data into
 something more useful and unify all the different ways that people have entered
 data. This is why the code is quite hairy, [but it is necessary][metacrap].
 
