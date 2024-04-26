@@ -29,6 +29,12 @@ have been forked from (a predecessor of) WikiDevi.
 
 See [creating a dump file](doc/creating_a_dump_file.md)
 
+### Running the scripts
+
+The easiest to run the script is to use Nix and then `nix-shell` to set up the
+environment. If this isn't your cup of tea, then the requirements for running
+the scripts are (currently) quite modest.
+
 # Acknowledgements
 
 This project was funded through the NGI0 Entrust Fund, a fund established by
