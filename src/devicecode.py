@@ -7,12 +7,15 @@
 import datetime
 import os
 import pathlib
+import sys
 
 # import XML processing that guards against several XML attacks
 import defusedxml.minidom
 
 import click
 import mwparserfromhell
+
+import devicecode_defaults as defaults
 
 @click.command(short_help='Process TechInfoDepot XML dump')
 @click.option('--input', '-i', 'input_file', required=True,
@@ -48,6 +51,77 @@ def main(input_file, output_file, wiki_type, debug):
             elif child.nodeName == 'revision':
                 # further process the device data
                 valid_device = True
+
+                for c in child.childNodes:
+                    if c.nodeName == 'text':
+                        # grab the wiki text and parse it. This data
+                        # is in the <text> element
+                        wiki_text = c.childNodes[0].data
+                        wikicode = mwparserfromhell.parse(wiki_text)
+
+                        # walk the elements in the parsed wiki text.
+                        # Kind of assume a fixed order here.
+                        # There are different elements in the Wiki text:
+                        #
+                        # * headings
+                        # * templates
+                        # * text
+                        # * tags
+                        #
+                        # These could all contain interesting information
+
+                        for f in wikicode.filter(recursive=False):
+                            if isinstance(f, mwparserfromhell.nodes.heading.Heading):
+                                # the heading itself doesn't contain data that
+                                # needs to be stored, but it provides insights of what
+                                # information follows as content
+                                pass
+                            elif isinstance(f, mwparserfromhell.nodes.template.Template):
+                                if f.name.strip() == 'TIDTOC':
+                                    # this element contains no interesting information
+                                    continue
+                                if wiki_type == 'TechInfoDepot':
+                                    if f.name == 'Infobox Embedded System\n':
+                                        # The Infobox is the most interesting item
+                                        # on the page, containing hardware information.
+                                        #
+                                        # The information is stored in so called "parameters"
+                                        # These parameters consist of one or more lines,
+                                        # separated by a newline. The first line always
+                                        # contains the identifier and '=', followed by a
+                                        # value. Subsequent lines are values belonging to
+                                        # the same identifier. Currently only the first
+                                        # parameter is processed. TODO.
+                                        for param in f.params:
+                                            if '=' in param:
+                                                # some elements are a list, the first one
+                                                # will always contain the identifier
+                                                param_elems = param.strip().split('\n')
+                                                identifier, value = param_elems[0].split('=', maxsplit=1)
+
+                                                # remove superfluous spaces
+                                                identifier = identifier.strip()
+                                                value = value.strip()
+
+                                                # determine if the value is one of the
+                                                # default values that can be skipped
+                                                is_default = False
+
+                                                for default_value in defaults.DEFAULT_VALUE.get(identifier, []):
+                                                    if value == default_value:
+                                                        is_default = True
+                                                        break
+
+                                                if is_default or value == '':
+                                                    continue
+
+                                                if debug:
+                                                    # print values, but only if they aren't already
+                                                    # skipped. This is useful for discovering default
+                                                    # values and variants.
+                                                    print(param_elems[0].strip(), file=sys.stderr)
+
+
 
 
 if __name__ == "__main__":
