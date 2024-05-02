@@ -82,16 +82,16 @@ def main(input_file, output_file, wiki_type, debug):
                                     continue
                                 if wiki_type == 'TechInfoDepot':
                                     if f.name == 'Infobox Embedded System\n':
-                                        # The Infobox is the most interesting item
-                                        # on the page, containing hardware information.
+                                        # The "Infobox" is the most interesting item
+                                        # on a page, containing hardware information.
                                         #
-                                        # The information is stored in so called "parameters"
+                                        # The information is stored in so called "parameters".
                                         # These parameters consist of one or more lines,
                                         # separated by a newline. The first line always
                                         # contains the identifier and '=', followed by a
                                         # value. Subsequent lines are values belonging to
-                                        # the same identifier. Currently only the first
-                                        # parameter is processed. TODO.
+                                        # the same identifier.
+
                                         for param in f.params:
                                             if '=' in param:
                                                 # some elements are a list, the first one
@@ -99,27 +99,32 @@ def main(input_file, output_file, wiki_type, debug):
                                                 param_elems = param.strip().split('\n')
                                                 identifier, value = param_elems[0].split('=', maxsplit=1)
 
+                                                param_values = []
+
                                                 # remove superfluous spaces
                                                 identifier = identifier.strip()
-                                                value = value.strip()
+                                                param_values.append(value.strip())
+                                                for p in param_elems[1:]:
+                                                    param_values.append(p.strip())
 
-                                                # determine if the value is one of the
-                                                # default values that can be skipped
-                                                is_default = False
+                                                for p in param_values:
+                                                    # determine if the value is one of the
+                                                    # default values that can be skipped
+                                                    is_default = False
 
-                                                for default_value in defaults.DEFAULT_VALUE.get(identifier, []):
-                                                    if value == default_value:
-                                                        is_default = True
-                                                        break
+                                                    for default_value in defaults.DEFAULT_VALUE.get(identifier, []):
+                                                        if p == default_value:
+                                                            is_default = True
+                                                            break
 
-                                                if is_default or value == '':
-                                                    continue
+                                                    if is_default or p == '':
+                                                        continue
 
-                                                if debug:
-                                                    # print values, but only if they aren't already
-                                                    # skipped. This is useful for discovering default
-                                                    # values and variants.
-                                                    print(param_elems[0].strip(), file=sys.stderr)
+                                                    if debug:
+                                                        # print values, but only if they aren't already
+                                                        # skipped. This is useful for discovering default
+                                                        # values and variants.
+                                                        print(identifier, p, file=sys.stderr)
 
 
 
