@@ -4,6 +4,19 @@
 # Licensed under Apache 2.0, see LICENSE file for details
 # SPDX-License-Identifier: Apache-2.0
 
+import re
+
+BAUD_RATES = [9600, 19200, 38400, 57600, 115200, 921600, 1500000]
+
+# sometimes different names are used for the same brand
+BRAND_REWRITE = {'FON Wireless': 'Fon Wireless',
+                 'TenPao': 'Ten Pao',
+                 'TP-Link': 'TP-LINK'}
+
+# sometimes different names are used for the same country
+COUNTRY_REWRITE = {'United States': 'USA',
+                   'United Kingdom': 'UK'}
+
 # a lookup table for default values for each of the
 # identifiers which should be ignored.
 # For some fields different default values were used over time.
@@ -295,3 +308,17 @@ DEFAULT_VALUE = {
     'wikipedia': ['<!-- [[wikipedia:Main Page|Wikipedia]] Leave blank for none -->'],
     'x86-64rev2': ['<!-- x86-64 Revision, Leave blank for unknown -->'],
 }
+
+# regular expression for an IPv4 address
+REGEX_IP = re.compile(r'^\d+\.\d+\.\d+\.\d+$')
+
+# regular expression for finding connectors in
+# serial port information sections
+REGEX_SERIAL_CONNECTOR = re.compile(r'(JP?\d+)')
+
+REGEX_SERIAL_PIN_HEADER = re.compile(r'(?:via )?(\d+)[ -](?:in|pln|pin|pad|pads) ?(?:header|connector)?')
+REGEX_SERIAL_RJ45 = re.compile(r'RJ-?45( console)?')
+
+# REGEX_LINUX_VERSION = re.compile(r'Linux version \d\.\d+\.\d+')
+
+REGEX_BUSYBOX = re.compile(r'BusyBox v\d\.\d+')

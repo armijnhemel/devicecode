@@ -5,9 +5,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import datetime
+import json
 import os
 import pathlib
+import re
 import sys
+import urllib.parse
+from dataclasses import dataclass, field
+from dataclasses_json import dataclass_json
 
 # import XML processing that guards against several XML attacks
 import defusedxml.minidom
@@ -16,6 +21,215 @@ import click
 import mwparserfromhell
 
 import devicecode_defaults as defaults
+
+KNOWN_ASIN_IDENTIFIERS = ['asin', 'asin2', 'asin3', 'asin4', 'asin5', 'asin6']
+
+
+@dataclass_json
+@dataclass
+class Amazon_ASIN:
+    '''Amazon specific information'''
+    # TODO: Replace with a named dictionary or tuple?
+    asin: str = ''
+    country: str = ''
+
+@dataclass_json
+@dataclass
+class Bootloader:
+    '''Chips information'''
+    manufacturer: str = ''
+    version: str = ''
+    extra_info: list[str] = field(default_factory=list)
+    vendor_modified: str = 'unknown'
+
+@dataclass_json
+@dataclass
+class Chip:
+    '''Chips information'''
+    manufacturer: str = ''
+    model: str = ''
+    extra_info: str = ''
+
+@dataclass_json
+@dataclass
+class Commercial:
+    '''Various commercial information, such as price, barcode
+       information for web shops (NewEgg, Amazon, etc.)'''
+    amazon_asin: list[Amazon_ASIN] = field(default_factory=list)
+    availability: str = ''
+    deal_extreme: str = ''
+    ean: str = ''
+    end_of_life_date: str = ''
+    newegg: list[str] = field(default_factory=list)
+    price: float = 0.0
+    release_date: str = ''
+    upc: list[str] = field(default_factory=list)
+
+@dataclass_json
+@dataclass
+class Defaults:
+    '''Default settings like login, password and SSIDs'''
+    #channel: int? str?
+    ip: str = ''
+    logins: list[str] = field(default_factory=list)
+    password: str = ''
+    ssids: list[str] = field(default_factory=list)
+    ssid_regexes: list[str] = field(default_factory=list)
+    uses_dhcp: str = ''
+
+@dataclass_json
+@dataclass
+class JTAG:
+    connector: str = ''
+    populated: str = 'unknown'
+
+@dataclass_json
+@dataclass
+class Manufacturer:
+    '''Manufacturer information'''
+    name: str = ''
+    model: str = ''
+    revision: str = ''
+    country: str = ''
+
+@dataclass_json
+@dataclass
+class Network:
+    '''Networking information'''
+    jumbo_frames: str = 'unknown'
+    lan_ports: int = 0
+    mdix: str = 'unknown'
+    docsis_version: str = ''
+
+@dataclass_json
+@dataclass
+class Power:
+    connector: str = ''
+    barrel_length: float = 0.0
+    inner_barrel_size: float = 0.0
+    outer_barrel_size: float = 0.0
+    polarity: str = ''
+    voltage: float = None
+    voltage_type: str = ''
+
+@dataclass_json
+@dataclass
+class PowerSupply:
+    brand: str = ''
+    model: str = ''
+    revision: str = ''
+    country: str = ''
+    input_voltage: str = ''
+    input_amperage: str = ''
+    input_current: str = ''
+    input_hz: str = ''
+    input_connector: str = ''
+    output_voltage: str = ''
+    output_amperage: str = ''
+    output_current: str = ''
+    output_connector: str = ''
+    style: str = ''
+    e_level: str = ''
+
+@dataclass_json
+@dataclass
+class Radio:
+    capabilities: list[str] = field(default_factory=list)
+    standard: str = ''
+
+@dataclass_json
+@dataclass
+class Regulatory:
+    '''Regulatory information such as FCC
+       as well as certification such as Wi-Fi Certified'''
+    # all dates are YYYY-MM-DD
+    fcc_ids: list[str] = field(default_factory=list)
+    fcc_approved_date: str = ''
+
+    industry_canada_ids: list[str] = field(default_factory=list)
+
+    # WiFi alliance
+    wifi_certified: str = ''
+    wifi_certified_date: str = ''
+
+@dataclass_json
+@dataclass
+class Serial:
+    connector: str = ''
+    populated: str = 'unknown'
+    voltage: float = None
+    baud_rate: int = 0
+
+@dataclass_json
+@dataclass
+class Software:
+    '''Software information: stock OS/bootloader, third party support'''
+    bootloader: Bootloader = field(default_factory=Bootloader)
+    os: str = ''
+    sdk: str = ''
+    ddwrt: str = 'unknown'
+    gargoyle: str = 'unknown'
+    openwrt: str = 'unknown'
+    tomato: str = 'unknown'
+    third_party: list[str] = field(default_factory=list)
+
+@dataclass_json
+@dataclass
+class Web:
+    '''Various webpages associated with the device'''
+    download_page: str = ''
+    product_page: str = ''
+    support_page: str = ''
+    wikidevi: str = ''
+    wikipedia: str = ''
+
+@dataclass_json
+@dataclass
+class Device:
+    '''Top level class holding device information'''
+    additional_chips: list[Chip] = field(default_factory=Chip)
+    brand: str = ''
+    commercial: Commercial = field(default_factory=Commercial)
+    cpu: list[Chip] = field(default_factory=Chip)
+    defaults: Defaults = field(default_factory=Defaults)
+    device_types: list[str] = field(default_factory=list)
+    flash: list[Chip] = field(default_factory=Chip)
+    has_jtag: str = 'unknown'
+    has_serial_port: str = 'unknown'
+    manufacturer: Manufacturer = field(default_factory=Manufacturer)
+    network: Network = field(default_factory=Network)
+    model: str = ''
+    part_number: str = ''
+    power: Power = field(default_factory=Power)
+    power_supply: PowerSupply = field(default_factory=PowerSupply)
+    ram: list[Chip] = field(default_factory=Chip)
+    regulatory: Regulatory = field(default_factory=Regulatory)
+    revision: str = ''
+    serial: Serial = field(default_factory=Serial)
+    serial_number: str = ''
+    series: str = ''
+    software: Software = field(default_factory=Software)
+    submodel: str = ''
+    web: Web = field(default_factory=Web)
+
+def parse_date(date_string):
+    '''Parse various variations of dates'''
+    try:
+        parsed_date = datetime.datetime.strptime(date_string, "%m/%d/%Y")
+    except ValueError:
+        try:
+            parsed_date = datetime.datetime.strptime(date_string, "%d/%m/%Y")
+        except ValueError:
+            try:
+                parsed_date = datetime.datetime.strptime(date_string, "%Y-%m-%d")
+            except ValueError:
+                try:
+                    # sometimes only a month and year are given
+                    parsed_date = datetime.datetime.strptime(date_string, "%m/%Y")
+                except ValueError:
+                    return ""
+    return parsed_date.strftime("%Y-%m-%d")
+
 
 @click.command(short_help='Process TechInfoDepot XML dump')
 @click.option('--input', '-i', 'input_file', required=True,
@@ -54,6 +268,9 @@ def main(input_file, output_file, wiki_type, debug):
 
                 for c in child.childNodes:
                     if c.nodeName == 'text':
+                        # create a new Device() for each entry
+                        device = Device()
+
                         # grab the wiki text and parse it. This data
                         # is in the <text> element
                         wiki_text = c.childNodes[0].data
@@ -92,6 +309,27 @@ def main(input_file, output_file, wiki_type, debug):
                                         # value. Subsequent lines are values belonging to
                                         # the same identifier.
 
+                                        # First walk the params to see how many ASINs
+                                        # and CPUs are used. In the TechInfoDepot data
+                                        # there can be multiple versions of the same data
+                                        # but instead of a list the identifiers contain
+                                        # a number. Example: there are multiple Amazon ASINs
+                                        # associated with devices. These are called asin, asin1,
+                                        # asin2, asin3, etc.
+
+                                        num_cpus = 0
+                                        num_asins = 0
+                                        for param in f.params:
+                                            if '=' in param:
+
+                                                # some elements are a list, the first one
+                                                # will always contain the identifier
+                                                param_elems = param.strip().split('\n')
+                                                identifier = param_elems[0].split('=', maxsplit=1)[0].strip()
+
+                                                if identifier in KNOWN_ASIN_IDENTIFIERS:
+                                                    num_asins = max(num_asins, KNOWN_ASIN_IDENTIFIERS.index(identifier) + 1)
+
                                         for param in f.params:
                                             if '=' in param:
                                                 # some elements are a list, the first one
@@ -107,26 +345,411 @@ def main(input_file, output_file, wiki_type, debug):
                                                 for p in param_elems[1:]:
                                                     param_values.append(p.strip())
 
-                                                for p in param_values:
+                                                for value in param_values:
                                                     # determine if the value is one of the
                                                     # default values that can be skipped
                                                     is_default = False
 
                                                     for default_value in defaults.DEFAULT_VALUE.get(identifier, []):
-                                                        if p == default_value:
+                                                        if value == default_value:
                                                             is_default = True
                                                             break
 
-                                                    if is_default or p == '':
+                                                    if is_default or value == '':
                                                         continue
 
-                                                    if debug:
-                                                        # print values, but only if they aren't already
-                                                        # skipped. This is useful for discovering default
-                                                        # values and variants.
-                                                        print(identifier, p, file=sys.stderr)
+                                                    # then process all 300+ identifiers. Note: most of
+                                                    # these identifiers only have a single value, so it
+                                                    # is safe to just override it. The exception is
+                                                    # 'addchip'
+                                                    if identifier == 'brand':
+                                                        device.brand = defaults.BRAND_REWRITE.get(value, value)
+                                                    elif identifier == 'model':
+                                                        device.model = value
+                                                    elif identifier == 'model_part_num':
+                                                        device.part_number = value
+                                                    elif identifier == 'revision':
+                                                        device.revision = value
+                                                    elif identifier == 'series':
+                                                        device.series = value
+                                                    elif identifier == 'sernum':
+                                                        device.serial_number = value
+                                                    elif identifier == 'type':
+                                                        device_types = list(map(lambda x: x.strip(), value.split(',')))
+                                                        device.device_types= device_types
+
+                                                    # commercial information
+                                                    elif identifier == 'availability':
+                                                        device.commercial.availability = value
+                                                    elif identifier == 'estreldate':
+                                                        device.commercial.release_date = parse_date(value)
+                                                    elif identifier == 'upc':
+                                                        upcs = value.split(',')
+                                                        for upc in upcs:
+                                                            if upc.strip().startswith('B'):
+                                                                # skip ASIN
+                                                                continue
+                                                            device.commercial.upc.append(upc.strip())
+                                                    elif identifier == 'newegg':
+                                                        eggs = value.split(',')
+                                                        for egg in eggs:
+                                                            device.commercial.newegg.append(egg.strip())
+
+                                                    # default values: IP, login, passwd, etc.
+                                                    elif identifier == 'defaulip':
+                                                        # verify IP address via regex
+                                                        if defaults.REGEX_IP.match(value) is not None:
+                                                            device.defaults.ip = value
+                                                    elif identifier == 'defaultlogin':
+                                                        if ' or ' in value:
+                                                            device.defaults.logins = value.split(' or ')
+                                                        else:
+                                                            device.defaults.logins = [value]
+                                                    elif identifier == 'defaultpass':
+                                                        device.defaults.password = value
+                                                    elif identifier == 'defaultssid':
+                                                        ssids = list(map(lambda x: x.strip(), value.split(',')))
+                                                        device.defaults.ssids = ssids
+                                                    elif identifier == 'defaultssid_regex':
+                                                        ssids = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
+                                                        device.defaults.ssid_regexes = ssids
+
+                                                    # JTAG
+                                                    elif identifier == 'jtag':
+                                                        if value.lower() in ['no', 'none,']:
+                                                            device.has_jtag = 'no'
+                                                            continue
+
+                                                        # TODO: parse JTAG information
+                                                        jtag_fields = value.split(',')
+                                                        if jtag_fields[0].lower() == 'yes':
+                                                            device.has_jtag = 'yes'
+
+                                                    # manufacturer
+                                                    elif identifier == 'countrymanuf':
+                                                        device.manufacturer.country = defaults.COUNTRY_REWRITE.get(value, value)
+                                                    elif identifier == 'manuf':
+                                                        device.manufacturer.name = value
+                                                    elif identifier == 'manuf_model':
+                                                        device.manufacturer.model = value
+                                                    elif identifier == 'manuf_rev':
+                                                        device.manufacturer.revision = value
+                                                    elif identifier == 'is_manuf':
+                                                        pass
+
+                                                    # network
+                                                    elif identifier == 'auto_mdix':
+                                                        if value.lower() == 'yes':
+                                                            device.network.mdix = 'yes'
+                                                        elif value.lower() == 'no':
+                                                            device.network.mdix = 'no'
+                                                    elif identifier == 'sup_jumbo':
+                                                        if value.lower() == 'yes':
+                                                            device.network.jumbo_frames = 'yes'
+                                                        elif value.lower() == 'no':
+                                                            device.network.jumbo_frames = 'no'
+                                                    elif identifier == 'docsisver':
+                                                        if value.startswith('v'):
+                                                            device.network.docsis_version = value[1:]
+                                                        else:
+                                                            device.network.docsis_version = value
+                                                    elif identifier == 'lan_ports':
+                                                        try:
+                                                            device.network.lan_ports = int(value)
+                                                        except ValueError:
+                                                            pass
+
+                                                    # power
+                                                    elif identifier == 'pwr_conn':
+                                                        if value == 'barrel':
+                                                            device.power.connector = 'barrel'
+                                                    elif identifier == 'pwr_barrel_inner':
+                                                        try:
+                                                            device.power.inner_barrel_size = float(value)
+                                                        except ValueError:
+                                                            pass
+                                                    elif identifier == 'pwr_barrel_len':
+                                                        try:
+                                                            device.power.barrel_length = float(value)
+                                                        except ValueError:
+                                                            pass
+                                                    elif identifier == 'pwr_barrel_outer':
+                                                        try:
+                                                            device.power.outer_barrel_size = float(value)
+                                                        except ValueError:
+                                                            pass
+
+                                                    # regulatory
+                                                    elif identifier == 'fccapprovdate':
+                                                        try:
+                                                            device.regulatory.fcc_approved_date = parse_date(value)
+                                                        except ValueError:
+                                                            continue
+                                                    elif identifier == 'fcc_id':
+                                                        # some devices apparently can have more than one FCC id.
+                                                        fcc_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
+                                                        device.regulatory.fcc_ids = fcc_values
+                                                    elif identifier == 'icid':
+                                                        # some devices apparently can have more than one IC id.
+                                                        icid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
+                                                        device.regulatory.industry_canada_ids = icid_values
+
+                                                    # serial port. TODO: share with JTAG processing.
+                                                    elif identifier == 'serial':
+                                                        if value == 'no':
+                                                            device.has_serial_port = 'no'
+                                                            continue
+                                                        # TODO: parse serial information
+                                                        serial_fields = value.split(',')
+                                                        if serial_fields[0].lower() == 'yes':
+                                                            device.has_serial = 'yes'
+
+                                                        # parse every single field. As there doesn't seem to
+                                                        # be a fixed order to store information the only way
+                                                        # is to process every single field.
+                                                        for serial_field in serial_fields:
+                                                            if serial_field.strip() == '':
+                                                                # skip empty fields
+                                                                continue
+                                                            if serial_field.lower() == 'yes':
+                                                                continue
+                                                            if serial_field.lower() == 'internal':
+                                                                continue
+                                                            if ';' in serial_field.strip():
+                                                                # fields have been concatenated with ; and
+                                                                # should be added and processed separately
+                                                                pass
+
+                                                            # try to find where the connector can be found
+                                                            # (typically which solder pads)
+                                                            regex_result = defaults.REGEX_SERIAL_CONNECTOR.match(serial_field.strip().upper())
+                                                            if regex_result is not None:
+                                                                device.serial.connector = regex_result.groups()[0]
+                                                                continue
+
+                                                            # baud rates
+                                                            baud_rate = None
+                                                            for br in defaults.BAUD_RATES:
+                                                                if str(br) in serial_field.strip():
+                                                                    baud_rate = br
+                                                                    device.serial.baud_rate = baud_rate
+                                                                    break
+
+                                                            if baud_rate is not None:
+                                                                continue
+
+                                                            # populated or not?
+                                                            if 'populated' in serial_field:
+                                                                if serial_field.strip() == 'unpopulated':
+                                                                    device.serial.populated = 'no'
+                                                                elif serial_field.strip() == 'populated':
+                                                                    device.serial.populated = 'yes'
+                                                                continue
+
+                                                            # voltage
+                                                            if serial_field.strip().upper() in '3.3V TTL':
+                                                                device.serial.voltage = 3.3
+                                                                continue
+
+                                                            # pin header
+                                                            regex_result = defaults.REGEX_SERIAL_PIN_HEADER.match(serial_field.strip())
+                                                            if regex_result is not None:
+                                                                continue
+
+                                                            # console via RJ45?
+                                                            regex_result = defaults.REGEX_SERIAL_RJ45.match(serial_field.strip())
+                                                            if regex_result is not None:
+                                                                continue
+
+                                                    # software information
+                                                    elif identifier in ['stockos', 'stock_os']:
+                                                        if device.software.os != '':
+                                                            # TODO: parse stock OS information
+                                                            device.software.os = value
+                                                    elif identifier in ['stockbootloader', 'stock_bootloader']:
+                                                        bootloader_split = value.split(';')
+
+                                                        # first entry is the manufacturer. There might be cruft here.
+                                                        if '<!--' in bootloader_split[0]:
+                                                            # there are a few entries in the database where the data is
+                                                            # actually in the comment. Sigh.
+                                                            bootloader_manufacturer = bootloader_split[0].split('<')[0].strip()
+                                                            device.software.bootloader.manufacturer = bootloader_manufacturer
+                                                        else:
+                                                            device.software.bootloader.manufacturer = bootloader_split[0]
+
+                                                        if len(bootloader_split) >= 2:
+                                                            bootloader_version = bootloader_split[1].strip()
+                                                            if bootloader_version != '':
+                                                                device.software.bootloader.version = bootloader_version
+                                                            for extra_info in range(2, len(bootloader_split)):
+                                                                inf = bootloader_split[extra_info].strip()
+                                                                if inf != '':
+                                                                    if 'vendor modified' in inf or 'vender modified' in inf:
+                                                                        device.software.bootloader.vendor_modified = 'yes'
+                                                                    device.software.bootloader.extra_info.append(inf)
+                                                    elif identifier == 'stock_os_sdk':
+                                                        # overwrite SDK if empty
+                                                        if device.software.sdk == '':
+                                                            device.software.sdk = value
+
+                                                    # third party firmware
+                                                    elif identifier == 'tpfirmware':
+                                                        if '<!-- Third' in value:
+                                                            value = value.split('<!--', 1)[0]
+                                                        tp_firmwares = value.split(',')
+                                                        for tp_firmware in tp_firmwares:
+                                                            tp_firmware = tp_firmware.strip()
+                                                            if tp_firmware == '':
+                                                                continue
+
+                                                            if tp_firmware.lower() == 'openwrt':
+                                                                device.software.third_party.append('OpenWrt')
+                                                            elif tp_firmware.lower() == 'dd-wrt':
+                                                                device.software.third_party.append('DD-WRT')
+                                                            elif tp_firmware.lower() == 'debian':
+                                                                device.software.third_party.append('Debian')
+                                                            elif tp_firmware.lower() == 'armbian':
+                                                                device.software.third_party.append('Armbian')
+                                                            elif tp_firmware.lower() == 'ubuntu':
+                                                                device.software.third_party.append('Ubuntu')
+                                                            elif tp_firmware.lower() == 'gargoyle':
+                                                                device.software.third_party.append('Gargoyle')
+                                                            elif tp_firmware.lower() == 'android':
+                                                                device.software.third_party.append('Android')
+                                                            elif tp_firmware.lower() == 'fuchsia':
+                                                                device.software.third_party.append('Fuchsia')
+
+                                                    # web
+                                                    elif identifier == 'dl':
+                                                        if not '://' in value:
+                                                            continue
+                                                        try:
+                                                            # TODO: fix this check
+                                                            urllib.parse.urlparse(value)
+                                                        except ValueError:
+                                                            continue
+                                                        device.web.download_page = value
+                                                    elif identifier == 'pp':
+                                                        # parse the support page value
+                                                        if not '://' in value:
+                                                            continue
+                                                        try:
+                                                            # TODO: fix this check
+                                                            urllib.parse.urlparse(value)
+                                                        except ValueError:
+                                                            continue
+                                                        if '<!--' in value:
+                                                            # some people only adapted the default value
+                                                            # and didn't remove the comment parts.
+                                                            if value.startswith('<!-- ') and value.endswith(' -->'):
+                                                                device.web.product_page = value[5:-4].strip()
+                                                            else:
+                                                                device.web.product_page = value.split('<!-- ')[0].strip()
+                                                        else:
+                                                            device.web.product_page = value
+                                                    elif identifier in ['sp', 'supportpage']:
+                                                        # parse the support page value
+                                                        if not '://' in value:
+                                                            continue
+                                                        try:
+                                                            # TODO: fix this check
+                                                            urllib.parse.urlparse(value)
+                                                        except ValueError:
+                                                            continue
+                                                        device.web.support_page = value
+                                                    elif identifier == 'wikidevi':
+                                                        device.web.wikidevi = value
+                                                    # Low quality data, ignore for now
+                                                    #elif identifier == 'wikipedia':
+                                                    #    device.web.wikipedia = value
+
+                                                    else:
+                                                        if debug:
+                                                            # print values, but only if they aren't already
+                                                            # skipped or processed. This is useful for discovering
+                                                            # default values and variants.
+                                                            # TODO: also print values that weren't correctly processed
+                                                            print(identifier, value, file=sys.stderr)
+                                    elif f.name == 'SCollapse':
+                                        # alternative place for boot log, GPL info, /proc, etc.
+                                        is_boot = False
+                                        for b in ['boot log', 'Boot log', 'stock boot messages']:
+                                            if f.params[0].startswith(b):
+                                                is_boot = True
+
+                                                # parse and store the boot log.
+                                                # TODO: further mine the boot log
+                                                #print(type(f.params[1].value))
+                                                break
+                                        if is_boot:
+                                            continue
+                                        #print(f.params[0], len(f.params[1:]))
+                                    elif f.name == 'hasPowerSupply\n':
+                                        # some elements are a list, the first one
+                                        # will always contain the identifier
+                                        for param in f.params:
+                                            param_elems = param.strip().split('\n')
+                                            identifier, value = param_elems[0].split('=', maxsplit=1)
+
+                                            # remove superfluous spaces
+                                            identifier = identifier.strip()
+                                            value = value.strip()
+
+                                            match identifier:
+                                                case 'brand':
+                                                    device.power_supply.brand = defaults.BRAND_REWRITE.get(value, value)
+                                                case 'model':
+                                                    device.power_supply.model = value
+                                                case 'revision':
+                                                    device.power_supply.revision = value
+                                                case 'style':
+                                                    device.power_supply.style = value
+                                                case 'countrymanuf':
+                                                    device.power_supply.country = value
+                                                case 'input_a':
+                                                    device.power_supply.input_amperage = value
+                                                case 'input_c':
+                                                    device.power_supply.input_current = value
+                                                case 'input_conn':
+                                                    device.power_supply.input_connection = value
+                                                case 'input_hz':
+                                                    device.power_supply.input_hz = value
+                                                case 'input_v':
+                                                    device.power_supply.input_voltage = value
+                                                case 'output_a':
+                                                    device.power_supply.output_amperage = value
+                                                case 'output_c':
+                                                    device.power_supply.output_current = value
+                                                case 'outpuc_c':
+                                                    device.power_supply.output_current = value
+                                                case 'output_conn':
+                                                    device.power_supply.input_connection = value
+                                                case 'output_v':
+                                                    device.power_supply.output_voltage = value
+                                                case 'e_level':
+                                                    device.power_supply.e_level = value
+
+                                    elif f.name == 'WiFiCert':
+                                        if len(f.params) >= 2:
+                                            wifi_cert, wifi_cert_date = f.params[:2]
+                                            device.regulatory.wifi_certified = str(wifi_cert.value)
+                                            wifi_cert_date = str(wifi_cert_date.value)
+                                            device.regulatory.wifi_certified_date = parse_date(wifi_cert_date)
+                                        pass
+                                    else:
+                                        pass
+                                elif isinstance(f, mwparserfromhell.nodes.text.Text):
+                                    pass
+                                elif isinstance(f, mwparserfromhell.nodes.tag.Tag):
+                                    pass
+                                else:
+                                    pass
 
 
+                        # TODO: write to a Git repository to keep some history
+                        output_file.write(json.dumps(json.loads(device.to_json()), indent=4))
+                        output_file.write('\n')
 
 
 if __name__ == "__main__":
