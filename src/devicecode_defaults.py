@@ -17,7 +17,8 @@ BRAND_REWRITE = {'FON Wireless': 'Fon Wireless',
 COUNTRY_REWRITE = {'United States': 'USA',
                    'United Kingdom': 'UK'}
 
-DISTRO_REWRITE = {'LEDE Project': 'LEDE'}
+DISTRO_REWRITE = {'AsusWRT-Merlin': 'Asuswrt-Merlin',
+                  'LEDE Project': 'LEDE'}
 
 # a lookup table for default values for each of the
 # identifiers which should be ignored.
