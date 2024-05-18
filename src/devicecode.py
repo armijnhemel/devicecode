@@ -150,6 +150,9 @@ class Regulatory:
 
     industry_canada_ids: list[str] = field(default_factory=list)
 
+    # related to some US phone company regulations?
+    us_ids: list[str] = field(default_factory=list)
+
     # WiFi alliance
     wifi_certified: str = ''
     wifi_certified_date: str = ''
@@ -503,6 +506,9 @@ def main(input_file, output_file, wiki_type, debug):
                                                         # some devices apparently can have more than one IC id.
                                                         icid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                         device.regulatory.industry_canada_ids = icid_values
+                                                    elif identifier == 'us_id':
+                                                        usid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
+                                                        device.regulatory.us_ids = usid_values
 
                                                     # serial port. TODO: share with JTAG processing.
                                                     elif identifier == 'serial':
