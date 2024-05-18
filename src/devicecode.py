@@ -363,10 +363,15 @@ def main(input_file, output_file, wiki_type, debug):
                                                     if is_default or value == '':
                                                         continue
 
+                                                    # A few values can be safely skipped as they
+                                                    # are not interesting or of very low quality.
+                                                    if identifier == 'weight':
+                                                        continue
+
                                                     # then process all 300+ identifiers. Note: most of
                                                     # these identifiers only have a single value, so it
-                                                    # is safe to just override it. The exception is
-                                                    # 'addchip'
+                                                    # is safe to just override the default value defined in
+                                                    # the dataclass. The exception here is 'addchip'.
                                                     if identifier == 'brand':
                                                         device.brand = defaults.BRAND_REWRITE.get(value, value)
                                                     elif identifier == 'model':
