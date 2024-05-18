@@ -198,6 +198,7 @@ class Device:
     cpu: list[Chip] = field(default_factory=Chip)
     defaults: Defaults = field(default_factory=Defaults)
     device_types: list[str] = field(default_factory=list)
+    flags: list[str] = field(default_factory=list)
     flash: list[Chip] = field(default_factory=Chip)
     has_jtag: str = 'unknown'
     has_serial_port: str = 'unknown'
@@ -387,6 +388,9 @@ def main(input_file, output_file, wiki_type, debug):
                                                     elif identifier == 'type':
                                                         device_types = list(map(lambda x: x.strip(), value.split(',')))
                                                         device.device_types= device_types
+                                                    elif identifier == 'flags':
+                                                        device.flags = sorted(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
+                                                        #print(value)
 
                                                     # commercial information
                                                     elif identifier == 'availability':
