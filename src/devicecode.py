@@ -184,7 +184,7 @@ class Web:
     '''Various webpages associated with the device'''
     download_page: str = ''
     product_page: list[str] = field(default_factory=list)
-    support_page: str = ''
+    support_page: list[str] = field(default_factory=list)
     wikidevi: str = ''
     wikipedia: str = ''
 
@@ -682,7 +682,7 @@ def main(input_file, output_file, wiki_type, debug):
                                                                 device.web.product_page.append(value.split('<!-- ')[0].strip())
                                                         else:
                                                             device.web.product_page.append(value)
-                                                    elif identifier in ['sp', 'supportpage']:
+                                                    elif identifier in ['sp', 'sp2', 'supportpage']:
                                                         # parse the support page value
                                                         if not '://' in value:
                                                             continue
@@ -691,7 +691,7 @@ def main(input_file, output_file, wiki_type, debug):
                                                             urllib.parse.urlparse(value)
                                                         except ValueError:
                                                             continue
-                                                        device.web.support_page = value
+                                                        device.web.support_page.append(value)
                                                     elif identifier == 'wikidevi':
                                                         device.web.wikidevi = value
                                                     # Low quality data, ignore for now
