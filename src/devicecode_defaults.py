@@ -315,6 +315,10 @@ DEFAULT_VALUE = {
 # regular expression for an IPv4 address
 REGEX_IP = re.compile(r'^\d+\.\d+\.\d+\.\d+$')
 
+# regular expression for OUI
+# https://en.wikipedia.org/wiki/Organizationally_unique_identifier
+REGEX_OUI = re.compile(r'^[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}$')
+
 # regular expression for finding connectors in
 # serial port information sections
 REGEX_SERIAL_CONNECTOR = re.compile(r'(JP?\d+)')
