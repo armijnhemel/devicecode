@@ -390,7 +390,6 @@ def main(input_file, output_file, wiki_type, debug):
                                                         device.device_types= device_types
                                                     elif identifier == 'flags':
                                                         device.flags = sorted(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
-                                                        #print(value)
 
                                                     # commercial information
                                                     elif identifier == 'availability':
