@@ -183,7 +183,7 @@ class Software:
 class Web:
     '''Various webpages associated with the device'''
     download_page: str = ''
-    product_page: str = ''
+    product_page: list[str] = field(default_factory=list)
     support_page: str = ''
     wikidevi: str = ''
     wikipedia: str = ''
@@ -664,7 +664,7 @@ def main(input_file, output_file, wiki_type, debug):
                                                         except ValueError:
                                                             continue
                                                         device.web.download_page = value
-                                                    elif identifier == 'pp':
+                                                    elif identifier in ['pp', 'pp2', 'pp3']:
                                                         # parse the support page value
                                                         if not '://' in value:
                                                             continue
@@ -677,11 +677,11 @@ def main(input_file, output_file, wiki_type, debug):
                                                             # some people only adapted the default value
                                                             # and didn't remove the comment parts.
                                                             if value.startswith('<!-- ') and value.endswith(' -->'):
-                                                                device.web.product_page = value[5:-4].strip()
+                                                                device.web.product_page.append(value[5:-4].strip())
                                                             else:
-                                                                device.web.product_page = value.split('<!-- ')[0].strip()
+                                                                device.web.product_page.append(value.split('<!-- ')[0].strip())
                                                         else:
-                                                            device.web.product_page = value
+                                                            device.web.product_page.append(value)
                                                     elif identifier in ['sp', 'supportpage']:
                                                         # parse the support page value
                                                         if not '://' in value:
