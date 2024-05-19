@@ -366,7 +366,7 @@ def main(input_file, output_file, wiki_type, debug):
 
                                                     # A few values can be safely skipped as they
                                                     # are not interesting or of very low quality.
-                                                    if identifier == 'weight':
+                                                    if identifier in ['dimensions', 'weight']:
                                                         continue
 
                                                     # then process all 300+ identifiers. Note: most of
