@@ -194,6 +194,7 @@ class Device:
     '''Top level class holding device information'''
     additional_chips: list[Chip] = field(default_factory=Chip)
     brand: str = ''
+    captions: list[str] = field(default_factory=list)
     commercial: Commercial = field(default_factory=Commercial)
     cpu: list[Chip] = field(default_factory=Chip)
     defaults: Defaults = field(default_factory=Defaults)
@@ -366,7 +367,7 @@ def main(input_file, output_file, wiki_type, debug):
 
                                                     # A few values can be safely skipped as they
                                                     # are not interesting or of very low quality.
-                                                    if identifier in ['dimensions', 'weight']:
+                                                    if identifier in ['dimensions', 'estprice', 'weight']:
                                                         continue
 
                                                     # then process all 300+ identifiers. Note: most of
@@ -390,6 +391,8 @@ def main(input_file, output_file, wiki_type, debug):
                                                         device.device_types= device_types
                                                     elif identifier == 'flags':
                                                         device.flags = sorted(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
+                                                    elif identifier in ['caption', 'caption2']:
+                                                        device.captions.append(value.strip())
 
                                                     # commercial information
                                                     elif identifier == 'availability':
