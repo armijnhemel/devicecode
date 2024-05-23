@@ -197,15 +197,15 @@ class Web:
 @dataclass
 class Device:
     '''Top level class holding device information'''
-    additional_chips: list[Chip] = field(default_factory=Chip)
+    additional_chips: list[Chip] = field(default_factory=list)
     brand: str = ''
     captions: list[str] = field(default_factory=list)
     commercial: Commercial = field(default_factory=Commercial)
-    cpu: list[Chip] = field(default_factory=Chip)
+    cpus: list[Chip] = field(default_factory=list)
     defaults: Defaults = field(default_factory=Defaults)
     device_types: list[str] = field(default_factory=list)
     flags: list[str] = field(default_factory=list)
-    flash: list[Chip] = field(default_factory=Chip)
+    flash: list[Chip] = field(default_factory=list)
     has_jtag: str = 'unknown'
     has_serial_port: str = 'unknown'
     manufacturer: Manufacturer = field(default_factory=Manufacturer)
@@ -214,8 +214,8 @@ class Device:
     part_number: str = ''
     power: Power = field(default_factory=Power)
     power_supply: PowerSupply = field(default_factory=PowerSupply)
-    radio: list[Radio] = field(default_factory=Radio)
-    ram: list[Chip] = field(default_factory=Chip)
+    radios: list[Radio] = field(default_factory=list)
+    ram: list[Chip] = field(default_factory=list)
     regulatory: Regulatory = field(default_factory=Regulatory)
     revision: str = ''
     serial: Serial = field(default_factory=Serial)
