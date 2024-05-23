@@ -138,6 +138,10 @@ class PowerSupply:
 @dataclass
 class Radio:
     capabilities: list[str] = field(default_factory=list)
+    model: str = ''
+
+    # https://en.wikipedia.org/wiki/Organizationally_unique_identifier
+    oui: list[str] = field(default_factory=list)
     standard: str = ''
 
 @dataclass_json
@@ -210,6 +214,7 @@ class Device:
     part_number: str = ''
     power: Power = field(default_factory=Power)
     power_supply: PowerSupply = field(default_factory=PowerSupply)
+    radio: list[Radio] = field(default_factory=Radio)
     ram: list[Chip] = field(default_factory=Chip)
     regulatory: Regulatory = field(default_factory=Regulatory)
     revision: str = ''
