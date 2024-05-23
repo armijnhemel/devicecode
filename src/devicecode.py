@@ -102,6 +102,7 @@ class Network:
     docsis_version: str = ''
     # https://en.wikipedia.org/wiki/Organizationally_unique_identifier
     ethernet_oui: list[str] = field(default_factory=list)
+    wireless_oui: list[str] = field(default_factory=list)
 
 @dataclass_json
 @dataclass
@@ -478,14 +479,17 @@ def main(input_file, output_file, wiki_type, debug):
                                                             device.network.lan_ports = int(value)
                                                         except ValueError:
                                                             pass
-                                                    elif identifier == 'ethoui':
+                                                    elif identifier in ['ethoui', 'oui']:
                                                         ethoui_values = value.upper().split(',')
                                                         for ethoui in ethoui_values:
                                                             for oui_value in ethoui.split(';'):
                                                                 if oui_value.strip() == '':
                                                                     continue
                                                                 if defaults.REGEX_OUI.match(oui_value.strip()) is not None:
-                                                                    device.network.ethernet_oui.append(oui_value.strip())
+                                                                    if identifier == 'ethoui':
+                                                                        device.network.ethernet_oui.append(oui_value.strip())
+                                                                    if identifier == 'oui':
+                                                                        device.network.wireless_oui.append(oui_value.strip())
 
                                                     # power
                                                     elif identifier == 'pwr_conn':
