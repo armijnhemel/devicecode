@@ -410,6 +410,10 @@ def main(input_file, output_file, wiki_type, debug):
                                                         eggs = value.split(',')
                                                         for egg in eggs:
                                                             device.commercial.newegg.append(egg.strip())
+                                                    elif identifier in KNOWN_ASIN_IDENTIFIERS:
+                                                        # verify ASIN address via regex
+                                                        if defaults.REGEX_ASIN.match(value) is not None:
+                                                            pass
 
                                                     # default values: IP, login, passwd, etc.
                                                     elif identifier == 'defaulip':

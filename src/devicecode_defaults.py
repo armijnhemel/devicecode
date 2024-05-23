@@ -313,6 +313,9 @@ DEFAULT_VALUE = {
     'x86-64rev2': ['<!-- x86-64 Revision, Leave blank for unknown -->'],
 }
 
+# regular expression for ASIN
+REGEX_ASIN = re.compile(r'^B[\d\w]{9}$')
+
 # regular expression for an IPv4 address
 REGEX_IP = re.compile(r'^\d+\.\d+\.\d+\.\d+$')
 
