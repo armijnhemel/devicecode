@@ -218,6 +218,7 @@ class Device:
     series: str = ''
     software: Software = field(default_factory=Software)
     submodel: str = ''
+    subrevision: str = ''
     web: Web = field(default_factory=Web)
 
 def parse_date(date_string):
@@ -387,6 +388,11 @@ def main(input_file, output_file, wiki_type, debug):
                                                         device.series = value
                                                     elif identifier == 'sernum':
                                                         device.serial_number = value
+                                                    elif identifier == 'subrevision':
+                                                        if value != '(??)':
+                                                            device.subrevision = value
+                                                    elif identifier == 'submodel':
+                                                        device.submodel = value
                                                     elif identifier == 'type':
                                                         device_types = list(map(lambda x: x.strip(), value.split(',')))
                                                         device.device_types= device_types
