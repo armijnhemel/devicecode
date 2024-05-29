@@ -47,7 +47,9 @@ class Bootloader:
 class Chip:
     '''Chips information'''
     manufacturer: str = ''
+    manufacturer_verified: bool = False
     model: str = ''
+    model_verified: bool = False
     extra_info: str = ''
 
 @dataclass_json
@@ -138,6 +140,7 @@ class PowerSupply:
 @dataclass
 class Radio:
     capabilities: list[str] = field(default_factory=list)
+    chips: list[Chip] = field(default_factory=list)
     model: str = ''
 
     # https://en.wikipedia.org/wiki/Organizationally_unique_identifier
@@ -225,6 +228,40 @@ class Device:
     submodel: str = ''
     subrevision: str = ''
     web: Web = field(default_factory=Web)
+
+def parse_chip(chip_string):
+    '''Parse chips and return a parsed data structure'''
+    chip_result = Chip()
+    chip_split = chip_string.split(';')
+
+    # verify the chip manufacturer. This is an extra safe guard
+    # against wrong data. The risk is that it should be kept up
+    # to date and valid.
+    chip_manufacturer = defaults.BRAND_REWRITE.get(chip_split[0].strip(), chip_split[0].strip())
+
+    # TODO: clean up
+    if '<!--' in chip_manufacturer:
+        return
+
+    if chip_manufacturer in defaults.CHIP_MANUFACTURERS:
+        chip_result.manufacturer_verified = True
+    chip_result.manufacturer = chip_manufacturer
+
+    # the second entry typically is the model number
+    if len(chip_split) > 1:
+        chip_model = chip_split[1].strip()
+        # TODO: clean up
+        if '<!--' in chip_model:
+            pass
+        elif chip_model != '':
+            match chip_result.manufacturer:
+                case 'Broadcom':
+                    if chip_model in defaults.BROADCOM_CHIPS:
+                        chip_result.model_verified = True
+
+    # the remaining data is likely text printed on the chip
+    # TODO
+    return chip_result
 
 def parse_date(date_string):
     '''Parse various variations of dates'''
@@ -469,6 +506,10 @@ def main(input_file, output_file, wiki_type, debug):
                                                     elif identifier == 'is_manuf':
                                                         pass
 
+                                                    # cpu
+                                                    elif identifier in ['cpu1chip1', 'cpu2chip1']:
+                                                        parse_chip(value.strip())
+
                                                     # network
                                                     elif identifier == 'auto_mdix':
                                                         if value.lower() == 'yes':
@@ -501,6 +542,17 @@ def main(input_file, output_file, wiki_type, debug):
                                                                         device.network.ethernet_oui.append(oui_value.strip())
                                                                     if identifier == 'oui':
                                                                         device.network.wireless_oui.append(oui_value.strip())
+                                                    elif identifier in ['eth1chip', 'eth2chip', 'eth3chip',
+                                                                        'eth4chip', 'eth5chip', 'eth6chip']:
+                                                        parse_chip(value.strip())
+
+                                                    # flash
+                                                    elif identifier in ['fla1chip', 'fla2chip', 'fla3chip']:
+                                                        parse_chip(value.strip())
+
+                                                    # RAM
+                                                    elif identifier in ['ram1chip', 'ram2chip', 'ram3chip']:
+                                                        parse_chip(value.strip())
 
                                                     # power
                                                     elif identifier == 'pwr_conn':
@@ -521,6 +573,13 @@ def main(input_file, output_file, wiki_type, debug):
                                                             device.power.outer_barrel_size = float(value)
                                                         except ValueError:
                                                             pass
+
+                                                    # radio
+                                                    elif identifier in ['rad1chip1', 'rad1chip2', 'rad1chip3',
+                                                                        'rad2chip1', 'rad2chip2', 'rad2chip3',
+                                                                        'rad3chip1', 'rad3chip2', 'rad3chip3',
+                                                                        'rad4chip1', 'rad4chip2', 'rad4chip3']:
+                                                        parse_chip(value.strip())
 
                                                     # regulatory
                                                     elif identifier == 'fccapprovdate':
