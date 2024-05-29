@@ -474,3 +474,18 @@ CHIP_MANUFACTURERS = [
 'Zentel',
 'ZyDAS',
 ]
+
+# a list of verified Broadcom chips (meaning model numbers exist)
+BROADCOM_CHIPS = [
+'BCM6361',
+'BCM7268U',
+'BCM7271',
+'BCM7358',
+'BCM7366',
+'BCM7413',
+'BCM7615',
+'BCM84861',
+'BCM84880',
+'BCM84881B0',
+'BCM89610',
+]
