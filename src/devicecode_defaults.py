@@ -338,7 +338,7 @@ REGEX_SERIAL_RJ45 = re.compile(r'RJ-?45( console)?')
 REGEX_BUSYBOX = re.compile(r'BusyBox v\d\.\d+')
 
 # big lookup lists for chip manufacturers
-CHIP_MANUFACTURERS = [
+CHIP_MANUFACTURERS = set([
 '2Wire',
 '5V Technologies',
 'ADMtek',
@@ -473,11 +473,14 @@ CHIP_MANUFACTURERS = [
 'Xilinx',
 'Zentel',
 'ZyDAS',
-]
+])
 
 # a list of verified Broadcom chips (meaning model numbers exist)
-BROADCOM_CHIPS = [
+BROADCOM_CHIPS = set([
 'BCM6361',
+'BCM7208',
+'BCM7241',
+'BCM7252',
 'BCM7268U',
 'BCM7271',
 'BCM7358',
@@ -488,4 +491,4 @@ BROADCOM_CHIPS = [
 'BCM84880',
 'BCM84881B0',
 'BCM89610',
-]
+])
