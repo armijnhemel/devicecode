@@ -286,15 +286,24 @@ def parse_date(date_string):
 @click.option('--input', '-i', 'input_file', required=True,
               help='Wiki top level dump file',
               type=click.Path('r', path_type=pathlib.Path))
-@click.option('--output', '-o', 'output_file', required=True, help='JSON output file',
-              type=click.File('w', lazy=False))
+@click.option('--output', '-o', 'output_directory', required=True, help='JSON output directory',
+              type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--wiki-type', required=True,
               type=click.Choice(['TechInfoDepot', 'WikiDevi'], case_sensitive=False))
 @click.option('--debug', is_flag=True, help='enable debug logging')
-def main(input_file, output_file, wiki_type, debug):
+def main(input_file, output_directory, wiki_type, debug):
     # load XML
     with open(input_file) as wiki_dump:
         wiki_info = defusedxml.minidom.parse(wiki_dump)
+
+    # first some checks to see if the directory for the wiki type already
+    # exists and create it if it doesn't exist.
+    if not output_directory.is_dir():
+        print("%s is not a directory, exiting." % output_directory)
+        sys.exit(1)
+
+    wiki_directory = output_directory / wiki_type
+    wiki_directory.mkdir(parents=True, exist_ok=True)
 
     # now walk the XML. It depends on the dialect (WikiDevi, TechInfoDepot)
     # how the contents should be parsed, as the pages are laid out in
@@ -866,8 +875,17 @@ def main(input_file, output_file, wiki_type, debug):
 
 
                         # TODO: write to a Git repository to keep some history
-                        output_file.write(json.dumps(json.loads(device.to_json()), indent=4))
-                        output_file.write('\n')
+                        # construct a file name, using the brand and model number
+                        if device.revision != '':
+                            model_name = f"{device.brand}-{device.model}-{device.revision}.json"
+                        else:
+                            model_name = f"{device.brand}-{device.model}"
+
+                        model_name = model_name.replace('/', '-')
+                        output_file = wiki_directory / model_name
+                        with output_file.open('w') as out:
+                            out.write(json.dumps(json.loads(device.to_json()), indent=4))
+                            out.write('\n')
 
 
 if __name__ == "__main__":
