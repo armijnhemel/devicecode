@@ -879,7 +879,7 @@ def main(input_file, output_directory, wiki_type, debug):
                         if device.revision != '':
                             model_name = f"{device.brand}-{device.model}-{device.revision}.json"
                         else:
-                            model_name = f"{device.brand}-{device.model}"
+                            model_name = f"{device.brand}-{device.model}.json"
 
                         model_name = model_name.replace('/', '-')
                         output_file = wiki_directory / model_name
