@@ -305,6 +305,9 @@ def main(input_file, output_directory, wiki_type, debug):
     wiki_directory = output_directory / wiki_type
     wiki_directory.mkdir(parents=True, exist_ok=True)
 
+    wiki_device_directory = output_directory / wiki_type / 'devices'
+    wiki_device_directory.mkdir(parents=True, exist_ok=True)
+
     # now walk the XML. It depends on the dialect (WikiDevi, TechInfoDepot)
     # how the contents should be parsed, as the pages are laid out in
     # a slightly different way.
@@ -877,12 +880,12 @@ def main(input_file, output_directory, wiki_type, debug):
                         # TODO: write to a Git repository to keep some history
                         # construct a file name, using the brand and model number
                         if device.revision != '':
-                            model_name = f"{device.brand}-{device.model}-{device.revision}.json"
+                            model_name = f"{device.brand}-{device.model}{device.submodel}-{device.revision}.json"
                         else:
-                            model_name = f"{device.brand}-{device.model}.json"
+                            model_name = f"{device.brand}-{device.model}{device.submodel}.json"
 
                         model_name = model_name.replace('/', '-')
-                        output_file = wiki_directory / model_name
+                        output_file = wiki_device_directory / model_name
                         with output_file.open('w') as out:
                             out.write(json.dumps(json.loads(device.to_json()), indent=4))
                             out.write('\n')
