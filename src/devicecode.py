@@ -878,11 +878,8 @@ def main(input_file, output_directory, wiki_type, debug):
 
 
                         # TODO: write to a Git repository to keep some history
-                        # construct a file name, using the brand and model number
-                        if device.revision != '':
-                            model_name = f"{device.brand}-{device.model}{device.submodel}-{device.revision}.json"
-                        else:
-                            model_name = f"{device.brand}-{device.model}{device.submodel}.json"
+                        # use the title as part of the file name as it is unique
+                        model_name = f"{title}.json"
 
                         model_name = model_name.replace('/', '-')
                         output_file = wiki_device_directory / model_name
