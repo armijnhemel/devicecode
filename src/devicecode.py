@@ -207,6 +207,7 @@ class Device:
     cpus: list[Chip] = field(default_factory=list)
     defaults: Defaults = field(default_factory=Defaults)
     device_types: list[str] = field(default_factory=list)
+    expansions: list[str] = field(default_factory=list)
     flags: list[str] = field(default_factory=list)
     flash: list[Chip] = field(default_factory=list)
     has_jtag: str = 'unknown'
@@ -458,6 +459,19 @@ def main(input_file, output_directory, wiki_type, debug):
                                                         device.captions.append(value.strip())
                                                     elif identifier in ['image1', 'image2']:
                                                         device.images.append(value.strip())
+                                                    elif identifier == 'exp_if_types':
+                                                        if value.strip() == 'none':
+                                                            continue
+                                                        if '<!' in value:
+                                                            # TODO: process this correctly
+                                                            continue
+
+                                                        expansions = value.split(',')
+                                                        for expansion in expansions:
+                                                            if expansion.strip() == '':
+                                                                continue
+                                                            ex = defaults.EXPANSION_REWRITE.get(expansion.strip().lower(), expansion.strip())
+                                                            device.expansions.append(ex)
 
                                                     # commercial information
                                                     elif identifier == 'availability':

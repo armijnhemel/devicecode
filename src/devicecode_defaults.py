@@ -23,6 +23,41 @@ COUNTRY_REWRITE = {'United States': 'USA',
 DISTRO_REWRITE = {'AsusWRT-Merlin': 'Asuswrt-Merlin',
                   'LEDE Project': 'LEDE'}
 
+# different names have been used for the different expansion
+# slots. The names from the official specifications are used,
+# even though sometimes these are contradictory (example: Micro-USB)
+# Note: these entries are case insensitive!
+EXPANSION_REWRITE = {'usb': 'USB',
+                     'compact flash': 'CompactFlash',
+                     'micro sd': 'microSD',
+                     'microsd': 'microSD',
+                     'microsd card': 'microSD',
+                     'micro sd card': 'microSD',
+                     'microsd card slot': 'microSD',
+                     'micro sd card slot': 'microSD',
+                     'microsd slot': 'microSD',
+                     'micro sim card slot': 'micro-SIM Card slot',
+                     'micro usb': 'Micro-USB',
+                     'microusb': 'Micro-USB',
+                     'microusb 2.0': 'Micro-USB 2.0',
+                     'minipcie': 'Mini PCIe',
+                     'mini pcimini pci': 'Mini PCI',
+                     'minisd card slot': 'miniSD Card',
+                     'mini sim card slot': 'mini-SIM Card slot',
+                     'mini usb': 'Mini-USB',
+                     'nano sim card slot': 'nano-SIM Card slot',
+                     'sd': 'SD Card',
+                     'sd card slot': 'SD Card',
+                     'sdhc': 'SDHC Card',
+                     'sdhc card slot': 'SDHC Card',
+                     'sim card slo': 'SIM Card slot',
+                     'tf card slot': 'TF Card slot',
+                     'usb2.0': 'USB 2.0',
+                     'usb 2.0usb 2.0': 'USB 2.0',
+                     'usb3.0': 'USB 3.0',
+                     'usb 3.1 (gen1)': 'USB 3.1 (Gen 1)',
+                     'usb type c': 'USB Type-C'}
+
 # a lookup table for default values for each of the
 # identifiers which should be ignored.
 # For some fields different default values were used over time.
@@ -477,7 +512,17 @@ CHIP_MANUFACTURERS = set([
 
 # a list of verified Broadcom chips (meaning model numbers exist)
 BROADCOM_CHIPS = set([
+'B50212E',
 'BCM6361',
+'BCM6710',
+'BCM6715',
+'BCM6750',
+'BCM6755',
+'BCM6756',
+'BCM6818',
+'BCM68380',
+'BCM68460',
+'BCM68580',
 'BCM7208',
 'BCM7241',
 'BCM7252',
