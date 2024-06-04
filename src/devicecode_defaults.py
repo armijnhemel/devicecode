@@ -29,6 +29,11 @@ DISTRO_REWRITE = {'AsusWRT-Merlin': 'Asuswrt-Merlin',
 # Note: these entries are case insensitive!
 EXPANSION_REWRITE = {'usb': 'USB',
                      'compact flash': 'CompactFlash',
+                     'm.2 card slot': 'M.2',
+                     'm.2 ssd slot': 'M.2 (SSD)',
+                     '(ngff m.2)': 'M.2 (NGFF)',
+                     'ngff (m.2)': 'M.2 (NGFF)',
+                     'ngff m.2': 'M.2 (NGFF)',
                      'micro sd': 'microSD',
                      'microsd': 'microSD',
                      'microsd card': 'microSD',
@@ -41,6 +46,8 @@ EXPANSION_REWRITE = {'usb': 'USB',
                      'microusb': 'Micro-USB',
                      'microusb 2.0': 'Micro-USB 2.0',
                      'minipcie': 'Mini PCIe',
+                     'minipcle': 'Mini PCIe',
+                     'non-standard mini pcie': 'Mini PCIe (non-standard)',
                      'mini pcimini pci': 'Mini PCI',
                      'minisd card slot': 'miniSD Card',
                      'mini sim card slot': 'mini-SIM Card slot',
@@ -56,7 +63,8 @@ EXPANSION_REWRITE = {'usb': 'USB',
                      'usb 2.0usb 2.0': 'USB 2.0',
                      'usb3.0': 'USB 3.0',
                      'usb 3.1 (gen1)': 'USB 3.1 (Gen 1)',
-                     'usb type c': 'USB Type-C'}
+                     'usb type c': 'USB Type-C',
+                     'usb (unk. version)': 'USB (unknown version)'}
 
 # a lookup table for default values for each of the
 # identifiers which should be ignored.
