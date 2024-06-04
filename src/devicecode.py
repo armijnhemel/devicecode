@@ -211,6 +211,7 @@ class Device:
     flash: list[Chip] = field(default_factory=list)
     has_jtag: str = 'unknown'
     has_serial_port: str = 'unknown'
+    images: list[str] = field(default_factory=list)
     manufacturer: Manufacturer = field(default_factory=Manufacturer)
     network: Network = field(default_factory=Network)
     model: str = ''
@@ -423,7 +424,8 @@ def main(input_file, output_directory, wiki_type, debug):
 
                                                     # A few values can be safely skipped as they
                                                     # are not interesting or of very low quality.
-                                                    if identifier in ['dimensions', 'estprice', 'weight']:
+                                                    if identifier in ['dimensions', 'estprice', 'weight',
+                                                                      'image1_size', 'image2_size']:
                                                         continue
 
                                                     # then process all 300+ identifiers. Note: most of
@@ -454,12 +456,16 @@ def main(input_file, output_directory, wiki_type, debug):
                                                         device.flags = sorted(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     elif identifier in ['caption', 'caption2']:
                                                         device.captions.append(value.strip())
+                                                    elif identifier in ['image1', 'image2']:
+                                                        device.images.append(value.strip())
 
                                                     # commercial information
                                                     elif identifier == 'availability':
                                                         device.commercial.availability = value
                                                     elif identifier == 'estreldate':
                                                         device.commercial.release_date = parse_date(value)
+                                                    elif identifier == 'eoldate':
+                                                        device.commercial.end_of_life_date = parse_date(value)
                                                     elif identifier == 'upc':
                                                         upcs = value.split(',')
                                                         for upc in upcs:
