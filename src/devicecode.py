@@ -259,9 +259,14 @@ def parse_chip(chip_string):
             if chip_model != chip_manufacturer:
                 if chip_result.manufacturer_verified and chip_model in defaults.CHIP_MANUFACTURERS[chip_manufacturer]:
                     chip_result.model_verified = True
+            chip_result.model = chip_model
 
     # the remaining data is likely text printed on the chip
     # TODO
+    chip_text = "\n".join(chip_split[2:])
+    if not ('<!--' in chip_text or '-->' in chip_text):
+        # this might need more cleanup
+        chip_result.extra_info = chip_text
     return chip_result
 
 def parse_date(date_string):
@@ -539,7 +544,9 @@ def main(input_file, output_directory, wiki_type, debug):
 
                                                     # cpu
                                                     elif identifier in ['cpu1chip1', 'cpu2chip1']:
-                                                        parse_chip(value.strip())
+                                                        chip_result = parse_chip(value.strip())
+                                                        if chip_result is not None:
+                                                            device.cpus.append(chip_result)
 
                                                     # network
                                                     elif identifier == 'auto_mdix':
@@ -581,9 +588,18 @@ def main(input_file, output_directory, wiki_type, debug):
                                                     elif identifier in ['fla1chip', 'fla2chip', 'fla3chip']:
                                                         parse_chip(value.strip())
 
+                                                    # switch
+                                                    elif identifier in ['sw1chip', 'sw2chip', 'sw3chip']:
+                                                        parse_chip(value.strip())
+
                                                     # RAM
                                                     elif identifier in ['ram1chip', 'ram2chip', 'ram3chip']:
                                                         parse_chip(value.strip())
+
+                                                    # additional chip
+                                                    #elif identifier in ['addchip']:
+                                                        # here the first entry *should* be a description
+                                                        #parse_chip(value.strip())
 
                                                     # power
                                                     elif identifier == 'pwr_conn':

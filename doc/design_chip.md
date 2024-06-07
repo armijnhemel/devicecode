@@ -47,7 +47,10 @@ description;manufacturer;model;extra information
 ```
 
 where it is not entirely clear what the extra information is: it seems to
-contain more individual fields than the other chip entries.
+contain more individual fields than the other chip entries. The TechInfoDepot
+wiki does not clarify what the different fields mean. There is definitely
+wrong data in this chip, where users have filled in random data. This is
+difficult to detect automatically and probably needs manual cleanup.
 
 ## Verifying manufacturers and chip models
 
@@ -55,8 +58,9 @@ To reduce the amount of bogus data in the chip models, the chip manufacturer
 name and model are verified using a list of manufacturer names and model
 numbers (per manufacturer). These lists have been (manually) verified. If the
 manufacturer and model number are in these lists, then an extra `verified` flag
-will be set. This doesn't mean that unverified data is wrong, it is just not
-verified. It is only an extra piece of data to increase fidelity.
+will be set. This doesn't mean that unverified data is wrong or that the chip
+or manufacturer don't exist, it is just not verified. It is only an extra piece
+of data to increase fidelity.
 
 The lists with manufacturers and model numbers of course need to be kept up to
 date.
