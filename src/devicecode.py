@@ -256,10 +256,9 @@ def parse_chip(chip_string):
         if '<!--' in chip_model:
             pass
         elif chip_model != '':
-            match chip_result.manufacturer:
-                case 'Broadcom':
-                    if chip_model in defaults.BROADCOM_CHIPS:
-                        chip_result.model_verified = True
+            if chip_model != chip_manufacturer:
+                if chip_result.manufacturer_verified and chip_model in defaults.CHIP_MANUFACTURERS[chip_manufacturer]:
+                    chip_result.model_verified = True
 
     # the remaining data is likely text printed on the chip
     # TODO
