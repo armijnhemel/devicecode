@@ -75,6 +75,10 @@ class Defaults:
     ip: str = ''
     logins: list[str] = field(default_factory=list)
     password: str = ''
+
+    # sometimes the password field contains a description
+    # rather than the actual password
+    password_comment: str = ''
     ssids: list[str] = field(default_factory=list)
     ssid_regexes: list[str] = field(default_factory=list)
     uses_dhcp: str = ''
@@ -511,7 +515,27 @@ def main(input_file, output_directory, wiki_type, debug):
                                                         else:
                                                             device.defaults.logins = [value]
                                                     elif identifier == 'defaultpass':
-                                                        device.defaults.password = value
+                                                        match value:
+                                                            case '\'\'unit\'s serial number\'\'':
+                                                                device.defaults.password_comment = 'unit\'s serial number'
+                                                            case '(sticker on the bottom of device)':
+                                                                device.defaults.password_comment = 'sticker on the bottom of the device'
+                                                            case 'On the back of the router':
+                                                                device.defaults.password_comment = value
+                                                            case 'random 8 digit dispaly on the LCD':
+                                                                device.defaults.password_comment = 'random 8 digit displayed on the LCD'
+                                                            case 'randomly generated':
+                                                                device.defaults.password_comment = value
+                                                            case '\'randomly generated\'':
+                                                                device.defaults.password = 'randomly generated'
+                                                            case 'set at first login':
+                                                                device.defaults.password_comment = value
+                                                            case 'set on first login':
+                                                                device.defaults.password_comment = 'set at first login'
+                                                            case 'QR Code':
+                                                                device.defaults.password_comment = value
+                                                            case other:
+                                                                device.defaults.password = value
                                                     elif identifier == 'defaultssid':
                                                         ssids = list(map(lambda x: x.strip(), value.split(',')))
                                                         device.defaults.ssids = ssids
