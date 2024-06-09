@@ -385,8 +385,8 @@ def main(input_file, output_directory, wiki_type, debug):
                                         # value. Subsequent lines are values belonging to
                                         # the same identifier.
 
-                                        # First walk the params to see how many ASINs
-                                        # and CPUs are used. In the TechInfoDepot data
+                                        # First walk the params to see how many ASINs,
+                                        # radios and CPUs are used. In the TechInfoDepot data
                                         # there can be multiple versions of the same data
                                         # but instead of a list the identifiers contain
                                         # a number. Example: there are multiple Amazon ASINs
