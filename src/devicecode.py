@@ -312,7 +312,7 @@ def main(input_file, output_directory, wiki_type, debug):
     # first some checks to see if the directory for the wiki type already
     # exists and create it if it doesn't exist.
     if not output_directory.is_dir():
-        print("%s is not a directory, exiting." % output_directory)
+        print(f"{output_directory} is not a directory, exiting.")
         sys.exit(1)
 
     wiki_directory = output_directory / wiki_type
@@ -622,6 +622,11 @@ def main(input_file, output_directory, wiki_type, debug):
                                                             device.network.lan_ports = int(value)
                                                         except ValueError:
                                                             pass
+                                                    elif identifier in ['eth1chip', 'eth2chip', 'eth3chip',
+                                                                        'eth4chip', 'eth5chip', 'eth6chip']:
+                                                        parse_chip(value.strip())
+
+                                                    # various OUI
                                                     elif identifier in ['ethoui', 'oui', 'rad1oui',
                                                                         'rad2oui', 'rad3oui', 'rad4oui']:
                                                         ethoui_values = value.upper().split(',')
@@ -637,9 +642,6 @@ def main(input_file, output_directory, wiki_type, debug):
                                                                     elif identifier in['rad1oui', 'rad2oui', 'rad3oui', 'rad4oui']:
                                                                         radio_num = int(identifier[3:4])
                                                                         device.radios[radio_num - 1].oui.append(oui_value.strip())
-                                                    elif identifier in ['eth1chip', 'eth2chip', 'eth3chip',
-                                                                        'eth4chip', 'eth5chip', 'eth6chip']:
-                                                        parse_chip(value.strip())
 
                                                     # flash
                                                     elif identifier in ['fla1chip', 'fla2chip', 'fla3chip']:
