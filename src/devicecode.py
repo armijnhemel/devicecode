@@ -73,6 +73,11 @@ class Defaults:
     '''Default settings like login, password and SSIDs'''
     #channel: int? str?
     ip: str = ''
+
+    # sometimes the IP address field contains a description
+    # rather than the actual IP address
+    ip_comment: str = ''
+
     logins: list[str] = field(default_factory=list)
     password: str = ''
 
@@ -509,6 +514,10 @@ def main(input_file, output_directory, wiki_type, debug):
                                                         # verify IP address via regex
                                                         if defaults.REGEX_IP.match(value) is not None:
                                                             device.defaults.ip = value
+                                                        else:
+                                                            match value:
+                                                                case 'acquired via DHCP':
+                                                                    device.defaults.ip_comment = value
                                                     elif identifier == 'defaultlogin':
                                                         if ' or ' in value:
                                                             device.defaults.logins = value.split(' or ')
