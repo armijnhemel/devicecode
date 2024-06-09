@@ -359,8 +359,7 @@ DEFAULT_VALUE = {
     'x86-64rev2': ['<!-- x86-64 Revision, Leave blank for unknown -->'],
 }
 
-KNOWN_ASIN_IDENTIFIERS = set(['asin', 'asin2', 'asin3',
-                              'asin4', 'asin5', 'asin6'])
+KNOWN_ASIN_IDENTIFIERS = ['asin', 'asin2', 'asin3', 'asin4', 'asin5', 'asin6']
 
 # regular expression for ASIN
 REGEX_ASIN = re.compile(r'^B[\d\w]{9}$')
