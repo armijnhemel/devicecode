@@ -22,9 +22,6 @@ import mwparserfromhell
 
 import devicecode_defaults as defaults
 
-KNOWN_ASIN_IDENTIFIERS = ['asin', 'asin2', 'asin3', 'asin4', 'asin5', 'asin6']
-
-
 @dataclass_json
 @dataclass
 class Amazon_ASIN:
@@ -406,8 +403,8 @@ def main(input_file, output_directory, wiki_type, debug):
                                                 param_elems = param.strip().split('\n')
                                                 identifier = param_elems[0].split('=', maxsplit=1)[0].strip()
 
-                                                if identifier in KNOWN_ASIN_IDENTIFIERS:
-                                                    num_asins = max(num_asins, KNOWN_ASIN_IDENTIFIERS.index(identifier) + 1)
+                                                if identifier in defaults.KNOWN_ASIN_IDENTIFIERS:
+                                                    num_asins = max(num_asins, defaults.KNOWN_ASIN_IDENTIFIERS.index(identifier) + 1)
 
                                         for param in f.params:
                                             if '=' in param:
@@ -505,7 +502,7 @@ def main(input_file, output_directory, wiki_type, debug):
                                                         eggs = value.split(',')
                                                         for egg in eggs:
                                                             device.commercial.newegg.append(egg.strip())
-                                                    elif identifier in KNOWN_ASIN_IDENTIFIERS:
+                                                    elif identifier in defaults.KNOWN_ASIN_IDENTIFIERS:
                                                         # verify ASIN address via regex
                                                         if defaults.REGEX_ASIN.match(value) is not None:
                                                             pass
@@ -675,6 +672,7 @@ def main(input_file, output_directory, wiki_type, debug):
                                                                         'rad2chip1', 'rad2chip2', 'rad2chip3',
                                                                         'rad3chip1', 'rad3chip2', 'rad3chip3',
                                                                         'rad4chip1', 'rad4chip2', 'rad4chip3']:
+                                                        # first grab the number of the radio element from the identifier
                                                         parse_chip(value.strip())
 
                                                     # regulatory
