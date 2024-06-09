@@ -527,7 +527,9 @@ def main(input_file, output_directory, wiki_type, debug):
                                                             case 'randomly generated':
                                                                 device.defaults.password_comment = value
                                                             case '\'randomly generated\'':
-                                                                device.defaults.password = 'randomly generated'
+                                                                device.defaults.password_comment = 'randomly generated'
+                                                            case '\'\'randomly generated\'\'':
+                                                                device.defaults.password_comment = 'randomly generated'
                                                             case 'set at first login':
                                                                 device.defaults.password_comment = value
                                                             case 'set on first login':
