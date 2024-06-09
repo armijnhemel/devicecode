@@ -79,6 +79,7 @@ class Defaults:
     ip_comment: str = ''
 
     logins: list[str] = field(default_factory=list)
+    logins_comment: str = ''
     password: str = ''
 
     # sometimes the password field contains a description
@@ -522,7 +523,13 @@ def main(input_file, output_directory, wiki_type, debug):
                                                         if ' or ' in value:
                                                             device.defaults.logins = value.split(' or ')
                                                         else:
-                                                            device.defaults.logins = [value]
+                                                            match value:
+                                                                case 'randomly generated':
+                                                                    device.defaults.logins_comment = value
+                                                                case 'set at first login':
+                                                                    device.defaults.logins_comment = value
+                                                                case other:
+                                                                    device.defaults.logins = [value]
                                                     elif identifier == 'defaultpass':
                                                         match value:
                                                             # ignore the following two values as it is
