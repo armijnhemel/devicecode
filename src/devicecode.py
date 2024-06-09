@@ -395,6 +395,7 @@ def main(input_file, output_directory, wiki_type, debug):
 
                                         num_cpus = 0
                                         num_asins = 0
+                                        num_radios = 0
                                         for param in f.params:
                                             if '=' in param:
 
@@ -405,6 +406,8 @@ def main(input_file, output_directory, wiki_type, debug):
 
                                                 if identifier in defaults.KNOWN_ASIN_IDENTIFIERS:
                                                     num_asins = max(num_asins, defaults.KNOWN_ASIN_IDENTIFIERS.index(identifier) + 1)
+                                                elif identifier in defaults.KNOWN_RADIO_IDENTIFIERS:
+                                                    num_radios = max(num_radios, int(identifier[3:4]))
 
                                         for param in f.params:
                                             if '=' in param:

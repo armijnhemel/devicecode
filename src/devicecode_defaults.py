@@ -361,6 +361,21 @@ DEFAULT_VALUE = {
 
 KNOWN_ASIN_IDENTIFIERS = ['asin', 'asin2', 'asin3', 'asin4', 'asin5', 'asin6']
 
+KNOWN_RADIO_IDENTIFIERS = set(["rad1a", "rad1ac", "rad1ad", "rad1_ant_conn",
+    "rad1ax", "rad1ay", "rad1b", "rad1be", "rad1cap", "rad1chip1cpu",
+    "rad1correv", "rad1freq", "rad1g", "rad1mod", "rad1modif", "rad1n",
+    "rad1oui", "rad1rxchains", "rad1sstreams", "rad1stand", "rad1txchains",
+    "rad2a", "rad2ac", "rad2ad", "rad2_ant_conn", "rad2ax", "rad2b", "rad2be",
+    "rad2cap", "rad2chip1cpu", "rad2correv", "rad2freq", "rad2g", "rad2mod",
+    "rad2modif", "rad2n", "rad2oui", "rad2rxchains", "rad2sstreams",
+    "rad2stand", "rad2txchains", "rad3a", "rad3ac", "rad3ad", "rad3_ant_conn",
+    "rad3ax", "rad3ay", "rad3b", "rad3be", "rad3chip1brand", "rad3chip1cpu",
+    "rad3chip1model", "rad3chip1modelfull", "rad3freq", "rad3g",
+    "rad3mimostatus", "rad3mod", "rad3modif", "rad3n", "rad3oui",
+    "rad3rxchains", "rad3sstreams", "rad3stand", "rad3txchains", "rad4b",
+    "rad4freq", "rad4g", "rad4mod", "rad4n", "rad4rxchains", "rad4sstreams",
+    "rad4stand", "rad4txchains",])
+
 # regular expression for ASIN
 REGEX_ASIN = re.compile(r'^B[\d\w]{9}$')
 
