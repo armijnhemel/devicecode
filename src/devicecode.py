@@ -409,6 +409,10 @@ def main(input_file, output_directory, wiki_type, debug):
                                                 elif identifier in defaults.KNOWN_RADIO_IDENTIFIERS:
                                                     num_radios = max(num_radios, int(identifier[3:4]))
 
+                                        # create the right amount of radio elements
+                                        for i in range(num_radios):
+                                            device.radios.append(Radio())
+
                                         for param in f.params:
                                             if '=' in param:
                                                 # some elements are a list, the first one
@@ -618,7 +622,8 @@ def main(input_file, output_directory, wiki_type, debug):
                                                             device.network.lan_ports = int(value)
                                                         except ValueError:
                                                             pass
-                                                    elif identifier in ['ethoui', 'oui']:
+                                                    elif identifier in ['ethoui', 'oui', 'rad1oui',
+                                                                        'rad2oui', 'rad3oui', 'rad4oui']:
                                                         ethoui_values = value.upper().split(',')
                                                         for ethoui in ethoui_values:
                                                             for oui_value in ethoui.split(';'):
@@ -627,8 +632,11 @@ def main(input_file, output_directory, wiki_type, debug):
                                                                 if defaults.REGEX_OUI.match(oui_value.strip()) is not None:
                                                                     if identifier == 'ethoui':
                                                                         device.network.ethernet_oui.append(oui_value.strip())
-                                                                    if identifier == 'oui':
+                                                                    elif identifier == 'oui':
                                                                         device.network.wireless_oui.append(oui_value.strip())
+                                                                    elif identifier in['rad1oui', 'rad2oui', 'rad3oui', 'rad4oui']:
+                                                                        radio_num = int(identifier[3:4])
+                                                                        device.radios[radio_num - 1].oui.append(oui_value.strip())
                                                     elif identifier in ['eth1chip', 'eth2chip', 'eth3chip',
                                                                         'eth4chip', 'eth5chip', 'eth6chip']:
                                                         parse_chip(value.strip())
