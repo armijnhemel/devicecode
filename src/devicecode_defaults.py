@@ -363,7 +363,7 @@ DEFAULT_VALUE = {
 REGEX_ASIN = re.compile(r'^B[\d\w]{9}$')
 
 # regular expression for an IPv4 address
-REGEX_IP = re.compile(r'^\d+\.\d+\.\d+\.\d+$')
+REGEX_IP = re.compile(r'^\d+\.\d+\.\d+\.\d+(?::\d+)?$')
 
 # regular expression for OUI
 # https://en.wikipedia.org/wiki/Organizationally_unique_identifier
