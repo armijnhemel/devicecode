@@ -516,6 +516,13 @@ def main(input_file, output_directory, wiki_type, debug):
                                                             device.defaults.logins = [value]
                                                     elif identifier == 'defaultpass':
                                                         match value:
+                                                            # ignore the following two values as it is
+                                                            # unclear if these are default wiki values,
+                                                            # or if they are describing the actual password
+                                                            case '<!-- Leave blank -->':
+                                                                pass
+                                                            case '<!-- Leave blank --> -->':
+                                                                pass
                                                             case '\'\'unit\'s serial number\'\'':
                                                                 device.defaults.password_comment = 'unit\'s serial number'
                                                             case '(sticker on the bottom of device)':
