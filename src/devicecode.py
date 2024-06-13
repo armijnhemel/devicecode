@@ -888,8 +888,9 @@ def main(input_file, output_directory, wiki_type, debug):
                                                     elif identifier == 'wikidevi':
                                                         device.web.wikidevi = value
                                                     # Low quality data, ignore for now
-                                                    #elif identifier == 'wikipedia':
-                                                    #    device.web.wikipedia = value
+                                                    elif identifier == 'wikipedia':
+                                                        #device.web.wikipedia = value
+                                                        pass
 
                                                     else:
                                                         if debug:
