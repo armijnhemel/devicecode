@@ -535,6 +535,8 @@ def main(input_file, output_directory, wiki_type, debug):
                                                                 case other:
                                                                     device.defaults.logins = [value]
                                                     elif identifier == 'defaultpass':
+                                                        if '<!--' in value:
+                                                            continue
                                                         match value:
                                                             # ignore the following two values as it is
                                                             # unclear if these are default wiki values,
