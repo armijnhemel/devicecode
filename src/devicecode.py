@@ -444,7 +444,11 @@ def main(input_file, output_directory, wiki_type, debug):
                                                     # A few values can be safely skipped as they
                                                     # are not interesting or of very low quality.
                                                     if identifier in ['dimensions', 'estprice', 'weight',
-                                                                      'image1_size', 'image2_size']:
+                                                                      'image1_size', 'image2_size',
+                                                                      'nvramsize', 'ram1size', 'ram2size',
+                                                                      'ram3size', 'flash1size', 'flash2size',
+                                                                      'flash3size', 'flash1maxsize',
+                                                                      'flash2maxsize']:
                                                         continue
 
                                                     # then process all 300+ identifiers. Note: most of
