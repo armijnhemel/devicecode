@@ -839,6 +839,9 @@ def main(input_file, output_directory, wiki_type, debug):
                                                             device.software.sdk = value
 
                                                     # third party firmware
+                                                    elif identifier in ['ddwrtsupport', 'gargoylesupport',
+                                                                        'openwrtsupport', 'tomatosupport']:
+                                                        continue
                                                     elif identifier == 'tpfirmware':
                                                         if '<!-- Third' in value:
                                                             value = value.split('<!--', 1)[0]
