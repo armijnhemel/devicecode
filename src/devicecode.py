@@ -721,22 +721,35 @@ def main(input_file, output_directory, wiki_type, debug):
                                                         # parse every single field. As there doesn't seem to
                                                         # be a fixed order to store information the only way
                                                         # is to process every single field.
+                                                        serial_fields_to_process = []
                                                         for serial_field in serial_fields:
                                                             if serial_field.strip() == '':
                                                                 # skip empty fields
                                                                 continue
-                                                            if serial_field.lower() == 'yes':
+                                                            if serial_field.strip().lower() == 'yes':
                                                                 continue
-                                                            if serial_field.lower() == 'internal':
+                                                            if serial_field.strip().lower() == 'internal':
                                                                 continue
                                                             if ';' in serial_field.strip():
                                                                 # fields have been concatenated with ; and
-                                                                # should be added and processed separately
-                                                                pass
+                                                                # should first be split
+                                                                fs = serial_field.split(';')
+                                                                for ff in fs:
+                                                                    if ff.strip().strip() == '':
+                                                                        # skip empty fields
+                                                                        continue
+                                                                    if ff.strip().lower() == 'yes':
+                                                                        continue
+                                                                    if ff.strip().lower() == 'internal':
+                                                                        continue
+                                                                    serial_fields_to_process.append(ff.strip())
+                                                            else:
+                                                                serial_fields_to_process.append(serial_field.strip())
 
+                                                        for serial_field in serial_fields_to_process:
                                                             # try to find where the connector can be found
                                                             # (typically which solder pads)
-                                                            regex_result = defaults.REGEX_SERIAL_CONNECTOR.match(serial_field.strip().upper())
+                                                            regex_result = defaults.REGEX_SERIAL_CONNECTOR.match(serial_field.upper())
                                                             if regex_result is not None:
                                                                 device.serial.connector = regex_result.groups()[0]
                                                                 continue
@@ -744,34 +757,35 @@ def main(input_file, output_directory, wiki_type, debug):
                                                             # baud rates
                                                             baud_rate = None
                                                             for br in defaults.BAUD_RATES:
-                                                                if str(br) in serial_field.strip():
+                                                                if str(br) in serial_field:
                                                                     baud_rate = br
                                                                     device.serial.baud_rate = baud_rate
                                                                     break
 
                                                             if baud_rate is not None:
+                                                                # verified to be a baud rate
                                                                 continue
 
                                                             # populated or not?
                                                             if 'populated' in serial_field:
-                                                                if serial_field.strip() == 'unpopulated':
+                                                                if serial_field == 'unpopulated':
                                                                     device.serial.populated = 'no'
-                                                                elif serial_field.strip() == 'populated':
+                                                                elif serial_field == 'populated':
                                                                     device.serial.populated = 'yes'
                                                                 continue
 
                                                             # voltage
-                                                            if serial_field.strip().upper() in '3.3V TTL':
+                                                            if serial_field.upper() in '3.3V TTL':
                                                                 device.serial.voltage = 3.3
                                                                 continue
 
                                                             # pin header
-                                                            regex_result = defaults.REGEX_SERIAL_PIN_HEADER.match(serial_field.strip())
+                                                            regex_result = defaults.REGEX_SERIAL_PIN_HEADER.match(serial_field)
                                                             if regex_result is not None:
                                                                 continue
 
                                                             # console via RJ45?
-                                                            regex_result = defaults.REGEX_SERIAL_RJ45.match(serial_field.strip())
+                                                            regex_result = defaults.REGEX_SERIAL_RJ45.match(serial_field)
                                                             if regex_result is not None:
                                                                 continue
 
