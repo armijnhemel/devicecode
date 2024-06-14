@@ -206,6 +206,18 @@ class Web:
 
 @dataclass_json
 @dataclass
+class Model:
+    '''Model information'''
+    model: str = ''
+    part_number: str = ''
+    revision: str = ''
+    serial_number: str = ''
+    series: str = ''
+    submodel: str = ''
+    subrevision: str = ''
+
+@dataclass_json
+@dataclass
 class Device:
     '''Top level class holding device information'''
     additional_chips: list[Chip] = field(default_factory=list)
@@ -222,21 +234,17 @@ class Device:
     has_serial_port: str = 'unknown'
     images: list[str] = field(default_factory=list)
     manufacturer: Manufacturer = field(default_factory=Manufacturer)
+    model: Model = field(default_factory=Model)
     network: Network = field(default_factory=Network)
-    model: str = ''
-    part_number: str = ''
     power: Power = field(default_factory=Power)
     power_supply: PowerSupply = field(default_factory=PowerSupply)
     radios: list[Radio] = field(default_factory=list)
     ram: list[Chip] = field(default_factory=list)
     regulatory: Regulatory = field(default_factory=Regulatory)
-    revision: str = ''
     serial: Serial = field(default_factory=Serial)
-    serial_number: str = ''
-    series: str = ''
     software: Software = field(default_factory=Software)
-    submodel: str = ''
-    subrevision: str = ''
+    switch: list[Chip] = field(default_factory=list)
+    title: str = ''
     web: Web = field(default_factory=Web)
 
 def parse_chip(chip_string):
@@ -347,6 +355,7 @@ def main(input_file, output_directory, wiki_type, debug):
                     if c.nodeName == 'text':
                         # create a new Device() for each entry
                         device = Device()
+                        device.title = title
 
                         # grab the wiki text and parse it. This data
                         # is in the <text> element
@@ -460,20 +469,20 @@ def main(input_file, output_directory, wiki_type, debug):
                                                     if identifier == 'brand':
                                                         device.brand = defaults.BRAND_REWRITE.get(value, value)
                                                     elif identifier == 'model':
-                                                        device.model = value
+                                                        device.model.model = value
                                                     elif identifier == 'model_part_num':
-                                                        device.part_number = value
+                                                        device.model.part_number = value
                                                     elif identifier == 'revision':
-                                                        device.revision = value
+                                                        device.model.revision = value
                                                     elif identifier == 'series':
-                                                        device.series = value
+                                                        device.model.series = value
                                                     elif identifier == 'sernum':
-                                                        device.serial_number = value
+                                                        device.model.serial_number = value
                                                     elif identifier == 'subrevision':
                                                         if value != '(??)':
-                                                            device.subrevision = value
+                                                            device.model.subrevision = value
                                                     elif identifier == 'submodel':
-                                                        device.submodel = value
+                                                        device.model.submodel = value
                                                     elif identifier == 'type':
                                                         device_types = list(map(lambda x: x.strip(), value.split(',')))
                                                         device.device_types= device_types
@@ -663,17 +672,23 @@ def main(input_file, output_directory, wiki_type, debug):
                                                                         radio_num = int(identifier[3:4])
                                                                         device.radios[radio_num - 1].oui.append(oui_value.strip())
 
-                                                    # flash
+                                                    # flash chips
                                                     elif identifier in ['fla1chip', 'fla2chip', 'fla3chip']:
-                                                        parse_chip(value.strip())
+                                                        chip_result = parse_chip(value.strip())
+                                                        if chip_result is not None:
+                                                            device.flash.append(chip_result)
 
-                                                    # switch
+                                                    # switch chips
                                                     elif identifier in ['sw1chip', 'sw2chip', 'sw3chip']:
-                                                        parse_chip(value.strip())
+                                                        chip_result = parse_chip(value.strip())
+                                                        if chip_result is not None:
+                                                            device.switch.append(chip_result)
 
-                                                    # RAM
+                                                    # RAM chips
                                                     elif identifier in ['ram1chip', 'ram2chip', 'ram3chip']:
-                                                        parse_chip(value.strip())
+                                                        chip_result = parse_chip(value.strip())
+                                                        if chip_result is not None:
+                                                            device.ram.append(chip_result)
 
                                                     # additional chip
                                                     #elif identifier in ['addchip']:
