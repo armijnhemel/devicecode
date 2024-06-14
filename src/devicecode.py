@@ -57,7 +57,7 @@ class Commercial:
     amazon_asin: list[Amazon_ASIN] = field(default_factory=list)
     availability: str = ''
     deal_extreme: str = ''
-    ean: str = ''
+    ean: list[str] = field(default_factory=list)
     end_of_life_date: str = ''
     newegg: list[str] = field(default_factory=list)
     price: float = 0.0
@@ -505,6 +505,13 @@ def main(input_file, output_directory, wiki_type, debug):
                                                                 # skip ASIN
                                                                 continue
                                                             device.commercial.upc.append(upc.strip())
+                                                    elif identifier == 'ean':
+                                                        eans = value.split(',')
+                                                        for ean in eans:
+                                                            if ean.strip().startswith('B'):
+                                                                # skip ASIN
+                                                                continue
+                                                            device.commercial.ean.append(ean.strip())
                                                     elif identifier == 'newegg':
                                                         eggs = value.split(',')
                                                         for egg in eggs:
