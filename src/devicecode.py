@@ -179,6 +179,7 @@ class Serial:
     populated: str = 'unknown'
     voltage: float = None
     baud_rate: int = 0
+    number_of_pins: int = 0
 
 @dataclass_json
 @dataclass
@@ -799,6 +800,7 @@ def main(input_file, output_directory, wiki_type, debug):
                                                             # pin header
                                                             regex_result = defaults.REGEX_SERIAL_PIN_HEADER.match(serial_field)
                                                             if regex_result is not None:
+                                                                device.serial.number_of_pins = int(regex_result.groups()[0])
                                                                 continue
 
                                                             # console via RJ45?
