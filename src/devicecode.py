@@ -589,13 +589,18 @@ def main(input_file, output_directory, wiki_type, debug):
                                                     elif identifier == 'countrymanuf':
                                                         device.manufacturer.country = defaults.COUNTRY_REWRITE.get(value, value)
                                                     elif identifier == 'manuf':
-                                                        device.manufacturer.name = value
+                                                        if device.manufacturer.name == '':
+                                                            device.manufacturer.name = value
                                                     elif identifier == 'manuf_model':
                                                         device.manufacturer.model = value
                                                     elif identifier == 'manuf_rev':
                                                         device.manufacturer.revision = value
                                                     elif identifier == 'is_manuf':
-                                                        pass
+                                                        # if the brand is also is the ODM simply
+                                                        # copy the brand. This assumes that the
+                                                        # brand is already known (which has been
+                                                        # the case in all data seen so far)
+                                                        device.manufacturer.name = device.brand
 
                                                     # cpu
                                                     elif identifier in ['cpu1chip1', 'cpu2chip1']:
