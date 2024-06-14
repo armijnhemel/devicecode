@@ -459,7 +459,8 @@ def main(input_file, output_directory, wiki_type, debug):
                                                                       'ram3size', 'flash1size', 'flash2size',
                                                                       'flash3size', 'flash1maxsize',
                                                                       'flash2maxsize', 'cpu1spd', 'cpu1spd2',
-                                                                      'cpu2spd', 'gpu1spd', 'ram1spd']:
+                                                                      'cpu2spd', 'gpu1spd', 'ram1spd',
+                                                                      'submodelappend']:
                                                         continue
 
                                                     # then process all 300+ identifiers. Note: most of
