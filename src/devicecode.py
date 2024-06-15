@@ -515,11 +515,11 @@ def main(input_file, output_directory, wiki_type, debug):
                                                     elif identifier == 'flags':
                                                         device.flags = sorted(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     elif identifier in ['caption', 'caption2']:
-                                                        device.captions.append(value.strip())
+                                                        device.captions.append(value)
                                                     elif identifier in ['image1', 'image2']:
-                                                        device.images.append(value.strip())
+                                                        device.images.append(value)
                                                     elif identifier == 'exp_if_types':
-                                                        if value.strip() == 'none':
+                                                        if value == 'none':
                                                             continue
                                                         if '<!' in value:
                                                             # TODO: process this correctly
@@ -657,7 +657,7 @@ def main(input_file, output_directory, wiki_type, debug):
 
                                                     # cpu
                                                     elif identifier in ['cpu1chip1', 'cpu2chip1']:
-                                                        chip_result = parse_chip(value.strip())
+                                                        chip_result = parse_chip(value)
                                                         if chip_result is not None:
                                                             device.cpus.append(chip_result)
 
@@ -684,7 +684,7 @@ def main(input_file, output_directory, wiki_type, debug):
                                                             pass
                                                     elif identifier in ['eth1chip', 'eth2chip', 'eth3chip',
                                                                         'eth4chip', 'eth5chip', 'eth6chip']:
-                                                        device.network.chips.append(parse_chip(value.strip()))
+                                                        device.network.chips.append(parse_chip(value))
 
                                                     # various OUI
                                                     elif identifier in ['ethoui', 'oui', 'rad1oui',
@@ -705,33 +705,33 @@ def main(input_file, output_directory, wiki_type, debug):
 
                                                     # flash chips
                                                     elif identifier in ['fla1chip', 'fla2chip', 'fla3chip']:
-                                                        chip_result = parse_chip(value.strip())
+                                                        chip_result = parse_chip(value)
                                                         if chip_result is not None:
                                                             device.flash.append(chip_result)
 
                                                     # switch chips
                                                     elif identifier in ['sw1chip', 'sw2chip', 'sw3chip']:
-                                                        chip_result = parse_chip(value.strip())
+                                                        chip_result = parse_chip(value)
                                                         if chip_result is not None:
                                                             device.switch.append(chip_result)
 
                                                     # RAM chips
                                                     elif identifier in ['ram1chip', 'ram2chip', 'ram3chip']:
-                                                        chip_result = parse_chip(value.strip())
+                                                        chip_result = parse_chip(value)
                                                         if chip_result is not None:
                                                             device.ram.append(chip_result)
 
                                                     # additional chip
                                                     elif identifier in ['addchip']:
-                                                        if value.strip() == ',,,':
+                                                        if value == ',,,':
                                                             continue
 
                                                         # here the first entry *should* be a description
-                                                        if value.strip().startswith(',,,'):
-                                                            chip_splits = value.strip().split(' ', maxsplit=1)
+                                                        if value.startswith(',,,'):
+                                                            chip_splits = value.split(' ', maxsplit=1)
                                                             addchip = chip_splits[1].strip()
                                                         else:
-                                                            addchip = value.strip()
+                                                            addchip = value
                                                         if ';' not in addchip:
                                                             continue
 
@@ -773,18 +773,18 @@ def main(input_file, output_directory, wiki_type, debug):
                                                                         'rad4chip1', 'rad4chip2', 'rad4chip3']:
                                                         # first grab the number of the radio element from the identifier
                                                         radio_num = int(identifier[3:4])
-                                                        radio_chip = parse_chip(value.strip())
+                                                        radio_chip = parse_chip(value)
                                                         if radio_chip is not None:
                                                             device.radios[radio_num - 1].chips.append(radio_chip)
 
                                                     elif identifier in ['rad1mod', 'rad2mod', 'rad3mod', 'rad4mod']:
                                                         # TODO: filter entries with <!--
                                                         radio_num = int(identifier[3:4])
-                                                        device.radios[radio_num - 1].model = value.strip()
+                                                        device.radios[radio_num - 1].model = value
                                                     elif identifier in ['rad1modif', 'rad2modif', 'rad3modif', 'rad4modif']:
                                                         # TODO: filter entries with <!--
                                                         radio_num = int(identifier[3:4])
-                                                        device.radios[radio_num - 1].interface = value.strip()
+                                                        device.radios[radio_num - 1].interface = value
 
                                                     # regulatory
                                                     elif identifier == 'fccapprovdate':
