@@ -213,6 +213,7 @@ class Web:
 @dataclass
 class Model:
     '''Model information'''
+    board_id: str = ''
     model: str = ''
     part_number: str = ''
     revision: str = ''
@@ -489,6 +490,10 @@ def main(input_file, output_directory, wiki_type, debug):
                                                     # the dataclass. The exception here is 'addchip'.
                                                     if identifier == 'brand':
                                                         device.brand = defaults.BRAND_REWRITE.get(value, value)
+                                                    elif identifier == 'boardid':
+                                                        if '<!--' in value:
+                                                            continue
+                                                        device.model.board_id = value
                                                     elif identifier == 'model':
                                                         device.model.model = value
                                                     elif identifier == 'model_part_num':
