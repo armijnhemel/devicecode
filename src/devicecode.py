@@ -722,7 +722,9 @@ def main(input_file, output_directory, wiki_type, debug):
                                                                         'rad3chip1', 'rad3chip2', 'rad3chip3',
                                                                         'rad4chip1', 'rad4chip2', 'rad4chip3']:
                                                         # first grab the number of the radio element from the identifier
-                                                        parse_chip(value.strip())
+                                                        radio_num = int(identifier[3:4])
+                                                        radio_chip = parse_chip(value.strip())
+                                                        device.radios[radio_num - 1].chips.append(radio_chip)
 
                                                     # regulatory
                                                     elif identifier == 'fccapprovdate':
