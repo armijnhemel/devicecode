@@ -745,7 +745,8 @@ def main(input_file, output_directory, wiki_type, debug):
                                                         # first grab the number of the radio element from the identifier
                                                         radio_num = int(identifier[3:4])
                                                         radio_chip = parse_chip(value.strip())
-                                                        device.radios[radio_num - 1].chips.append(radio_chip)
+                                                        if radio_chip is not None:
+                                                            device.radios[radio_num - 1].chips.append(radio_chip)
 
                                                     # regulatory
                                                     elif identifier == 'fccapprovdate':
