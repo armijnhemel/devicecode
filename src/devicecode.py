@@ -105,6 +105,7 @@ class Manufacturer:
 @dataclass
 class Network:
     '''Networking information'''
+    chips: list[Chip] = field(default_factory=list)
     jumbo_frames: str = 'unknown'
     lan_ports: int = 0
     mdix: str = 'unknown'
@@ -654,7 +655,7 @@ def main(input_file, output_directory, wiki_type, debug):
                                                             pass
                                                     elif identifier in ['eth1chip', 'eth2chip', 'eth3chip',
                                                                         'eth4chip', 'eth5chip', 'eth6chip']:
-                                                        parse_chip(value.strip())
+                                                        device.network.chips.append(parse_chip(value.strip()))
 
                                                     # various OUI
                                                     elif identifier in ['ethoui', 'oui', 'rad1oui',
