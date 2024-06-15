@@ -413,7 +413,18 @@ def main(input_file, output_directory, wiki_type, debug):
                                                 # some elements are a list, the first one
                                                 # will always contain the identifier
                                                 param_elems = param.strip().split('\n')
-                                                identifier = param_elems[0].split('=', maxsplit=1)[0].strip()
+                                                identifier, value = param_elems[0].split('=', maxsplit=1)
+                                                identifier = identifier.strip()
+                                                value = value.strip()
+
+                                                is_default = False
+                                                for default_value in defaults.DEFAULT_VALUE.get(identifier, []):
+                                                    if value == default_value:
+                                                        is_default = True
+                                                        break
+
+                                                if is_default or value == '':
+                                                    continue
 
                                                 if identifier in defaults.KNOWN_ASIN_IDENTIFIERS:
                                                     num_asins = max(num_asins, defaults.KNOWN_ASIN_IDENTIFIERS.index(identifier) + 1)
@@ -423,6 +434,10 @@ def main(input_file, output_directory, wiki_type, debug):
                                         # create the right amount of radio elements
                                         for i in range(num_radios):
                                             device.radios.append(Radio())
+
+                                        # create the right amount of ASINs
+                                        for i in range(num_asins):
+                                            device.commercial.amazon_asin.append(Amazon_ASIN())
 
                                         for param in f.params:
                                             if '=' in param:
@@ -536,7 +551,12 @@ def main(input_file, output_directory, wiki_type, debug):
                                                     elif identifier in defaults.KNOWN_ASIN_IDENTIFIERS:
                                                         # verify ASIN address via regex
                                                         if defaults.REGEX_ASIN.match(value) is not None:
-                                                            pass
+                                                            num_asin = defaults.KNOWN_ASIN_IDENTIFIERS.index(identifier)
+                                                            device.commercial.amazon_asin[num_asin].asin = value
+                                                    elif identifier in defaults.KNOWN_ASIN_COUNTRY_IDENTIFIERS:
+                                                        if len(value) == 2:
+                                                            num_asin = defaults.KNOWN_ASIN_COUNTRY_IDENTIFIERS.index(identifier)
+                                                            device.commercial.amazon_asin[num_asin].country = value
 
                                                     # default values: IP, login, passwd, etc.
                                                     elif identifier == 'defaulip':
