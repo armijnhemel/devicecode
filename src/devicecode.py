@@ -1078,15 +1078,14 @@ def main(input_file, output_directory, wiki_type, debug):
                                             device.regulatory.wifi_certified = str(wifi_cert.value)
                                             wifi_cert_date = str(wifi_cert_date.value)
                                             device.regulatory.wifi_certified_date = parse_date(wifi_cert_date)
-                                        pass
                                     else:
                                         pass
-                                elif isinstance(f, mwparserfromhell.nodes.text.Text):
-                                    pass
-                                elif isinstance(f, mwparserfromhell.nodes.tag.Tag):
-                                    pass
-                                else:
-                                    pass
+                            elif isinstance(f, mwparserfromhell.nodes.text.Text):
+                                pass
+                            elif isinstance(f, mwparserfromhell.nodes.tag.Tag):
+                                pass
+                            else:
+                                pass
 
 
                         # TODO: write to a Git repository to keep some history
