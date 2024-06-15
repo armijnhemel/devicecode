@@ -49,6 +49,9 @@ class Chip:
     model_verified: bool = False
     extra_info: str = ''
 
+    # for addchip
+    description: str = ''
+
 @dataclass_json
 @dataclass
 class Commercial:
@@ -714,9 +717,29 @@ def main(input_file, output_directory, wiki_type, debug):
                                                             device.ram.append(chip_result)
 
                                                     # additional chip
-                                                    #elif identifier in ['addchip']:
+                                                    elif identifier in ['addchip']:
+                                                        if value.strip() == ',,,':
+                                                            continue
+
                                                         # here the first entry *should* be a description
-                                                        #parse_chip(value.strip())
+                                                        if value.strip().startswith(',,,'):
+                                                            chip_splits = value.strip().split(' ', maxsplit=1)
+                                                            addchip = chip_splits[1].strip()
+                                                        else:
+                                                            addchip = value.strip()
+                                                        if ';' not in addchip:
+                                                            continue
+
+                                                        # split the data in a description and the
+                                                        # chip data to be parsed. There could be
+                                                        # some more chips hidden in the chip data,
+                                                        # because the wiki data isn't clean and entries
+                                                        # are not clearly split. This is a TODO.
+                                                        description, chipinfo = addchip.split(';', maxsplit=1)
+                                                        chip_result = parse_chip(chipinfo.strip())
+                                                        if chip_result is not None:
+                                                            chip_result.description = description
+                                                            device.additional_chips.append(chip_result)
 
                                                     # power
                                                     elif identifier == 'pwr_conn':
