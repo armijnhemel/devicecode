@@ -150,6 +150,7 @@ class Radio:
     capabilities: list[str] = field(default_factory=list)
     chips: list[Chip] = field(default_factory=list)
     model: str = ''
+    interface: str = ''
 
     # https://en.wikipedia.org/wiki/Organizationally_unique_identifier
     oui: list[str] = field(default_factory=list)
@@ -747,6 +748,15 @@ def main(input_file, output_directory, wiki_type, debug):
                                                         radio_chip = parse_chip(value.strip())
                                                         if radio_chip is not None:
                                                             device.radios[radio_num - 1].chips.append(radio_chip)
+
+                                                    elif identifier in ['rad1mod', 'rad2mod', 'rad3mod', 'rad4mod']:
+                                                        # TODO: filter entries with <!--
+                                                        radio_num = int(identifier[3:4])
+                                                        device.radios[radio_num - 1].model = value.strip()
+                                                    elif identifier in ['rad1modif', 'rad2modif', 'rad3modif', 'rad4modif']:
+                                                        # TODO: filter entries with <!--
+                                                        radio_num = int(identifier[3:4])
+                                                        device.radios[radio_num - 1].interface = value.strip()
 
                                                     # regulatory
                                                     elif identifier == 'fccapprovdate':
