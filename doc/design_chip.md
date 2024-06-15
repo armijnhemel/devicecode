@@ -48,9 +48,9 @@ description;manufacturer;model;extra information
 
 where it is not entirely clear what the extra information is: it seems to
 contain more individual fields than the other chip entries. The TechInfoDepot
-wiki does not clarify what the different fields mean. There is definitely
-wrong data in this chip, where users have filled in random data. This is
-difficult to detect automatically and probably needs manual cleanup.
+wiki does not clarify what each of the different fields mean. There is
+definitely wrong data in these fields, where users have filled in random data.
+This is difficult to detect automatically and probably needs manual cleanup.
 
 ## Verifying manufacturers and chip models
 
