@@ -1064,11 +1064,12 @@ def main(input_file, output_directory, wiki_type, debug):
                                             device.regulatory.wifi_certified = str(wifi_cert.value)
                                             wifi_cert_date = str(wifi_cert_date.value)
                                             device.regulatory.wifi_certified_date = parse_date(wifi_cert_date)
-                                    elif f.name == 'SCollapse':
+                                    elif f.name.strip() in ['SCollapse', 'SCollapse2']:
                                         # alternative place for boot log, GPL info, /proc, etc.
                                         is_processed = False
+                                        wiki_section_header = f.params[0].strip()
                                         for b in ['boot log', 'Boot log', 'stock boot messages']:
-                                            if f.params[0].startswith(b):
+                                            if wiki_section_header.startswith(b):
                                                 is_processed = True
 
                                                 # parse and store the boot log.
@@ -1077,29 +1078,35 @@ def main(input_file, output_directory, wiki_type, debug):
                                                 break
                                         if is_processed:
                                             continue
-                                        if f.params[0].startswith('GPL info'):
+                                        if wiki_section_header.startswith('GPL info'):
                                             # there actually does not seem to be anything related
                                             # to GP source code releases in this element, but
                                             # mostly settings like environment variables for
                                             # compiling source code.
                                             pass
-                                        elif f.params[0].startswith('lsmod'):
+                                        elif wiki_section_header.startswith('lsmod'):
                                             # the output of lsmod can be parsed to see which
                                             # Linux kernel modules are used on a device. By mapping
                                             # these back to source code some extra information
                                             # could be obtained: some modules are only present in
                                             # some SDKs, and so on.
                                             pass
-                                        elif f.params[0].startswith('nvram'):
+                                        elif wiki_section_header.startswith('nvram'):
                                             # the nvram can contain useful information about
                                             # a device. Some entries found here are not from
                                             # the stock firmware, but from third party firmware
                                             # so care has to be taken to filter these prior
                                             # to processing.
                                             pass
-                                        elif 'dmesg' in f.params[0]:
+                                        elif 'dmesg' in wiki_section_header:
                                             # like bootlogs the output of dmesg can contain
                                             # very useful information.
+                                            pass
+                                        elif wiki_section_header.startswith('ls -la'):
+                                            pass
+                                        elif wiki_section_header.startswith('Serial console output'):
+                                            pass
+                                        else:
                                             pass
                                     else:
                                         pass
