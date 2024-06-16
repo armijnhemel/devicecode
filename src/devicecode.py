@@ -253,6 +253,11 @@ class Device:
     title: str = ''
     web: Web = field(default_factory=Web)
 
+def parse_log(boot_log):
+    '''Parse logs, such as boot logs or serial output'''
+    interesting_findings = []
+    return interesting_findings
+
 def parse_chip(chip_string):
     '''Parse chips and return a parsed data structure'''
     chip_result = Chip()
@@ -1074,7 +1079,7 @@ def main(input_file, output_directory, wiki_type, debug):
 
                                                 # parse and store the boot log.
                                                 # TODO: further mine the boot log
-                                                #print(type(f.params[1].value))
+                                                parse_result = parse_log(f.params[1].value)
                                                 break
                                         if is_processed:
                                             continue
