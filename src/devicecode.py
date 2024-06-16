@@ -1083,8 +1083,6 @@ def main(input_file, output_directory, wiki_type, debug):
                                             # mostly settings like environment variables for
                                             # compiling source code.
                                             pass
-                                        elif f.params[0].startswith('GPL info'):
-                                            pass
                                         elif f.params[0].startswith('lsmod'):
                                             # the output of lsmod can be parsed to see which
                                             # Linux kernel modules are used on a device. By mapping
