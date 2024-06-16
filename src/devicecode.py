@@ -1106,6 +1106,11 @@ def main(input_file, output_directory, wiki_type, debug):
                                             pass
                                         elif wiki_section_header.startswith('Serial console output'):
                                             pass
+                                        elif wiki_section_header.lower().startswith('serial info'):
+                                            # some of the entries found in the data seem to be
+                                            # serial console output, instead of serial port
+                                            # information.
+                                            pass
                                         else:
                                             pass
                                     else:
