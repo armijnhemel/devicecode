@@ -402,6 +402,8 @@ REGEX_ADTRAN_BOOTLOADER = re.compile(r'Adtran bootloader version (\d+\.\d+\.\d+)
 REGEX_UBOOT_RALINK = re.compile(r'Ralink UBoot Version: (\d+\.\d+[\.\d]*)')
 REGEX_CFE = re.compile(r'CFE for [\d\w]+ version: v?(\d\.\d\.\d)')
 REGEX_CFE_BROADCOM = re.compile(r'CFE version ([\d\.]+) (?:based on BBP 1\.0\.37 )?for BCM[\w\d]+')
+REGEX_MINIUPNPD = re.compile(r'miniupnpd\[\d+\]:\s* listening on (\d+\.\d+\.\d+\.\d+:\d+)')
+REGEX_MINIUPNPD_ALT = re.compile(r'miniupnpd\[\d+\]:\s*(\w*)? listening on port (\d+)')
 
 # a list of verified Broadcom chips (meaning model numbers exist)
 BROADCOM_CHIPS = set([
