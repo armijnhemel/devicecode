@@ -261,6 +261,17 @@ def parse_log(boot_log):
     res = defaults.REGEX_BUSYBOX.findall(str(boot_log))
     if res != []:
         interesting_findings['busybox'] = set(res)
+
+    # Ralink U-Boot bootloader (modified U-Boot)
+    res = defaults.REGEX_UBOOT_RALINK.findall(str(boot_log))
+    if res != []:
+        interesting_findings['Ralink U-Boot'] = set(res)
+
+    # Adtran bootloader (proprietary)
+    res = defaults.REGEX_ADTRAN_BOOTLOADER.findall(str(boot_log))
+    if res != []:
+        interesting_findings['adtran bootloader'] = set(res)
+
     return interesting_findings
 
 def parse_chip(chip_string):
