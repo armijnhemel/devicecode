@@ -255,7 +255,12 @@ class Device:
 
 def parse_log(boot_log):
     '''Parse logs, such as boot logs or serial output'''
-    interesting_findings = []
+    interesting_findings = {}
+    # now try a bunch of regular expressions to find interesting information
+    # first BusyBox
+    res = defaults.REGEX_BUSYBOX.findall(str(boot_log))
+    if res != []:
+        interesting_findings['busybox'] = set(res)
     return interesting_findings
 
 def parse_chip(chip_string):

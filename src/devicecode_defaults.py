@@ -394,9 +394,9 @@ REGEX_SERIAL_CONNECTOR = re.compile(r'(JP?\d+)')
 REGEX_SERIAL_PIN_HEADER = re.compile(r'(?:via )?(\d+)[ -](?:in|pln|pin|pad|pads) ?(?:header|connector)?')
 REGEX_SERIAL_RJ45 = re.compile(r'RJ-?45( console)?')
 
-# REGEX_LINUX_VERSION = re.compile(r'Linux version \d\.\d+\.\d+')
-
-REGEX_BUSYBOX = re.compile(r'BusyBox v\d\.\d+')
+# several regular expressions for software and software versions
+REGEX_BUSYBOX = re.compile(r'BusyBox (v\d\.\d+[\.\w+-]*\d*)')
+REGEX_LINUX_VERSION = re.compile(r'Linux version \d\.\d+\.\d+')
 
 # a list of verified Broadcom chips (meaning model numbers exist)
 BROADCOM_CHIPS = set([
