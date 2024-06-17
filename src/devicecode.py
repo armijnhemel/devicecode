@@ -267,6 +267,11 @@ def parse_log(boot_log):
     if res != []:
         interesting_findings['Linux'] = set(res)
 
+    # Linux kernel command line
+    res = defaults.REGEX_LINUX_KERNEL_COMMANDLINE.findall(str(boot_log))
+    if res != []:
+        interesting_findings['Linux kernel commandline'] = set(res)
+
     # Ralink U-Boot bootloader (modified U-Boot)
     res = defaults.REGEX_UBOOT_RALINK.findall(str(boot_log))
     if res != []:
