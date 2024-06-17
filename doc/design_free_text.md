@@ -1,7 +1,7 @@
 # Design: parsing free text
 
 In the pages of the various Wikis there is useful information stored in
-non-structured data, for example boot log information, output of
+data that is mostly unstructured, for example boot log information, output of
 `/proc/cpuinfo` and `/proc/pci`, nvram contents, output of `dmesg`,
 and so on.
 
@@ -19,6 +19,9 @@ Of particular interest are the following:
 * anything in `/proc`
 * serial console output
 * serial port information (pin headers, layout, etc.)
+
+although some useful data can be hidden in other places as well, because users
+tend to put it in random locations.
 
 ## Example data
 
