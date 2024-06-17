@@ -262,6 +262,11 @@ def parse_log(boot_log):
     if res != []:
         interesting_findings['busybox'] = set(res)
 
+    # Linux kernel version
+    res = defaults.REGEX_LINUX_VERSION.findall(str(boot_log))
+    if res != []:
+        interesting_findings['Linux'] = set(res)
+
     # Ralink U-Boot bootloader (modified U-Boot)
     res = defaults.REGEX_UBOOT_RALINK.findall(str(boot_log))
     if res != []:
