@@ -20,7 +20,7 @@ Of particular interest are the following:
 * serial console output
 * serial port information (pin headers, layout, etc.)
 
-## Parsing boot logs
+## Example data
 
 The boot logs are interesting, because these can contain information about the
 Linux kernel and programs that are started. Depending on the user who entered
@@ -80,6 +80,13 @@ or `e2fsprogs`:
 e2fsck 1.42.9 (28-Dec-2013)
 ```
 
+or `miniupnp`:
+
+```
+Jan  1 00:00:33 miniupnpd[378]: listening on 192.168.1.1:5555
+Jan  1 00:00:26 miniupnpd[318]: WPS listening on port 7777
+```
+
 ### services
 
 ```
@@ -97,3 +104,19 @@ CFE version 1.0.37 for BCM947XX (32bit,SP,LE)
 ```
 Adtran bootloader version 1.0.5
 ```
+
+## Parsing logs
+
+As the data that is entered really is free form text there is little structure
+that can be expected. Various techniques are used to extract the data. First
+and foremost: regular expressions for packages, functionality, program names
+and source code names.
+
+If it is clear that the data follows a certain structure (such as the output
+of `ls -la` or `ps`), then some custom code is used to specifically parse that
+format.
+
+### ps
+
+The output of `ps` depends on the flags that were given to `ps` when the command
+was run. The output of `ps e` will be different from the output of `ps aux`.

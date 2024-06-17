@@ -405,6 +405,10 @@ REGEX_CFE_BROADCOM = re.compile(r'CFE version ([\d\.]+) (?:based on BBP 1\.0\.37
 REGEX_MINIUPNPD = re.compile(r'miniupnpd\[\d+\]:\s* listening on (\d+\.\d+\.\d+\.\d+:\d+)')
 REGEX_MINIUPNPD_ALT = re.compile(r'miniupnpd\[\d+\]:\s*(\w*)? listening on port (\d+)')
 
+# several regular expressions for output of ps
+# example:   723 root       6404 S   /usr/sbin/smbd -D
+REGEX_PS = re.compile(r'\s*\d+\s+\w+\s+\d+\s+\w+\s+([/\w\d\s\-_\.\+\*&]*)')
+
 # a list of verified Broadcom chips (meaning model numbers exist)
 BROADCOM_CHIPS = set([
     'B50212E',

@@ -253,6 +253,43 @@ class Device:
     title: str = ''
     web: Web = field(default_factory=Web)
 
+
+def parse_ls(ls_log):
+    '''Parse output from ls'''
+    pass
+
+
+def parse_ps(ps_log):
+    '''Parse output from ps'''
+
+    # This is a bit hackish. Right now a rather fixed
+    # output from ps is expected, with a fixed number of
+    # columns. Which columns are used depends on the parameters
+    # that were given to ps, so for example the output of
+    # "ps aux" is different from the output of "ps e".
+    # This is a TODO.
+    header_seen = False
+    for line in ps_log.splitlines():
+        if 'PID  Uid' in line:
+            header_seen = True
+            continue
+
+        if not header_seen:
+            continue
+
+        if line.endswith(']'):
+            continue
+
+        if line in ['</pre>', '</syntaxhighlight>']:
+            continue
+
+        # process each line using a regex
+        ps_res = defaults.REGEX_PS.search(line)
+        if ps_res is not None:
+            # extract interesting information here
+            pass
+    return
+
 def parse_log(boot_log):
     '''Parse logs, such as boot logs or serial output'''
 
@@ -1159,7 +1196,12 @@ def main(input_file, output_directory, wiki_type, debug):
                                             # very useful information.
                                             pass
                                         elif wiki_section_header.startswith('ls -la'):
-                                            pass
+                                            parse_result = parse_ls(f.params[1].value)
+                                        elif wiki_section_header.startswith('ps'):
+                                            # the output of ps can contain the names
+                                            # of programs and executables
+                                            if 'PID  Uid' in f.params[1].value:
+                                                parse_result = parse_ps(f.params[1].value)
                                         elif wiki_section_header.startswith('Serial console output'):
                                             pass
                                         elif wiki_section_header.lower().startswith('serial info'):
