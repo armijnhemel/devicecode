@@ -255,9 +255,16 @@ class Device:
 
 def parse_log(boot_log):
     '''Parse logs, such as boot logs or serial output'''
+
+    # store the interesting findings in a lookup table.
+    # This will be a set of software packages (both open source
+    # and proprietary) and functionality, as well as names of
+    # source code files that were found, that could be used for
+    # fingerprinting
     interesting_findings = {}
-    # now try a bunch of regular expressions to find interesting information
-    # first BusyBox
+
+    # now try a bunch of regular expressions to find packages
+    # BusyBox
     res = defaults.REGEX_BUSYBOX.findall(str(boot_log))
     if res != []:
         interesting_findings['busybox'] = set(res)
@@ -267,10 +274,17 @@ def parse_log(boot_log):
     if res != []:
         interesting_findings['Linux'] = set(res)
 
-    # Linux kernel command line
-    res = defaults.REGEX_LINUX_KERNEL_COMMANDLINE.findall(str(boot_log))
+    # CFE bootloader
+    res = defaults.REGEX_CFE.findall(str(boot_log))
     if res != []:
-        interesting_findings['Linux kernel commandline'] = set(res)
+        interesting_findings['CFE'] = set(res)
+
+    res = defaults.REGEX_CFE_BROADCOM.findall(str(boot_log))
+    if res != []:
+        if 'CFE' in interesting_findings:
+            interesting_findings['CFE'].update(set(res))
+        else:
+            interesting_findings['CFE'] = set(res)
 
     # Ralink U-Boot bootloader (modified U-Boot)
     res = defaults.REGEX_UBOOT_RALINK.findall(str(boot_log))
@@ -281,6 +295,17 @@ def parse_log(boot_log):
     res = defaults.REGEX_ADTRAN_BOOTLOADER.findall(str(boot_log))
     if res != []:
         interesting_findings['adtran bootloader'] = set(res)
+
+    # find functionality
+
+    # find source code files
+
+    # extract other information
+
+    # Linux kernel command line
+    res = defaults.REGEX_LINUX_KERNEL_COMMANDLINE.findall(str(boot_log))
+    if res != []:
+        interesting_findings['Linux kernel commandline'] = set(res)
 
     return interesting_findings
 
