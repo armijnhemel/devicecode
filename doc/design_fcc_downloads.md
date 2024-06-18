@@ -17,12 +17,17 @@ market) in the TechInfoDepot and WikiDevi data have one or more FCC ids
 associated with them. The FCC id consists of a vendor part, and a device
 specific part.
 
-## FCC website
+FCC ids can apply to multiple devices (example: they contain identical
+hardware) and some devices can have multiple FCC ids (example: there are
+multiple devices in a single box, each with a separate FCC id). This makes
+it easier to make connections between devices to see if they are identical.
+
+## FCC websites
 
 All the documents are published on the FCC website, which, like many US
 government websites, is horribly slow and not very good for downloading data
 in bulk, or for searching. As a result there are various websites that index
-the FCC website, republish the documents and offer search functionality,
-all while also serving advertisments.
+the FCC website, republish the documents and offer search functionality.
+Some these were mainly created to serve advertisements.
 
 [fcc]:https://en.wikipedia.org/wiki/Federal_Communications_Commission
