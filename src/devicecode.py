@@ -1220,7 +1220,6 @@ def main(input_file, output_directory, wiki_type, debug):
                             else:
                                 pass
 
-
                         # TODO: write to a Git repository to keep some history
                         # use the title as part of the file name as it is unique
                         model_name = f"{title}.json"
@@ -1230,6 +1229,15 @@ def main(input_file, output_directory, wiki_type, debug):
                         with output_file.open('w') as out:
                             out.write(json.dumps(json.loads(device.to_json()), indent=4))
                             out.write('\n')
+
+                        # write extra data (extracted from free text) to a separate file
+                        model_name = f"{title}.data.json"
+
+                        model_name = model_name.replace('/', '-')
+                        #output_file = wiki_device_directory / model_name
+                        #with output_file.open('w') as out:
+                        #    out.write(json.dumps(json.loads(device.to_json()), indent=4))
+                        #    out.write('\n')
 
 
 if __name__ == "__main__":
