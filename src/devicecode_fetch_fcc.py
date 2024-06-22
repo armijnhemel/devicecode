@@ -27,7 +27,7 @@ RE_FCC_ID = re.compile(r'[\w\d\-]+$')
 @click.option('--force', is_flag=True, help='always force downloads')
 def main(fccids, output_directory, grantees, verbose, force):
     if not output_directory.is_dir():
-        print(f"{output_directory} is not a directory, exiting.")
+        print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
 
     fcc_grantees = set()
