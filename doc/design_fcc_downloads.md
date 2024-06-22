@@ -22,7 +22,7 @@ hardware) and some devices can have multiple FCC ids (example: there are
 multiple devices in a single box, each with a separate FCC id). This makes
 it easier to make connections between devices to see if they are identical.
 
-## FCC websites
+## FCC website
 
 All the documents are published on the FCC website, which, like many US
 government websites, is horribly slow and not very good for downloading data
@@ -61,4 +61,37 @@ $ grep grantee_code results.xml | cut -f 2 -d '>' | cut -f 1 -d '<'
 The output of these commands can be used as in input to the FCC document
 fetching script, and perform extra sanity checks.
 
+## Downloading PDFs from fcc.report
+
+The cleanest and easiest website to download the data from is
+[FCC.report][fcc.report] because it is fast and it serves fairly clean HTML
+that is easy to process.
+
+Downloading is fairly trivial: given a valid FCC id grab the HTML of the
+overview page, parse the HTML to extract PDF paths and descriptions, store
+the original HTML, download the PDFs and store a mapping of PDFs to
+descriptions.
+
+For example to download the data for the device with FCC id `2AGN7-X9` the
+following command could be used:
+
+```
+$ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data
+```
+
+If there is a list of known FCC grantee codes (see above for an explanation)
+and it is stored in the file `known_fcc_grantees_20240618.txt` the following
+command can be used:
+
+```
+$ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data -g known_fcc_grantees_20240618.txt
+```
+
+To force downloading all the data the `--force` parameter can be used:
+
+```
+$ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data --force
+```
+
 [fcc]:https://en.wikipedia.org/wiki/Federal_Communications_Commission
+[fcc.report]:https://fcc.report/
