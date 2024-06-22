@@ -33,4 +33,10 @@ Some these were mainly created to serve advertisements.
 Automatically querying the main FCC website is not doable: it is very slow
 and output is ugly.
 
+## Storing FCC data
+
+Because there is not a 1:1 correlation between FCC ids and devices the FCC
+data is stored separately from devices in a subdirectory with the name of
+the FCC id.
+
 [fcc]:https://en.wikipedia.org/wiki/Federal_Communications_Commission
