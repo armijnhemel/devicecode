@@ -24,7 +24,8 @@ RE_FCC_ID = re.compile(r'[\w\d\-]+$')
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.argument('fccids', required=True, nargs=-1)
 @click.option('--debug', is_flag=True, help='enable debug logging')
-def main(fccids, output_directory, grantees, debug):
+@click.option('--force', is_flag=True, help='always force downloads')
+def main(fccids, output_directory, grantees, debug, force):
     if not output_directory.is_dir():
         print(f"{output_directory} is not a directory, exiting.")
         sys.exit(1)
@@ -133,11 +134,24 @@ def main(fccids, output_directory, grantees, debug):
                     # reset the pdf name
                     pdf_name = ''
 
+            if not pdfs_descriptions:
+                continue
+
+            with open(store_directory/'index.html', 'w') as output:
+                output.write(result)
+
             # now download the individual PDF files and write them
             # to the directory for this FCC entry
 
             for pdf, description in pdfs_descriptions:
+                # verify if there already was data downloaded for this
+                # particular device by checking the contents of the result first
+                # and skipping it there were no changes.
                 pdf_basename = pdf.rsplit('/', maxsplit=1)[1]
+
+                if not force and (store_directory/pdf_basename).exists():
+                    continue
+
                 request = requests.get(f'{base_url}/{pdf}',
                                        headers=headers)
 
@@ -151,7 +165,6 @@ def main(fccids, output_directory, grantees, debug):
         except Exception as e:
             #print(e)
             pass
-
 
 
 if __name__ == "__main__":
