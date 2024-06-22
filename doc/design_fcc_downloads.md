@@ -3,11 +3,15 @@
 Devices coming onto the US market need to have approval from the [FCC][fcc]
 before they are allowed to be sold. The FCC test reports are available online
 and often include pictures of the device (including internal pictures of the
-board), as well as manuals of the devices, and so on. Data created for and
-published by the US government is public domain so it can be redownloaded,
-mined and remixed (it should be noted that this does most likely not extend
+board), as well as manuals of the devices, and so on.
+
+## Why not just provide the documents?
+
+Data created for and published by the US government is public domain so it
+can be redownloaded, mined and remixed but this does most likely not extend
 to any data provided by the manufacturer such as manuals, leaflets, and so
-on).
+on. This is why instead of providing the data directly scripts to download the
+data are provided.
 
 ## FCC ids
 
