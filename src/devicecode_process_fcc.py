@@ -9,6 +9,8 @@ import pathlib
 import sys
 
 import click
+import pdfminer
+from pdfminer.high_level import extract_pages
 
 @click.command(short_help='Process downloaded FCC documents')
 @click.option('--fcc-directory', '-d', 'fcc_input_directory', required=True,
@@ -47,10 +49,42 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
             # Then process each individual PDF file.
             # * extract text
             # * extract pictures
+            # Results are written to an unpack directory for each PDF
+            # as the file names can be the same in different PDFs.
             for _, pdf_name, description in descriptions:
-                if not (fcc_directory / pdf_name).exists:
+                if not (fcc_directory / pdf_name).exists():
                     print(f"{pdf_name} does not exist, skipping.", file=sys.stderr)
                     continue
+
+                if verbose:
+                    print(f"Processing {pdf_name}")
+
+                # create two directories for output
+                # for original output
+                pdf_orig_output_directory = output_directory / f"{pdf_name}.orig"
+                pdf_orig_output_directory.mkdir(exist_ok=True)
+
+                # for post processed output (such as combined images)
+                pdf_output_directory = output_directory / f"{pdf_name}.output"
+                pdf_output_directory.mkdir(exist_ok=True)
+
+                num_pages = 0
+                image_writer = pdfminer.image.ImageWriter(pdf_orig_output_directory)
+                for page_layout in extract_pages(fcc_directory / pdf_name):
+                    num_pages += 1
+                    for element in page_layout:
+                        if isinstance(element, pdfminer.layout.LTFigure):
+                            # TODO: check if the image already exists. If so
+                            # refuse to overwrite, unless forced.
+                            try:
+                                image_writer.export_image(element._objs[0])
+                            except UnboundLocalError:
+                                # TODO: fix this. sometimes images aren't
+                                # correctly exported and an UnboundLocalError exception
+                                # is thrown with the message:
+                                # "cannot access local variable 'mode' where it is not associated with a value"
+                                # Is this an error in pdfminer?
+                                pass
 
 
 if __name__ == "__main__":
