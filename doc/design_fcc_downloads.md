@@ -43,4 +43,18 @@ Because there is not a 1:1 correlation between FCC ids and devices the FCC
 data is stored separately from devices in a subdirectory with the name of
 the FCC id.
 
+## Processing FCC data
+
+The FCC website (and its clones) make the relevant documents available in
+PDF format. The most interesting documents are probably the external/internal
+photos, which often clearly show some of the used chips and solder pads (useful
+for identifying serial ports), and the user manuals, which can be mined for
+descriptions of functionality, default ports, default user names and passwords,
+and so on. Sometimes the user manual contains open source license texts and a
+written offer for source code.
+
+Some of the pictures in the documents (mostly the internal and external photos)
+actually seem to be multiple images. When extracted individually these images
+are quite useless, so they first need to be recombined.
+
 [fcc]:https://en.wikipedia.org/wiki/Federal_Communications_Commission
