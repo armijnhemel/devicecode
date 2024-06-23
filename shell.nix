@@ -11,6 +11,7 @@ let
     defusedxml
     mwparserfromhell
     pdfminer
+    pillow
     requests
   ]);
     
