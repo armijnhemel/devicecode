@@ -126,17 +126,19 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                 page_number = 0
 
                 # keep metadata per page
-                text_metadata = {}
                 image_metadata = {}
 
                 for page_layout in extract_pages(fcc_directory / pdf_name):
                     page_number += 1
+
+                    # keep track of images
                     images = []
                     image_names = []
-                    text_metadata[page_number] = []
                     image_metadata[page_number] = {'original': [], 'processed': {}}
                     img_directory = pdf_orig_output_directory / str(page_number) / 'images'
                     image_writer = pdfminer.image.ImageWriter(img_directory)
+
+                    extracted_texts = []
                     for element in page_layout:
                         if isinstance(element, pdfminer.layout.LTFigure):
                             try:
@@ -154,9 +156,17 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                         else:
                             try:
                                 if element.get_text().strip() != '':
-                                    text_metadata[page_number].append(element.get_text())
+                                    txt_directory = pdf_orig_output_directory / str(page_number) / 'text'
+                                    txt_directory.mkdir(exist_ok=True, parents=True)
+                                    extracted_texts.append(element.get_text())
                             except AttributeError:
                                 pass
+
+                    # write the extracted text per page
+                    if extracted_texts:
+                        with open(txt_directory / 'extracted.txt', 'w') as output_file:
+                            for line in extracted_texts:
+                                output_file.write(line)
 
                     image_metadata[page_number]['original'] = image_names
 
@@ -219,8 +229,6 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                             image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
 
                 # write various metadata to files for further processing
-                with open(output_directory / fccid / pdf_name / 'extracted_text.json', 'w') as output_file:
-                    output_file.write(json.dumps(text_metadata, indent=4))
                 with open(output_directory / fccid / pdf_name / 'images.json', 'w') as output_file:
                     output_file.write(json.dumps(image_metadata, indent=4))
 
