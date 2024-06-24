@@ -47,7 +47,9 @@ def stitch(images, orientation, image_directory, output_directory):
         else:
             new_image.paste(orig_image, (x,y))
             y += orig_image.size[1]
-    new_image.save(output_directory / images[0])
+    image_name = output_directory / images[0]
+    new_image.save(image_name)
+    return image_name.name
 
 @click.command(short_help='Process downloaded FCC documents')
 @click.option('--fcc-directory', '-d', 'fcc_input_directory', required=True,
@@ -124,18 +126,22 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                 page_number = 0
 
                 # keep metadata per page
-                metadata = {}
+                text_metadata = {}
+                image_metadata = {}
 
                 image_writer = pdfminer.image.ImageWriter(pdf_orig_output_directory)
                 for page_layout in extract_pages(fcc_directory / pdf_name):
                     page_number += 1
                     images = []
-                    metadata[page_number] = {'text': [], 'images': []}
+                    image_names = []
+                    text_metadata[page_number] = []
+                    image_metadata[page_number] = {'original': [], 'processed': {}}
                     for element in page_layout:
                         if isinstance(element, pdfminer.layout.LTFigure):
                             try:
                                 img_name = image_writer.export_image(element._objs[0])
                                 images.append((element, img_name))
+                                image_names.append(img_name)
                             except UnboundLocalError:
                                 # TODO: fix this. sometimes images aren't
                                 # correctly exported and an UnboundLocalError exception
@@ -147,9 +153,11 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                         else:
                             try:
                                 if element.get_text().strip() != '':
-                                    metadata[page_number]['text'].append(element.get_text())
+                                    text_metadata[page_number].append(element.get_text())
                             except AttributeError:
                                 pass
+
+                    image_metadata[page_number]['original'] = image_names
 
                     if len(images) > 1:
                         to_stitch = []
@@ -179,7 +187,10 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                 if round(to_stitch[-1][0].x0 - image[0].width, 2) == image[0].x0:
                                     to_stitch.append(image)
                                 else:
-                                    stitch(list(map(lambda x: x[1], to_stitch)), orientation, pdf_orig_output_directory, pdf_output_directory)
+                                    stitch_names = list(map(lambda x: x[1], to_stitch))
+                                    stitched_file = stitch(stitch_names, orientation, pdf_orig_output_directory, pdf_output_directory)
+                                    image_metadata[page_number]['processed'][stitched_file] = {}
+                                    image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
 
                                     # reset
                                     to_stitch = [image]
@@ -188,13 +199,25 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                 if round(to_stitch[-1][0].y0 - image[0].height, 2) == image[0].y0:
                                     to_stitch.append(image)
                                 else:
-                                    stitch(list(map(lambda x: x[1], to_stitch)), orientation, pdf_orig_output_directory, pdf_output_directory)
+                                    stitch_names = list(map(lambda x: x[1], to_stitch))
+                                    stitched_file = stitch(stitch_names, orientation, pdf_orig_output_directory, pdf_output_directory)
+                                    image_metadata[page_number]['processed'][stitched_file] = {}
+                                    image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
 
                                     # reset
                                     to_stitch = [image]
                                     orientation = None
                         if len(to_stitch) > 1:
-                            stitch(list(map(lambda x: x[1], to_stitch)), orientation, pdf_orig_output_directory, pdf_output_directory)
+                            stitch_names = list(map(lambda x: x[1], to_stitch))
+                            stitched_file = stitch(stitch_names, orientation, pdf_orig_output_directory, pdf_output_directory)
+                            image_metadata[page_number]['processed'][stitched_file] = {}
+                            image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
+
+                # write various metadata to files for further processing
+                with open(output_directory / fccid / pdf_name / 'extracted_text.json', 'w') as output_file:
+                    output_file.write(json.dumps(text_metadata, indent=4))
+                with open(output_directory / fccid / pdf_name / 'images.json', 'w') as output_file:
+                    output_file.write(json.dumps(image_metadata, indent=4))
 
 
 if __name__ == "__main__":
