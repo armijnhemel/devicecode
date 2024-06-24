@@ -168,7 +168,8 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                     # reset
                                     to_stitch = [images[ctr]]
                                     orientation = None
-                        stitch(list(map(lambda x: x[1], to_stitch)), orientation, pdf_orig_output_directory, pdf_output_directory)
+                        if len(to_stitch) > 1:
+                            stitch(list(map(lambda x: x[1], to_stitch)), orientation, pdf_orig_output_directory, pdf_output_directory)
 
 
 if __name__ == "__main__":
