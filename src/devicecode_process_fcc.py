@@ -11,7 +11,7 @@ import sys
 import click
 import pdfminer
 import PIL.Image
-from pdfminer.high_level import extract_pages
+from pdfminer.high_level import extract_pages, extract_text
 
 
 # Stitch images. Only the image name is needed, not any of the data
@@ -110,11 +110,16 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                 # and page numbers is useful, especially if there are many
                 # pages in the document. Second, images that need to be
                 # combined into a single image will appear on a single page.
-                num_pages = 0
+                page_number = 0
+
+                # keep metadata per page
+                metadata = {}
+
                 image_writer = pdfminer.image.ImageWriter(pdf_orig_output_directory)
                 for page_layout in extract_pages(fcc_directory / pdf_name):
-                    num_pages += 1
+                    page_number += 1
                     images = []
+                    metadata[page_number] = {'text': [], 'images': []}
                     for element in page_layout:
                         if isinstance(element, pdfminer.layout.LTFigure):
                             # TODO: check if the image already exists. If so
@@ -129,11 +134,18 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                 # "cannot access local variable 'mode' where it is not associated with a value"
                                 # Is this an error in pdfminer?
                                 pass
+                        else:
+                            try:
+                                if element.get_text().strip() != '':
+                                    metadata[page_number]['text'].append(element.get_text())
+                            except AttributeError as e:
+                                pass
+
                     if len(images) > 1:
                         to_stitch = []
                         orientation = None
                         for ctr in range(0,len(images)):
-                            if to_stitch == []:
+                            if not to_stitch:
                                 # store the first image as a potential
                                 # starting point.
                                 to_stitch.append(images[ctr])
