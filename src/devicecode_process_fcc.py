@@ -19,7 +19,7 @@ from pdfminer.high_level import extract_pages, extract_text
 # match the dimensons of the images, so rely on the actual image data
 # that was extracted in an earlier step in the process and use that
 # instead.
-def stitch(images, orientation, image_directory, output_directory):
+def stitch(images, orientation, image_directory, stitch_directory):
     '''Stitch a collection of images extracted from a PDF'''
     # first determine the width and height of the new image
     height = 0
@@ -47,7 +47,7 @@ def stitch(images, orientation, image_directory, output_directory):
         else:
             new_image.paste(orig_image, (x,y))
             y += orig_image.size[1]
-    image_name = output_directory / images[0]
+    image_name = stitch_directory / images[0]
     new_image.save(image_name)
     return image_name.name
 
@@ -129,13 +129,14 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                 text_metadata = {}
                 image_metadata = {}
 
-                image_writer = pdfminer.image.ImageWriter(pdf_orig_output_directory)
                 for page_layout in extract_pages(fcc_directory / pdf_name):
                     page_number += 1
                     images = []
                     image_names = []
                     text_metadata[page_number] = []
                     image_metadata[page_number] = {'original': [], 'processed': {}}
+                    img_directory = pdf_orig_output_directory / str(page_number) / 'images'
+                    image_writer = pdfminer.image.ImageWriter(img_directory)
                     for element in page_layout:
                         if isinstance(element, pdfminer.layout.LTFigure):
                             try:
@@ -162,6 +163,7 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                     if len(images) > 1:
                         to_stitch = []
                         orientation = None
+                        stitch_directory = pdf_output_directory / str(page_number) / 'images'
                         for image in images:
                             if not to_stitch:
                                 # store the first image as a potential starting point.
@@ -188,7 +190,8 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                     to_stitch.append(image)
                                 else:
                                     stitch_names = list(map(lambda x: x[1], to_stitch))
-                                    stitched_file = stitch(stitch_names, orientation, pdf_orig_output_directory, pdf_output_directory)
+                                    stitch_directory.mkdir(exist_ok=True, parents=True)
+                                    stitched_file = stitch(stitch_names, orientation, img_directory, stitch_directory)
                                     image_metadata[page_number]['processed'][stitched_file] = {}
                                     image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
 
@@ -200,7 +203,8 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                     to_stitch.append(image)
                                 else:
                                     stitch_names = list(map(lambda x: x[1], to_stitch))
-                                    stitched_file = stitch(stitch_names, orientation, pdf_orig_output_directory, pdf_output_directory)
+                                    stitch_directory.mkdir(exist_ok=True, parents=True)
+                                    stitched_file = stitch(stitch_names, orientation, img_directory, stitch_directory)
                                     image_metadata[page_number]['processed'][stitched_file] = {}
                                     image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
 
@@ -209,7 +213,8 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                     orientation = None
                         if len(to_stitch) > 1:
                             stitch_names = list(map(lambda x: x[1], to_stitch))
-                            stitched_file = stitch(stitch_names, orientation, pdf_orig_output_directory, pdf_output_directory)
+                            stitch_directory.mkdir(exist_ok=True, parents=True)
+                            stitched_file = stitch(stitch_names, orientation, img_directory, stitch_directory)
                             image_metadata[page_number]['processed'][stitched_file] = {}
                             image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
 
