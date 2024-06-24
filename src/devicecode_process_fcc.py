@@ -148,47 +148,47 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                             try:
                                 if element.get_text().strip() != '':
                                     metadata[page_number]['text'].append(element.get_text())
-                            except AttributeError as e:
+                            except AttributeError:
                                 pass
 
                     if len(images) > 1:
                         to_stitch = []
                         orientation = None
-                        for ctr in range(0,len(images)):
+                        for image in images:
                             if not to_stitch:
                                 # store the first image as a potential
                                 # starting point.
-                                to_stitch.append(images[ctr])
+                                to_stitch.append(image)
                                 continue
 
                             # first try to figure out a stitching orientation, if any
                             if orientation is None:
-                                if to_stitch[-1][0].x0 - images[ctr][0].width == images[ctr][0].x0:
+                                if to_stitch[-1][0].x0 - image[0].width == image[0].x0:
                                     orientation = 'horizontal'
-                                    to_stitch.append(images[ctr])
-                                elif to_stitch[-1][0].y0 - images[ctr][0].height == images[ctr][0].y0:
+                                    to_stitch.append(image)
+                                elif to_stitch[-1][0].y0 - image[0].height == image[0].y0:
                                     orientation = 'vertical'
-                                    to_stitch.append(images[ctr])
+                                    to_stitch.append(image)
                                 else:
-                                    to_stitch = [images[ctr]]
+                                    to_stitch = [image]
                                 continue
 
                             if orientation == 'horizontal':
-                                if round(to_stitch[-1][0].x0 - images[ctr][0].width, 2) == images[ctr][0].x0:
-                                    to_stitch.append(images[ctr])
+                                if round(to_stitch[-1][0].x0 - image[0].width, 2) == image[0].x0:
+                                    to_stitch.append(image)
                                 else:
                                     stitch(list(map(lambda x: x[1], to_stitch)), orientation, pdf_orig_output_directory, pdf_output_directory)
                                     # reset
-                                    to_stitch = [images[ctr]]
+                                    to_stitch = [image]
                                     orientation = None
                             elif orientation == 'vertical':
-                                if round(to_stitch[-1][0].y0 - images[ctr][0].height, 2) == images[ctr][0].y0:
-                                    to_stitch.append(images[ctr])
+                                if round(to_stitch[-1][0].y0 - image[0].height, 2) == image[0].y0:
+                                    to_stitch.append(image)
                                 else:
                                     stitch(list(map(lambda x: x[1], to_stitch)), orientation, pdf_orig_output_directory, pdf_output_directory)
 
                                     # reset
-                                    to_stitch = [images[ctr]]
+                                    to_stitch = [image]
                                     orientation = None
                         if len(to_stitch) > 1:
                             stitch(list(map(lambda x: x[1], to_stitch)), orientation, pdf_orig_output_directory, pdf_output_directory)
