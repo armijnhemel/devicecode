@@ -101,20 +101,20 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                 # for original output
                 # TODO: these directories should not exist
                 # and an error should be thrown, unless --force is used
-                pdf_orig_output_directory = output_directory / f"{pdf_name}.orig"
+                pdf_orig_output_directory = output_directory / fccid / pdf_name / 'orig'
                 if pdf_orig_output_directory.exists():
                     if not force:
                         print(f"Output directory '{pdf_orig_output_directory}' already exists, skipping {pdf_name}.", file=sys.stderr)
                         continue
-                pdf_orig_output_directory.mkdir(exist_ok=True)
+                pdf_orig_output_directory.mkdir(exist_ok=True, parents=True)
 
                 # for post processed output (such as combined images)
-                pdf_output_directory = output_directory / f"{pdf_name}.output"
+                pdf_output_directory = output_directory / fccid / pdf_name / 'processed'
                 if pdf_output_directory.exists():
                     if not force:
                         print(f"Output directory '{pdf_output_directory}' already exists, skipping {pdf_name}.", file=sys.stderr)
                         continue
-                pdf_output_directory.mkdir(exist_ok=True)
+                pdf_output_directory.mkdir(exist_ok=True, parents=True)
 
                 # process the individual items per page. This is done for
                 # a few reasons: first, keeping a mapping between elements
