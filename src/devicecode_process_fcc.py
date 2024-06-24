@@ -14,11 +14,11 @@ import PIL.Image
 from pdfminer.high_level import extract_pages
 
 def stitch(images, orientation, image_directory, output_directory):
+    '''Stitch a collection of images extracted from a PDF'''
     # first find the new wdith and height
     height = 0
     width = 0
-    for img in images:
-        img_data, img_name = img
+    for img_name in images:
         orig_image = PIL.Image.open(image_directory / img_name)
         if orientation == 'horizontal':
             width += orig_image.size[0]
@@ -33,15 +33,14 @@ def stitch(images, orientation, image_directory, output_directory):
     # then add all the new images
     x = 0
     y = 0
-    for img in images:
-        img_data, img_name = img
+    for img_name in images:
         orig_image = PIL.Image.open(image_directory / img_name)
         if orientation == 'horizontal':
             pass
         else:
             new_image.paste(orig_image, (x,y))
             y += orig_image.size[1]
-    new_image.save(output_directory / images[0][1])
+    new_image.save(output_directory / images[0])
 
 @click.command(short_help='Process downloaded FCC documents')
 @click.option('--fcc-directory', '-d', 'fcc_input_directory', required=True,
@@ -149,7 +148,7 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                 if to_stitch[-1][0].x0 - images[ctr][0].width == images[ctr][0].x0:
                                     to_stitch.append(images[ctr])
                                 else:
-                                    stitch(to_stitch, orientation, pdf_orig_output_directory, pdf_output_directory)
+                                    stitch(list(map(lambda x: x[1], to_stitch)), orientation, pdf_orig_output_directory, pdf_output_directory)
                                     # reset
                                     to_stitch = [images[ctr]]
                                     orientation = None
@@ -157,12 +156,12 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                 if to_stitch[-1][0].y0 - images[ctr][0].height == images[ctr][0].y0:
                                     to_stitch.append(images[ctr])
                                 else:
-                                    stitch(to_stitch, orientation, pdf_orig_output_directory, pdf_output_directory)
+                                    stitch(list(map(lambda x: x[1], to_stitch)), orientation, pdf_orig_output_directory, pdf_output_directory)
 
                                     # reset
                                     to_stitch = [images[ctr]]
                                     orientation = None
-                        stitch(to_stitch, orientation, pdf_orig_output_directory, pdf_output_directory)
+                        stitch(list(map(lambda x: x[1], to_stitch)), orientation, pdf_orig_output_directory, pdf_output_directory)
 
 
 if __name__ == "__main__":
