@@ -13,9 +13,15 @@ import pdfminer
 import PIL.Image
 from pdfminer.high_level import extract_pages
 
+
+# Stitch images. Only the image name is needed, not any of the data
+# extracted from the PDF: the coordinates recorded in the PDF do not
+# match the dimensons of the images, so rely on the actual image data
+# that was extracted in an earlier step in the process and use that
+# instead.
 def stitch(images, orientation, image_directory, output_directory):
     '''Stitch a collection of images extracted from a PDF'''
-    # first find the new wdith and height
+    # first determine the width and height of the new image
     height = 0
     width = 0
     for img_name in images:
@@ -30,13 +36,14 @@ def stitch(images, orientation, image_directory, output_directory):
     # Create a new image
     new_image = PIL.Image.new('RGB',(width, height), (250,250,250))
 
-    # then add all the new images
+    # then add all the images to the new image
     x = 0
     y = 0
     for img_name in images:
         orig_image = PIL.Image.open(image_directory / img_name)
         if orientation == 'horizontal':
-            pass
+            new_image.paste(orig_image, (x,y))
+            x += orig_image.size[0]
         else:
             new_image.paste(orig_image, (x,y))
             y += orig_image.size[1]
@@ -145,7 +152,7 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                 continue
 
                             if orientation == 'horizontal':
-                                if to_stitch[-1][0].x0 - images[ctr][0].width == images[ctr][0].x0:
+                                if round(to_stitch[-1][0].x0 - images[ctr][0].width, 2) == images[ctr][0].x0:
                                     to_stitch.append(images[ctr])
                                 else:
                                     stitch(list(map(lambda x: x[1], to_stitch)), orientation, pdf_orig_output_directory, pdf_output_directory)
@@ -153,7 +160,7 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                     to_stitch = [images[ctr]]
                                     orientation = None
                             elif orientation == 'vertical':
-                                if to_stitch[-1][0].y0 - images[ctr][0].height == images[ctr][0].y0:
+                                if round(to_stitch[-1][0].y0 - images[ctr][0].height, 2) == images[ctr][0].y0:
                                     to_stitch.append(images[ctr])
                                 else:
                                     stitch(list(map(lambda x: x[1], to_stitch)), orientation, pdf_orig_output_directory, pdf_output_directory)
