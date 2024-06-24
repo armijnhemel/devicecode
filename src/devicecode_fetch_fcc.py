@@ -173,7 +173,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
             if verbose:
                 print(f"* writing PDF/description mapping for {fccid}\n")
             with open(store_directory/'descriptions.json', 'w') as output:
-                output.write(json.dumps(pdfs_descriptions))
+                output.write(json.dumps(pdfs_descriptions, indent=4))
             processed_fccids += 1
 
         except Exception:
