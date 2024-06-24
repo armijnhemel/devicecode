@@ -86,6 +86,7 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
             # Then process each individual PDF file.
             # * extract text
             # * extract pictures
+
             # Results are written to an unpack directory for each PDF
             # as the file names can be the same in different PDFs.
             for _, pdf_name, description in descriptions:
@@ -98,11 +99,21 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
 
                 # create two directories for output
                 # for original output
+                # TODO: these directories should not exist
+                # and an error should be thrown, unless --force is used
                 pdf_orig_output_directory = output_directory / f"{pdf_name}.orig"
+                if pdf_orig_output_directory.exists():
+                    if not force:
+                        print(f"Output directory '{pdf_orig_output_directory}' already exists, skipping {pdf_name}.", file=sys.stderr)
+                        continue
                 pdf_orig_output_directory.mkdir(exist_ok=True)
 
                 # for post processed output (such as combined images)
                 pdf_output_directory = output_directory / f"{pdf_name}.output"
+                if pdf_output_directory.exists():
+                    if not force:
+                        print(f"Output directory '{pdf_output_directory}' already exists, skipping {pdf_name}.", file=sys.stderr)
+                        continue
                 pdf_output_directory.mkdir(exist_ok=True)
 
                 # process the individual items per page. This is done for
@@ -122,8 +133,6 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                     metadata[page_number] = {'text': [], 'images': []}
                     for element in page_layout:
                         if isinstance(element, pdfminer.layout.LTFigure):
-                            # TODO: check if the image already exists. If so
-                            # refuse to overwrite, unless forced.
                             try:
                                 img_name = image_writer.export_image(element._objs[0])
                                 images.append((element, img_name))
@@ -133,6 +142,7 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                 # is thrown with the message:
                                 # "cannot access local variable 'mode' where it is not associated with a value"
                                 # Is this an error in pdfminer?
+                                # example: FCC ID: ODMAM5N, file: 1876480.pdf
                                 pass
                         else:
                             try:
