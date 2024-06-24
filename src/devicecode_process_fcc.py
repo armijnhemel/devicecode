@@ -196,7 +196,7 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                             # if it is the start of a new image. If it is part of a new
                             # image stitch the images that were stored.
                             if orientation == 'horizontal':
-                                if round(to_stitch[-1][0].x0 - image[0].width, 2) == image[0].x0:
+                                if round(to_stitch[-1][0].x0 - image[0].width, 2) == round(image[0].x0, 2):
                                     to_stitch.append(image)
                                 else:
                                     stitch_names = list(map(lambda x: x[1], to_stitch))
@@ -209,7 +209,7 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                     to_stitch = [image]
                                     orientation = None
                             elif orientation == 'vertical':
-                                if round(to_stitch[-1][0].y0 - image[0].height, 2) == image[0].y0:
+                                if round(to_stitch[-1][0].y0 - image[0].height, 2) == round(image[0].y0, 2):
                                     to_stitch.append(image)
                                 else:
                                     stitch_names = list(map(lambda x: x[1], to_stitch))
