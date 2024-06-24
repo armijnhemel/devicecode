@@ -53,8 +53,20 @@ descriptions of functionality, default ports, default user names and passwords,
 and so on. Sometimes the user manual contains open source license texts and a
 written offer for source code.
 
-Some of the pictures in the documents (mostly the internal and external photos)
-actually seem to be multiple images. When extracted individually these images
-are quite useless, so they first need to be recombined.
+### Images
+
+Some of the images in the documents (mostly the internal and external photos)
+are stored in the document as multiple images. When extracted individually
+these images are quite useless, so they first need to be recombined into a
+single image. Extracted images are stored per page.
+
+Sometimes text on a picture is actually a text overlay in the PDF and it is not
+part of the picture (this has mostly been observed in user manuals). These
+elements are extracted separately and not recombined. In case of doubt always
+look at the original PDF file.
+
+### Text
+
+Text is extracted and stored per page.
 
 [fcc]:https://en.wikipedia.org/wiki/Federal_Communications_Commission

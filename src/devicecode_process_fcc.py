@@ -156,8 +156,7 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                         orientation = None
                         for image in images:
                             if not to_stitch:
-                                # store the first image as a potential
-                                # starting point.
+                                # store the first image as a potential starting point.
                                 to_stitch.append(image)
                                 continue
 
@@ -173,11 +172,15 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                     to_stitch = [image]
                                 continue
 
+                            # check if an image is still part of a "stitch chain" or
+                            # if it is the start of a new image. If it is part of a new
+                            # image stitch the images that were stored.
                             if orientation == 'horizontal':
                                 if round(to_stitch[-1][0].x0 - image[0].width, 2) == image[0].x0:
                                     to_stitch.append(image)
                                 else:
                                     stitch(list(map(lambda x: x[1], to_stitch)), orientation, pdf_orig_output_directory, pdf_output_directory)
+
                                     # reset
                                     to_stitch = [image]
                                     orientation = None
