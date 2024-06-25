@@ -16,6 +16,17 @@ from pdfminer.high_level import extract_pages
 import devicecode_defaults as defaults
 
 
+# extract interesting information and patterns from extracted text
+def search_text(texts):
+    text =  "\n".join(texts)
+    results = {'functionality': [], 'user_password': [],
+               'programs': [], 'license': [], 'copyrights': []}
+
+    # then search for a bunch of things
+    if 'UPnP' in text:
+        results['functionality'].append('UPnP')
+    return results
+
 # Stitch images. Only the image name is needed, not any of the data
 # extracted from the PDF: the coordinates recorded in the PDF do not
 # match the dimensons of the images, so rely on the actual image data
@@ -158,17 +169,23 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                         else:
                             try:
                                 if element.get_text().strip() != '':
-                                    txt_directory = pdf_orig_output_directory / str(page_number) / 'text'
-                                    txt_directory.mkdir(exist_ok=True, parents=True)
+                                    text_directory = pdf_orig_output_directory / str(page_number) / 'text'
+                                    text_directory.mkdir(exist_ok=True, parents=True)
                                     extracted_texts.append(element.get_text())
                             except AttributeError:
                                 pass
 
                     # write the extracted text per page
                     if extracted_texts:
-                        with open(txt_directory / 'extracted.txt', 'w') as output_file:
+                        with open(text_directory / 'extracted.txt', 'w') as output_file:
                             for line in extracted_texts:
                                 output_file.write(line)
+                        search_results = search_text(extracted_texts)
+                        text_result_directory = pdf_output_directory / str(page_number) / 'text'
+                        text_result_directory.mkdir(exist_ok=True, parents=True)
+
+                        with open(text_result_directory / 'extracted.json', 'w') as output_file:
+                            output_file.write(json.dumps(search_results, indent=4))
 
                     image_metadata[page_number]['original'] = image_names
 
