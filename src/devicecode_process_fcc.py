@@ -11,7 +11,9 @@ import sys
 import click
 import pdfminer
 import PIL.Image
-from pdfminer.high_level import extract_pages, extract_text
+from pdfminer.high_level import extract_pages
+
+import devicecode_defaults as defaults
 
 
 # Stitch images. Only the image name is needed, not any of the data
