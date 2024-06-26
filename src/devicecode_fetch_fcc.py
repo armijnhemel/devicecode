@@ -8,12 +8,16 @@ import json
 import pathlib
 import re
 import sys
+import time
 
 import click
 import requests
 
 # FCC ids can only consist of letters, numbers and hyphens
 RE_FCC_ID = re.compile(r'[\w\d\-]+$')
+
+# time in seconds to sleep in "gentle mode"
+SLEEP_INTERVAL = 2
 
 @click.command(short_help='Download FCC documents')
 @click.option('--output', '-o', 'output_directory', required=True,
@@ -23,11 +27,12 @@ RE_FCC_ID = re.compile(r'[\w\d\-]+$')
               help='file with known FCC grantee codes (one per line)',
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.argument('fccids', required=True, nargs=-1)
-@click.option('--debug', is_flag=True, help='enable debug logging')
+@click.option('--verbose', is_flag=True, help='be verbose')
 @click.option('--force', is_flag=True, help='always force downloads')
-def main(fccids, output_directory, grantees, debug, force):
+@click.option('--gentle', is_flag=True, help='be gentle and pause between downloads')
+def main(fccids, output_directory, grantees, verbose, force, gentle):
     if not output_directory.is_dir():
-        print(f"{output_directory} is not a directory, exiting.")
+        print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
 
     fcc_grantees = set()
@@ -63,18 +68,20 @@ def main(fccids, output_directory, grantees, debug, force):
     # then download the data from one of the FCC clone sites.
     # It seems that fcc.report is the most useful one (least junk
     # on the website, and fairly easy to parse.
-    base_url = 'https://fcc.report/'
+    base_url = 'https://fcc.report'
 
     # set a User Agent for each user request. This is just to be nice
     # for the people that are running the website, and identify that
     # connections were made using a script, so they can block in case
     # the script is misbehaving. I don't want to hammer their website.
-    user_agent_string = "FccReportCrawler/0.1"
+    user_agent_string = "DeviceCode-FCCReportCrawler/0.1"
     headers = {'user-agent': user_agent_string,
               }
 
     # store 404s
     fcc_id_404 = []
+    downloaded_documents = 0
+    processed_fccids = 0
 
     for fccid in ids:
         # create a subdirectory, use the FCC id as a path component
@@ -83,6 +90,8 @@ def main(fccids, output_directory, grantees, debug, force):
 
         try:
             # grab stuff from fcc report
+            if verbose:
+                print(f"Downloading main page for {fccid}")
             request = requests.get(f'{base_url}/FCC-ID/{fccid}',
                                    headers=headers)
 
@@ -92,7 +101,7 @@ def main(fccids, output_directory, grantees, debug, force):
                     print("Denied by fcc.report, exiting", file=sys.stderr)
                     sys.exit(1)
                 elif request.status_code == 404:
-                    # TODO: record entries that are not available
+                    # record entries that are not available
                     fcc_id_404.append(fccid)
                 elif request.status_code == 500:
                     print("Server error, exiting", file=sys.stderr)
@@ -127,9 +136,10 @@ def main(fccids, output_directory, grantees, debug, force):
                 elif line.startswith('<td>') and '.pdf' in line:
                     # extract the file name
                     _, pdf_name, _ = line.split('"', maxsplit=2)
+                    pdf_basename = pdf_name.rsplit('/', maxsplit=1)[1]
 
                     # store the pdf/description combination
-                    pdfs_descriptions.append((pdf_name, description))
+                    pdfs_descriptions.append((f'{base_url}/{pdf_name}', pdf_basename, description))
 
                     # reset the pdf name
                     pdf_name = ''
@@ -143,28 +153,36 @@ def main(fccids, output_directory, grantees, debug, force):
             # now download the individual PDF files and write them
             # to the directory for this FCC entry
 
-            for pdf, description in pdfs_descriptions:
+            for pdf_url, pdf_basename, _ in pdfs_descriptions:
                 # verify if there already was data downloaded for this
                 # particular device by checking the contents of the result first
                 # and skipping it there were no changes.
-                pdf_basename = pdf.rsplit('/', maxsplit=1)[1]
-
                 if not force and (store_directory/pdf_basename).exists():
                     continue
 
-                request = requests.get(f'{base_url}/{pdf}',
-                                       headers=headers)
+                if verbose:
+                    print(f"* downloading {pdf_url}")
+                if gentle:
+                    time.sleep(SLEEP_INTERVAL)
+                request = requests.get(pdf_url, headers=headers)
 
                 with open(store_directory/pdf_basename, 'wb') as output:
                     output.write(request.content)
+                downloaded_documents += 1
 
+            if verbose:
+                print(f"* writing PDF/description mapping for {fccid}\n")
             with open(store_directory/'descriptions.json', 'w') as output:
-                output.write(json.dumps(pdfs_descriptions))
+                output.write(json.dumps(pdfs_descriptions, indent=4))
+            processed_fccids += 1
 
-
-        except Exception as e:
-            #print(e)
+        except Exception:
             pass
+
+    if verbose:
+        print("Statistics")
+        print(f"* processed {processed_fccids} FCC ids")
+        print(f"* downloaded {downloaded_documents} documents\n")
 
 
 if __name__ == "__main__":

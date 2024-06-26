@@ -8,7 +8,7 @@ A list of known grantees is available from the FCC in XML format at:
 
 The XML file that can be downloaded there is not versioned, or time stamped,
 and it isn't listed on the website when it was updated, so the only way to
-verify is redownload and compare.
+verify if it has been changed is to redownload and compare.
 
 A small hackish script to dump the FCC grant ids can be found in the `src`
 directory and is called `devicecode_dump_fcc_grantees.py` which can be
