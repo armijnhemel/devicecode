@@ -10,6 +10,8 @@ let
     dataclasses-json
     defusedxml
     mwparserfromhell
+    pdfminer
+    pillow
     requests
   ]);
     

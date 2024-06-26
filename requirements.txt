@@ -2,4 +2,6 @@ click >= 8.1.7
 dataclasses-json
 defusedxml >= 0.7.1
 mwparserfromhell >= 0.6.6
+pdfminer.six
+pillow
 requests
