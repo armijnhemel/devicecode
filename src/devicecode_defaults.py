@@ -394,9 +394,20 @@ REGEX_SERIAL_CONNECTOR = re.compile(r'(JP?\d+)')
 REGEX_SERIAL_PIN_HEADER = re.compile(r'(?:via )?(\d+)[ -](?:in|pln|pin|pad|pads) ?(?:header|connector)?')
 REGEX_SERIAL_RJ45 = re.compile(r'RJ-?45( console)?')
 
-# REGEX_LINUX_VERSION = re.compile(r'Linux version \d\.\d+\.\d+')
+# several regular expressions for software and software versions
+REGEX_BUSYBOX = re.compile(r'BusyBox (v\d\.\d+[\.\w+-]*\d*)')
+REGEX_LINUX_VERSION = re.compile(r'Linux version (\d\.\d+\.\d+[\.\+\w\d-]*)')
+REGEX_LINUX_KERNEL_COMMANDLINE = re.compile(r'Kernel command line:\s+([\w\d=,:\./ ]*)')
+REGEX_ADTRAN_BOOTLOADER = re.compile(r'Adtran bootloader version (\d+\.\d+\.\d+)')
+REGEX_UBOOT_RALINK = re.compile(r'Ralink UBoot Version: (\d+\.\d+[\.\d]*)')
+REGEX_CFE = re.compile(r'CFE for [\d\w]+ version: v?(\d\.\d\.\d)')
+REGEX_CFE_BROADCOM = re.compile(r'CFE version ([\d\.]+) (?:based on BBP 1\.0\.37 )?for BCM[\w\d]+')
+REGEX_MINIUPNPD = re.compile(r'miniupnpd\[\d+\]:\s* listening on (\d+\.\d+\.\d+\.\d+:\d+)')
+REGEX_MINIUPNPD_ALT = re.compile(r'miniupnpd\[\d+\]:\s*(\w*)? listening on port (\d+)')
 
-REGEX_BUSYBOX = re.compile(r'BusyBox v\d\.\d+')
+# several regular expressions for output of ps
+# example:   723 root       6404 S   /usr/sbin/smbd -D
+REGEX_PS = re.compile(r'\s*\d+\s+\w+\s+\d+\s+\w+\s+([/\w\d\s\-_\.\+\*&]*)')
 
 # a list of verified Broadcom chips (meaning model numbers exist)
 BROADCOM_CHIPS = set([

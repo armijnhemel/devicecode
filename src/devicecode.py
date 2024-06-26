@@ -253,6 +253,99 @@ class Device:
     title: str = ''
     web: Web = field(default_factory=Web)
 
+
+def parse_ls(ls_log):
+    '''Parse output from ls'''
+    pass
+
+
+def parse_ps(ps_log):
+    '''Parse output from ps'''
+
+    # This is a bit hackish. Right now a rather fixed
+    # output from ps is expected, with a fixed number of
+    # columns. Which columns are used depends on the parameters
+    # that were given to ps, so for example the output of
+    # "ps aux" is different from the output of "ps e".
+    # This is a TODO.
+    header_seen = False
+    for line in ps_log.splitlines():
+        if 'PID  Uid' in line:
+            header_seen = True
+            continue
+
+        if not header_seen:
+            continue
+
+        if line.endswith(']'):
+            continue
+
+        if line in ['</pre>', '</syntaxhighlight>']:
+            continue
+
+        # process each line using a regex
+        ps_res = defaults.REGEX_PS.search(line)
+        if ps_res is not None:
+            # extract interesting information here
+            pass
+    return
+
+def parse_log(boot_log):
+    '''Parse logs, such as boot logs or serial output'''
+
+    # store the interesting findings in a lookup table.
+    # This will be a set of software packages (both open source
+    # and proprietary) and functionality, as well as names of
+    # source code files that were found, that could be used for
+    # fingerprinting
+    interesting_findings = {}
+
+    # now try a bunch of regular expressions to find packages
+    # BusyBox
+    res = defaults.REGEX_BUSYBOX.findall(str(boot_log))
+    if res != []:
+        interesting_findings['busybox'] = set(res)
+
+    # Linux kernel version
+    res = defaults.REGEX_LINUX_VERSION.findall(str(boot_log))
+    if res != []:
+        interesting_findings['Linux'] = set(res)
+
+    # CFE bootloader
+    res = defaults.REGEX_CFE.findall(str(boot_log))
+    if res != []:
+        interesting_findings['CFE'] = set(res)
+
+    res = defaults.REGEX_CFE_BROADCOM.findall(str(boot_log))
+    if res != []:
+        if 'CFE' in interesting_findings:
+            interesting_findings['CFE'].update(set(res))
+        else:
+            interesting_findings['CFE'] = set(res)
+
+    # Ralink U-Boot bootloader (modified U-Boot)
+    res = defaults.REGEX_UBOOT_RALINK.findall(str(boot_log))
+    if res != []:
+        interesting_findings['Ralink U-Boot'] = set(res)
+
+    # Adtran bootloader (proprietary)
+    res = defaults.REGEX_ADTRAN_BOOTLOADER.findall(str(boot_log))
+    if res != []:
+        interesting_findings['adtran bootloader'] = set(res)
+
+    # find functionality
+
+    # find source code files
+
+    # extract other information
+
+    # Linux kernel command line
+    res = defaults.REGEX_LINUX_KERNEL_COMMANDLINE.findall(str(boot_log))
+    if res != []:
+        interesting_findings['Linux kernel commandline'] = set(res)
+
+    return interesting_findings
+
 def parse_chip(chip_string):
     '''Parse chips and return a parsed data structure'''
     chip_result = Chip()
@@ -1013,20 +1106,6 @@ def main(input_file, output_directory, wiki_type, debug):
                                                             # default values and variants.
                                                             # TODO: also print values that weren't correctly processed
                                                             print(identifier, value, file=sys.stderr)
-                                    elif f.name == 'SCollapse':
-                                        # alternative place for boot log, GPL info, /proc, etc.
-                                        is_boot = False
-                                        for b in ['boot log', 'Boot log', 'stock boot messages']:
-                                            if f.params[0].startswith(b):
-                                                is_boot = True
-
-                                                # parse and store the boot log.
-                                                # TODO: further mine the boot log
-                                                #print(type(f.params[1].value))
-                                                break
-                                        if is_boot:
-                                            continue
-                                        #print(f.params[0], len(f.params[1:]))
                                     elif f.name == 'hasPowerSupply\n':
                                         # some elements are a list, the first one
                                         # will always contain the identifier
@@ -1078,16 +1157,68 @@ def main(input_file, output_directory, wiki_type, debug):
                                             device.regulatory.wifi_certified = str(wifi_cert.value)
                                             wifi_cert_date = str(wifi_cert_date.value)
                                             device.regulatory.wifi_certified_date = parse_date(wifi_cert_date)
-                                        pass
+                                    elif f.name.strip() in ['SCollapse', 'SCollapse2']:
+                                        # alternative place for boot log, GPL info, /proc, etc.
+                                        is_processed = False
+                                        wiki_section_header = f.params[0].strip()
+                                        for b in ['boot log', 'Boot log', 'stock boot messages']:
+                                            if wiki_section_header.startswith(b):
+                                                is_processed = True
+
+                                                # parse and store the boot log.
+                                                # TODO: further mine the boot log
+                                                parse_result = parse_log(f.params[1].value)
+                                                break
+                                        if is_processed:
+                                            continue
+                                        if wiki_section_header.startswith('GPL info'):
+                                            # there actually does not seem to be anything related
+                                            # to GP source code releases in this element, but
+                                            # mostly settings like environment variables for
+                                            # compiling source code.
+                                            pass
+                                        elif wiki_section_header.startswith('lsmod'):
+                                            # the output of lsmod can be parsed to see which
+                                            # Linux kernel modules are used on a device. By mapping
+                                            # these back to source code some extra information
+                                            # could be obtained: some modules are only present in
+                                            # some SDKs, and so on.
+                                            pass
+                                        elif wiki_section_header.startswith('nvram'):
+                                            # the nvram can contain useful information about
+                                            # a device. Some entries found here are not from
+                                            # the stock firmware, but from third party firmware
+                                            # so care has to be taken to filter these prior
+                                            # to processing.
+                                            pass
+                                        elif 'dmesg' in wiki_section_header:
+                                            # like bootlogs the output of dmesg can contain
+                                            # very useful information.
+                                            pass
+                                        elif wiki_section_header.startswith('ls -la'):
+                                            parse_result = parse_ls(f.params[1].value)
+                                        elif wiki_section_header.startswith('ps'):
+                                            # the output of ps can contain the names
+                                            # of programs and executables
+                                            if 'PID  Uid' in f.params[1].value:
+                                                parse_result = parse_ps(f.params[1].value)
+                                        elif wiki_section_header.startswith('Serial console output'):
+                                            pass
+                                        elif wiki_section_header.lower().startswith('serial info'):
+                                            # some of the entries found in the data seem to be
+                                            # serial console output, instead of serial port
+                                            # information.
+                                            pass
+                                        else:
+                                            pass
                                     else:
                                         pass
-                                elif isinstance(f, mwparserfromhell.nodes.text.Text):
-                                    pass
-                                elif isinstance(f, mwparserfromhell.nodes.tag.Tag):
-                                    pass
-                                else:
-                                    pass
-
+                            elif isinstance(f, mwparserfromhell.nodes.text.Text):
+                                pass
+                            elif isinstance(f, mwparserfromhell.nodes.tag.Tag):
+                                pass
+                            else:
+                                pass
 
                         # TODO: write to a Git repository to keep some history
                         # use the title as part of the file name as it is unique
@@ -1098,6 +1229,15 @@ def main(input_file, output_directory, wiki_type, debug):
                         with output_file.open('w') as out:
                             out.write(json.dumps(json.loads(device.to_json()), indent=4))
                             out.write('\n')
+
+                        # write extra data (extracted from free text) to a separate file
+                        model_name = f"{title}.data.json"
+
+                        model_name = model_name.replace('/', '-')
+                        #output_file = wiki_device_directory / model_name
+                        #with output_file.open('w') as out:
+                        #    out.write(json.dumps(json.loads(device.to_json()), indent=4))
+                        #    out.write('\n')
 
 
 if __name__ == "__main__":
