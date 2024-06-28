@@ -73,6 +73,41 @@ $ python devicecode.py -i TechInfoDepot-20231002144356.xml --wiki-type=TechInfoD
 If the Git repository is not local (for example, it is a GitHub repository)
 you will have to manually do a `git push` to send the results upstream.
 
+Using Git will have a serious performance impact. Running the script with Git:
+
+```
+$ time python devicecode.py -i TechInfoDepot-20231002144356.xml --wiki-type=TechInfoDepot -o ~/devicecode
+
+real	15m26.654s
+user	13m40.428s
+sys	1m42.781s
+```
+
+and without Git:
+
+```
+$ time python devicecode.py -i TechInfoDepot-20231002144356.xml --wiki-type=TechInfoDepot -o /tmp/blaat --no-git
+
+real	0m38.859s
+user	0m38.384s
+sys	0m0.266s
+```
+
+Because of this performance impact there is also a flag `--no-git` that can be
+used to disable using Git. When processing an initial dump the following
+(example) workflow could be used instead:
+
+```
+$ mkdir ~/devicecode
+$ python devicecode.py -i TechInfoDepot-20231002144356.xml --wiki-type=TechInfoDepot -o ~/devicecode --no-git
+$ cd ~/devicecode
+$ git init
+$ git add TechInfoDepot
+$ git commit -m "add initial dump"
+```
+
+When processing updates the `--no-git` flag could then be skipped.
+
 # Acknowledgements
 
 This project was funded through the NGI0 Entrust Fund, a fund established by
