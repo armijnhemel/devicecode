@@ -411,12 +411,13 @@ def parse_date(date_string):
 @click.option('--input', '-i', 'input_file', required=True,
               help='Wiki top level dump file',
               type=click.Path('r', path_type=pathlib.Path))
-@click.option('--output', '-o', 'output_directory', required=True, help='JSON output directory (Git repository)',
+@click.option('--output', '-o', 'output_directory', required=True, help='JSON output directory',
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--wiki-type', required=True,
               type=click.Choice(['TechInfoDepot', 'WikiDevi'], case_sensitive=False))
 @click.option('--debug', is_flag=True, help='enable debug logging')
-def main(input_file, output_directory, wiki_type, debug):
+@click.option('--no-git', is_flag=True, help='do not use Git')
+def main(input_file, output_directory, wiki_type, debug, no_git):
     # load XML
     with open(input_file) as wiki_dump:
         wiki_info = defusedxml.minidom.parse(wiki_dump)
@@ -427,12 +428,13 @@ def main(input_file, output_directory, wiki_type, debug):
         print(f"{output_directory} is not a directory, exiting.")
         sys.exit(1)
 
-    # verify the output directory is a valid Git repository
-    try:
-        repo = dulwich.porcelain.open_repo(output_directory)
-    except dulwich.errors.NotGitRepository:
-        print(f"{output_directory} is not a valid Git repository, exiting", file=sys.stderr)
-        sys.exit(1)
+    if not no_git:
+        # verify the output directory is a valid Git repository
+        try:
+            repo = dulwich.porcelain.open_repo(output_directory)
+        except dulwich.errors.NotGitRepository:
+            print(f"{output_directory} is not a valid Git repository, exiting", file=sys.stderr)
+            sys.exit(1)
 
     wiki_directory = output_directory / wiki_type
     wiki_directory.mkdir(parents=True, exist_ok=True)
@@ -1255,12 +1257,13 @@ def main(input_file, output_directory, wiki_type, debug):
                         with open(wiki_device_directory / model_name, 'w') as json_file:
                             json.dump(json_data, json_file, sort_keys=True, indent=4)
 
-                        # add the file and commit
-                        dulwich.porcelain.add(repo, wiki_device_directory / model_name)
-                        if new_file:
-                            dulwich.porcelain.commit(repo, f"Add {model_name}", committer=AUTHOR, author=AUTHOR)
-                        else:
-                            dulwich.porcelain.commit(repo, f"Update {model_name}", committer=AUTHOR, author=AUTHOR)
+                        if not no_git:
+                            # add the file and commit
+                            dulwich.porcelain.add(repo, wiki_device_directory / model_name)
+                            if new_file:
+                                dulwich.porcelain.commit(repo, f"Add {model_name}", committer=AUTHOR, author=AUTHOR)
+                            else:
+                                dulwich.porcelain.commit(repo, f"Update {model_name}", committer=AUTHOR, author=AUTHOR)
 
                         # write extra data (extracted from free text) to a separate file
                         model_name = f"{title}.data.json"
