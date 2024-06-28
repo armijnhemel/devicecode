@@ -9,6 +9,7 @@ let
     click
     dataclasses-json
     defusedxml
+    dulwich
     mwparserfromhell
     pdfminer
     pillow

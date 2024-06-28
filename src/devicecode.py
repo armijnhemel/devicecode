@@ -18,9 +18,13 @@ from dataclasses_json import dataclass_json
 import defusedxml.minidom
 
 import click
+import dulwich
+import dulwich.porcelain
 import mwparserfromhell
 
 import devicecode_defaults as defaults
+
+AUTHOR = "DeviceCode <example@example.org>"
 
 @dataclass_json
 @dataclass
@@ -412,7 +416,8 @@ def parse_date(date_string):
 @click.option('--wiki-type', required=True,
               type=click.Choice(['TechInfoDepot', 'WikiDevi'], case_sensitive=False))
 @click.option('--debug', is_flag=True, help='enable debug logging')
-def main(input_file, output_directory, wiki_type, debug):
+@click.option('--no-git', is_flag=True, help='do not use Git')
+def main(input_file, output_directory, wiki_type, debug, no_git):
     # load XML
     with open(input_file) as wiki_dump:
         wiki_info = defusedxml.minidom.parse(wiki_dump)
@@ -422,6 +427,14 @@ def main(input_file, output_directory, wiki_type, debug):
     if not output_directory.is_dir():
         print(f"{output_directory} is not a directory, exiting.")
         sys.exit(1)
+
+    if not no_git:
+        # verify the output directory is a valid Git repository
+        try:
+            repo = dulwich.porcelain.open_repo(output_directory)
+        except dulwich.errors.NotGitRepository:
+            print(f"{output_directory} is not a valid Git repository, exiting", file=sys.stderr)
+            sys.exit(1)
 
     wiki_directory = output_directory / wiki_type
     wiki_directory.mkdir(parents=True, exist_ok=True)
@@ -1220,15 +1233,37 @@ def main(input_file, output_directory, wiki_type, debug):
                             else:
                                 pass
 
-                        # TODO: write to a Git repository to keep some history
+                        # Write to a Git repository to keep some history
                         # use the title as part of the file name as it is unique
                         model_name = f"{title}.json"
-
                         model_name = model_name.replace('/', '-')
-                        output_file = wiki_device_directory / model_name
-                        with output_file.open('w') as out:
-                            out.write(json.dumps(json.loads(device.to_json()), indent=4))
-                            out.write('\n')
+
+                        new_file = True
+
+                        json_data = json.dumps(json.loads(device.to_json()), indent=4)
+
+                        # first check if the file has changed if it already exists.
+                        # If not, then don't add the file. Git has some intelligence
+                        # built-in which prevents unchanged files to be committed again,
+                        # which Dulwich doesn't seem to implement at the moment.
+                        if (wiki_device_directory / model_name).exists():
+                            new_file = False
+                            with open(wiki_device_directory / model_name, 'r') as json_file:
+                                existing_json = json.load(json_file)
+                                if existing_json == json_data:
+                                    continue
+
+                        # write to a file in the correct Git directory
+                        with open(wiki_device_directory / model_name, 'w') as json_file:
+                            json.dump(json_data, json_file, sort_keys=True, indent=4)
+
+                        if not no_git:
+                            # add the file and commit
+                            dulwich.porcelain.add(repo, wiki_device_directory / model_name)
+                            if new_file:
+                                dulwich.porcelain.commit(repo, f"Add {model_name}", committer=AUTHOR, author=AUTHOR)
+                            else:
+                                dulwich.porcelain.commit(repo, f"Update {model_name}", committer=AUTHOR, author=AUTHOR)
 
                         # write extra data (extracted from free text) to a separate file
                         model_name = f"{title}.data.json"
