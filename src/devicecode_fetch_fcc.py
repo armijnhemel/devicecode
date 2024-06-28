@@ -36,9 +36,10 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
         sys.exit(1)
 
     fcc_grantees = set()
-    with open(grantees, 'r') as grantee:
-        for g in grantee:
-            fcc_grantees.add(g.strip())
+    if grantees is not None:
+        with open(grantees, 'r') as grantee:
+            for g in grantee:
+                fcc_grantees.add(g.strip())
 
     ids = []
 

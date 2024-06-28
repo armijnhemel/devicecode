@@ -6,6 +6,7 @@
 
 import json
 import pathlib
+import re
 import sys
 
 import click
@@ -15,17 +16,35 @@ from pdfminer.high_level import extract_pages
 
 import devicecode_defaults as defaults
 
+# mapping of texts to functionality
+TEXT_TO_FUNCTIONALITY = {
+    'upnp': 'UPnP',
+    'telnet': 'telnet',
+    'syslog': 'syslog',
+}
+
+REGEX_IP = re.compile('(\d+\\.\d+\\.\d+\\.\d+)(?::\d+)?')
 
 # extract interesting information and patterns from extracted text
 def search_text(texts):
-    text =  "\n".join(texts)
+    text =  "\n".join(texts).lower()
     results = {'functionality': [], 'user_password': [],
-               'programs': [], 'license': [], 'copyrights': []}
+               'programs': [], 'license': [], 'copyrights': [],
+               'ip_addresses': []}
+
+    results_found = False
 
     # then search for a bunch of things
-    if 'UPnP' in text:
-        results['functionality'].append('UPnP')
-    return results
+    for t in TEXT_TO_FUNCTIONALITY:
+        if t in text:
+            results['functionality'].append(TEXT_TO_FUNCTIONALITY[t])
+            results_found = True
+
+    result_ip = REGEX_IP.search(text)
+    if result_ip is not None:
+        results['ip_addresses'].append(result_ip.groups()[0])
+        results_found = True
+    return (results_found, results)
 
 # Stitch images. Only the image name is needed, not any of the data
 # extracted from the PDF: the coordinates recorded in the PDF do not
@@ -180,12 +199,13 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                         with open(text_directory / 'extracted.txt', 'w') as output_file:
                             for line in extracted_texts:
                                 output_file.write(line)
-                        search_results = search_text(extracted_texts)
-                        text_result_directory = pdf_output_directory / str(page_number) / 'text'
-                        text_result_directory.mkdir(exist_ok=True, parents=True)
+                        results_found, search_results = search_text(extracted_texts)
+                        if results_found:
+                            text_result_directory = pdf_output_directory / str(page_number) / 'text'
+                            text_result_directory.mkdir(exist_ok=True, parents=True)
 
-                        with open(text_result_directory / 'extracted.json', 'w') as output_file:
-                            output_file.write(json.dumps(search_results, indent=4))
+                            with open(text_result_directory / 'extracted.json', 'w') as output_file:
+                                output_file.write(json.dumps(search_results, indent=4))
 
                     image_metadata[page_number]['original'] = image_names
 
