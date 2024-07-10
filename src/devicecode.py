@@ -232,7 +232,7 @@ class Device:
     '''Top level class holding device information'''
     additional_chips: list[Chip] = field(default_factory=list)
     brand: str = ''
-    captions: list[str] = field(default_factory=list)
+    taglines: list[str] = field(default_factory=list)
     commercial: Commercial = field(default_factory=Commercial)
     cpus: list[Chip] = field(default_factory=list)
     defaults: Defaults = field(default_factory=Defaults)
@@ -633,7 +633,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     elif identifier == 'flags':
                                                         device.flags = sorted(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     elif identifier in ['caption', 'caption2']:
-                                                        device.captions.append(value)
+                                                        device.taglines.append(value)
                                                     elif identifier in ['image1', 'image2']:
                                                         device.images.append(value)
                                                     elif identifier == 'exp_if_types':
@@ -1240,6 +1240,9 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                     # in several different elements.
                                     if f.name in ['Wireless embedded system\n', 'Wired embedded system\n']:
                                         pass
+                                    elif f.name == 'TagLine':
+                                        for param in f.params:
+                                            device.taglines.append(str(param.value))
                             elif isinstance(f, mwparserfromhell.nodes.text.Text):
                                 pass
                             elif isinstance(f, mwparserfromhell.nodes.tag.Tag):
