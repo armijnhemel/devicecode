@@ -1079,6 +1079,8 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     elif identifier == 'dl':
                                                         if not '://' in value:
                                                             continue
+                                                        if not value.startswith('http'):
+                                                            continue
                                                         try:
                                                             # TODO: fix this check
                                                             urllib.parse.urlparse(value)
@@ -1088,6 +1090,8 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     elif identifier in ['pp', 'pp2', 'pp3']:
                                                         # parse the support page value
                                                         if not '://' in value:
+                                                            continue
+                                                        if not value.startswith('http'):
                                                             continue
                                                         try:
                                                             # TODO: fix this check
@@ -1243,6 +1247,20 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                     elif f.name == 'TagLine':
                                         for param in f.params:
                                             device.taglines.append(str(param.value))
+                                    elif f.name == 'ProductPage':
+                                        # parse the product page value
+                                        for param in f.params:
+                                            value = str(param)
+                                            if not '://' in value:
+                                                continue
+                                            if not value.startswith('http'):
+                                                continue
+                                            try:
+                                                # TODO: fix this check
+                                                urllib.parse.urlparse(value)
+                                            except ValueError:
+                                                continue
+                                            device.web.product_page.append(value)
                             elif isinstance(f, mwparserfromhell.nodes.text.Text):
                                 pass
                             elif isinstance(f, mwparserfromhell.nodes.tag.Tag):
