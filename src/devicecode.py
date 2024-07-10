@@ -1127,60 +1127,60 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                             # default values and variants.
                                                             # TODO: also print values that weren't correctly processed
                                                             print(identifier, value, file=sys.stderr)
-                                    elif f.name.strip() in ['SCollapse', 'SCollapse2']:
-                                        # alternative place for boot log, GPL info, /proc, etc.
-                                        is_processed = False
-                                        wiki_section_header = f.params[0].strip()
-                                        for b in ['boot log', 'Boot log', 'stock boot messages']:
-                                            if wiki_section_header.startswith(b):
-                                                is_processed = True
+                                    else:
+                                        pass
+                                elif f.name.strip() in ['SCollapse', 'SCollapse2']:
+                                    # alternative place for boot log, GPL info, /proc, etc.
+                                    is_processed = False
+                                    wiki_section_header = f.params[0].strip()
+                                    for b in ['boot log', 'Boot log', 'stock boot messages']:
+                                        if wiki_section_header.startswith(b):
+                                            is_processed = True
 
-                                                # parse and store the boot log.
-                                                # TODO: further mine the boot log
-                                                parse_result = parse_log(f.params[1].value)
-                                                break
-                                        if is_processed:
-                                            continue
-                                        if wiki_section_header.startswith('GPL info'):
-                                            # there actually does not seem to be anything related
-                                            # to GP source code releases in this element, but
-                                            # mostly settings like environment variables for
-                                            # compiling source code.
-                                            pass
-                                        elif wiki_section_header.startswith('lsmod'):
-                                            # the output of lsmod can be parsed to see which
-                                            # Linux kernel modules are used on a device. By mapping
-                                            # these back to source code some extra information
-                                            # could be obtained: some modules are only present in
-                                            # some SDKs, and so on.
-                                            pass
-                                        elif wiki_section_header.startswith('nvram'):
-                                            # the nvram can contain useful information about
-                                            # a device. Some entries found here are not from
-                                            # the stock firmware, but from third party firmware
-                                            # so care has to be taken to filter these prior
-                                            # to processing.
-                                            pass
-                                        elif 'dmesg' in wiki_section_header:
-                                            # like bootlogs the output of dmesg can contain
-                                            # very useful information.
-                                            pass
-                                        elif wiki_section_header.startswith('ls -la'):
-                                            parse_result = parse_ls(f.params[1].value)
-                                        elif wiki_section_header.startswith('ps'):
-                                            # the output of ps can contain the names
-                                            # of programs and executables
-                                            if 'PID  Uid' in f.params[1].value:
-                                                parse_result = parse_ps(f.params[1].value)
-                                        elif wiki_section_header.startswith('Serial console output'):
-                                            pass
-                                        elif wiki_section_header.lower().startswith('serial info'):
-                                            # some of the entries found in the data seem to be
-                                            # serial console output, instead of serial port
-                                            # information.
-                                            pass
-                                        else:
-                                            pass
+                                            # parse and store the boot log.
+                                            # TODO: further mine the boot log
+                                            parse_result = parse_log(f.params[1].value)
+                                            break
+                                    if is_processed:
+                                        continue
+                                    if wiki_section_header.startswith('GPL info'):
+                                        # there actually does not seem to be anything related
+                                        # to GP source code releases in this element, but
+                                        # mostly settings like environment variables for
+                                        # compiling source code.
+                                        pass
+                                    elif wiki_section_header.startswith('lsmod'):
+                                        # the output of lsmod can be parsed to see which
+                                        # Linux kernel modules are used on a device. By mapping
+                                        # these back to source code some extra information
+                                        # could be obtained: some modules are only present in
+                                        # some SDKs, and so on.
+                                        pass
+                                    elif wiki_section_header.startswith('nvram'):
+                                        # the nvram can contain useful information about
+                                        # a device. Some entries found here are not from
+                                        # the stock firmware, but from third party firmware
+                                        # so care has to be taken to filter these prior
+                                        # to processing.
+                                        pass
+                                    elif 'dmesg' in wiki_section_header:
+                                        # like bootlogs the output of dmesg can contain
+                                        # very useful information.
+                                        pass
+                                    elif wiki_section_header.startswith('ls -la'):
+                                        parse_result = parse_ls(f.params[1].value)
+                                    elif wiki_section_header.startswith('ps'):
+                                        # the output of ps can contain the names
+                                        # of programs and executables
+                                        if 'PID  Uid' in f.params[1].value:
+                                            parse_result = parse_ps(f.params[1].value)
+                                    elif wiki_section_header.startswith('Serial console output'):
+                                        pass
+                                    elif wiki_section_header.lower().startswith('serial info'):
+                                        # some of the entries found in the data seem to be
+                                        # serial console output, instead of serial port
+                                        # information.
+                                        pass
                                     else:
                                         pass
                                 elif f.name == 'WiFiCert':
