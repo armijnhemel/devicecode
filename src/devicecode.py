@@ -210,6 +210,9 @@ class Web:
     download_page: str = ''
     product_page: list[str] = field(default_factory=list)
     support_page: list[str] = field(default_factory=list)
+
+    # references to techinfodepot and wikidevi
+    techinfodepot: str = ''
     wikidevi: str = ''
     wikipedia: str = ''
 
@@ -1247,6 +1250,10 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                     elif f.name == 'TagLine':
                                         for param in f.params:
                                             device.taglines.append(str(param.value))
+                                    elif f.name == 'TechInfoDepot':
+                                        value = str(f.params[0])
+                                        if value != '':
+                                            device.web.techinfodepot = value
                                     elif f.name == 'ProductPage':
                                         # parse the product page value
                                         for param in f.params:
