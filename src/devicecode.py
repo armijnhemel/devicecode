@@ -1127,51 +1127,6 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                             # default values and variants.
                                                             # TODO: also print values that weren't correctly processed
                                                             print(identifier, value, file=sys.stderr)
-                                    elif f.name == 'hasPowerSupply\n':
-                                        # some elements are a list, the first one
-                                        # will always contain the identifier
-                                        for param in f.params:
-                                            param_elems = param.strip().split('\n')
-                                            identifier, value = param_elems[0].split('=', maxsplit=1)
-
-                                            # remove superfluous spaces
-                                            identifier = identifier.strip()
-                                            value = value.strip()
-
-                                            match identifier:
-                                                case 'brand':
-                                                    device.power_supply.brand = defaults.BRAND_REWRITE.get(value, value)
-                                                case 'model':
-                                                    device.power_supply.model = value
-                                                case 'revision':
-                                                    device.power_supply.revision = value
-                                                case 'style':
-                                                    device.power_supply.style = value
-                                                case 'countrymanuf':
-                                                    device.power_supply.country = value
-                                                case 'input_a':
-                                                    device.power_supply.input_amperage = value
-                                                case 'input_c':
-                                                    device.power_supply.input_current = value
-                                                case 'input_conn':
-                                                    device.power_supply.input_connection = value
-                                                case 'input_hz':
-                                                    device.power_supply.input_hz = value
-                                                case 'input_v':
-                                                    device.power_supply.input_voltage = value
-                                                case 'output_a':
-                                                    device.power_supply.output_amperage = value
-                                                case 'output_c':
-                                                    device.power_supply.output_current = value
-                                                case 'outpuc_c':
-                                                    device.power_supply.output_current = value
-                                                case 'output_conn':
-                                                    device.power_supply.input_connection = value
-                                                case 'output_v':
-                                                    device.power_supply.output_voltage = value
-                                                case 'e_level':
-                                                    device.power_supply.e_level = value
-
                                     elif f.name.strip() in ['SCollapse', 'SCollapse2']:
                                         # alternative place for boot log, GPL info, /proc, etc.
                                         is_processed = False
@@ -1234,6 +1189,51 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                         device.regulatory.wifi_certified = str(wifi_cert.value)
                                         wifi_cert_date = str(wifi_cert_date.value)
                                         device.regulatory.wifi_certified_date = parse_date(wifi_cert_date)
+                                elif f.name == 'hasPowerSupply\n':
+                                    # some elements are a list, the first one
+                                    # will always contain the identifier
+                                    for param in f.params:
+                                        param_elems = param.strip().split('\n')
+                                        identifier, value = param_elems[0].split('=', maxsplit=1)
+
+                                        # remove superfluous spaces
+                                        identifier = identifier.strip()
+                                        value = value.strip()
+
+                                        match identifier:
+                                            case 'brand':
+                                                device.power_supply.brand = defaults.BRAND_REWRITE.get(value, value)
+                                            case 'model':
+                                                device.power_supply.model = value
+                                            case 'revision':
+                                                device.power_supply.revision = value
+                                            case 'style':
+                                                device.power_supply.style = value
+                                            case 'countrymanuf':
+                                                device.power_supply.country = value
+                                            case 'input_a':
+                                                device.power_supply.input_amperage = value
+                                            case 'input_c':
+                                                device.power_supply.input_current = value
+                                            case 'input_conn':
+                                                device.power_supply.input_connection = value
+                                            case 'input_hz':
+                                                device.power_supply.input_hz = value
+                                            case 'input_v':
+                                                device.power_supply.input_voltage = value
+                                            case 'output_a':
+                                                device.power_supply.output_amperage = value
+                                            case 'output_c':
+                                                device.power_supply.output_current = value
+                                            case 'outpuc_c':
+                                                device.power_supply.output_current = value
+                                            case 'output_conn':
+                                                device.power_supply.input_connection = value
+                                            case 'output_v':
+                                                device.power_supply.output_voltage = value
+                                            case 'e_level':
+                                                device.power_supply.e_level = value
+
                             elif isinstance(f, mwparserfromhell.nodes.text.Text):
                                 pass
                             elif isinstance(f, mwparserfromhell.nodes.tag.Tag):
