@@ -1189,7 +1189,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                         device.regulatory.wifi_certified = str(wifi_cert.value)
                                         wifi_cert_date = str(wifi_cert_date.value)
                                         device.regulatory.wifi_certified_date = parse_date(wifi_cert_date)
-                                elif f.name == 'hasPowerSupply\n':
+                                elif f.name in ['hasPowerSupply\n', 'HasPowerSupply\n']:
                                     # some elements are a list, the first one
                                     # will always contain the identifier
                                     for param in f.params:
