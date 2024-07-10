@@ -257,7 +257,6 @@ class Device:
     title: str = ''
     web: Web = field(default_factory=Web)
 
-
 def parse_ls(ls_log):
     '''Parse output from ls'''
     pass
@@ -349,6 +348,19 @@ def parse_log(boot_log):
         interesting_findings['Linux kernel commandline'] = set(res)
 
     return interesting_findings
+
+def parse_oui(oui_string):
+    '''Parse OUI values, returns a list of values'''
+    # various OUI
+    ouis = []
+    oui_values = oui_string.split(',')
+    for oui in oui_values:
+        for oui_value in oui.split(';'):
+            if oui_value.strip() == '':
+                continue
+            if defaults.REGEX_OUI.match(oui_value.strip()) is not None:
+                ouis.append(oui_value.strip())
+    return ouis
 
 def parse_chip(chip_string):
     '''Parse chips and return a parsed data structure'''
@@ -795,19 +807,15 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     # various OUI
                                                     elif identifier in ['ethoui', 'oui', 'rad1oui',
                                                                         'rad2oui', 'rad3oui', 'rad4oui']:
-                                                        ethoui_values = value.upper().split(',')
-                                                        for ethoui in ethoui_values:
-                                                            for oui_value in ethoui.split(';'):
-                                                                if oui_value.strip() == '':
-                                                                    continue
-                                                                if defaults.REGEX_OUI.match(oui_value.strip()) is not None:
-                                                                    if identifier == 'ethoui':
-                                                                        device.network.ethernet_oui.append(oui_value.strip())
-                                                                    elif identifier == 'oui':
-                                                                        device.network.wireless_oui.append(oui_value.strip())
-                                                                    elif identifier in['rad1oui', 'rad2oui', 'rad3oui', 'rad4oui']:
-                                                                        radio_num = int(identifier[3:4])
-                                                                        device.radios[radio_num - 1].oui.append(oui_value.strip())
+                                                        ouis = parse_oui(value.upper())
+                                                        for oui_value in ouis:
+                                                            if identifier == 'ethoui':
+                                                                device.network.ethernet_oui.append(oui_value)
+                                                            elif identifier == 'oui':
+                                                                device.network.wireless_oui.append(oui_value)
+                                                            elif identifier in['rad1oui', 'rad2oui', 'rad3oui', 'rad4oui']:
+                                                                radio_num = int(identifier[3:4])
+                                                                device.radios[radio_num - 1].oui.append(oui_value)
 
                                                     # flash chips
                                                     elif identifier in ['fla1chip', 'fla2chip', 'fla3chip']:
