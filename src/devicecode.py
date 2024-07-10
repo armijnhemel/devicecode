@@ -1234,6 +1234,12 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                             case 'e_level':
                                                 device.power_supply.e_level = value
 
+                                elif wiki_type == 'WikiDevi':
+                                    # while TechInfoDepot stores everything in an
+                                    # element called "Infobox", WikiDevi stores it
+                                    # in several different elements.
+                                    if f.name in ['Wireless embedded system\n', 'Wired embedded system\n']:
+                                        pass
                             elif isinstance(f, mwparserfromhell.nodes.text.Text):
                                 pass
                             elif isinstance(f, mwparserfromhell.nodes.tag.Tag):
