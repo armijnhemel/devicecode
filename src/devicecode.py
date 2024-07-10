@@ -419,7 +419,7 @@ def parse_date(date_string):
     return parsed_date.strftime("%Y-%m-%d")
 
 
-@click.command(short_help='Process TechInfoDepot XML dump')
+@click.command(short_help='Process TechInfoDepot or WikiDevi XML dump')
 @click.option('--input', '-i', 'input_file', required=True,
               help='Wiki top level dump file',
               type=click.Path('r', path_type=pathlib.Path))
@@ -1172,12 +1172,6 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                 case 'e_level':
                                                     device.power_supply.e_level = value
 
-                                    elif f.name == 'WiFiCert':
-                                        if len(f.params) >= 2:
-                                            wifi_cert, wifi_cert_date = f.params[:2]
-                                            device.regulatory.wifi_certified = str(wifi_cert.value)
-                                            wifi_cert_date = str(wifi_cert_date.value)
-                                            device.regulatory.wifi_certified_date = parse_date(wifi_cert_date)
                                     elif f.name.strip() in ['SCollapse', 'SCollapse2']:
                                         # alternative place for boot log, GPL info, /proc, etc.
                                         is_processed = False
@@ -1234,6 +1228,12 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                             pass
                                     else:
                                         pass
+                                elif f.name == 'WiFiCert':
+                                    if len(f.params) >= 2:
+                                        wifi_cert, wifi_cert_date = f.params[:2]
+                                        device.regulatory.wifi_certified = str(wifi_cert.value)
+                                        wifi_cert_date = str(wifi_cert_date.value)
+                                        device.regulatory.wifi_certified_date = parse_date(wifi_cert_date)
                             elif isinstance(f, mwparserfromhell.nodes.text.Text):
                                 pass
                             elif isinstance(f, mwparserfromhell.nodes.tag.Tag):
