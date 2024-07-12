@@ -766,6 +766,8 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                 elif identifier == 'type':
                                                     device_types = list(map(lambda x: x.strip(), value.split(',')))
                                                     device.device_types= device_types
+                                                elif identifier == 'flags':
+                                                    device.flags = sorted(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
 
                                                 # commercial information
                                                 elif identifier == 'availability':
@@ -799,6 +801,67 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                             continue
                                                         device.commercial.ean.append(ean.strip())
 
+                                                # default values: IP, login, passwd, etc.
+                                                elif identifier in ['defaulip', 'default_ip']:
+                                                    # verify IP address via regex
+                                                    if defaults.REGEX_IP.match(value) is not None:
+                                                        device.defaults.ip = value
+                                                    else:
+                                                        match value:
+                                                            case 'acquired via DHCP':
+                                                                device.defaults.ip_comment = value
+                                                elif identifier in ['defaultlogin', 'default_user']:
+                                                    if ' or ' in value:
+                                                        device.defaults.logins = value.split(' or ')
+                                                    else:
+                                                        match value:
+                                                            case 'randomly generated':
+                                                                device.defaults.logins_comment = value
+                                                            case 'set at first login':
+                                                                device.defaults.logins_comment = value
+                                                            case other:
+                                                                device.defaults.logins = [value]
+                                                elif identifier in ['defaultpass', 'default_pass']:
+                                                    if '<!--' in value:
+                                                        continue
+                                                    match value:
+                                                        # ignore the following two values as it is
+                                                        # unclear if these are default wiki values,
+                                                        # or if they are describing the actual password
+                                                        case '<!-- Leave blank -->':
+                                                            pass
+                                                        case '<!-- Leave blank --> -->':
+                                                            pass
+                                                        case '\'\'unit\'s serial number\'\'':
+                                                            device.defaults.password_comment = 'unit\'s serial number'
+                                                        case '(sticker on the bottom of device)':
+                                                            device.defaults.password_comment = 'sticker on the bottom of the device'
+                                                        case 'On the back of the router':
+                                                            device.defaults.password_comment = value
+                                                        case 'random 8 digit dispaly on the LCD':
+                                                            device.defaults.password_comment = 'random 8 digit displayed on the LCD'
+                                                        case 'randomly generated':
+                                                            device.defaults.password_comment = value
+                                                        case '\'randomly generated\'':
+                                                            device.defaults.password_comment = 'randomly generated'
+                                                        case '\'\'randomly generated\'\'':
+                                                            device.defaults.password_comment = 'randomly generated'
+                                                        case 'set at first login':
+                                                            device.defaults.password_comment = value
+                                                        case 'set on first login':
+                                                            device.defaults.password_comment = 'set at first login'
+                                                        case 'QR Code':
+                                                            device.defaults.password_comment = value
+                                                        case other:
+                                                            device.defaults.password = value
+                                                elif identifier in ['defaultssid', 'default_ssid']:
+                                                    ssids = list(map(lambda x: x.strip(), value.split(',')))
+                                                    device.defaults.ssids = ssids
+                                                elif identifier in ['defaultssid_regex', 'default_ssid_regex']:
+                                                    ssids = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
+                                                    device.defaults.ssid_regexes = ssids
+
+                                                # process TechInfoDepot specific information
                                                 if wiki_type == 'TechInfoDepot':
                                                     if identifier == 'boardid':
                                                         if '<!--' in value:
@@ -813,8 +876,6 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                             device.model.subrevision = value
                                                     elif identifier == 'submodel':
                                                         device.model.submodel = value
-                                                    elif identifier == 'flags':
-                                                        device.flags = sorted(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     elif identifier in ['caption', 'caption2']:
                                                         device.taglines.append(value)
                                                     elif identifier in ['image1', 'image2']:
@@ -845,66 +906,6 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         if len(value) == 2:
                                                             num_asin = defaults.KNOWN_ASIN_COUNTRY_IDENTIFIERS.index(identifier)
                                                             device.commercial.amazon_asin[num_asin].country = value
-
-                                                    # default values: IP, login, passwd, etc.
-                                                    elif identifier == 'defaulip':
-                                                        # verify IP address via regex
-                                                        if defaults.REGEX_IP.match(value) is not None:
-                                                            device.defaults.ip = value
-                                                        else:
-                                                            match value:
-                                                                case 'acquired via DHCP':
-                                                                    device.defaults.ip_comment = value
-                                                    elif identifier == 'defaultlogin':
-                                                        if ' or ' in value:
-                                                            device.defaults.logins = value.split(' or ')
-                                                        else:
-                                                            match value:
-                                                                case 'randomly generated':
-                                                                    device.defaults.logins_comment = value
-                                                                case 'set at first login':
-                                                                    device.defaults.logins_comment = value
-                                                                case other:
-                                                                    device.defaults.logins = [value]
-                                                    elif identifier == 'defaultpass':
-                                                        if '<!--' in value:
-                                                            continue
-                                                        match value:
-                                                            # ignore the following two values as it is
-                                                            # unclear if these are default wiki values,
-                                                            # or if they are describing the actual password
-                                                            case '<!-- Leave blank -->':
-                                                                pass
-                                                            case '<!-- Leave blank --> -->':
-                                                                pass
-                                                            case '\'\'unit\'s serial number\'\'':
-                                                                device.defaults.password_comment = 'unit\'s serial number'
-                                                            case '(sticker on the bottom of device)':
-                                                                device.defaults.password_comment = 'sticker on the bottom of the device'
-                                                            case 'On the back of the router':
-                                                                device.defaults.password_comment = value
-                                                            case 'random 8 digit dispaly on the LCD':
-                                                                device.defaults.password_comment = 'random 8 digit displayed on the LCD'
-                                                            case 'randomly generated':
-                                                                device.defaults.password_comment = value
-                                                            case '\'randomly generated\'':
-                                                                device.defaults.password_comment = 'randomly generated'
-                                                            case '\'\'randomly generated\'\'':
-                                                                device.defaults.password_comment = 'randomly generated'
-                                                            case 'set at first login':
-                                                                device.defaults.password_comment = value
-                                                            case 'set on first login':
-                                                                device.defaults.password_comment = 'set at first login'
-                                                            case 'QR Code':
-                                                                device.defaults.password_comment = value
-                                                            case other:
-                                                                device.defaults.password = value
-                                                    elif identifier == 'defaultssid':
-                                                        ssids = list(map(lambda x: x.strip(), value.split(',')))
-                                                        device.defaults.ssids = ssids
-                                                    elif identifier == 'defaultssid_regex':
-                                                        ssids = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
-                                                        device.defaults.ssid_regexes = ssids
 
                                                     # JTAG
                                                     elif identifier == 'jtag':
