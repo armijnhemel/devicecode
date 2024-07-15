@@ -67,7 +67,6 @@ class Commercial:
     ean: list[str] = field(default_factory=list)
     end_of_life_date: str = ''
     newegg: list[str] = field(default_factory=list)
-    price: float = 0.0
     release_date: str = ''
     upc: list[str] = field(default_factory=list)
 
@@ -743,6 +742,9 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                                       'flash2maxsize', 'cpu1spd', 'cpu1spd2',
                                                                       'cpu2spd', 'gpu1spd', 'ram1spd',
                                                                       'submodelappend']:
+                                                        continue
+                                                if wiki_type == 'WikiDevi':
+                                                    if identifier in ['price']:
                                                         continue
 
                                                 # then process all 300+ identifiers. Note: most of
