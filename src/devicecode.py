@@ -734,20 +734,20 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                             is_default = True
                                                             break
 
-                                                    if is_default or value == '':
+                                                    if is_default:
                                                         continue
 
-                                                        # A few values can be safely skipped as they
-                                                        # are not interesting or of very low quality.
-                                                        if identifier in ['dimensions', 'estprice', 'weight',
-                                                                          'image1_size', 'image2_size',
-                                                                          'nvramsize', 'ram1size', 'ram2size',
-                                                                          'ram3size', 'flash1size', 'flash2size',
-                                                                          'flash3size', 'flash1maxsize',
-                                                                          'flash2maxsize', 'cpu1spd', 'cpu1spd2',
-                                                                          'cpu2spd', 'gpu1spd', 'ram1spd',
-                                                                          'submodelappend']:
-                                                            continue
+                                                    # A few values can be safely skipped as they
+                                                    # are not interesting or of very low quality.
+                                                    if identifier in ['dimensions', 'estprice', 'weight',
+                                                                      'image1_size', 'image2_size',
+                                                                      'nvramsize', 'ram1size', 'ram2size',
+                                                                      'ram3size', 'flash1size', 'flash2size',
+                                                                      'flash3size', 'flash1maxsize',
+                                                                      'flash2maxsize', 'cpu1spd', 'cpu1spd2',
+                                                                      'cpu2spd', 'gpu1spd', 'ram1spd',
+                                                                      'submodelappend']:
+                                                        continue
 
                                                 # then process all 300+ identifiers. Note: most of
                                                 # these identifiers only have a single value and
@@ -873,7 +873,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         device.manufacturer.name = value
                                                 elif identifier == 'manuf_model':
                                                     device.manufacturer.model = value
-                                                elif identifier == 'manuf_rev':
+                                                elif identifier in ['manuf_rev', 'manuf_revision']:
                                                     device.manufacturer.revision = value
                                                 elif identifier == 'is_manuf':
                                                     # if the brand is also is the ODM simply
