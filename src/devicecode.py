@@ -729,7 +729,6 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     is_default = False
 
                                                     if value in defaults.DEFAULT_VALUE.get(identifier, []):
-                                                        print('MAGA', value)
                                                         continue
 
                                                     # A few values can be safely skipped as they
