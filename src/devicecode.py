@@ -729,12 +729,8 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     # only seem to be used in TechInfoDepot.
                                                     is_default = False
 
-                                                    for default_value in defaults.DEFAULT_VALUE.get(identifier, []):
-                                                        if value == default_value:
-                                                            is_default = True
-                                                            break
-
-                                                    if is_default:
+                                                    if value in defaults.DEFAULT_VALUE.get(identifier, []):
+                                                        print('MAGA', value)
                                                         continue
 
                                                     # A few values can be safely skipped as they
