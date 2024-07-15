@@ -888,6 +888,13 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     # some devices apparently can have more than one FCC id.
                                                     fcc_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     device.regulatory.fcc_ids = fcc_values
+                                                elif identifier == 'us_id':
+                                                    usid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
+                                                    device.regulatory.us_ids = usid_values
+                                                elif identifier in ['icid', 'ic_id']:
+                                                    # some devices apparently can have more than one IC id.
+                                                    icid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
+                                                    device.regulatory.industry_canada_ids = icid_values
 
                                                 # process TechInfoDepot specific information
                                                 if wiki_type == 'TechInfoDepot':
@@ -1072,15 +1079,6 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         # TODO: filter entries with <!--
                                                         radio_num = int(identifier[3:4])
                                                         device.radios[radio_num - 1].interface = value
-
-                                                    # regulatory
-                                                    elif identifier == 'icid':
-                                                        # some devices apparently can have more than one IC id.
-                                                        icid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
-                                                        device.regulatory.industry_canada_ids = icid_values
-                                                    elif identifier == 'us_id':
-                                                        usid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
-                                                        device.regulatory.us_ids = usid_values
 
                                                     # serial port. TODO: share with JTAG processing.
                                                     elif identifier == 'serial':
