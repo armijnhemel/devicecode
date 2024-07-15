@@ -998,6 +998,8 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                                 device.software.third_party.append('CeroWrt')
                                                             case 'dd-wrt':
                                                                 device.software.third_party.append('DD-WRT')
+                                                            case 'librewrt':
+                                                                device.software.third_party.append('LibreWRT')
                                                             case 'debian':
                                                                 device.software.third_party.append('Debian')
                                                             case 'armbian':
@@ -1018,6 +1020,14 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                                 device.software.third_party.append('QNX')
                                                             case 'padavan':
                                                                 device.software.third_party.append('Padavan')
+                                                            case 'vampik':
+                                                                device.software.third_party.append('Vampik')
+                                                            case 'freebsd':
+                                                                device.software.third_party.append('FreeBSD')
+                                                            case 'netbsd':
+                                                                device.software.third_party.append('NetBSD')
+                                                            case 'openbsd':
+                                                                device.software.third_party.append('OpenBSD')
 
                                                 # process TechInfoDepot specific information
                                                 if wiki_type == 'TechInfoDepot':
