@@ -978,6 +978,46 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         if regex_result is not None:
                                                             continue
 
+                                                # third party firmware
+                                                elif identifier in ['tpfirmware', 'tp_firmware']:
+                                                    if '<!-- Third' in value:
+                                                        value = value.split('<!--', 1)[0]
+                                                    tp_firmwares = value.split(',')
+                                                    for tp_firmware in tp_firmwares:
+                                                        tp_firmware = defaults.DISTRO_REWRITE.get(tp_firmware.strip(), tp_firmware.strip())
+                                                        if tp_firmware == '':
+                                                            continue
+
+                                                        match tp_firmware.lower():
+                                                            case 'openwrt':
+                                                                device.software.third_party.append('OpenWrt')
+                                                            case 'lede':
+                                                                device.software.third_party.append('LEDE')
+                                                            case 'cerowrt':
+                                                                device.software.third_party.append('CeroWrt')
+                                                            case 'dd-wrt':
+                                                                device.software.third_party.append('DD-WRT')
+                                                            case 'debian':
+                                                                device.software.third_party.append('Debian')
+                                                            case 'armbian':
+                                                                device.software.third_party.append('Armbian')
+                                                            case 'ubuntu':
+                                                                device.software.third_party.append('Ubuntu')
+                                                            case 'gentoo':
+                                                                device.software.third_party.append('Gentoo')
+                                                            case 'slackware':
+                                                                device.software.third_party.append('Slackware')
+                                                            case 'gargoyle':
+                                                                device.software.third_party.append('Gargoyle')
+                                                            case 'android':
+                                                                device.software.third_party.append('Android')
+                                                            case 'fuchsia':
+                                                                device.software.third_party.append('Fuchsia')
+                                                            case 'qnx':
+                                                                device.software.third_party.append('QNX')
+                                                            case 'padavan':
+                                                                device.software.third_party.append('Padavan')
+
                                                 # process TechInfoDepot specific information
                                                 if wiki_type == 'TechInfoDepot':
                                                     if identifier == 'model_part_num':
@@ -1194,44 +1234,6 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     elif identifier in ['ddwrtsupport', 'gargoylesupport',
                                                                         'openwrtsupport', 'tomatosupport']:
                                                         continue
-                                                    elif identifier == 'tpfirmware':
-                                                        if '<!-- Third' in value:
-                                                            value = value.split('<!--', 1)[0]
-                                                        tp_firmwares = value.split(',')
-                                                        for tp_firmware in tp_firmwares:
-                                                            tp_firmware = defaults.DISTRO_REWRITE.get(tp_firmware.strip(), tp_firmware.strip())
-                                                            if tp_firmware == '':
-                                                                continue
-
-                                                            match tp_firmware.lower():
-                                                                case 'openwrt':
-                                                                    device.software.third_party.append('OpenWrt')
-                                                                case 'lede':
-                                                                    device.software.third_party.append('LEDE')
-                                                                case 'cerowrt':
-                                                                    device.software.third_party.append('CeroWrt')
-                                                                case 'dd-wrt':
-                                                                    device.software.third_party.append('DD-WRT')
-                                                                case 'debian':
-                                                                    device.software.third_party.append('Debian')
-                                                                case 'armbian':
-                                                                    device.software.third_party.append('Armbian')
-                                                                case 'ubuntu':
-                                                                    device.software.third_party.append('Ubuntu')
-                                                                case 'gentoo':
-                                                                    device.software.third_party.append('Gentoo')
-                                                                case 'slackware':
-                                                                    device.software.third_party.append('Slackware')
-                                                                case 'gargoyle':
-                                                                    device.software.third_party.append('Gargoyle')
-                                                                case 'android':
-                                                                    device.software.third_party.append('Android')
-                                                                case 'fuchsia':
-                                                                    device.software.third_party.append('Fuchsia')
-                                                                case 'qnx':
-                                                                    device.software.third_party.append('QNX')
-                                                                case 'padavan':
-                                                                    device.software.third_party.append('Padavan')
 
                                                     # web
                                                     elif identifier == 'dl':
