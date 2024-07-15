@@ -861,6 +861,23 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     ssids = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     device.defaults.ssid_regexes = ssids
 
+                                                # manufacturer
+                                                elif identifier in ['countrymanuf', 'manuf_country']:
+                                                    device.manufacturer.country = defaults.COUNTRY_REWRITE.get(value, value)
+                                                elif identifier == 'manuf':
+                                                    if device.manufacturer.name == '':
+                                                        device.manufacturer.name = value
+                                                elif identifier == 'manuf_model':
+                                                    device.manufacturer.model = value
+                                                elif identifier == 'manuf_rev':
+                                                    device.manufacturer.revision = value
+                                                elif identifier == 'is_manuf':
+                                                    # if the brand is also is the ODM simply
+                                                    # copy the brand. This assumes that the
+                                                    # brand is already known (which has been
+                                                    # the case in all data seen so far)
+                                                    device.manufacturer.name = device.brand
+
                                                 # process TechInfoDepot specific information
                                                 if wiki_type == 'TechInfoDepot':
                                                     if identifier == 'boardid':
@@ -917,23 +934,6 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         jtag_fields = value.split(',')
                                                         if jtag_fields[0].lower() == 'yes':
                                                             device.has_jtag = 'yes'
-
-                                                    # manufacturer
-                                                    elif identifier == 'countrymanuf':
-                                                        device.manufacturer.country = defaults.COUNTRY_REWRITE.get(value, value)
-                                                    elif identifier == 'manuf':
-                                                        if device.manufacturer.name == '':
-                                                            device.manufacturer.name = value
-                                                    elif identifier == 'manuf_model':
-                                                        device.manufacturer.model = value
-                                                    elif identifier == 'manuf_rev':
-                                                        device.manufacturer.revision = value
-                                                    elif identifier == 'is_manuf':
-                                                        # if the brand is also is the ODM simply
-                                                        # copy the brand. This assumes that the
-                                                        # brand is already known (which has been
-                                                        # the case in all data seen so far)
-                                                        device.manufacturer.name = device.brand
 
                                                     # cpu
                                                     elif identifier in ['cpu1chip1', 'cpu2chip1']:
