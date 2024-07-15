@@ -733,14 +733,14 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
 
                                                     # A few values can be safely skipped as they
                                                     # are not interesting or of very low quality.
-                                                    if identifier in ['dimensions', 'estprice', 'weight',
+                                                    if identifier in set(['dimensions', 'estprice', 'weight',
                                                                       'image1_size', 'image2_size',
                                                                       'nvramsize', 'ram1size', 'ram2size',
                                                                       'ram3size', 'flash1size', 'flash2size',
                                                                       'flash3size', 'flash1maxsize',
                                                                       'flash2maxsize', 'cpu1spd', 'cpu1spd2',
                                                                       'cpu2spd', 'gpu1spd', 'ram1spd',
-                                                                      'submodelappend']:
+                                                                      'submodelappend']):
                                                         continue
                                                 if wiki_type == 'WikiDevi':
                                                     if identifier in ['price']:
@@ -872,7 +872,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     device.manufacturer.model = value
                                                 elif identifier in ['manuf_rev', 'manuf_revision']:
                                                     device.manufacturer.revision = value
-                                                elif identifier in ['is_manuf', 'is_anuf', 'is_mamuf', 'is_manyf', 'if_manuf', 'os_manuf']:
+                                                elif identifier in set(['is_manuf', 'is_anuf', 'is_mamuf', 'is_manyf', 'if_manuf', 'os_manuf']):
                                                     # if the brand is also is the ODM simply
                                                     # copy the brand. This assumes that the
                                                     # brand is already known (which has been
@@ -1022,6 +1022,8 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                                 device.software.third_party.append('Padavan')
                                                             case 'vampik':
                                                                 device.software.third_party.append('Vampik')
+                                                            case 'wive-ng':
+                                                                device.software.third_party.append('Wive-NG')
                                                             case 'freebsd':
                                                                 device.software.third_party.append('FreeBSD')
                                                             case 'netbsd':
