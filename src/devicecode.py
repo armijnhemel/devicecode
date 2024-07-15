@@ -871,7 +871,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     device.manufacturer.model = value
                                                 elif identifier in ['manuf_rev', 'manuf_revision']:
                                                     device.manufacturer.revision = value
-                                                elif identifier == 'is_manuf':
+                                                elif identifier in ['is_manuf', 'is_anuf', 'is_mamuf', 'is_manyf', 'if_manuf', 'os_manuf']:
                                                     # if the brand is also is the ODM simply
                                                     # copy the brand. This assumes that the
                                                     # brand is already known (which has been
