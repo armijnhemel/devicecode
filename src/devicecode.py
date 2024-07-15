@@ -170,7 +170,7 @@ class Regulatory:
        as well as certification such as Wi-Fi Certified'''
     # all dates are YYYY-MM-DD
     fcc_ids: list[str] = field(default_factory=list)
-    fcc_approved_date: str = ''
+    fcc_date: str = ''
 
     industry_canada_ids: list[str] = field(default_factory=list)
 
@@ -878,6 +878,17 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     # the case in all data seen so far)
                                                     device.manufacturer.name = device.brand
 
+                                                # regulatory
+                                                elif identifier in ['fccapprovdate', 'fcc_date']:
+                                                    try:
+                                                        device.regulatory.fcc_date = parse_date(value)
+                                                    except ValueError:
+                                                        continue
+                                                elif identifier == 'fcc_id':
+                                                    # some devices apparently can have more than one FCC id.
+                                                    fcc_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
+                                                    device.regulatory.fcc_ids = fcc_values
+
                                                 # process TechInfoDepot specific information
                                                 if wiki_type == 'TechInfoDepot':
                                                     if identifier == 'boardid':
@@ -1063,15 +1074,6 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         device.radios[radio_num - 1].interface = value
 
                                                     # regulatory
-                                                    elif identifier == 'fccapprovdate':
-                                                        try:
-                                                            device.regulatory.fcc_approved_date = parse_date(value)
-                                                        except ValueError:
-                                                            continue
-                                                    elif identifier == 'fcc_id':
-                                                        # some devices apparently can have more than one FCC id.
-                                                        fcc_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
-                                                        device.regulatory.fcc_ids = fcc_values
                                                     elif identifier == 'icid':
                                                         # some devices apparently can have more than one IC id.
                                                         icid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
