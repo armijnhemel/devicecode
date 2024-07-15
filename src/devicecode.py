@@ -220,9 +220,9 @@ class Web:
 @dataclass
 class Model:
     '''Model information'''
-    board_id: str = ''
     model: str = ''
     part_number: str = ''
+    pcb_id: str = ''
     revision: str = ''
     serial_number: str = ''
     series: str = ''
@@ -768,6 +768,10 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     device.device_types= device_types
                                                 elif identifier == 'flags':
                                                     device.flags = sorted(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
+                                                elif identifier in ['boardid', 'pcb_id']:
+                                                    if '<!--' in value:
+                                                        continue
+                                                    device.model.pcb_id = value
 
                                                 # commercial information
                                                 elif identifier == 'availability':
@@ -980,11 +984,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
 
                                                 # process TechInfoDepot specific information
                                                 if wiki_type == 'TechInfoDepot':
-                                                    if identifier == 'boardid':
-                                                        if '<!--' in value:
-                                                            continue
-                                                        device.model.board_id = value
-                                                    elif identifier == 'model_part_num':
+                                                    if identifier == 'model_part_num':
                                                         device.model.part_number = value
                                                     elif identifier == 'sernum':
                                                         device.model.serial_number = value
