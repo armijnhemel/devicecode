@@ -1031,6 +1031,31 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                             case 'openbsd':
                                                                 device.software.third_party.append('OpenBSD')
 
+                                                # additional chip
+                                                elif identifier in ['addchip', 'addl_chips']:
+                                                    if value == ',,,':
+                                                        continue
+
+                                                    # here the first entry *should* be a description
+                                                    if value.startswith(',,,'):
+                                                        chip_splits = value.split(' ', maxsplit=1)
+                                                        addchip = chip_splits[1].strip()
+                                                    else:
+                                                        addchip = value
+                                                    if ';' not in addchip:
+                                                        continue
+
+                                                    # split the data in a description and the
+                                                    # chip data to be parsed. There could be
+                                                    # some more chips hidden in the chip data,
+                                                    # because the wiki data isn't clean and entries
+                                                    # are not clearly split. This is a TODO.
+                                                    description, chipinfo = addchip.split(';', maxsplit=1)
+                                                    chip_result = parse_chip(chipinfo.strip())
+                                                    if chip_result is not None:
+                                                        chip_result.description = description
+                                                        device.additional_chips.append(chip_result)
+
                                                 # process TechInfoDepot specific information
                                                 if wiki_type == 'TechInfoDepot':
                                                     if identifier == 'model_part_num':
@@ -1145,31 +1170,6 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         chip_result = parse_chip(value)
                                                         if chip_result is not None:
                                                             device.ram.append(chip_result)
-
-                                                    # additional chip
-                                                    elif identifier in ['addchip']:
-                                                        if value == ',,,':
-                                                            continue
-
-                                                        # here the first entry *should* be a description
-                                                        if value.startswith(',,,'):
-                                                            chip_splits = value.split(' ', maxsplit=1)
-                                                            addchip = chip_splits[1].strip()
-                                                        else:
-                                                            addchip = value
-                                                        if ';' not in addchip:
-                                                            continue
-
-                                                        # split the data in a description and the
-                                                        # chip data to be parsed. There could be
-                                                        # some more chips hidden in the chip data,
-                                                        # because the wiki data isn't clean and entries
-                                                        # are not clearly split. This is a TODO.
-                                                        description, chipinfo = addchip.split(';', maxsplit=1)
-                                                        chip_result = parse_chip(chipinfo.strip())
-                                                        if chip_result is not None:
-                                                            chip_result.description = description
-                                                            device.additional_chips.append(chip_result)
 
                                                     # power
                                                     elif identifier == 'pwr_conn':
