@@ -1056,6 +1056,16 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         chip_result.description = description
                                                         device.additional_chips.append(chip_result)
 
+                                                # various OUI
+                                                elif identifier in ['ethoui', 'oui']:
+                                                    ouis = parse_oui(value.upper())
+                                                    for oui_value in ouis:
+                                                        break
+                                                        if identifier == 'ethoui':
+                                                            device.network.ethernet_oui.append(oui_value)
+                                                        elif identifier == 'oui':
+                                                            device.network.wireless_oui.append(oui_value)
+
                                                 # process TechInfoDepot specific information
                                                 if wiki_type == 'TechInfoDepot':
                                                     if identifier == 'model_part_num':
@@ -1141,17 +1151,12 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         device.network.chips.append(parse_chip(value))
 
                                                     # various OUI
-                                                    elif identifier in ['ethoui', 'oui', 'rad1oui',
-                                                                        'rad2oui', 'rad3oui', 'rad4oui']:
+                                                    elif identifier in ['rad1oui', 'rad2oui',
+                                                                        'rad3oui', 'rad4oui']:
                                                         ouis = parse_oui(value.upper())
                                                         for oui_value in ouis:
-                                                            if identifier == 'ethoui':
-                                                                device.network.ethernet_oui.append(oui_value)
-                                                            elif identifier == 'oui':
-                                                                device.network.wireless_oui.append(oui_value)
-                                                            elif identifier in['rad1oui', 'rad2oui', 'rad3oui', 'rad4oui']:
-                                                                radio_num = int(identifier[3:4])
-                                                                device.radios[radio_num - 1].oui.append(oui_value)
+                                                            radio_num = int(identifier[3:4])
+                                                            device.radios[radio_num - 1].oui.append(oui_value)
 
                                                     # flash chips
                                                     elif identifier in ['fla1chip', 'fla2chip', 'fla3chip']:
