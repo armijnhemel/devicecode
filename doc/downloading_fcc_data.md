@@ -14,14 +14,14 @@ A small hackish script to dump the FCC grant ids can be found in the `src`
 directory and is called `devicecode_dump_fcc_grantees.py` which can be
 invoked as follows:
 
-```
+```console
 $ python3 devicecode_dump_fcc_grantees.py -i results.xml
 ```
 
 Alternatively you can use a (much faster) shell command (the dump script
 performs some extra XML sanity checks):
 
-```
+```console
 $ grep grantee_code results.xml | cut -f 2 -d '>' | cut -f 1 -d '<'
 ```
 
@@ -34,30 +34,50 @@ The cleanest and easiest website to download the data from is
 [FCC.report][fcc.report] because it is fast and it serves fairly clean HTML
 that is easy to process.
 
-Downloading is fairly trivial: given a valid FCC id grab the HTML of the
-overview page, parse the HTML to extract PDF paths and descriptions, store
-the original HTML, download the PDFs and store a mapping of PDFs to
-descriptions.
+Downloading is fairly trivial: given one or more valid FCC ids grab the HTML
+of the overview page, parse the HTML to extract PDF paths and descriptions,
+store the original HTML, download the PDFs and store a mapping of PDFs to
+descriptions for each valid FCC id.
 
 For example to download the data for the device with FCC id `2AGN7-X9` the
 following command could be used:
 
-```
+```console
 $ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data
+```
+
+To download for multiple FCC ids simply add them:
+
+```console
+$ python devicecode_fetch_fcc.py -o ~/fcc-data 2AGN7-X9 ODMAM5N
 ```
 
 If there is a list of known FCC grantee codes (see above for an explanation)
 and it is stored in the file `known_fcc_grantees_20240618.txt` the following
 command can be used:
 
-```
+```console
 $ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data -g known_fcc_grantees_20240618.txt
 ```
 
 To force downloading all the data the `--force` parameter can be used:
 
-```
+```console
 $ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data --force
+```
+
+To not overload the [FCC.report][fcc.report] site with download requests there
+is an option to pause a few seconds between each download (currently hardcoded
+to 2 seconds) called `--gentle`:
+
+```console
+$ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data --gentle
+```
+
+To print more details about what is downloaded use the `--verbose` flag:
+
+```console
+$ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data --verbose
 ```
 
 [fcc.report]:https://fcc.report/

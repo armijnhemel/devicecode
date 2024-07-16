@@ -15,16 +15,16 @@ data are provided.
 
 ## FCC ids
 
-Each device is assigned an identifier from the FCC, or a so called FCC id. Some
+Each device is assigned an identifier by the FCC, a so called FCC id. Some
 devices (but not all, for example devices that are not intended for the US
 market) in the TechInfoDepot and WikiDevi data have one or more FCC ids
 associated with them. The FCC id consists of a vendor part, and a device
-specific part.
+specific part. FCC ids makes it easier to make connections between devices
+to see if they are identical.
 
 FCC ids can apply to multiple devices (example: they contain identical
 hardware) and some devices can have multiple FCC ids (example: there are
-multiple devices in a single box, each with a separate FCC id). This makes
-it easier to make connections between devices to see if they are identical.
+multiple devices in a single box, each with a separate FCC id).
 
 ## FCC website
 

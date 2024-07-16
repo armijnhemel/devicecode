@@ -30,7 +30,7 @@ def search_text(texts):
     text =  "\n".join(texts).lower()
     results = {'functionality': [], 'user_password': [],
                'programs': [], 'license': [], 'copyrights': [],
-               'ip_addresses': []}
+               'ip_address': []}
 
     results_found = False
 
@@ -42,7 +42,11 @@ def search_text(texts):
 
     result_ip = REGEX_IP.search(text)
     if result_ip is not None:
-        results['ip_addresses'].append(result_ip.groups()[0])
+        results['ip_address'].append(result_ip.groups()[0])
+        results_found = True
+
+    if 'gnu general public license' in text:
+        results['license'].append("GNU GPL")
         results_found = True
     return (results_found, results)
 
