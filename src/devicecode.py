@@ -769,6 +769,8 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     if '<!--' in value:
                                                         continue
                                                     device.model.pcb_id = value
+                                                elif identifier in ['image1', 'image2']:
+                                                    device.images.append(value)
 
                                                 # commercial information
                                                 elif identifier == 'availability':
@@ -1117,8 +1119,6 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         device.model.submodel = value
                                                     elif identifier in ['caption', 'caption2']:
                                                         device.taglines.append(value)
-                                                    elif identifier in ['image1', 'image2']:
-                                                        device.images.append(value)
                                                     elif identifier == 'exp_if_types':
                                                         if value == 'none':
                                                             continue
