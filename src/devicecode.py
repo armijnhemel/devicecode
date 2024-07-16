@@ -1113,6 +1113,26 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     except ValueError:
                                                         pass
 
+                                                # power
+                                                elif identifier == 'pwr_conn':
+                                                    if value == 'barrel':
+                                                        device.power.connector = 'barrel'
+                                                elif identifier == 'pwr_barrel_inner':
+                                                    try:
+                                                        device.power.inner_barrel_size = float(value)
+                                                    except ValueError:
+                                                        pass
+                                                elif identifier == 'pwr_barrel_len':
+                                                    try:
+                                                        device.power.barrel_length = float(value)
+                                                    except ValueError:
+                                                        pass
+                                                elif identifier == 'pwr_barrel_outer':
+                                                    try:
+                                                        device.power.outer_barrel_size = float(value)
+                                                    except ValueError:
+                                                        pass
+
                                                 # process TechInfoDepot specific information
                                                 if wiki_type == 'TechInfoDepot':
                                                     if identifier == 'model_part_num':
@@ -1204,26 +1224,6 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         chip_result = parse_chip(value)
                                                         if chip_result is not None:
                                                             device.ram.append(chip_result)
-
-                                                    # power
-                                                    elif identifier == 'pwr_conn':
-                                                        if value == 'barrel':
-                                                            device.power.connector = 'barrel'
-                                                    elif identifier == 'pwr_barrel_inner':
-                                                        try:
-                                                            device.power.inner_barrel_size = float(value)
-                                                        except ValueError:
-                                                            pass
-                                                    elif identifier == 'pwr_barrel_len':
-                                                        try:
-                                                            device.power.barrel_length = float(value)
-                                                        except ValueError:
-                                                            pass
-                                                    elif identifier == 'pwr_barrel_outer':
-                                                        try:
-                                                            device.power.outer_barrel_size = float(value)
-                                                        except ValueError:
-                                                            pass
 
                                                     # radio
                                                     elif identifier in ['rad1chip1', 'rad1chip2', 'rad1chip3',
