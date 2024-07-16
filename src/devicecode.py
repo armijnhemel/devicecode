@@ -1106,6 +1106,13 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                                     device.software.bootloader.vendor_modified = 'yes'
                                                                 device.software.bootloader.extra_info.append(inf)
 
+                                                # network
+                                                elif identifier == 'lan_ports':
+                                                    try:
+                                                        device.network.lan_ports = int(value)
+                                                    except ValueError:
+                                                        pass
+
                                                 # process TechInfoDepot specific information
                                                 if wiki_type == 'TechInfoDepot':
                                                     if identifier == 'model_part_num':
@@ -1152,7 +1159,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         if chip_result is not None:
                                                             device.cpus.append(chip_result)
 
-                                                    # network
+                                                    # network (continued)
                                                     elif identifier == 'auto_mdix':
                                                         if value.lower() == 'yes':
                                                             device.network.mdix = 'yes'
@@ -1168,11 +1175,6 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                             device.network.docsis_version = value[1:]
                                                         else:
                                                             device.network.docsis_version = value
-                                                    elif identifier == 'lan_ports':
-                                                        try:
-                                                            device.network.lan_ports = int(value)
-                                                        except ValueError:
-                                                            pass
                                                     elif identifier in ['eth1chip', 'eth2chip', 'eth3chip',
                                                                         'eth4chip', 'eth5chip', 'eth6chip']:
                                                         device.network.chips.append(parse_chip(value))
