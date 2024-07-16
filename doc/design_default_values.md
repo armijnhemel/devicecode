@@ -5,7 +5,8 @@ account on the Wiki.
 
 It seems that when new data is entered on the TechInfoDepot website a template
 is used with default values (in HTML comments) and users are expected to remove
-the default text and supply their own text.
+the default text and supply their own text. WikiDevi doesn't seem to take this
+approach.
 
 After looking at the data a few things become clear:
 
