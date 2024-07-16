@@ -72,7 +72,7 @@ EXPANSION_REWRITE = {'usb': 'USB',
                      'usb (unk. version)': 'USB (unknown version)'}
 
 # a lookup table for default values for each of the
-# identifiers which should be ignored.
+# identifiers in the TechInfoDepot data which should be ignored.
 # For some fields different default values were used over time.
 DEFAULT_VALUE = {
     '802.1qvlan': ['<!-- Support for 802.1q vlan tagging, Leave blank for unknown -->'],
