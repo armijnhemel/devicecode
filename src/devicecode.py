@@ -1077,6 +1077,33 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         elif identifier == 'oui':
                                                             device.network.wireless_oui.append(oui_value)
 
+                                                elif identifier in ['stockos', 'stock_os']:
+                                                    if device.software.os != '':
+                                                        # TODO: parse stock OS information
+                                                        device.software.os = value
+                                                elif identifier in ['stockbootloader', 'stock_bootloader', 'stock_boot']:
+                                                    bootloader_split = value.split(';')
+
+                                                    # first entry is the manufacturer. There might be cruft here.
+                                                    if '<!--' in bootloader_split[0]:
+                                                        # there are a few entries in the database where the data is
+                                                        # actually in the comment. Sigh.
+                                                        bootloader_manufacturer = bootloader_split[0].split('<')[0].strip()
+                                                        device.software.bootloader.manufacturer = bootloader_manufacturer
+                                                    else:
+                                                        device.software.bootloader.manufacturer = bootloader_split[0].strip()
+
+                                                    if len(bootloader_split) >= 2:
+                                                        bootloader_version = bootloader_split[1].strip()
+                                                        if bootloader_version != '':
+                                                            device.software.bootloader.version = bootloader_version
+                                                        for extra_info in range(2, len(bootloader_split)):
+                                                            inf = bootloader_split[extra_info].strip()
+                                                            if inf != '':
+                                                                if 'vendor modified' in inf or 'vender modified' in inf:
+                                                                    device.software.bootloader.vendor_modified = 'yes'
+                                                                device.software.bootloader.extra_info.append(inf)
+
                                                 # process TechInfoDepot specific information
                                                 if wiki_type == 'TechInfoDepot':
                                                     if identifier == 'model_part_num':
@@ -1217,32 +1244,6 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         device.radios[radio_num - 1].interface = value
 
                                                     # software information
-                                                    elif identifier in ['stockos', 'stock_os']:
-                                                        if device.software.os != '':
-                                                            # TODO: parse stock OS information
-                                                            device.software.os = value
-                                                    elif identifier in ['stockbootloader', 'stock_bootloader']:
-                                                        bootloader_split = value.split(';')
-
-                                                        # first entry is the manufacturer. There might be cruft here.
-                                                        if '<!--' in bootloader_split[0]:
-                                                            # there are a few entries in the database where the data is
-                                                            # actually in the comment. Sigh.
-                                                            bootloader_manufacturer = bootloader_split[0].split('<')[0].strip()
-                                                            device.software.bootloader.manufacturer = bootloader_manufacturer
-                                                        else:
-                                                            device.software.bootloader.manufacturer = bootloader_split[0]
-
-                                                        if len(bootloader_split) >= 2:
-                                                            bootloader_version = bootloader_split[1].strip()
-                                                            if bootloader_version != '':
-                                                                device.software.bootloader.version = bootloader_version
-                                                            for extra_info in range(2, len(bootloader_split)):
-                                                                inf = bootloader_split[extra_info].strip()
-                                                                if inf != '':
-                                                                    if 'vendor modified' in inf or 'vender modified' in inf:
-                                                                        device.software.bootloader.vendor_modified = 'yes'
-                                                                    device.software.bootloader.extra_info.append(inf)
                                                     elif identifier == 'stock_os_sdk':
                                                         # overwrite SDK if empty
                                                         if device.software.sdk == '':
