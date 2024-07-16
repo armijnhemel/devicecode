@@ -19,6 +19,8 @@ RE_FCC_ID = re.compile(r'[\w\d\-]+$')
 # time in seconds to sleep in "gentle mode"
 SLEEP_INTERVAL = 2
 
+TIMEOUT = 60
+
 @click.command(short_help='Download FCC documents')
 @click.option('--output', '-o', 'output_directory', required=True,
               help='top level output directory, data will be stored in a subdirectory',
@@ -29,7 +31,7 @@ SLEEP_INTERVAL = 2
 @click.argument('fccids', required=True, nargs=-1)
 @click.option('--verbose', is_flag=True, help='be verbose')
 @click.option('--force', is_flag=True, help='always force downloads')
-@click.option('--gentle', is_flag=True, help='be gentle and pause between downloads')
+@click.option('--gentle', is_flag=True, help=f'pause {SLEEP_INTERVAL} seconds between downloads')
 def main(fccids, output_directory, grantees, verbose, force, gentle):
     if not output_directory.is_dir():
         print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
@@ -65,7 +67,6 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
         print("No valid FCC ids found, exiting.", file=sys.stderr)
         sys.exit(1)
 
-
     # then download the data from one of the FCC clone sites.
     # It seems that fcc.report is the most useful one (least junk
     # on the website, and fairly easy to parse.
@@ -94,7 +95,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
             if verbose:
                 print(f"Downloading main page for {fccid}")
             request = requests.get(f'{base_url}/FCC-ID/{fccid}',
-                                   headers=headers)
+                                   headers=headers, timeout=TIMEOUT)
 
             # now first check the headers to see if it is OK to do more requests
             if request.status_code != 200:
@@ -165,7 +166,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
                     print(f"* downloading {pdf_url}")
                 if gentle:
                     time.sleep(SLEEP_INTERVAL)
-                request = requests.get(pdf_url, headers=headers)
+                request = requests.get(pdf_url, headers=headers, timeout=TIMEOUT)
 
                 with open(store_directory/pdf_basename, 'wb') as output:
                     output.write(request.content)
