@@ -1078,7 +1078,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                             device.network.wireless_oui.append(oui_value)
 
                                                 elif identifier in ['stockos', 'stock_os']:
-                                                    if device.software.os != '':
+                                                    if device.software.os == '':
                                                         # TODO: parse stock OS information
                                                         device.software.os = value
                                                 elif identifier in ['stockbootloader', 'stock_bootloader', 'stock_boot']:
