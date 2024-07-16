@@ -1240,7 +1240,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
 
                         new_file = True
 
-                        json_data = json.dumps(json.loads(device.to_json()), indent=4)
+                        json_data = json.dumps(json.loads(device.to_json()), sort_keys=True)
 
                         # first check if the file has changed if it already exists.
                         # If not, then don't add the file. Git has some intelligence
@@ -1249,13 +1249,14 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                         if (wiki_device_directory / model_name).exists():
                             new_file = False
                             with open(wiki_device_directory / model_name, 'r') as json_file:
-                                existing_json = json.load(json_file)
+                                existing_json = json.dumps(json.load(json_file))
                                 if existing_json == json_data:
                                     continue
 
                         # write to a file in the correct Git directory
                         with open(wiki_device_directory / model_name, 'w') as json_file:
-                            json.dump(json_data, json_file, sort_keys=True, indent=4)
+                            json_data = json.dumps(json.loads(device.to_json()), sort_keys=True, indent=4)
+                            json_file.write(json_data)
 
                         if not no_git:
                             # add the file and commit
