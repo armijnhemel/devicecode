@@ -979,6 +979,17 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         if regex_result is not None:
                                                             continue
 
+                                                # JTAG
+                                                elif identifier == 'jtag':
+                                                    if value.lower() in ['no', 'none,']:
+                                                        device.has_jtag = 'no'
+                                                        continue
+
+                                                    # TODO: parse JTAG information
+                                                    jtag_fields = value.split(',')
+                                                    if jtag_fields[0].lower() == 'yes':
+                                                        device.has_jtag = 'yes'
+
                                                 # third party firmware
                                                 elif identifier in ['tpfirmware', 'tp_firmware']:
                                                     if '<!-- Third' in value:
@@ -1107,17 +1118,6 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         if len(value) == 2:
                                                             num_asin = defaults.KNOWN_ASIN_COUNTRY_IDENTIFIERS.index(identifier)
                                                             device.commercial.amazon_asin[num_asin].country = value
-
-                                                    # JTAG
-                                                    elif identifier == 'jtag':
-                                                        if value.lower() in ['no', 'none,']:
-                                                            device.has_jtag = 'no'
-                                                            continue
-
-                                                        # TODO: parse JTAG information
-                                                        jtag_fields = value.split(',')
-                                                        if jtag_fields[0].lower() == 'yes':
-                                                            device.has_jtag = 'yes'
 
                                                     # cpu
                                                     elif identifier in ['cpu1chip1', 'cpu2chip1']:
