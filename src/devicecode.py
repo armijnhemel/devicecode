@@ -1070,11 +1070,10 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         device.additional_chips.append(chip_result)
 
                                                 # various OUI
-                                                elif identifier in ['ethoui', 'oui']:
+                                                elif identifier in ['ethoui', 'oui_eth', 'oui']:
                                                     ouis = parse_oui(value.upper())
                                                     for oui_value in ouis:
-                                                        break
-                                                        if identifier == 'ethoui':
+                                                        if identifier in ['ethoui', 'oui_eth']:
                                                             device.network.ethernet_oui.append(oui_value)
                                                         elif identifier == 'oui':
                                                             device.network.wireless_oui.append(oui_value)
