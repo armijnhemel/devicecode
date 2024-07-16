@@ -11,8 +11,12 @@ BAUD_RATES = [9600, 19200, 38400, 57600, 115200, 921600, 1500000]
 # sometimes different names are used for the same brand
 BRAND_REWRITE = {'FON Wireless': 'Fon Wireless',
                  'CFeon': 'cFeon',
+                 'GCT': 'GCT Semiconductor',
                  'Piecemakers': 'PieceMakers',
                  'Sandisk': 'SanDisk',
+                 'STMicro': 'STMicroelectronics',
+                 'ST Micro': 'STMicroelectronics',
+                 'ST Microelectronics': 'STMicroelectronics',
                  'TenPao': 'Ten Pao',
                  'TI': 'Texas Instruments',
                  'TP-Link': 'TP-LINK'}
@@ -68,7 +72,7 @@ EXPANSION_REWRITE = {'usb': 'USB',
                      'usb (unk. version)': 'USB (unknown version)'}
 
 # a lookup table for default values for each of the
-# identifiers which should be ignored.
+# identifiers in the TechInfoDepot data which should be ignored.
 # For some fields different default values were used over time.
 DEFAULT_VALUE = {
     '802.1qvlan': ['<!-- Support for 802.1q vlan tagging, Leave blank for unknown -->'],
@@ -478,6 +482,7 @@ CHIP_MANUFACTURERS = {
     'cFeon': set(),
     'Cirrus Logic': set(),
     'Conexant': set(),
+    'CopperGate': set(),
     'Cortina Systems': set(),
     'Davicom': set(),
     'D-Link': set(),
@@ -489,7 +494,7 @@ CHIP_MANUFACTURERS = {
     'Freescale': set(),
     'Fujitsu': set(),
     'GainSpan': set(),
-    'GCT': set(),
+    'GCT Semiconductor': set(),
     'Globespan Virata': set(),
     'Grain Media': set(),
     'HiSilicon': set(),
@@ -538,6 +543,7 @@ CHIP_MANUFACTURERS = {
     'PMC-Sierra': set(),
     'Prolific': set(),
     'ProMOS': set(),
+    'Qorvo': set(),
     'Qualcomm': set(),
     'Qualcomm Atheros': set(),
     'Quantenna': set(),
@@ -547,6 +553,7 @@ CHIP_MANUFACTURERS = {
     'Realtek': REALTEK_CHIPS,
     'Renesas': set(),
     'RFMD': set(),
+    'Richwave': set(),
     'Rockchip': set(),
     'Samsung': set(),
     'SanDisk': set(),
@@ -559,13 +566,14 @@ CHIP_MANUFACTURERS = {
     'Silicon Data': set(),
     'SK hynix': set(),
     'Skyviia': set(),
+    'Skyworks': set(),
     'SonicWALL': set(),
     'Sonix': set(),
     'Spansion': set(),
     'SST': set(),
     'Star': set(),
     'ST-Ericsson': set(),
-    'STMicro': set(),
+    'STMicroelectronics': set(),
     'Storlink': set(),
     'Synaptics': set(),
     'Texas Instruments': set(),
