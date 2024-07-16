@@ -1335,9 +1335,12 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                         if (wiki_device_directory / model_name).exists():
                             new_file = False
                             with open(wiki_device_directory / model_name, 'r') as json_file:
-                                existing_json = json.dumps(json.load(json_file))
-                                if existing_json == json_data:
-                                    continue
+                                try:
+                                    existing_json = json.dumps(json.load(json_file))
+                                    if existing_json == json_data:
+                                        continue
+                                except json.decoder.JSONDecodeError:
+                                    pass
 
                         # write to a file in the correct Git directory
                         with open(wiki_device_directory / model_name, 'w') as json_file:
