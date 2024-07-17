@@ -11,6 +11,8 @@ BAUD_RATES = [9600, 19200, 38400, 57600, 115200, 921600, 1500000]
 # sometimes different names are used for the same brand
 BRAND_REWRITE = {'FON Wireless': 'Fon Wireless',
                  'CFeon': 'cFeon',
+                 'Brite-view': 'brite-View',
+                 'Brite-View': 'brite-View',
                  'GCT': 'GCT Semiconductor',
                  'Piecemakers': 'PieceMakers',
                  'Sandisk': 'SanDisk',
