@@ -76,7 +76,7 @@ class DevicecodeUI(App):
                 pass
 
         # build the brand_tree.
-        brand_tree: Tree[dict] = Tree("DeviceCode results")
+        brand_tree: Tree[dict] = Tree("DeviceCode brand results")
         brand_tree.show_root = False
         brand_tree.root.expand()
 
@@ -87,7 +87,7 @@ class DevicecodeUI(App):
                  model_node = node.add_leaf(model['model'])
 
         # build the oem_tree.
-        oem_tree: Tree[dict] = Tree("DeviceCode results")
+        oem_tree: Tree[dict] = Tree("DeviceCode OEM results")
         oem_tree.show_root = False
         oem_tree.root.expand()
 
@@ -104,6 +104,9 @@ class DevicecodeUI(App):
         # not have any associated data with it.
         self.static_widget = Static(Group(self.build_meta_report(None)))
 
+        # yield the elements. The UI is a container with an app grid. On the left
+        # there are some tabs, each containing a tree. On the right there is a
+        # an area to display the results.
         with Container(id='app-grid'):
             with TabbedContent():
                 with TabPane('Brand view'):
@@ -114,7 +117,9 @@ class DevicecodeUI(App):
                 yield self.static_widget
 
         # show the footer with controls
-        yield Footer()
+        footer = Footer()
+        footer.ctrl_to_caret = False
+        yield footer
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass
