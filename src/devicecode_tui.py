@@ -66,7 +66,7 @@ class DevicecodeUI(App):
 
                      manufacturer_name = device['manufacturer']['name']
                      if manufacturer_name == '':
-                         manufacturer_name = 'UNKNOWN'
+                         manufacturer_name = '***UNKNOWN***'
                      if manufacturer_name not in oem_to_devices:
                          oem_to_devices[manufacturer_name] = {}
                      if brand_name not in oem_to_devices[manufacturer_name]:
