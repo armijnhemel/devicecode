@@ -44,7 +44,7 @@ class DevicecodeUI(App):
     def compose(self) -> ComposeResult:
         # store a mapping of brands to devices
         brands_to_devices = {}
-        oem_to_devices = {}
+        odm_to_devices = {}
         chip_vendors_to_devices = {}
 
         # process all the JSON files in the directory
@@ -67,11 +67,11 @@ class DevicecodeUI(App):
                      manufacturer_name = device['manufacturer']['name']
                      if manufacturer_name == '':
                          manufacturer_name = '***UNKNOWN***'
-                     if manufacturer_name not in oem_to_devices:
-                         oem_to_devices[manufacturer_name] = {}
-                     if brand_name not in oem_to_devices[manufacturer_name]:
-                         oem_to_devices[manufacturer_name][brand_name] = []
-                     oem_to_devices[manufacturer_name][brand_name].append({'model': model})
+                     if manufacturer_name not in odm_to_devices:
+                         odm_to_devices[manufacturer_name] = {}
+                     if brand_name not in odm_to_devices[manufacturer_name]:
+                         odm_to_devices[manufacturer_name][brand_name] = []
+                     odm_to_devices[manufacturer_name][brand_name].append({'model': model})
             except json.decoder.JSONDecodeError:
                 pass
 
@@ -86,18 +86,18 @@ class DevicecodeUI(App):
             for model in sorted(brands_to_devices[brand], key=lambda x: x['model']):
                  model_node = node.add_leaf(model['model'])
 
-        # build the oem_tree.
-        oem_tree: Tree[dict] = Tree("DeviceCode OEM results")
-        oem_tree.show_root = False
-        oem_tree.root.expand()
+        # build the odm_tree.
+        odm_tree: Tree[dict] = Tree("DeviceCode OEM results")
+        odm_tree.show_root = False
+        odm_tree.root.expand()
 
-        for manufacturer in sorted(oem_to_devices.keys(), key=str.casefold):
+        for manufacturer in sorted(odm_to_devices.keys(), key=str.casefold):
             # add each manufacturer as a node. Then add each brand as a subtree
             # and each model as a leaf TODO
-            node = oem_tree.root.add(manufacturer, expand=True)
-            for brand in sorted(oem_to_devices[manufacturer]):
+            node = odm_tree.root.add(manufacturer, expand=True)
+            for brand in sorted(odm_to_devices[manufacturer]):
                  brand_node = node.add(brand)
-                 for model in sorted(oem_to_devices[manufacturer][brand], key=lambda x: x['model']):
+                 for model in sorted(odm_to_devices[manufacturer][brand], key=lambda x: x['model']):
                      model_node = brand_node.add_leaf(model['model'])
 
         # Create a table with the results. The root element will
@@ -113,8 +113,8 @@ class DevicecodeUI(App):
                 with TabbedContent():
                     with TabPane('Brand view'):
                         yield brand_tree
-                    with TabPane('OEM view'):
-                        yield oem_tree
+                    with TabPane('ODM view'):
+                        yield odm_tree
                     with TabPane('Filter view'):
                         yield Input(placeholder='Filter')
             with VerticalScroll(id='result-area'):
