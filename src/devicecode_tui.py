@@ -19,7 +19,7 @@ import rich.table
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, VerticalScroll
-from textual.widgets import Footer, Markdown, Static, Tree, TabbedContent, TabPane
+from textual.widgets import Footer, Markdown, Static, Tree, TabbedContent, TabPane, Input, Header
 from textual.widgets.tree import TreeNode
 
 #from textual.logging import TextualHandler
@@ -107,12 +107,16 @@ class DevicecodeUI(App):
         # yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
         # an area to display the results.
+        yield Header()
         with Container(id='app-grid'):
-            with TabbedContent():
-                with TabPane('Brand view'):
-                    yield brand_tree
-                with TabPane('OEM view'):
-                    yield oem_tree
+            with Container(id='left-grid'):
+                with TabbedContent():
+                    with TabPane('Brand view'):
+                        yield brand_tree
+                    with TabPane('OEM view'):
+                        yield oem_tree
+                    with TabPane('Filter view'):
+                        yield Input(placeholder='Filter')
             with VerticalScroll(id='result-area'):
                 yield self.static_widget
 
