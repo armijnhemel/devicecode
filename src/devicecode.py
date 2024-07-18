@@ -879,7 +879,8 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     # copy the brand. This assumes that the
                                                     # brand is already known (which has been
                                                     # the case in all data seen so far)
-                                                    device.manufacturer.name = device.brand
+                                                    if value.lower() in ['yes', 'yesyes', 'true']:
+                                                        device.manufacturer.name = device.brand
 
                                                 # regulatory
                                                 elif identifier in ['fccapprovdate', 'fcc_date']:
