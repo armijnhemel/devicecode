@@ -89,7 +89,7 @@ class DevicecodeUI(App):
 
         for brand in sorted(brands_to_devices.keys(), key=str.casefold):
             # add each brand as a node. Then add each model as a leaf.
-            node = brand_tree.root.add(brand, expand=True)
+            node = brand_tree.root.add(brand, expand=False)
             for model in sorted(brands_to_devices[brand], key=lambda x: x['model']):
                  model_node = node.add_leaf(model['model'], data=model['data'])
 
@@ -101,7 +101,7 @@ class DevicecodeUI(App):
         for manufacturer in sorted(odm_to_devices.keys(), key=str.casefold):
             # add each manufacturer as a node. Then add each brand as a subtree
             # and each model as a leaf TODO
-            node = odm_tree.root.add(manufacturer, expand=True)
+            node = odm_tree.root.add(manufacturer, expand=False)
             for brand in sorted(odm_to_devices[manufacturer]):
                  brand_node = node.add(brand)
                  for model in sorted(odm_to_devices[manufacturer][brand], key=lambda x: x['model']):
