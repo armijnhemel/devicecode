@@ -62,7 +62,7 @@ class DevicecodeUI(App):
                      if device['model']['revision'] != '':
                          model += " "
                          model += device['model']['revision']
-                     brands_to_devices[brand_name].append({'model': model})
+                     brands_to_devices[brand_name].append({'model': model, 'data': device})
 
                      manufacturer_name = device['manufacturer']['name']
                      if manufacturer_name == '':
@@ -71,7 +71,7 @@ class DevicecodeUI(App):
                          odm_to_devices[manufacturer_name] = {}
                      if brand_name not in odm_to_devices[manufacturer_name]:
                          odm_to_devices[manufacturer_name][brand_name] = []
-                     odm_to_devices[manufacturer_name][brand_name].append({'model': model})
+                     odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device})
             except json.decoder.JSONDecodeError:
                 pass
 
@@ -84,7 +84,7 @@ class DevicecodeUI(App):
             # add each brand as a node. Then add each model as a leaf.
             node = brand_tree.root.add(brand, expand=True)
             for model in sorted(brands_to_devices[brand], key=lambda x: x['model']):
-                 model_node = node.add_leaf(model['model'])
+                 model_node = node.add_leaf(model['model'], data=model['data'])
 
         # build the odm_tree.
         odm_tree: Tree[dict] = Tree("DeviceCode OEM results")
@@ -98,7 +98,7 @@ class DevicecodeUI(App):
             for brand in sorted(odm_to_devices[manufacturer]):
                  brand_node = node.add(brand)
                  for model in sorted(odm_to_devices[manufacturer][brand], key=lambda x: x['model']):
-                     model_node = brand_node.add_leaf(model['model'])
+                     model_node = brand_node.add_leaf(model['model'], data=model['data'])
 
         # Create a table with the results. The root element will
         # not have any associated data with it.
@@ -130,7 +130,6 @@ class DevicecodeUI(App):
 
     def on_tree_node_selected(self, event: Tree.NodeSelected[None]) -> None:
         '''Display the reports of a node when it is selected'''
-        return
         if event.node.data is not None:
             self.static_widget.update(Group(self.build_meta_report(event.node.data)))
         else:
@@ -140,10 +139,32 @@ class DevicecodeUI(App):
         pass
 
     @group()
+    def create_chip_table(self, results):
+        result_table = rich.table.Table('', '', title='', show_lines=True, show_header=False, expand=True)
+        for r in results:
+            result_table.add_row('Description', r['description'])
+            result_table.add_row('Manufacturer', r['manufacturer'])
+            result_table.add_row('Model', r['model'])
+            result_table.add_row('Extra info', r['extra_info'])
+        yield result_table
+
+    @group()
     def build_meta_report(self, result):
         if result:
-            meta_table = rich.table.Table('', '', title='Data', show_lines=True, show_header=False)
-            meta_table.add_row('Path', '')
+            meta_table = rich.table.Table('', '', title=result['title'], show_lines=True, show_header=False)
+            meta_table.add_row('Brand', result['brand'])
+            meta_table.add_row('Model', str(result['model']))
+            if result['taglines']:
+                taglines = "\n".join(result['taglines'])
+                meta_table.add_row('Taglines', taglines)
+            if result['flags']:
+                flags = "\n".join(result['flags'])
+                meta_table.add_row('Flags', flags)
+
+            # then display the various information parts
+            meta_table.add_row('Data', str(result))
+            if result['additional_chips']:
+                meta_table.add_row('Additional chips', self.create_chip_table(result['additional_chips']))
             yield meta_table
 
 @click.command(short_help='Interactive DeviceCode result browser')
