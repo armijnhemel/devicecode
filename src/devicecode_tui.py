@@ -5,6 +5,7 @@
 
 import json
 import pathlib
+import shlex
 import sys
 
 from typing import Any
@@ -16,9 +17,11 @@ from rich.panel import Panel
 from rich import print_json
 import rich.table
 
+from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, VerticalScroll
+from textual.validation import Function, Number, ValidationResult, Validator
 from textual.widgets import Footer, Markdown, Static, Tree, TabbedContent, TabPane, Input, Header
 from textual.widgets.tree import TreeNode
 
@@ -29,6 +32,10 @@ from textual.widgets.tree import TreeNode
     #handlers=[TextualHandler()],
 #)
 
+class FilterValidator(Validator):
+    '''Syntax validator for the filtering language.'''
+    def validate(self, value: str) -> ValidationResult:
+        return self.success()
 
 class DevicecodeUI(App):
     BINDINGS = [
@@ -100,6 +107,11 @@ class DevicecodeUI(App):
                  for model in sorted(odm_to_devices[manufacturer][brand], key=lambda x: x['model']):
                      model_node = brand_node.add_leaf(model['model'], data=model['data'])
 
+        # build the filter_tree.
+        self.filter_tree: Tree[dict] = Tree("DeviceCode filtered results")
+        self.filter_tree.show_root = False
+        self.filter_tree.root.expand()
+
         # Create a table with the results. The root element will
         # not have any associated data with it.
         self.static_widget = Static(Group(self.build_meta_report(None)))
@@ -116,7 +128,8 @@ class DevicecodeUI(App):
                     with TabPane('ODM view'):
                         yield odm_tree
                     with TabPane('Filter view'):
-                        yield Input(placeholder='Filter')
+                        yield Input(placeholder='Filter', validators=[FilterValidator()])
+                        yield self.filter_tree
             with VerticalScroll(id='result-area'):
                 yield self.static_widget
 
@@ -124,6 +137,13 @@ class DevicecodeUI(App):
         footer = Footer()
         footer.ctrl_to_caret = False
         yield footer
+
+    @on(Input.Submitted)
+    def process_filter(self, event: Input.Submitted) -> None:
+        '''Process the filter, create new tree'''
+        # Assume that the input was already validated.
+        if event.validation_result.is_valid:
+            self.static_widget.update(f'{event.value}, {event.validation_result.is_valid}')
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass
