@@ -54,8 +54,11 @@ and optionally sort by:
 ### Filtering language
 
 The filtering language is fairly simple. There are statements, (implicit)
-operators (for combining results) and moderators (for sorting). Statements are
-of the form:
+operators (for combining results) and sorters (for sorting).
+
+#### Statements
+
+Statements resemble bash shell commands and exports and are of the form:
 
 ```
 identifier=value
@@ -106,6 +109,9 @@ should be read as:
 ```
 (odm=edimax OR odm=accton) AND brand=asus
 ```
+
+#### Sorting
+
 
 [rich]:https://github.com/Textualize/rich
 [textual]:https://github.com/Textualize/textual
