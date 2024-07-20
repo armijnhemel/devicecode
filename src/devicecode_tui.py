@@ -35,6 +35,18 @@ from textual.widgets.tree import TreeNode
 class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
     def validate(self, value: str) -> ValidationResult:
+        # split the value into tokens
+        tokens = shlex.split(value.strip())
+        if tokens == []:
+            return self.failure("Empty string")
+
+        # verify each token
+        for t in tokens:
+            if '=' not in t:
+                return self.failure("Invalid identifier")
+            identifier, _ = t.split('=', maxsplit=1)
+            if identifier not in ['odm', 'chip', 'brand', 'list', 'sort']:
+                return self.failure("Invalid identifier")
         return self.success()
 
 class DevicecodeUI(App):
