@@ -40,7 +40,7 @@ class FilterValidator(Validator):
 
     def validate(self, value: str) -> ValidationResult:
         # split the value into tokens
-        tokens = shlex.split(value.strip())
+        tokens = shlex.split(value)
         if tokens == []:
             return self.failure("Empty string")
 
@@ -51,10 +51,10 @@ class FilterValidator(Validator):
             token_identifier, token_value = t.split('=', maxsplit=1)
             if token_identifier not in ['odm', 'chip', 'brand', 'list', 'sort']:
                 return self.failure("Invalid identifier")
-            if token_value.strip() == '':
+            if token_value == '':
                 return self.failure("Invalid identifier")
             if token_identifier == 'brand':
-                if token_value.strip().lower() not in self.brands:
+                if token_value.lower() not in self.brands:
                     return self.failure("Invalid brand")
         return self.success()
 
@@ -165,7 +165,7 @@ class DevicecodeUI(App):
     def process_filter(self, event: Input.Submitted) -> None:
         '''Process the filter, create new tree'''
         # input was already syntactically validated.
-        tokens = shlex.split(event.value.strip())
+        tokens = shlex.split(event.value)
 
         brands = []
         chips = []
