@@ -34,6 +34,10 @@ from textual.widgets.tree import TreeNode
 
 class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
+
+    def __init__(self, brands=[]):
+        self.brands = brands
+
     def validate(self, value: str) -> ValidationResult:
         # split the value into tokens
         tokens = shlex.split(value.strip())
@@ -49,6 +53,9 @@ class FilterValidator(Validator):
                 return self.failure("Invalid identifier")
             if token_value.strip() == '':
                 return self.failure("Invalid identifier")
+            if token_identifier == 'brand':
+                if token_value.strip().lower() not in self.brands:
+                    return self.failure("Invalid brand")
         return self.success()
 
 class DevicecodeUI(App):
@@ -67,6 +74,7 @@ class DevicecodeUI(App):
         brands_to_devices = {}
         odm_to_devices = {}
         chip_vendors_to_devices = {}
+        brands = []
 
         # process all the JSON files in the directory
         for result_file in self.devicecode_directory.glob('**/*'):
@@ -84,6 +92,7 @@ class DevicecodeUI(App):
                          model += " "
                          model += device['model']['revision']
                      brands_to_devices[brand_name].append({'model': model, 'data': device})
+                     brands.append(brand_name.lower())
 
                      manufacturer_name = device['manufacturer']['name']
                      if manufacturer_name == '':
@@ -142,7 +151,7 @@ class DevicecodeUI(App):
                     with TabPane('ODM view'):
                         yield odm_tree
                     with TabPane('Filter view'):
-                        yield Input(placeholder='Filter', validators=[FilterValidator()])
+                        yield Input(placeholder='Filter', validators=[FilterValidator(brands=brands)])
                         yield self.filter_tree
             with VerticalScroll(id='result-area'):
                 yield self.static_widget
