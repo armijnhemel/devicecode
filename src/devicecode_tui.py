@@ -44,8 +44,10 @@ class FilterValidator(Validator):
         for t in tokens:
             if '=' not in t:
                 return self.failure("Invalid identifier")
-            identifier, _ = t.split('=', maxsplit=1)
-            if identifier not in ['odm', 'chip', 'brand', 'list', 'sort']:
+            token_identifier, token_value = t.split('=', maxsplit=1)
+            if token_identifier not in ['odm', 'chip', 'brand', 'list', 'sort']:
+                return self.failure("Invalid identifier")
+            if token_value.strip() == '':
                 return self.failure("Invalid identifier")
         return self.success()
 
