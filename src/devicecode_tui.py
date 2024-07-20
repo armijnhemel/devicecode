@@ -164,9 +164,24 @@ class DevicecodeUI(App):
     @on(Input.Submitted)
     def process_filter(self, event: Input.Submitted) -> None:
         '''Process the filter, create new tree'''
-        # Assume that the input was already validated.
+        # input was already syntactically validated.
+        tokens = shlex.split(event.value.strip())
+
+        brands = []
+        chips = []
+        odms = []
+
+        for t in tokens:
+            identifier, value = t.split('=', maxsplit=1)
+            if identifier == 'brand':
+                brands.append(value)
+            elif identifier == 'odm':
+                odms.append(value)
+            elif identifier == 'chip':
+                chips.append(value)
+
         if event.validation_result.is_valid:
-            self.static_widget.update(f'{event.value}, {event.validation_result.is_valid}')
+            self.static_widget.update(f'{tokens}')
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass
