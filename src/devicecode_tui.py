@@ -76,6 +76,8 @@ class DevicecodeUI(App):
         chip_vendors_to_devices = {}
         brands = []
 
+        self.devices = []
+
         # process all the JSON files in the directory
         for result_file in self.devicecode_directory.glob('**/*'):
             if not result_file.is_file():
@@ -84,26 +86,29 @@ class DevicecodeUI(App):
             try:
                 with open(result_file, 'r') as wiki_file:
                      device = json.load(wiki_file)
-                     brand_name = device['brand']
-                     if brand_name not in brands_to_devices:
-                         brands_to_devices[brand_name] = []
-                     model = device['model']['model']
-                     if device['model']['revision'] != '':
-                         model += " "
-                         model += device['model']['revision']
-                     brands_to_devices[brand_name].append({'model': model, 'data': device})
-                     brands.append(brand_name.lower())
-
-                     manufacturer_name = device['manufacturer']['name']
-                     if manufacturer_name == '':
-                         manufacturer_name = '***UNKNOWN***'
-                     if manufacturer_name not in odm_to_devices:
-                         odm_to_devices[manufacturer_name] = {}
-                     if brand_name not in odm_to_devices[manufacturer_name]:
-                         odm_to_devices[manufacturer_name][brand_name] = []
-                     odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device})
+                     self.devices.append(device)
             except json.decoder.JSONDecodeError:
                 pass
+
+        for device in self.devices:
+             brand_name = device['brand']
+             if brand_name not in brands_to_devices:
+                 brands_to_devices[brand_name] = []
+             model = device['model']['model']
+             if device['model']['revision'] != '':
+                 model += " "
+                 model += device['model']['revision']
+             brands_to_devices[brand_name].append({'model': model, 'data': device})
+             brands.append(brand_name.lower())
+
+             manufacturer_name = device['manufacturer']['name']
+             if manufacturer_name == '':
+                 manufacturer_name = '***UNKNOWN***'
+             if manufacturer_name not in odm_to_devices:
+                 odm_to_devices[manufacturer_name] = {}
+             if brand_name not in odm_to_devices[manufacturer_name]:
+                 odm_to_devices[manufacturer_name][brand_name] = []
+             odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device})
 
         # build the brand_tree.
         brand_tree: Tree[dict] = Tree("DeviceCode brand results")
