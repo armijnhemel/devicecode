@@ -43,6 +43,7 @@ filter on a few attributes, such as:
 * chipset manufacturer
 * ODM
 * operating system
+* device type
 * etc.
 
 and optionally sort by:
@@ -69,6 +70,7 @@ where identifier can be one of:
 * `brand`
 * `odm`
 * `chip`
+* `type`
 
 Values are case insensitive.
 
