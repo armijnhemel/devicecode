@@ -881,6 +881,8 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     # the case in all data seen so far)
                                                     if value.lower() in ['yes', 'yesyes', 'true']:
                                                         device.manufacturer.name = device.brand
+                                                    else:
+                                                        device.manufacturer.name = defaults.BRAND_REWRITE.get(value, value)
 
                                                 # regulatory
                                                 elif identifier in ['fccapprovdate', 'fcc_date']:
