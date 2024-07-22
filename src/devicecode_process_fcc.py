@@ -23,7 +23,7 @@ TEXT_TO_FUNCTIONALITY = {
     'syslog': 'syslog',
 }
 
-REGEX_IP = re.compile('(\d+\\.\d+\\.\d+\\.\d+)(?::\d+)?')
+REGEX_IP = re.compile(r'(\d+\\.\d+\\.\d+\\.\d+)(?::\d+)?')
 
 # extract interesting information and patterns from extracted text
 def search_text(texts):
