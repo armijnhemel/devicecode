@@ -15,3 +15,13 @@ the image.
 
 OCR/image recognition might work, but for that a test set would first need to
 be built, and for that the same task needs to be done anyway.
+
+## Cross correlate OUI values with Wireshark OUI database
+
+Wireshark maintains an automatically generated database with OUI values:
+
+<https://www.wireshark.org/download/automated/data/manuf>
+
+For many devices the OUI values are known, so can be cross correlated. The data
+is extracted from Wireshark's source code, so assuming it is under the same
+license as Wireshark.

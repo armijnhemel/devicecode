@@ -27,7 +27,7 @@ have been forked from (a predecessor of) WikiDevi.
 
 ### Creating a dump file
 
-See [creating a dump file](doc/creating_a_dump_file.md)
+See [creating a dump file](doc/creating_a_dump_file.md).
 
 ### Running the scripts
 
@@ -46,8 +46,8 @@ $ git init
 ```
 
 but of course you could also use an existing Git clone from for example GitHub.
-You might want to change the value of `AUTHOR` (this will be made configurable
-soon).
+You might want to change the value of `AUTHOR` in the file `src/devicecode.py`
+(this will be made configurable soon).
 
 The script will create the following directory structure inside the Git
 repository:
