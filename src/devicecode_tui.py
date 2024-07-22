@@ -143,8 +143,9 @@ class DevicecodeUI(App):
         # Create a table with the results. The root element will
         # not have any associated data with it.
         self.static_widget = Static(Group(self.build_meta_report(None)))
+        self.fcc_static_widget = Static(Group(self.build_meta_report(None)))
 
-        # yield the elements. The UI is a container with an app grid. On the left
+        # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
         # an area to display the results.
         yield Header()
@@ -159,7 +160,11 @@ class DevicecodeUI(App):
                         yield Input(placeholder='Filter', validators=[FilterValidator(brands=brands)])
                         yield self.filter_tree
             with VerticalScroll(id='result-area'):
-                yield self.static_widget
+                with TabbedContent():
+                    with TabPane('Data'):
+                        yield self.static_widget
+                    with TabPane('FCC data'):
+                        yield self.fcc_static_widget
 
         # show the footer with controls
         footer = Footer()
