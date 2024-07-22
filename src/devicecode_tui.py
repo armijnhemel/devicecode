@@ -142,8 +142,9 @@ class DevicecodeUI(App):
 
         # Create a table with the results. The root element will
         # not have any associated data with it.
-        self.static_widget = Static(Group(self.build_meta_report(None)))
-        self.regulatory_static_widget = Static(Group(self.build_meta_report(None)))
+        self.device_data_area = Static(Group(self.build_meta_report(None)))
+        self.regulatory_data_area = Static(Group(self.build_meta_report(None)))
+        self.additional_chips_area = Static(Group(self.build_meta_report(None)))
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
@@ -161,10 +162,12 @@ class DevicecodeUI(App):
                         yield self.filter_tree
             with VerticalScroll(id='result-area'):
                 with TabbedContent():
-                    with TabPane('Data'):
-                        yield self.static_widget
+                    with TabPane('Device data'):
+                        yield self.device_data_area
                     with TabPane('Regulatory data'):
-                        yield self.regulatory_static_widget
+                        yield self.regulatory_data_area
+                    with TabPane('Additional chips'):
+                        yield self.additional_chips_area
 
         # show the footer with controls
         footer = Footer()
@@ -174,24 +177,24 @@ class DevicecodeUI(App):
     @on(Input.Submitted)
     def process_filter(self, event: Input.Submitted) -> None:
         '''Process the filter, create new tree'''
-        # input was already syntactically validated.
-        tokens = shlex.split(event.value)
-
-        brands = []
-        chips = []
-        odms = []
-
-        for t in tokens:
-            identifier, value = t.split('=', maxsplit=1)
-            if identifier == 'brand':
-                brands.append(value)
-            elif identifier == 'odm':
-                odms.append(value)
-            elif identifier == 'chip':
-                chips.append(value)
-
         if event.validation_result.is_valid:
-            self.static_widget.update(f'{tokens}')
+            # input was already syntactically validated.
+            tokens = shlex.split(event.value)
+
+            brands = []
+            chips = []
+            odms = []
+
+            for t in tokens:
+                identifier, value = t.split('=', maxsplit=1)
+                if identifier == 'brand':
+                    brands.append(value)
+                elif identifier == 'odm':
+                    odms.append(value)
+                elif identifier == 'chip':
+                    chips.append(value)
+
+            self.device_data_area.update(f'{tokens}')
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass
@@ -199,24 +202,29 @@ class DevicecodeUI(App):
     def on_tree_node_selected(self, event: Tree.NodeSelected[None]) -> None:
         '''Display the reports of a node when it is selected'''
         if event.node.data is not None:
-            self.static_widget.update(Group(self.build_meta_report(event.node.data)))
-            self.regulatory_static_widget.update(Group(self.build_regulatory_report(event.node.data['regulatory'])))
+            self.device_data_area.update(Group(self.build_meta_report(event.node.data)))
+            self.regulatory_data_area.update(Group(self.build_regulatory_report(event.node.data['regulatory'])))
+            self.additional_chips_area.update(Group(self.build_additional_chips_report(event.node.data['additional_chips'])))
         else:
-            self.static_widget.update()
-            self.regulatory_static_widget.update()
+            self.device_data_area.update()
+            self.regulatory_data_area.update()
+            self.additional_chips_area.update()
 
     def on_tree_node_collapsed(self, event: Tree.NodeCollapsed[None]) -> None:
         pass
 
     @group()
-    def create_chip_table(self, results):
-        result_table = rich.table.Table('', '', title='', show_lines=True, show_header=False, expand=True)
-        for r in results:
-            result_table.add_row('Description', r['description'])
-            result_table.add_row('Manufacturer', r['manufacturer'])
-            result_table.add_row('Model', r['model'])
-            result_table.add_row('Extra info', r['extra_info'])
-        yield result_table
+    def build_additional_chips_report(self, results):
+        if results:
+            result_table = rich.table.Table('', '', title='', show_lines=True, show_header=False, expand=True)
+            for r in results:
+                result_table.add_row('Description', r['description'])
+                result_table.add_row('Manufacturer', r['manufacturer'])
+                result_table.add_row('Model', r['model'])
+                result_table.add_row('Extra info', r['extra_info'])
+            yield result_table
+        else:
+            yield "No additional chips"
 
     @group()
     def build_regulatory_report(self, result):
@@ -245,8 +253,6 @@ class DevicecodeUI(App):
 
             # then display the various information parts
             meta_table.add_row('Data', str(result))
-            if result['additional_chips']:
-                meta_table.add_row('Additional chips', self.create_chip_table(result['additional_chips']))
             yield meta_table
 
 @click.command(short_help='Interactive DeviceCode result browser')
