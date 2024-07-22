@@ -14,6 +14,8 @@ let
     pdfminer
     pillow
     requests
+    rich
+    textual
   ]);
     
 in
