@@ -189,6 +189,11 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                 # Is this an error in pdfminer?
                                 # example: FCC ID: ODMAM5N, file: 1876480.pdf
                                 pass
+                            except PIL.UnidentifiedImageError as e:
+                                # TODO: fix this.
+                                # example: FCC ID: HDCWLAN192XF1, file 1930164.pdf
+                                # could be related to missing JPEG2000 support.
+                                pass
                         else:
                             try:
                                 if element.get_text().strip() != '':
