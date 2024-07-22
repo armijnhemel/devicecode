@@ -143,7 +143,7 @@ class DevicecodeUI(App):
         # Create a table with the results. The root element will
         # not have any associated data with it.
         self.static_widget = Static(Group(self.build_meta_report(None)))
-        self.fcc_static_widget = Static(Group(self.build_meta_report(None)))
+        self.regulatory_static_widget = Static(Group(self.build_meta_report(None)))
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
@@ -163,8 +163,8 @@ class DevicecodeUI(App):
                 with TabbedContent():
                     with TabPane('Data'):
                         yield self.static_widget
-                    with TabPane('FCC data'):
-                        yield self.fcc_static_widget
+                    with TabPane('Regulatory data'):
+                        yield self.regulatory_static_widget
 
         # show the footer with controls
         footer = Footer()
@@ -200,8 +200,10 @@ class DevicecodeUI(App):
         '''Display the reports of a node when it is selected'''
         if event.node.data is not None:
             self.static_widget.update(Group(self.build_meta_report(event.node.data)))
+            self.regulatory_static_widget.update(Group(self.build_regulatory_report(event.node.data['regulatory'])))
         else:
             self.static_widget.update()
+            self.regulatory_static_widget.update()
 
     def on_tree_node_collapsed(self, event: Tree.NodeCollapsed[None]) -> None:
         pass
@@ -215,6 +217,18 @@ class DevicecodeUI(App):
             result_table.add_row('Model', r['model'])
             result_table.add_row('Extra info', r['extra_info'])
         yield result_table
+
+    @group()
+    def build_regulatory_report(self, result):
+        if result:
+            meta_table = rich.table.Table('', '', title='Regulatory', show_lines=True, show_header=False, expand=True)
+            meta_table.add_row('FCC date', result['fcc_date'])
+            meta_table.add_row('FCC ids', '\n'.join(result['fcc_ids']))
+            meta_table.add_row('Industry Canada ids', '\n'.join(result['industry_canada_ids']))
+            meta_table.add_row('US ids', '\n'.join(result['us_ids']))
+            meta_table.add_row('WiFi certified', result['wifi_certified'])
+            meta_table.add_row('WiFi date', result['wifi_certified_date'])
+            yield meta_table
 
     @group()
     def build_meta_report(self, result):
