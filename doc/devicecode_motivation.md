@@ -26,11 +26,12 @@ reuse in other contexts than the particular wiki.
 This is where DeviceCode comes in: it unlocks the information from various
 wikis, cleans it up (as not all users enter data correctly, or differently from
 other users) and enables combining this information with other data sources
-such as VulnerableCode, making it possible to query on chipset, chipset
-manufacturer, ODM, and possibly other information such as installed software,
-to answer the question "Which other devices are similar to a known vulnerable
-device?" to allow security researchers to zoom in on these devices and to
-uncover more vulnerable devices.
+such as [VulnerableCode][vulnerablecode], making it possible to query on
+chipset, chipset manufacturer, ODM, and possibly other information such as
+installed software, to answer the question "Which other devices are similar to
+a known vulnerable device?" to allow security researchers to zoom in on these
+devices and to uncover more vulnerable devices.
 
 [cve-2006-2560]:https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-2560
 [cve-2006-2561]:https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-2561
+[vulnerablecode]:https://github.com/nexB/vulnerablecode/
