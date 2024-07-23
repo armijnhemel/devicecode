@@ -25,3 +25,11 @@ Wireshark maintains an automatically generated database with OUI values:
 For many devices the OUI values are known, so can be cross correlated. The data
 is extracted from Wireshark's source code, so assuming it is under the same
 license as Wireshark.
+
+## Explore using a standard structured data format such as RDF
+
+Data is currently stored as JSON files. It might be good to use a more
+structured data format such as RDF, or others, to reap the benefits of using
+tools available for those formats (such as SPARQL for RDF).
+
+Alternatively, look at representing a device as a graph.
