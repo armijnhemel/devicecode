@@ -473,9 +473,25 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
             if child.nodeName == 'title':
                 # first store the title of the page but skip
                 # special pages such as 'Category' pages
+                # (TechInfoDepot only)
                 title = child.childNodes[0].data
                 if title.startswith('Category:'):
                     break
+
+            elif child.nodeName == 'ns':
+                # devices can only be found in namespace 0 in both
+                # techinfodepot and wikidevi.
+                namespace = int(child.childNodes[0].data)
+                if namespace != 0:
+                    break
+
+                # store the original data (per page)
+                # TODO: add support for Git
+                out_name = f"{title}.xml"
+                out_name = out_name.replace('/', '-')
+                with open(wiki_original_directory / out_name, 'w') as out_file:
+                    out_file.write(p.toxml())
+
             elif child.nodeName == 'revision':
                 # further process the device data
                 valid_device = True
@@ -485,12 +501,6 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                         # create a new Device() for each entry
                         device = Device()
                         device.title = title
-
-                        # store the original data (per page)
-                        out_name = f"{title}.xml"
-                        out_name = out_name.replace('/', '-')
-                        with open(wiki_original_directory / out_name, 'w') as out_file:
-                            out_file.write(p.toxml())
 
                         # grab the wiki text and parse it. This data
                         # is in the <text> element
