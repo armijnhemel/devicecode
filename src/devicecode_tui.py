@@ -110,35 +110,13 @@ class DevicecodeUI(App):
                  odm_to_devices[manufacturer_name][brand_name] = []
              odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device})
 
-        # build the brand_tree.
-        brand_tree: Tree[dict] = Tree("DeviceCode brand results")
-        brand_tree.show_root = False
-        brand_tree.root.expand()
-
-        for brand in sorted(brands_to_devices.keys(), key=str.casefold):
-            # add each brand as a node. Then add each model as a leaf.
-            node = brand_tree.root.add(brand, expand=False)
-            for model in sorted(brands_to_devices[brand], key=lambda x: x['model']):
-                 model_node = node.add_leaf(model['model'], data=model['data'])
-
-        # build the odm_tree.
-        odm_tree: Tree[dict] = Tree("DeviceCode OEM results")
-        odm_tree.show_root = False
-        odm_tree.root.expand()
-
-        for manufacturer in sorted(odm_to_devices.keys(), key=str.casefold):
-            # add each manufacturer as a node. Then add each brand as a subtree
-            # and each model as a leaf TODO
-            node = odm_tree.root.add(manufacturer, expand=False)
-            for brand in sorted(odm_to_devices[manufacturer], key=str.casefold):
-                 brand_node = node.add(brand)
-                 for model in sorted(odm_to_devices[manufacturer][brand], key=lambda x: x['model']):
-                     model_node = brand_node.add_leaf(model['model'], data=model['data'])
-
         # build the filter_tree.
         self.filter_tree: Tree[dict] = Tree("DeviceCode filtered results")
         self.filter_tree.show_root = False
         self.filter_tree.root.expand()
+
+        brand_tree = self.build_brand_tree(brands_to_devices)
+        odm_tree = self.build_odm_tree(odm_to_devices)
 
         # Create a table with the results. The root element will
         # not have any associated data with it.
@@ -173,6 +151,35 @@ class DevicecodeUI(App):
         footer = Footer()
         footer.ctrl_to_caret = False
         yield footer
+
+    def build_brand_tree(self, brands_to_devices):
+        # build the brand_tree.
+        brand_tree: Tree[dict] = Tree("DeviceCode brand results")
+        brand_tree.show_root = False
+        brand_tree.root.expand()
+
+        for brand in sorted(brands_to_devices.keys(), key=str.casefold):
+            # add each brand as a node. Then add each model as a leaf.
+            node = brand_tree.root.add(brand, expand=False)
+            for model in sorted(brands_to_devices[brand], key=lambda x: x['model']):
+                 model_node = node.add_leaf(model['model'], data=model['data'])
+        return brand_tree
+
+    def build_odm_tree(self, odm_to_devices):
+        # build the odm_tree.
+        odm_tree: Tree[dict] = Tree("DeviceCode OEM results")
+        odm_tree.show_root = False
+        odm_tree.root.expand()
+
+        for manufacturer in sorted(odm_to_devices.keys(), key=str.casefold):
+            # add each manufacturer as a node. Then add each brand as a subtree
+            # and each model as a leaf TODO
+            node = odm_tree.root.add(manufacturer, expand=False)
+            for brand in sorted(odm_to_devices[manufacturer], key=str.casefold):
+                 brand_node = node.add(brand)
+                 for model in sorted(odm_to_devices[manufacturer][brand], key=lambda x: x['model']):
+                     model_node = brand_node.add_leaf(model['model'], data=model['data'])
+        return odm_tree
 
     @on(Input.Submitted)
     def process_filter(self, event: Input.Submitted) -> None:
