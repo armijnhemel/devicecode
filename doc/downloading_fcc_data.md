@@ -26,7 +26,9 @@ $ grep grantee_code results.xml | cut -f 2 -d '>' | cut -f 1 -d '<'
 ```
 
 The output of these commands can be used as in input to the FCC document
-fetching script, and perform extra sanity checks.
+fetching script, and perform extra sanity checks. Please note that sometimes
+grantee codes seem to be retired (although these might not have been used for
+actual devices).
 
 ## Downloading PDFs from fcc.report
 
