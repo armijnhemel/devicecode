@@ -456,6 +456,9 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
     wiki_device_directory = output_directory / wiki_type / 'devices'
     wiki_device_directory.mkdir(parents=True, exist_ok=True)
 
+    wiki_original_directory = output_directory / wiki_type / 'original'
+    wiki_original_directory.mkdir(parents=True, exist_ok=True)
+
     # now walk the XML. It depends on the dialect (WikiDevi, TechInfoDepot)
     # how the contents should be parsed, as the pages are laid out in
     # a slightly different way.
@@ -482,6 +485,12 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                         # create a new Device() for each entry
                         device = Device()
                         device.title = title
+
+                        # store the original data (per page)
+                        out_name = f"{title}.xml"
+                        out_name = out_name.replace('/', '-')
+                        with open(wiki_original_directory / out_name, 'w') as out_file:
+                            out_file.write(p.toxml())
 
                         # grab the wiki text and parse it. This data
                         # is in the <text> element
