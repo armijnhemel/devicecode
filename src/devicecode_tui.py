@@ -80,12 +80,17 @@ class BrandTree(Tree):
         super().__init__(*args, **kwargs)
         self.brands_to_devices = brands_to_devices
 
-    def build_tree(self, brands=[]):
+    def build_tree(self, **kwargs):
         # build the brand_tree.
         self.reset("DeviceCode brand results")
 
+        brands = kwargs.get('brands', [])
+        ignore_brands = kwargs.get('ignore_brands', [])
+
         for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
             if brands and brand.lower() not in brands:
+                continue
+            if ignore_brands and brand.lower() in ignore_brands:
                 continue
             # add each brand as a node. Then add each model as a leaf.
             node = self.root.add(brand, expand=False)
@@ -97,9 +102,15 @@ class OdmTree(Tree):
         super().__init__(*args, **kwargs)
         self.odm_to_devices = odm_to_devices
 
-    def build_tree(self, brands=[], chip_vendors=[], odms=[]):
+    def build_tree(self, **kwargs):
         # build the odm_tree.
         self.reset("DeviceCode OEM results")
+
+        brands = kwargs.get('brands', [])
+        chip_vendors = kwargs.get('chip_vendors', [])
+        ignore_brands = kwargs.get('ignore_brands', [])
+        ignore_odms = kwargs.get('ignore_odms', [])
+        odms = kwargs.get('odms', [])
 
         # add each manufacturer as a node. Then add each brand as a subtree
         # and each model as a leaf. Optionally filter for brands and prune.
@@ -112,6 +123,8 @@ class OdmTree(Tree):
             has_brand_leaves = False
             for brand in sorted(self.odm_to_devices[odm], key=str.casefold):
                 if brands and brand.lower() not in brands:
+                    continue
+                if ignore_brands and brand.lower() in ignore_brands:
                     continue
 
                 # recurse into the device and add nodes for
@@ -255,21 +268,29 @@ class DevicecodeUI(App):
                 brands = []
                 chips = []
                 chip_vendors = []
+                ignore_brands = []
+                ignore_odms = []
                 odms = []
 
                 for t in tokens:
                     identifier, value = t.split('=', maxsplit=1)
                     if identifier == 'brand':
                         brands.append(value.lower())
-                    elif identifier == 'odm':
-                        odms.append(value.lower())
                     elif identifier == 'chip':
                         chips.append(value.lower())
                     elif identifier == 'chip_vendor':
                         chip_vendors.append(value.lower())
+                    elif identifier == 'ignore_brand':
+                        ignore_brands.append(value.lower())
+                    elif identifier == 'ignore_odm':
+                        ignore_odms.append(value.lower())
+                    elif identifier == 'odm':
+                        odms.append(value.lower())
 
-                self.brand_tree.build_tree(brands=brands)
-                self.odm_tree.build_tree(brands=brands, odms=odms, chip_vendors=chip_vendors)
+                self.brand_tree.build_tree(brands=brands, odms=odms, chip_vendors=chip_vendors,
+                                           ignore_brands=ignore_brands)
+                self.odm_tree.build_tree(brands=brands, odms=odms, chip_vendors=chip_vendors,
+                                           ignore_brands=ignore_brands)
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass
