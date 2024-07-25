@@ -58,6 +58,43 @@ class FilterValidator(Validator):
                     return self.failure("Invalid brand")
         return self.success()
 
+class BrandTree(Tree):
+    def __init__(self, brands_to_devices, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.brands_to_devices = brands_to_devices
+
+    def build_tree(self, brands=[]):
+        # build the brand_tree.
+        self.reset("DeviceCode brand results")
+
+        for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
+            if brands and brand.lower() not in brands:
+                continue
+            # add each brand as a node. Then add each model as a leaf.
+            node = self.root.add(brand, expand=False)
+            for model in sorted(self.brands_to_devices[brand], key=lambda x: x['model']):
+                 model_node = node.add_leaf(model['model'], data=model['data'])
+
+class OdmTree(Tree):
+    def __init__(self, odm_to_devices, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.odm_to_devices = odm_to_devices
+
+    def build_tree(self, odms=[]):
+        # build the odm_tree.
+        self.reset("DeviceCode OEM results")
+
+        for odm in sorted(self.odm_to_devices.keys(), key=str.casefold):
+            if odms and odm.lower() not in odms:
+                continue
+            # add each manufacturer as a node. Then add each brand as a subtree
+            # and each model as a leaf TODO
+            node = self.root.add(odm, expand=False)
+            for brand in sorted(self.odm_to_devices[odm], key=str.casefold):
+                 brand_node = node.add(brand)
+                 for model in sorted(self.odm_to_devices[odm][brand], key=lambda x: x['model']):
+                     model_node = brand_node.add_leaf(model['model'], data=model['data'])
+
 class DevicecodeUI(App):
     BINDINGS = [
         Binding(key="ctrl+q", action="quit", description="Quit"),
@@ -115,8 +152,15 @@ class DevicecodeUI(App):
         self.filter_tree.show_root = False
         self.filter_tree.root.expand()
 
-        brand_tree = self.build_brand_tree(brands_to_devices)
-        odm_tree = self.build_odm_tree(odm_to_devices)
+        self.brand_tree: BrandTree[dict] = BrandTree(brands_to_devices, "DeviceCode brand results")
+        self.brand_tree.show_root = False
+        self.brand_tree.root.expand()
+        self.brand_tree.build_tree()
+
+        self.odm_tree: OdmTree[dict] = OdmTree(odm_to_devices, "DeviceCode ODM results")
+        self.odm_tree.show_root = False
+        self.odm_tree.root.expand()
+        self.odm_tree.build_tree()
 
         # Create a table with the results. The root element will
         # not have any associated data with it.
@@ -130,14 +174,12 @@ class DevicecodeUI(App):
         yield Header()
         with Container(id='app-grid'):
             with Container(id='left-grid'):
+                yield Input(placeholder='Filter', validators=[FilterValidator(brands=brands)], valid_empty=True)
                 with TabbedContent():
                     with TabPane('Brand view'):
-                        yield brand_tree
+                        yield self.brand_tree
                     with TabPane('ODM view'):
-                        yield odm_tree
-                    with TabPane('Filter view'):
-                        yield Input(placeholder='Filter', validators=[FilterValidator(brands=brands)])
-                        yield self.filter_tree
+                        yield self.odm_tree
             with VerticalScroll(id='result-area'):
                 with TabbedContent():
                     with TabPane('Device data'):
@@ -152,56 +194,32 @@ class DevicecodeUI(App):
         footer.ctrl_to_caret = False
         yield footer
 
-    def build_brand_tree(self, brands_to_devices):
-        # build the brand_tree.
-        brand_tree: Tree[dict] = Tree("DeviceCode brand results")
-        brand_tree.show_root = False
-        brand_tree.root.expand()
-
-        for brand in sorted(brands_to_devices.keys(), key=str.casefold):
-            # add each brand as a node. Then add each model as a leaf.
-            node = brand_tree.root.add(brand, expand=False)
-            for model in sorted(brands_to_devices[brand], key=lambda x: x['model']):
-                 model_node = node.add_leaf(model['model'], data=model['data'])
-        return brand_tree
-
-    def build_odm_tree(self, odm_to_devices):
-        # build the odm_tree.
-        odm_tree: Tree[dict] = Tree("DeviceCode OEM results")
-        odm_tree.show_root = False
-        odm_tree.root.expand()
-
-        for manufacturer in sorted(odm_to_devices.keys(), key=str.casefold):
-            # add each manufacturer as a node. Then add each brand as a subtree
-            # and each model as a leaf TODO
-            node = odm_tree.root.add(manufacturer, expand=False)
-            for brand in sorted(odm_to_devices[manufacturer], key=str.casefold):
-                 brand_node = node.add(brand)
-                 for model in sorted(odm_to_devices[manufacturer][brand], key=lambda x: x['model']):
-                     model_node = brand_node.add_leaf(model['model'], data=model['data'])
-        return odm_tree
-
     @on(Input.Submitted)
     def process_filter(self, event: Input.Submitted) -> None:
         '''Process the filter, create new tree'''
-        if event.validation_result.is_valid:
-            # input was already syntactically validated.
-            tokens = shlex.split(event.value)
+        if event.validation_result is None:
+            self.brand_tree.build_tree()
+            self.brand_tree.odm_tree()
+        else:
+            if event.validation_result.is_valid:
+                # input was already syntactically validated.
+                tokens = shlex.split(event.value)
 
-            brands = []
-            chips = []
-            odms = []
+                brands = []
+                chips = []
+                odms = []
 
-            for t in tokens:
-                identifier, value = t.split('=', maxsplit=1)
-                if identifier == 'brand':
-                    brands.append(value)
-                elif identifier == 'odm':
-                    odms.append(value)
-                elif identifier == 'chip':
-                    chips.append(value)
+                for t in tokens:
+                    identifier, value = t.split('=', maxsplit=1)
+                    if identifier == 'brand':
+                        brands.append(value)
+                    elif identifier == 'odm':
+                        odms.append(value)
+                    elif identifier == 'chip':
+                        chips.append(value)
 
-            self.device_data_area.update(f'{tokens}')
+                self.brand_tree.build_tree(brands=brands)
+                self.odm_tree.build_tree(odms=odms)
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass
