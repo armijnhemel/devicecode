@@ -29,7 +29,6 @@ Currently there are three views:
 
 1. brand view: devices are sorted by brand
 2. ODM view: devices are sorted by ODM and then brand
-3. filter view: devices are sorted depending on a filter
 
 ## Filtering
 
@@ -46,16 +45,10 @@ filter on a few attributes, such as:
 * device type
 * etc.
 
-and optionally sort by:
-
-* brand
-* ODM
-* chipset manufacturer/chip
-
 ### Filtering language
 
-The filtering language is fairly simple. There are statements, (implicit)
-operators (for combining results) and sorters (for sorting).
+The filtering language is fairly simplewith statements and (implicit)
+operators (for combining results).
 
 #### Statements
 
@@ -68,8 +61,11 @@ identifier=value
 where identifier can be one of:
 
 * `brand`
-* `odm`
 * `chip`
+* `chip_vendor`
+* `ignore_brand`
+* `ignore_odm`
+* `odm`
 * `type`
 
 Values are case insensitive.
@@ -112,7 +108,12 @@ should be read as:
 (odm=edimax OR odm=accton) AND brand=asus
 ```
 
-#### Sorting
+In case there are special characters or spaces, then these can be quoted, for
+example:
+
+```
+brand="Banana Pi"
+```
 
 
 [rich]:https://github.com/Textualize/rich
