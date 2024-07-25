@@ -35,8 +35,9 @@ from textual.widgets.tree import TreeNode
 class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
 
-    def __init__(self, brands=[]):
+    def __init__(self, brands=[], odms=[]):
         self.brands = brands
+        self.odms = odms
 
     def validate(self, value: str) -> ValidationResult:
         # split the value into tokens
@@ -49,13 +50,16 @@ class FilterValidator(Validator):
             if '=' not in t:
                 return self.failure("Invalid identifier")
             token_identifier, token_value = t.split('=', maxsplit=1)
-            if token_identifier not in ['odm', 'chip', 'brand', 'list', 'sort', 'type']:
+            if token_identifier not in ['brand', 'chip', 'chip_vendor', 'odm', 'list', 'sort', 'type']:
                 return self.failure("Invalid identifier")
             if token_value == '':
                 return self.failure("Invalid identifier")
             if token_identifier == 'brand':
                 if token_value.lower() not in self.brands:
                     return self.failure("Invalid brand")
+            elif token_identifier == 'odm':
+                if token_value.lower() not in self.odms:
+                    return self.failure("Invalid ODM")
         return self.success()
 
 class BrandTree(Tree):
@@ -84,11 +88,11 @@ class OdmTree(Tree):
         # build the odm_tree.
         self.reset("DeviceCode OEM results")
 
+        # add each manufacturer as a node. Then add each brand as a subtree
+        # and each model as a leaf. Optionally filter for brands and prune.
         for odm in sorted(self.odm_to_devices.keys(), key=str.casefold):
             if odms and odm.lower() not in odms:
                 continue
-            # add each manufacturer as a node. Then add each brand as a subtree
-            # and each model as a leaf TODO
             have_brand = False
             for brand in sorted(self.odm_to_devices[odm], key=str.casefold):
                 if brands and brand.lower() not in brands:
@@ -122,6 +126,7 @@ class DevicecodeUI(App):
         odm_to_devices = {}
         chip_vendors_to_devices = {}
         brands = []
+        odms = []
 
         self.devices = []
 
@@ -156,6 +161,7 @@ class DevicecodeUI(App):
             if brand_name not in odm_to_devices[manufacturer_name]:
                 odm_to_devices[manufacturer_name][brand_name] = []
             odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device})
+            odms.append(manufacturer_name.lower())
 
         # build the filter_tree.
         self.filter_tree: Tree[dict] = Tree("DeviceCode filtered results")
@@ -184,7 +190,7 @@ class DevicecodeUI(App):
         yield Header()
         with Container(id='app-grid'):
             with Container(id='left-grid'):
-                yield Input(placeholder='Filter', validators=[FilterValidator(brands=brands)], valid_empty=True)
+                yield Input(placeholder='Filter', validators=[FilterValidator(brands=brands, odms=odms)], valid_empty=True)
                 with TabbedContent():
                     with TabPane('Brand view'):
                         yield self.brand_tree
@@ -217,6 +223,7 @@ class DevicecodeUI(App):
 
                 brands = []
                 chips = []
+                chip_vendors = []
                 odms = []
 
                 for t in tokens:
@@ -227,6 +234,8 @@ class DevicecodeUI(App):
                         odms.append(value)
                     elif identifier == 'chip':
                         chips.append(value)
+                    elif identifier == 'chip_vendor':
+                        chip_vendors.append(value)
 
                 self.brand_tree.build_tree(brands=brands)
                 self.odm_tree.build_tree(brands=brands, odms=odms)
