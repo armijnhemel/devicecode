@@ -41,26 +41,29 @@ class FilterValidator(Validator):
 
     def validate(self, value: str) -> ValidationResult:
         # split the value into tokens
-        tokens = shlex.split(value)
-        if tokens == []:
-            return self.failure("Empty string")
+        try:
+            tokens = shlex.split(value)
+            if tokens == []:
+                return self.failure("Empty string")
 
-        # verify each token
-        for t in tokens:
-            if '=' not in t:
-                return self.failure("Invalid identifier")
-            token_identifier, token_value = t.split('=', maxsplit=1)
-            if token_identifier not in ['brand', 'chip', 'chip_vendor', 'odm', 'list', 'sort', 'type']:
-                return self.failure("Invalid identifier")
-            if token_value == '':
-                return self.failure("Invalid identifier")
-            if token_identifier == 'brand':
-                if token_value.lower() not in self.brands:
-                    return self.failure("Invalid brand")
-            elif token_identifier == 'odm':
-                if token_value.lower() not in self.odms:
-                    return self.failure("Invalid ODM")
-        return self.success()
+            # verify each token
+            for t in tokens:
+                if '=' not in t:
+                    return self.failure("Invalid identifier")
+                token_identifier, token_value = t.split('=', maxsplit=1)
+                if token_identifier not in ['brand', 'chip', 'chip_vendor', 'odm', 'list', 'sort', 'type']:
+                    return self.failure("Invalid identifier")
+                if token_value == '':
+                    return self.failure("Invalid identifier")
+                if token_identifier == 'brand':
+                    if token_value.lower() not in self.brands:
+                        return self.failure("Invalid brand")
+                elif token_identifier == 'odm':
+                    if token_value.lower() not in self.odms:
+                        return self.failure("Invalid ODM")
+            return self.success()
+        except ValueError:
+            return self.failure('Incomplete')
 
 class BrandTree(Tree):
     def __init__(self, brands_to_devices, *args: Any, **kwargs: Any) -> None:
