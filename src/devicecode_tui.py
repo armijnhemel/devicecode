@@ -80,7 +80,7 @@ class OdmTree(Tree):
         super().__init__(*args, **kwargs)
         self.odm_to_devices = odm_to_devices
 
-    def build_tree(self, odms=[]):
+    def build_tree(self, odms=[], brands=[]):
         # build the odm_tree.
         self.reset("DeviceCode OEM results")
 
@@ -91,9 +91,11 @@ class OdmTree(Tree):
             # and each model as a leaf TODO
             node = self.root.add(odm, expand=False)
             for brand in sorted(self.odm_to_devices[odm], key=str.casefold):
-                 brand_node = node.add(brand)
-                 for model in sorted(self.odm_to_devices[odm][brand], key=lambda x: x['model']):
-                     model_node = brand_node.add_leaf(model['model'], data=model['data'])
+                if brands and brand.lower() not in brands:
+                    continue
+                brand_node = node.add(brand)
+                for model in sorted(self.odm_to_devices[odm][brand], key=lambda x: x['model']):
+                    model_node = brand_node.add_leaf(model['model'], data=model['data'])
 
 class DevicecodeUI(App):
     BINDINGS = [
@@ -199,7 +201,7 @@ class DevicecodeUI(App):
         '''Process the filter, create new tree'''
         if event.validation_result is None:
             self.brand_tree.build_tree()
-            self.brand_tree.odm_tree()
+            self.odm_tree.build_tree()
         else:
             if event.validation_result.is_valid:
                 # input was already syntactically validated.
@@ -219,7 +221,7 @@ class DevicecodeUI(App):
                         chips.append(value)
 
                 self.brand_tree.build_tree(brands=brands)
-                self.odm_tree.build_tree(odms=odms)
+                self.odm_tree.build_tree(brands=brands, odms=odms)
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass
