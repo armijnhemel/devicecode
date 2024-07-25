@@ -89,6 +89,14 @@ class OdmTree(Tree):
                 continue
             # add each manufacturer as a node. Then add each brand as a subtree
             # and each model as a leaf TODO
+            have_brand = False
+            for brand in sorted(self.odm_to_devices[odm], key=str.casefold):
+                if brands and brand.lower() not in brands:
+                    continue
+                have_brand = True
+                break
+            if brands and not have_brand:
+                continue
             node = self.root.add(odm, expand=False)
             for brand in sorted(self.odm_to_devices[odm], key=str.casefold):
                 if brands and brand.lower() not in brands:
