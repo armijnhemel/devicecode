@@ -47,7 +47,7 @@ class FilterValidator(Validator):
         # split the value into tokens
         try:
             tokens = shlex.split(value)
-            if tokens == []:
+            if not tokens:
                 return self.failure("Empty string")
 
             # verify each token
@@ -90,7 +90,7 @@ class BrandTree(Tree):
             # add each brand as a node. Then add each model as a leaf.
             node = self.root.add(brand, expand=False)
             for model in sorted(self.brands_to_devices[brand], key=lambda x: x['model']):
-                model_node = node.add_leaf(model['model'], data=model['data'])
+                node.add_leaf(model['model'], data=model['data'])
 
 class OdmTree(Tree):
     def __init__(self, odm_to_devices, *args: Any, **kwargs: Any) -> None:
@@ -126,10 +126,10 @@ class OdmTree(Tree):
                                 cpu_found = True
                                 break
                         if cpu_found:
-                            model_node = brand_node.add_leaf(model['model'], data=model['data'])
+                            brand_node.add_leaf(model['model'], data=model['data'])
                             has_leaves = True
                     else:
-                        model_node = brand_node.add_leaf(model['model'], data=model['data'])
+                        brand_node.add_leaf(model['model'], data=model['data'])
                         has_leaves = True
 
                 # check if there are any valid leaf nodes.
