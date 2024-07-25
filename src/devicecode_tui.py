@@ -290,10 +290,12 @@ class DevicecodeUI(App):
                     elif identifier == 'odm':
                         odms.append(value.lower())
 
-                self.brand_tree.build_tree(brands=brands, odms=odms, chip_vendors=chip_vendors,
-                                           ignore_brands=ignore_brands, ignore_odms=ignore_odms)
-                self.odm_tree.build_tree(brands=brands, odms=odms, chip_vendors=chip_vendors,
-                                           ignore_brands=ignore_brands, ignore_odms=ignore_odms)
+                self.brand_tree.build_tree(brands=brands, odms=odms, chips=chips,
+                                           chip_vendors=chip_vendors, ignore_brands=ignore_brands,
+                                           ignore_odms=ignore_odms)
+                self.odm_tree.build_tree(brands=brands, odms=odms, chips=chips,
+                                         chip_vendors=chip_vendors, ignore_brands=ignore_brands,
+                                         ignore_odms=ignore_odms)
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass
