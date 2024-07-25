@@ -198,11 +198,7 @@ class DevicecodeUI(App):
             odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device})
             odms.append(manufacturer_name.lower())
 
-        # build the filter_tree.
-        self.filter_tree: Tree[dict] = Tree("DeviceCode filtered results")
-        self.filter_tree.show_root = False
-        self.filter_tree.root.expand()
-
+        # build the various trees.
         self.brand_tree: BrandTree[dict] = BrandTree(brands_to_devices, "DeviceCode brand results")
         self.brand_tree.show_root = False
         self.brand_tree.root.expand()
