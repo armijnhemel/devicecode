@@ -118,6 +118,9 @@ class OdmTree(Tree):
             if odms and odm.lower() not in odms:
                 continue
 
+            if ignore_odms and odm.lower() in ignore_odms:
+                continue
+
             # create a node with brand subnodes
             node = self.root.add(odm, expand=False)
             has_brand_leaves = False
@@ -288,9 +291,9 @@ class DevicecodeUI(App):
                         odms.append(value.lower())
 
                 self.brand_tree.build_tree(brands=brands, odms=odms, chip_vendors=chip_vendors,
-                                           ignore_brands=ignore_brands)
+                                           ignore_brands=ignore_brands, ignore_odms=ignore_odms)
                 self.odm_tree.build_tree(brands=brands, odms=odms, chip_vendors=chip_vendors,
-                                           ignore_brands=ignore_brands)
+                                           ignore_brands=ignore_brands, ignore_odms=ignore_odms)
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass
