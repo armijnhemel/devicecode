@@ -73,7 +73,7 @@ class BrandTree(Tree):
             # add each brand as a node. Then add each model as a leaf.
             node = self.root.add(brand, expand=False)
             for model in sorted(self.brands_to_devices[brand], key=lambda x: x['model']):
-                 model_node = node.add_leaf(model['model'], data=model['data'])
+                model_node = node.add_leaf(model['model'], data=model['data'])
 
 class OdmTree(Tree):
     def __init__(self, odm_to_devices, *args: Any, **kwargs: Any) -> None:
@@ -124,30 +124,30 @@ class DevicecodeUI(App):
 
             try:
                 with open(result_file, 'r') as wiki_file:
-                     device = json.load(wiki_file)
-                     self.devices.append(device)
+                    device = json.load(wiki_file)
+                    self.devices.append(device)
             except json.decoder.JSONDecodeError:
                 pass
 
         for device in self.devices:
-             brand_name = device['brand']
-             if brand_name not in brands_to_devices:
-                 brands_to_devices[brand_name] = []
-             model = device['model']['model']
-             if device['model']['revision'] != '':
-                 model += " "
-                 model += device['model']['revision']
-             brands_to_devices[brand_name].append({'model': model, 'data': device})
-             brands.append(brand_name.lower())
+            brand_name = device['brand']
+            if brand_name not in brands_to_devices:
+                brands_to_devices[brand_name] = []
+            model = device['model']['model']
+            if device['model']['revision'] != '':
+                model += " "
+                model += device['model']['revision']
+            brands_to_devices[brand_name].append({'model': model, 'data': device})
+            brands.append(brand_name.lower())
 
-             manufacturer_name = device['manufacturer']['name']
-             if manufacturer_name == '':
-                 manufacturer_name = '***UNKNOWN***'
-             if manufacturer_name not in odm_to_devices:
-                 odm_to_devices[manufacturer_name] = {}
-             if brand_name not in odm_to_devices[manufacturer_name]:
-                 odm_to_devices[manufacturer_name][brand_name] = []
-             odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device})
+            manufacturer_name = device['manufacturer']['name']
+            if manufacturer_name == '':
+                manufacturer_name = '***UNKNOWN***'
+            if manufacturer_name not in odm_to_devices:
+                odm_to_devices[manufacturer_name] = {}
+            if brand_name not in odm_to_devices[manufacturer_name]:
+                odm_to_devices[manufacturer_name][brand_name] = []
+            odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device})
 
         # build the filter_tree.
         self.filter_tree: Tree[dict] = Tree("DeviceCode filtered results")
