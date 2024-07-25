@@ -32,8 +32,12 @@ from textual.widgets.tree import TreeNode
     #handlers=[TextualHandler()],
 #)
 
+
 class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
+
+    TOKEN_IDENTIFIERS = ['brand', 'chip', 'chip_vendor', 'ignore_brand',
+                         'ignore_odm', 'odm', 'sort', 'type']
 
     def __init__(self, brands=[], odms=[]):
         self.brands = brands
@@ -51,13 +55,19 @@ class FilterValidator(Validator):
                 if '=' not in t:
                     return self.failure("Invalid identifier")
                 token_identifier, token_value = t.split('=', maxsplit=1)
-                if token_identifier not in ['brand', 'chip', 'chip_vendor', 'odm', 'list', 'sort', 'type']:
+                if token_identifier not in self.TOKEN_IDENTIFIERS:
                     return self.failure("Invalid identifier")
                 if token_value == '':
                     return self.failure("Invalid identifier")
                 if token_identifier == 'brand':
                     if token_value.lower() not in self.brands:
                         return self.failure("Invalid brand")
+                elif token_identifier == 'ignore_brand':
+                    if token_value.lower() not in self.brands:
+                        return self.failure("Invalid brand")
+                elif token_identifier == 'ignore_odm':
+                    if token_value.lower() not in self.odms:
+                        return self.failure("Invalid ODM")
                 elif token_identifier == 'odm':
                     if token_value.lower() not in self.odms:
                         return self.failure("Invalid ODM")
@@ -87,7 +97,7 @@ class OdmTree(Tree):
         super().__init__(*args, **kwargs)
         self.odm_to_devices = odm_to_devices
 
-    def build_tree(self, odms=[], brands=[]):
+    def build_tree(self, brands=[], chip_vendors=[], odms=[]):
         # build the odm_tree.
         self.reset("DeviceCode OEM results")
 
@@ -96,21 +106,43 @@ class OdmTree(Tree):
         for odm in sorted(self.odm_to_devices.keys(), key=str.casefold):
             if odms and odm.lower() not in odms:
                 continue
-            have_brand = False
-            for brand in sorted(self.odm_to_devices[odm], key=str.casefold):
-                if brands and brand.lower() not in brands:
-                    continue
-                have_brand = True
-                break
-            if brands and not have_brand:
-                continue
+
+            # create a node with brand subnodes
             node = self.root.add(odm, expand=False)
+            has_brand_leaves = False
             for brand in sorted(self.odm_to_devices[odm], key=str.casefold):
                 if brands and brand.lower() not in brands:
                     continue
+
+                # recurse into the device and add nodes for
+                # devices, after filtering
+                has_leaves = False
                 brand_node = node.add(brand)
                 for model in sorted(self.odm_to_devices[odm][brand], key=lambda x: x['model']):
-                    model_node = brand_node.add_leaf(model['model'], data=model['data'])
+                    if chip_vendors:
+                        cpu_found = False
+                        for cpu in model['data']['cpus']:
+                            if cpu['manufacturer'].lower() in chip_vendors:
+                                cpu_found = True
+                                break
+                        if cpu_found:
+                            model_node = brand_node.add_leaf(model['model'], data=model['data'])
+                            has_leaves = True
+                    else:
+                        model_node = brand_node.add_leaf(model['model'], data=model['data'])
+                        has_leaves = True
+
+                # check if there are any valid leaf nodes.
+                # If not, remove the brand node
+                if not has_leaves:
+                    brand_node.remove()
+                else:
+                    has_brand_leaves = True
+
+            # check if there are any valid leaf nodes.
+            # If not, remove the ODM node
+            if not has_brand_leaves:
+                node.remove()
 
 class DevicecodeUI(App):
     BINDINGS = [
@@ -127,8 +159,8 @@ class DevicecodeUI(App):
         # store a mapping of brands to devices
         brands_to_devices = {}
         odm_to_devices = {}
-        chip_vendors_to_devices = {}
         brands = []
+        chip_vendors = []
         odms = []
 
         self.devices = []
@@ -232,16 +264,16 @@ class DevicecodeUI(App):
                 for t in tokens:
                     identifier, value = t.split('=', maxsplit=1)
                     if identifier == 'brand':
-                        brands.append(value)
+                        brands.append(value.lower())
                     elif identifier == 'odm':
-                        odms.append(value)
+                        odms.append(value.lower())
                     elif identifier == 'chip':
-                        chips.append(value)
+                        chips.append(value.lower())
                     elif identifier == 'chip_vendor':
-                        chip_vendors.append(value)
+                        chip_vendors.append(value.lower())
 
                 self.brand_tree.build_tree(brands=brands)
-                self.odm_tree.build_tree(brands=brands, odms=odms)
+                self.odm_tree.build_tree(brands=brands, odms=odms, chip_vendors=chip_vendors)
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass
