@@ -63,6 +63,7 @@ where identifier can be one of:
 * `brand`
 * `chip`
 * `chip_vendor`
+* `flag`
 * `ignore_brand`
 * `ignore_odm`
 * `odm`
@@ -125,8 +126,12 @@ There are two ways to filter brands:
 
 ##### Chip vendor
 
-Currently `chip_vendor` can only be used to show the main CPU in one ore more
+Currently `chip_vendor` can only be used to show the main CPU in one or more
 devices.
+
+##### Flag
+
+`flag` can be used to show one or more more devices with certain flags.
 
 ##### ODM
 

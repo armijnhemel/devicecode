@@ -36,7 +36,7 @@ from textual.widgets.tree import TreeNode
 class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
 
-    TOKEN_IDENTIFIERS = ['brand', 'chip', 'chip_vendor', 'ignore_brand',
+    TOKEN_IDENTIFIERS = ['brand', 'chip', 'chip_vendor', 'flag', 'ignore_brand',
                          'ignore_odm', 'odm', 'password', 'type']
 
     def __init__(self, brands=[], odms=[]):
@@ -86,6 +86,7 @@ class BrandTree(Tree):
 
         brands = kwargs.get('brands', [])
         chip_vendors = kwargs.get('chip_vendors', [])
+        flags = kwargs.get('flags', [])
         ignore_brands = kwargs.get('ignore_brands', [])
         ignore_odms = kwargs.get('ignore_odms', [])
         odms = kwargs.get('odms', [])
@@ -110,6 +111,10 @@ class BrandTree(Tree):
 
                 if ignore_odms:
                     if model['data']['manufacturer']['name'].lower() in ignore_odms:
+                        continue
+
+                if flags:
+                    if not set(map(lambda x: x.lower(), model['data']['flags'])).intersection(flags):
                         continue
 
                 if passwords:
@@ -146,6 +151,7 @@ class OdmTree(Tree):
 
         brands = kwargs.get('brands', [])
         chip_vendors = kwargs.get('chip_vendors', [])
+        flags = kwargs.get('flags', [])
         ignore_brands = kwargs.get('ignore_brands', [])
         ignore_odms = kwargs.get('ignore_odms', [])
         odms = kwargs.get('odms', [])
@@ -173,6 +179,9 @@ class OdmTree(Tree):
                 has_leaves = False
                 brand_node = node.add(brand)
                 for model in sorted(self.odm_to_devices[odm][brand], key=lambda x: x['model']):
+                    if flags:
+                        if not set(map(lambda x: x.lower(), model['data']['flags'])).intersection(flags):
+                            continue
                     if passwords:
                         if model['data']['defaults']['password'] not in passwords:
                             continue
@@ -315,6 +324,7 @@ class DevicecodeUI(App):
                 brands = []
                 chips = []
                 chip_vendors = []
+                flags = []
                 ignore_brands = []
                 ignore_odms = []
                 odms = []
@@ -328,6 +338,8 @@ class DevicecodeUI(App):
                         chips.append(value.lower())
                     elif identifier == 'chip_vendor':
                         chip_vendors.append(value.lower())
+                    elif identifier == 'flag':
+                        flags.append(value.lower())
                     elif identifier == 'ignore_brand':
                         ignore_brands.append(value.lower())
                     elif identifier == 'ignore_odm':
@@ -338,10 +350,10 @@ class DevicecodeUI(App):
                         passwords.append(value.lower())
 
                 self.brand_tree.build_tree(brands=brands, odms=odms, chips=chips,
-                                           chip_vendors=chip_vendors, ignore_brands=ignore_brands,
+                                           chip_vendors=chip_vendors, flags=flags, ignore_brands=ignore_brands,
                                            ignore_odms=ignore_odms, passwords=passwords)
                 self.odm_tree.build_tree(brands=brands, odms=odms, chips=chips,
-                                         chip_vendors=chip_vendors, ignore_brands=ignore_brands,
+                                         chip_vendors=chip_vendors, flags=flags, ignore_brands=ignore_brands,
                                          ignore_odms=ignore_odms, passwords=passwords)
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
