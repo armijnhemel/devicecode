@@ -274,7 +274,7 @@ class DevicecodeUI(App):
                     with TabPane('ODM view'):
                         yield self.odm_tree
             with VerticalScroll(id='result-area'):
-                with TabbedContent():
+                with TabbedContent(id='result-tabs'):
                     with TabPane('Device data'):
                         yield self.device_data_area
                     with TabPane('Regulatory data'):
