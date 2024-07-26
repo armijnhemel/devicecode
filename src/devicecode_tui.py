@@ -32,7 +32,7 @@ from textual.widgets import Footer, Markdown, Static, Tree, TabbedContent, TabPa
 
 
 class SuggestDevices(Suggester):
-    '''A custom suggester'''
+    '''A custom suggester, based on the SuggestFromList example from Textual'''
 
     def __init__(
         self, suggestions: Iterable[str], *, case_sensitive: bool = True,
