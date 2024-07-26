@@ -42,6 +42,7 @@ class FilterValidator(Validator):
     def __init__(self, **kwargs):
         self.brands = kwargs.get('brands', [])
         self.odms = kwargs.get('odms', [])
+        self.chip_vendors = kwargs.get('chip_vendors', [])
 
     def validate(self, value: str) -> ValidationResult:
         try:
@@ -62,6 +63,9 @@ class FilterValidator(Validator):
                 if token_identifier == 'brand':
                     if token_value.lower() not in self.brands:
                         return self.failure("Invalid brand")
+                if token_identifier == 'chip_vendor':
+                    if token_value.lower() not in self.chip_vendors:
+                        return self.failure("Invalid chip vendor")
                 elif token_identifier == 'ignore_brand':
                     if token_value.lower() not in self.brands:
                         return self.failure("Invalid brand")
