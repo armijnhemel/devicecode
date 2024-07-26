@@ -223,6 +223,9 @@ class DevicecodeUI(App):
             if device['model']['revision'] != '':
                 model += " "
                 model += device['model']['revision']
+            if device['model']['submodel'] != '':
+                model += " "
+                model += device['model']['submodel']
             brands_to_devices[brand_name].append({'model': model, 'data': device})
             brands.append(brand_name.lower())
 
