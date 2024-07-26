@@ -37,7 +37,7 @@ class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
 
     TOKEN_IDENTIFIERS = ['brand', 'chip', 'chip_vendor', 'ignore_brand',
-                         'ignore_odm', 'odm', 'sort', 'type']
+                         'ignore_odm', 'odm', 'password', 'type']
 
     def __init__(self, brands=[], odms=[]):
         self.brands = brands
@@ -89,6 +89,7 @@ class BrandTree(Tree):
         ignore_brands = kwargs.get('ignore_brands', [])
         ignore_odms = kwargs.get('ignore_odms', [])
         odms = kwargs.get('odms', [])
+        passwords = kwargs.get('passwords', [])
 
         for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
             if brands and brand.lower() not in brands:
@@ -134,6 +135,7 @@ class OdmTree(Tree):
         ignore_brands = kwargs.get('ignore_brands', [])
         ignore_odms = kwargs.get('ignore_odms', [])
         odms = kwargs.get('odms', [])
+        passwords = kwargs.get('passwords', [])
 
         # add each manufacturer as a node. Then add each brand as a subtree
         # and each model as a leaf. Optionally filter for brands and prune.
@@ -157,6 +159,9 @@ class OdmTree(Tree):
                 has_leaves = False
                 brand_node = node.add(brand)
                 for model in sorted(self.odm_to_devices[odm][brand], key=lambda x: x['model']):
+                    if passwords:
+                        if model['data']['defaults']['password'] not in passwords:
+                            continue
                     if chip_vendors:
                         cpu_found = False
                         for cpu in model['data']['cpus']:
@@ -299,6 +304,7 @@ class DevicecodeUI(App):
                 ignore_brands = []
                 ignore_odms = []
                 odms = []
+                passwords = []
 
                 for t in tokens:
                     identifier, value = t.split('=', maxsplit=1)
@@ -314,13 +320,15 @@ class DevicecodeUI(App):
                         ignore_odms.append(value.lower())
                     elif identifier == 'odm':
                         odms.append(value.lower())
+                    elif identifier == 'password':
+                        passwords.append(value.lower())
 
                 self.brand_tree.build_tree(brands=brands, odms=odms, chips=chips,
                                            chip_vendors=chip_vendors, ignore_brands=ignore_brands,
-                                           ignore_odms=ignore_odms)
+                                           ignore_odms=ignore_odms, passwords=passwords)
                 self.odm_tree.build_tree(brands=brands, odms=odms, chips=chips,
                                          chip_vendors=chip_vendors, ignore_brands=ignore_brands,
-                                         ignore_odms=ignore_odms)
+                                         ignore_odms=ignore_odms, passwords=passwords)
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass
