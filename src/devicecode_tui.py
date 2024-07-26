@@ -112,8 +112,22 @@ class BrandTree(Tree):
                     if model['data']['manufacturer']['name'].lower() in ignore_odms:
                         continue
 
-                node.add_leaf(model['model'], data=model['data'])
-                has_leaves = True
+                if passwords:
+                    if model['data']['defaults']['password'] not in passwords:
+                        continue
+
+                if chip_vendors:
+                    cpu_found = False
+                    for cpu in model['data']['cpus']:
+                        if cpu['manufacturer'].lower() in chip_vendors:
+                            cpu_found = True
+                            break
+                    if cpu_found:
+                        node.add_leaf(model['model'], data=model['data'])
+                        has_leaves = True
+                else:
+                    node.add_leaf(model['model'], data=model['data'])
+                    has_leaves = True
 
             # check if there are any valid leaf nodes.
             # If not, remove the brand node
