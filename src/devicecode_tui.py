@@ -19,6 +19,7 @@ from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, VerticalScroll
+from textual.suggester import Suggester, SuggestFromList
 from textual.validation import Function, ValidationResult, Validator
 from textual.widgets import Footer, Markdown, Static, Tree, TabbedContent, TabPane, Input, Header
 
@@ -232,6 +233,8 @@ class DevicecodeUI(App):
     ]
 
     CSS_PATH = "devicecode_tui.css"
+    TOKEN_IDENTIFIERS = ['brand', 'chip', 'chip_vendor', 'flag', 'ignore_brand',
+                         'ignore_odm', 'odm', 'password', 'serial', 'type']
 
     def __init__(self, devicecode_dir, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -309,7 +312,9 @@ class DevicecodeUI(App):
         yield Header()
         with Container(id='app-grid'):
             with Container(id='left-grid'):
-                yield Input(placeholder='Filter', validators=[FilterValidator(brands=brands, odms=odms, chip_vendors=chip_vendors)],
+                yield Input(placeholder='Filter',
+                            validators=[FilterValidator(brands=brands, odms=odms, chip_vendors=chip_vendors)],
+                            suggester=SuggestFromList(self.TOKEN_IDENTIFIERS, case_sensitive=False),
                             valid_empty=True)
                 with TabbedContent():
                     with TabPane('Brand view'):
