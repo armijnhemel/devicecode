@@ -267,6 +267,9 @@ class DevicecodeUI(App):
             odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device})
             odms.append(manufacturer_name.lower())
 
+            for cpu in device['cpus']:
+                chip_vendors.append(cpu['manufacturer'].lower())
+
         # build the various trees.
         self.brand_tree: BrandTree[dict] = BrandTree(brands_to_devices, "DeviceCode brand results")
         self.brand_tree.show_root = False
