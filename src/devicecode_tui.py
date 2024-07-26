@@ -13,17 +13,14 @@ from typing import Any
 import click
 
 from rich.console import Group, group
-from rich.panel import Panel
-from rich import print_json
 import rich.table
 
 from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, VerticalScroll
-from textual.validation import Function, Number, ValidationResult, Validator
+from textual.validation import Function, ValidationResult, Validator
 from textual.widgets import Footer, Markdown, Static, Tree, TabbedContent, TabPane, Input, Header
-from textual.widgets.tree import TreeNode
 
 #from textual.logging import TextualHandler
 
