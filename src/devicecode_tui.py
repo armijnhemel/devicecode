@@ -37,7 +37,7 @@ class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
 
     TOKEN_IDENTIFIERS = ['brand', 'chip', 'chip_vendor', 'ignore_brand',
-                         'ignore_odm', 'odm', 'sort', 'type']
+                         'ignore_odm', 'odm', 'password', 'type']
 
     def __init__(self, brands=[], odms=[]):
         self.brands = brands
@@ -80,31 +80,83 @@ class BrandTree(Tree):
         super().__init__(*args, **kwargs)
         self.brands_to_devices = brands_to_devices
 
-    def build_tree(self, brands=[]):
+    def build_tree(self, **kwargs):
         # build the brand_tree.
         self.reset("DeviceCode brand results")
+
+        brands = kwargs.get('brands', [])
+        chip_vendors = kwargs.get('chip_vendors', [])
+        ignore_brands = kwargs.get('ignore_brands', [])
+        ignore_odms = kwargs.get('ignore_odms', [])
+        odms = kwargs.get('odms', [])
+        passwords = kwargs.get('passwords', [])
 
         for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
             if brands and brand.lower() not in brands:
                 continue
+            if ignore_brands and brand.lower() in ignore_brands:
+                continue
+
             # add each brand as a node. Then add each model as a leaf.
             node = self.root.add(brand, expand=False)
+
+            # recurse into the device and add nodes for
+            # devices, after filtering
+            has_leaves = False
             for model in sorted(self.brands_to_devices[brand], key=lambda x: x['model']):
-                node.add_leaf(model['model'], data=model['data'])
+                if odms:
+                    if model['data']['manufacturer']['name'].lower() not in odms:
+                        continue
+
+                if ignore_odms:
+                    if model['data']['manufacturer']['name'].lower() in ignore_odms:
+                        continue
+
+                if passwords:
+                    if model['data']['defaults']['password'] not in passwords:
+                        continue
+
+                if chip_vendors:
+                    cpu_found = False
+                    for cpu in model['data']['cpus']:
+                        if cpu['manufacturer'].lower() in chip_vendors:
+                            cpu_found = True
+                            break
+                    if cpu_found:
+                        node.add_leaf(model['model'], data=model['data'])
+                        has_leaves = True
+                else:
+                    node.add_leaf(model['model'], data=model['data'])
+                    has_leaves = True
+
+            # check if there are any valid leaf nodes.
+            # If not, remove the brand node
+            if not has_leaves:
+                node.remove()
+
 
 class OdmTree(Tree):
     def __init__(self, odm_to_devices, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.odm_to_devices = odm_to_devices
 
-    def build_tree(self, brands=[], chip_vendors=[], odms=[]):
+    def build_tree(self, **kwargs):
         # build the odm_tree.
         self.reset("DeviceCode OEM results")
+
+        brands = kwargs.get('brands', [])
+        chip_vendors = kwargs.get('chip_vendors', [])
+        ignore_brands = kwargs.get('ignore_brands', [])
+        ignore_odms = kwargs.get('ignore_odms', [])
+        odms = kwargs.get('odms', [])
+        passwords = kwargs.get('passwords', [])
 
         # add each manufacturer as a node. Then add each brand as a subtree
         # and each model as a leaf. Optionally filter for brands and prune.
         for odm in sorted(self.odm_to_devices.keys(), key=str.casefold):
             if odms and odm.lower() not in odms:
+                continue
+            if ignore_odms and odm.lower() in ignore_odms:
                 continue
 
             # create a node with brand subnodes
@@ -113,12 +165,17 @@ class OdmTree(Tree):
             for brand in sorted(self.odm_to_devices[odm], key=str.casefold):
                 if brands and brand.lower() not in brands:
                     continue
+                if ignore_brands and brand.lower() in ignore_brands:
+                    continue
 
                 # recurse into the device and add nodes for
                 # devices, after filtering
                 has_leaves = False
                 brand_node = node.add(brand)
                 for model in sorted(self.odm_to_devices[odm][brand], key=lambda x: x['model']):
+                    if passwords:
+                        if model['data']['defaults']['password'] not in passwords:
+                            continue
                     if chip_vendors:
                         cpu_found = False
                         for cpu in model['data']['cpus']:
@@ -185,6 +242,9 @@ class DevicecodeUI(App):
             if device['model']['revision'] != '':
                 model += " "
                 model += device['model']['revision']
+            if device['model']['submodel'] != '':
+                model += " "
+                model += device['model']['submodel']
             brands_to_devices[brand_name].append({'model': model, 'data': device})
             brands.append(brand_name.lower())
 
@@ -228,7 +288,7 @@ class DevicecodeUI(App):
                     with TabPane('ODM view'):
                         yield self.odm_tree
             with VerticalScroll(id='result-area'):
-                with TabbedContent():
+                with TabbedContent(id='result-tabs'):
                     with TabPane('Device data'):
                         yield self.device_data_area
                     with TabPane('Regulatory data'):
@@ -255,21 +315,34 @@ class DevicecodeUI(App):
                 brands = []
                 chips = []
                 chip_vendors = []
+                ignore_brands = []
+                ignore_odms = []
                 odms = []
+                passwords = []
 
                 for t in tokens:
                     identifier, value = t.split('=', maxsplit=1)
                     if identifier == 'brand':
                         brands.append(value.lower())
-                    elif identifier == 'odm':
-                        odms.append(value.lower())
                     elif identifier == 'chip':
                         chips.append(value.lower())
                     elif identifier == 'chip_vendor':
                         chip_vendors.append(value.lower())
+                    elif identifier == 'ignore_brand':
+                        ignore_brands.append(value.lower())
+                    elif identifier == 'ignore_odm':
+                        ignore_odms.append(value.lower())
+                    elif identifier == 'odm':
+                        odms.append(value.lower())
+                    elif identifier == 'password':
+                        passwords.append(value.lower())
 
-                self.brand_tree.build_tree(brands=brands)
-                self.odm_tree.build_tree(brands=brands, odms=odms, chip_vendors=chip_vendors)
+                self.brand_tree.build_tree(brands=brands, odms=odms, chips=chips,
+                                           chip_vendors=chip_vendors, ignore_brands=ignore_brands,
+                                           ignore_odms=ignore_odms, passwords=passwords)
+                self.odm_tree.build_tree(brands=brands, odms=odms, chips=chips,
+                                         chip_vendors=chip_vendors, ignore_brands=ignore_brands,
+                                         ignore_odms=ignore_odms, passwords=passwords)
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass

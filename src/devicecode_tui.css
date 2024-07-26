@@ -4,3 +4,9 @@
     grid-columns: 1fr;
     grid-rows: 1fr;
 }
+TabbedContent {
+    height: 1fr;
+}
+#result-tabs {
+    height: auto;
+}
