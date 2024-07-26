@@ -39,9 +39,9 @@ class FilterValidator(Validator):
     TOKEN_IDENTIFIERS = ['brand', 'chip', 'chip_vendor', 'flag', 'ignore_brand',
                          'ignore_odm', 'odm', 'password', 'type']
 
-    def __init__(self, brands=[], odms=[]):
-        self.brands = brands
-        self.odms = odms
+    def __init__(self, **kwargs):
+        self.brands = kwargs.get('brands', [])
+        self.odms = kwargs.get('odms', [])
 
     def validate(self, value: str) -> ValidationResult:
         try:
@@ -293,7 +293,7 @@ class DevicecodeUI(App):
         yield Header()
         with Container(id='app-grid'):
             with Container(id='left-grid'):
-                yield Input(placeholder='Filter', validators=[FilterValidator(brands=brands, odms=odms)],
+                yield Input(placeholder='Filter', validators=[FilterValidator(brands=brands, odms=odms, chip_vendors=chip_vendors)],
                             valid_empty=True)
                 with TabbedContent():
                     with TabPane('Brand view'):
