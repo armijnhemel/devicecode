@@ -68,6 +68,7 @@ where identifier can be one of:
 * `ignore_odm`
 * `odm`
 * `password`
+* `serial`
 * `type`
 
 Values are case insensitive.
@@ -139,6 +140,11 @@ There are two ways to filter brands:
 
 1. use the `odm` statement to show devices made by one or more ODMs
 2. use the `ignore_odm` statement to hide devices made by one or more ODMs
+
+##### Serial
+
+`serial` can be used to show if a device has a serial port, or if it is not
+known. Valid values are `yes`, `no` and `unknown`.
 
 ##### Password
 

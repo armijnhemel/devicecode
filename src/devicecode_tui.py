@@ -37,7 +37,7 @@ class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
 
     TOKEN_IDENTIFIERS = ['brand', 'chip', 'chip_vendor', 'flag', 'ignore_brand',
-                         'ignore_odm', 'odm', 'password', 'type']
+                         'ignore_odm', 'odm', 'password', 'serial', 'type']
 
     def __init__(self, **kwargs):
         self.brands = kwargs.get('brands', [])
@@ -75,6 +75,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'odm':
                     if token_value.lower() not in self.odms:
                         return self.failure("Invalid ODM")
+                elif token_identifier == 'serial':
+                    if token_value.lower() not in ['no', 'unknown', 'yes']:
+                        return self.failure("Invalid serial port information")
             return self.success()
         except ValueError:
             return self.failure('Incomplete')
@@ -95,9 +98,10 @@ class BrandTree(Tree):
         ignore_odms = kwargs.get('ignore_odms', [])
         odms = kwargs.get('odms', [])
         passwords = kwargs.get('passwords', [])
+        serials = kwargs.get('serials', [])
 
         expand = False
-        if brands or chip_vendors or flags or ignore_brands or ignore_odms or odms or passwords:
+        if brands or chip_vendors or flags or ignore_brands or ignore_odms or odms or passwords or serials:
             expand = True
 
         for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
@@ -116,19 +120,18 @@ class BrandTree(Tree):
                 if odms:
                     if model['data']['manufacturer']['name'].lower() not in odms:
                         continue
-
                 if ignore_odms:
                     if model['data']['manufacturer']['name'].lower() in ignore_odms:
                         continue
-
                 if flags:
                     if not set(map(lambda x: x.lower(), model['data']['flags'])).intersection(flags):
                         continue
-
                 if passwords:
                     if model['data']['defaults']['password'] not in passwords:
                         continue
-
+                if serials:
+                    if model['data']['has_serial_port'] not in serials:
+                        continue
                 if chip_vendors:
                     cpu_found = False
                     for cpu in model['data']['cpus']:
@@ -164,9 +167,10 @@ class OdmTree(Tree):
         ignore_odms = kwargs.get('ignore_odms', [])
         odms = kwargs.get('odms', [])
         passwords = kwargs.get('passwords', [])
+        serials = kwargs.get('serials', [])
 
         expand = False
-        if brands or chip_vendors or flags or ignore_brands or ignore_odms or odms or passwords:
+        if brands or chip_vendors or flags or ignore_brands or ignore_odms or odms or passwords or serials:
             expand = True
 
         # add each manufacturer as a node. Then add each brand as a subtree
@@ -196,6 +200,9 @@ class OdmTree(Tree):
                             continue
                     if passwords:
                         if model['data']['defaults']['password'] not in passwords:
+                            continue
+                    if serials:
+                        if model['data']['has_serial_port'] not in serials:
                             continue
                     if chip_vendors:
                         cpu_found = False
@@ -345,6 +352,7 @@ class DevicecodeUI(App):
                 ignore_odms = []
                 odms = []
                 passwords = []
+                serials = []
 
                 for t in tokens:
                     identifier, value = t.split('=', maxsplit=1)
@@ -364,15 +372,17 @@ class DevicecodeUI(App):
                         odms.append(value.lower())
                     elif identifier == 'password':
                         passwords.append(value.lower())
+                    elif identifier == 'serial':
+                        serials.append(value.lower())
 
                 self.brand_tree.build_tree(brands=brands, odms=odms, chips=chips,
                                            chip_vendors=chip_vendors, flags=flags,
                                            ignore_brands=ignore_brands, ignore_odms=ignore_odms,
-                                           passwords=passwords)
+                                           passwords=passwords, serials=serials)
                 self.odm_tree.build_tree(brands=brands, odms=odms, chips=chips,
                                          chip_vendors=chip_vendors, flags=flags,
                                          ignore_brands=ignore_brands, ignore_odms=ignore_odms,
-                                         passwords=passwords)
+                                         passwords=passwords, serials=serials)
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass
