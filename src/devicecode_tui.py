@@ -8,22 +8,20 @@ import pathlib
 import shlex
 import sys
 
-from typing import Any
+from typing import Any, Iterable
 
 import click
 
 from rich.console import Group, group
-from rich.panel import Panel
-from rich import print_json
 import rich.table
 
 from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, VerticalScroll
-from textual.validation import Function, Number, ValidationResult, Validator
+from textual.suggester import Suggester
+from textual.validation import Function, ValidationResult, Validator
 from textual.widgets import Footer, Markdown, Static, Tree, TabbedContent, TabPane, Input, Header
-from textual.widgets.tree import TreeNode
 
 #from textual.logging import TextualHandler
 
@@ -33,19 +31,86 @@ from textual.widgets.tree import TreeNode
 #)
 
 
+class SuggestDevices(Suggester):
+    '''A custom suggester, based on the SuggestFromList example from Textual'''
+
+    def __init__(
+        self, suggestions: Iterable[str], *, case_sensitive: bool = True,
+    **kwargs) -> None:
+        super().__init__(case_sensitive=case_sensitive)
+        self._suggestions = list(suggestions)
+        self._for_comparison = (
+            self._suggestions
+            if self.case_sensitive
+            else [suggestion.casefold() for suggestion in self._suggestions]
+        )
+        self.brands = kwargs.get('brands', [])
+        self.chip_vendors = kwargs.get('chip_vendors', [])
+        self.flags = kwargs.get('flags', [])
+        self.odms = kwargs.get('odms', [])
+
+    async def get_suggestion(self, value: str) -> str | None:
+        """Gets a completion from the given possibilities.
+
+        Args:
+            value: The current value.
+
+        Returns:
+            A valid completion suggestion or `None`.
+        """
+
+        serial_values = ['no', 'unknown', 'yes']
+
+        # first split the value
+        check_value = value.rsplit(' ', maxsplit=1)[-1]
+        if check_value.startswith('odm='):
+            for idx, chk in enumerate(self.odms):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.odms[idx][len(check_value)-4:]
+        elif check_value.startswith('ignore_odm='):
+            for idx, chk in enumerate(self.odms):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.odms[idx][len(check_value)-11:]
+        elif check_value.startswith('ignore_brand='):
+            for idx, chk in enumerate(self.brands):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.brands[idx][len(check_value)-13:]
+        elif check_value.startswith('brand='):
+            for idx, chk in enumerate(self.brands):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.brands[idx][len(check_value)-6:]
+        elif check_value.startswith('chip_vendor='):
+            for idx, chk in enumerate(self.chip_vendors):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.chip_vendors[idx][len(check_value)-12:]
+        elif check_value.startswith('flag='):
+            for idx, chk in enumerate(self.flags):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.flags[idx][len(check_value)-5:]
+        elif check_value.startswith('serial='):
+            for idx, chk in enumerate(serial_values):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + serial_values[idx][len(check_value)-7:]
+
+        for idx, suggestion in enumerate(self._for_comparison):
+            if suggestion.startswith(check_value):
+                return value + self._suggestions[idx][len(check_value):]
+        return None
+
 class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
 
-    TOKEN_IDENTIFIERS = ['brand', 'chip', 'chip_vendor', 'ignore_brand',
-                         'ignore_odm', 'odm', 'password', 'type']
+    TOKEN_IDENTIFIERS = ['brand', 'chip', 'chip_vendor', 'flag', 'ignore_brand',
+                         'ignore_odm', 'odm', 'password', 'serial', 'type']
 
-    def __init__(self, brands=[], odms=[]):
-        self.brands = brands
-        self.odms = odms
+    def __init__(self, **kwargs):
+        self.brands = kwargs.get('brands', [])
+        self.odms = kwargs.get('odms', [])
+        self.chip_vendors = kwargs.get('chip_vendors', [])
 
     def validate(self, value: str) -> ValidationResult:
-        # split the value into tokens
         try:
+            # split the value into tokens
             tokens = shlex.split(value)
             if not tokens:
                 return self.failure("Empty string")
@@ -62,6 +127,9 @@ class FilterValidator(Validator):
                 if token_identifier == 'brand':
                     if token_value.lower() not in self.brands:
                         return self.failure("Invalid brand")
+                if token_identifier == 'chip_vendor':
+                    if token_value.lower() not in self.chip_vendors:
+                        return self.failure("Invalid chip vendor")
                 elif token_identifier == 'ignore_brand':
                     if token_value.lower() not in self.brands:
                         return self.failure("Invalid brand")
@@ -71,6 +139,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'odm':
                     if token_value.lower() not in self.odms:
                         return self.failure("Invalid ODM")
+                elif token_identifier == 'serial':
+                    if token_value.lower() not in ['no', 'unknown', 'yes']:
+                        return self.failure("Invalid serial port information")
             return self.success()
         except ValueError:
             return self.failure('Incomplete')
@@ -86,10 +157,16 @@ class BrandTree(Tree):
 
         brands = kwargs.get('brands', [])
         chip_vendors = kwargs.get('chip_vendors', [])
+        flags = kwargs.get('flags', [])
         ignore_brands = kwargs.get('ignore_brands', [])
         ignore_odms = kwargs.get('ignore_odms', [])
         odms = kwargs.get('odms', [])
         passwords = kwargs.get('passwords', [])
+        serials = kwargs.get('serials', [])
+
+        expand = False
+        if brands or chip_vendors or flags or ignore_brands or ignore_odms or odms or passwords or serials:
+            expand = True
 
         for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
             if brands and brand.lower() not in brands:
@@ -98,7 +175,7 @@ class BrandTree(Tree):
                 continue
 
             # add each brand as a node. Then add each model as a leaf.
-            node = self.root.add(brand, expand=False)
+            node = self.root.add(brand, expand=expand)
 
             # recurse into the device and add nodes for
             # devices, after filtering
@@ -107,15 +184,18 @@ class BrandTree(Tree):
                 if odms:
                     if model['data']['manufacturer']['name'].lower() not in odms:
                         continue
-
                 if ignore_odms:
                     if model['data']['manufacturer']['name'].lower() in ignore_odms:
                         continue
-
+                if flags:
+                    if not set(map(lambda x: x.lower(), model['data']['flags'])).intersection(flags):
+                        continue
                 if passwords:
                     if model['data']['defaults']['password'] not in passwords:
                         continue
-
+                if serials:
+                    if model['data']['has_serial_port'] not in serials:
+                        continue
                 if chip_vendors:
                     cpu_found = False
                     for cpu in model['data']['cpus']:
@@ -146,10 +226,16 @@ class OdmTree(Tree):
 
         brands = kwargs.get('brands', [])
         chip_vendors = kwargs.get('chip_vendors', [])
+        flags = kwargs.get('flags', [])
         ignore_brands = kwargs.get('ignore_brands', [])
         ignore_odms = kwargs.get('ignore_odms', [])
         odms = kwargs.get('odms', [])
         passwords = kwargs.get('passwords', [])
+        serials = kwargs.get('serials', [])
+
+        expand = False
+        if brands or chip_vendors or flags or ignore_brands or ignore_odms or odms or passwords or serials:
+            expand = True
 
         # add each manufacturer as a node. Then add each brand as a subtree
         # and each model as a leaf. Optionally filter for brands and prune.
@@ -160,7 +246,7 @@ class OdmTree(Tree):
                 continue
 
             # create a node with brand subnodes
-            node = self.root.add(odm, expand=False)
+            node = self.root.add(odm, expand=expand)
             has_brand_leaves = False
             for brand in sorted(self.odm_to_devices[odm], key=str.casefold):
                 if brands and brand.lower() not in brands:
@@ -173,8 +259,14 @@ class OdmTree(Tree):
                 has_leaves = False
                 brand_node = node.add(brand)
                 for model in sorted(self.odm_to_devices[odm][brand], key=lambda x: x['model']):
+                    if flags:
+                        if not set(map(lambda x: x.lower(), model['data']['flags'])).intersection(flags):
+                            continue
                     if passwords:
                         if model['data']['defaults']['password'] not in passwords:
+                            continue
+                    if serials:
+                        if model['data']['has_serial_port'] not in serials:
                             continue
                     if chip_vendors:
                         cpu_found = False
@@ -207,6 +299,8 @@ class DevicecodeUI(App):
     ]
 
     CSS_PATH = "devicecode_tui.css"
+    TOKEN_IDENTIFIERS = ['brand', 'chip', 'chip_vendor', 'flag', 'ignore_brand',
+                         'ignore_odm', 'odm', 'password', 'serial', 'type']
 
     def __init__(self, devicecode_dir, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -219,6 +313,7 @@ class DevicecodeUI(App):
         brands = []
         chip_vendors = []
         odms = []
+        flags = set()
 
         self.devices = []
 
@@ -258,6 +353,11 @@ class DevicecodeUI(App):
             odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device})
             odms.append(manufacturer_name.lower())
 
+            for cpu in device['cpus']:
+                chip_vendors.append(cpu['manufacturer'].lower())
+
+            flags.update([x.casefold() for x in device['flags']])
+
         # build the various trees.
         self.brand_tree: BrandTree[dict] = BrandTree(brands_to_devices, "DeviceCode brand results")
         self.brand_tree.show_root = False
@@ -281,7 +381,10 @@ class DevicecodeUI(App):
         yield Header()
         with Container(id='app-grid'):
             with Container(id='left-grid'):
-                yield Input(placeholder='Filter', validators=[FilterValidator(brands=brands, odms=odms)], valid_empty=True)
+                yield Input(placeholder='Filter',
+                            validators=[FilterValidator(brands=brands, odms=odms, chip_vendors=chip_vendors)],
+                            suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False, brands=brands, chip_vendors=chip_vendors, odms=odms, flags=sorted(flags)),
+                            valid_empty=True)
                 with TabbedContent():
                     with TabPane('Brand view'):
                         yield self.brand_tree
@@ -315,10 +418,12 @@ class DevicecodeUI(App):
                 brands = []
                 chips = []
                 chip_vendors = []
+                flags = []
                 ignore_brands = []
                 ignore_odms = []
                 odms = []
                 passwords = []
+                serials = []
 
                 for t in tokens:
                     identifier, value = t.split('=', maxsplit=1)
@@ -328,6 +433,8 @@ class DevicecodeUI(App):
                         chips.append(value.lower())
                     elif identifier == 'chip_vendor':
                         chip_vendors.append(value.lower())
+                    elif identifier == 'flag':
+                        flags.append(value.lower())
                     elif identifier == 'ignore_brand':
                         ignore_brands.append(value.lower())
                     elif identifier == 'ignore_odm':
@@ -336,13 +443,17 @@ class DevicecodeUI(App):
                         odms.append(value.lower())
                     elif identifier == 'password':
                         passwords.append(value.lower())
+                    elif identifier == 'serial':
+                        serials.append(value.lower())
 
                 self.brand_tree.build_tree(brands=brands, odms=odms, chips=chips,
-                                           chip_vendors=chip_vendors, ignore_brands=ignore_brands,
-                                           ignore_odms=ignore_odms, passwords=passwords)
+                                           chip_vendors=chip_vendors, flags=flags,
+                                           ignore_brands=ignore_brands, ignore_odms=ignore_odms,
+                                           passwords=passwords, serials=serials)
                 self.odm_tree.build_tree(brands=brands, odms=odms, chips=chips,
-                                         chip_vendors=chip_vendors, ignore_brands=ignore_brands,
-                                         ignore_odms=ignore_odms, passwords=passwords)
+                                         chip_vendors=chip_vendors, flags=flags,
+                                         ignore_brands=ignore_brands, ignore_odms=ignore_odms,
+                                         passwords=passwords, serials=serials)
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass
@@ -364,7 +475,8 @@ class DevicecodeUI(App):
     @group()
     def build_additional_chips_report(self, results):
         if results:
-            result_table = rich.table.Table('', '', title='', show_lines=True, show_header=False, expand=True)
+            result_table = rich.table.Table('', '', title='', show_lines=True,
+                                            show_header=False, expand=True)
             for r in results:
                 result_table.add_row('Description', r['description'])
                 result_table.add_row('Manufacturer', r['manufacturer'])
