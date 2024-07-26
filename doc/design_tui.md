@@ -5,7 +5,7 @@ instead of relying on tools such as `grep` and `less` to look at raw JSON
 output.
 
 A TUI (text user interface) can be a quick and easy way to browse and search
-results.
+results. [Textual][textual] and [Rich][rich] are very suited for this task.
 
 ## Representing results
 
@@ -66,6 +66,7 @@ where identifier can be one of:
 * `ignore_brand`
 * `ignore_odm`
 * `odm`
+* `password`
 * `type`
 
 Values are case insensitive.
@@ -115,6 +116,29 @@ example:
 brand="Banana Pi"
 ```
 
+##### Brand
+
+There are two ways to filter brands:
+
+1. use the `brand` statement to show devices from one or more brands
+2. use the `ignore_brand` statement to hide devices from one or more brands
+
+##### Chip vendor
+
+Currently `chip_vendor` can only be used to show the main CPU in one ore more
+devices.
+
+##### ODM
+
+There are two ways to filter brands:
+
+1. use the `odm` statement to show devices made by one or more ODMs
+2. use the `ignore_odm` statement to hide devices made by one or more ODMs
+
+##### Password
+
+Currently `password` can only be used to show devices with one or more default
+passwords.
 
 [rich]:https://github.com/Textualize/rich
 [textual]:https://github.com/Textualize/textual
