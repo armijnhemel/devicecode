@@ -8,7 +8,7 @@ import pathlib
 import shlex
 import sys
 
-from typing import Any
+from typing import Any, Iterable
 
 import click
 
@@ -19,7 +19,7 @@ from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, VerticalScroll
-from textual.suggester import Suggester, SuggestFromList
+from textual.suggester import Suggester
 from textual.validation import Function, ValidationResult, Validator
 from textual.widgets import Footer, Markdown, Static, Tree, TabbedContent, TabPane, Input, Header
 
@@ -30,6 +30,72 @@ from textual.widgets import Footer, Markdown, Static, Tree, TabbedContent, TabPa
     #handlers=[TextualHandler()],
 #)
 
+
+class SuggestDevices(Suggester):
+    '''A custom suggester'''
+
+    def __init__(
+        self, suggestions: Iterable[str], *, case_sensitive: bool = True,
+    **kwargs) -> None:
+        super().__init__(case_sensitive=case_sensitive)
+        self._suggestions = list(suggestions)
+        self._for_comparison = (
+            self._suggestions
+            if self.case_sensitive
+            else [suggestion.casefold() for suggestion in self._suggestions]
+        )
+        self.brands = kwargs.get('brands', [])
+        self.chip_vendors = kwargs.get('chip_vendors', [])
+        self.flags = kwargs.get('flags', [])
+        self.odms = kwargs.get('odms', [])
+
+    async def get_suggestion(self, value: str) -> str | None:
+        """Gets a completion from the given possibilities.
+
+        Args:
+            value: The current value.
+
+        Returns:
+            A valid completion suggestion or `None`.
+        """
+
+        serial_values = ['no', 'unknown', 'yes']
+
+        # first split the value
+        check_value = value.rsplit(' ', maxsplit=1)[-1]
+        if check_value.startswith('odm='):
+            for idx, chk in enumerate(self.odms):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.odms[idx][len(check_value)-4:]
+        elif check_value.startswith('ignore_odm='):
+            for idx, chk in enumerate(self.odms):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.odms[idx][len(check_value)-11:]
+        elif check_value.startswith('ignore_brand='):
+            for idx, chk in enumerate(self.brands):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.brands[idx][len(check_value)-13:]
+        elif check_value.startswith('brand='):
+            for idx, chk in enumerate(self.brands):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.brands[idx][len(check_value)-6:]
+        elif check_value.startswith('chip_vendor='):
+            for idx, chk in enumerate(self.chip_vendors):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.chip_vendors[idx][len(check_value)-12:]
+        elif check_value.startswith('flag='):
+            for idx, chk in enumerate(self.flags):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.flags[idx][len(check_value)-5:]
+        elif check_value.startswith('serial='):
+            for idx, chk in enumerate(serial_values):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + serial_values[idx][len(check_value)-7:]
+
+        for idx, suggestion in enumerate(self._for_comparison):
+            if suggestion.startswith(check_value):
+                return value + self._suggestions[idx][len(check_value):]
+        return None
 
 class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
@@ -247,6 +313,7 @@ class DevicecodeUI(App):
         brands = []
         chip_vendors = []
         odms = []
+        flags = set()
 
         self.devices = []
 
@@ -289,6 +356,8 @@ class DevicecodeUI(App):
             for cpu in device['cpus']:
                 chip_vendors.append(cpu['manufacturer'].lower())
 
+            flags.update([x.casefold() for x in device['flags']])
+
         # build the various trees.
         self.brand_tree: BrandTree[dict] = BrandTree(brands_to_devices, "DeviceCode brand results")
         self.brand_tree.show_root = False
@@ -314,7 +383,7 @@ class DevicecodeUI(App):
             with Container(id='left-grid'):
                 yield Input(placeholder='Filter',
                             validators=[FilterValidator(brands=brands, odms=odms, chip_vendors=chip_vendors)],
-                            suggester=SuggestFromList(self.TOKEN_IDENTIFIERS, case_sensitive=False),
+                            suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False, brands=brands, chip_vendors=chip_vendors, odms=odms, flags=sorted(flags)),
                             valid_empty=True)
                 with TabbedContent():
                     with TabPane('Brand view'):
