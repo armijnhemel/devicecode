@@ -44,8 +44,8 @@ class FilterValidator(Validator):
         self.odms = odms
 
     def validate(self, value: str) -> ValidationResult:
-        # split the value into tokens
         try:
+            # split the value into tokens
             tokens = shlex.split(value)
             if not tokens:
                 return self.failure("Empty string")
