@@ -104,7 +104,8 @@ class BrandTree(Tree):
             has_leaves = False
             for model in sorted(self.brands_to_devices[brand], key=lambda x: x['model']):
                 if odms:
-                    pass
+                    if model['data']['manufacturer']['name'].lower() not in odms:
+                        continue
 
                 if ignore_odms:
                     if model['data']['manufacturer']['name'].lower() in ignore_odms:
@@ -116,7 +117,7 @@ class BrandTree(Tree):
             # check if there are any valid leaf nodes.
             # If not, remove the brand node
             if not has_leaves:
-                brand_node.remove()
+                node.remove()
 
 
 class OdmTree(Tree):
