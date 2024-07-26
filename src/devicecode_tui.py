@@ -92,6 +92,10 @@ class BrandTree(Tree):
         odms = kwargs.get('odms', [])
         passwords = kwargs.get('passwords', [])
 
+        expand = False
+        if brands or chip_vendors or flags or ignore_brands or ignore_odms or odms or passwords:
+            expand = True
+
         for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
             if brands and brand.lower() not in brands:
                 continue
@@ -99,7 +103,7 @@ class BrandTree(Tree):
                 continue
 
             # add each brand as a node. Then add each model as a leaf.
-            node = self.root.add(brand, expand=False)
+            node = self.root.add(brand, expand=expand)
 
             # recurse into the device and add nodes for
             # devices, after filtering
@@ -157,6 +161,10 @@ class OdmTree(Tree):
         odms = kwargs.get('odms', [])
         passwords = kwargs.get('passwords', [])
 
+        expand = False
+        if brands or chip_vendors or flags or ignore_brands or ignore_odms or odms or passwords:
+            expand = True
+
         # add each manufacturer as a node. Then add each brand as a subtree
         # and each model as a leaf. Optionally filter for brands and prune.
         for odm in sorted(self.odm_to_devices.keys(), key=str.casefold):
@@ -166,7 +174,7 @@ class OdmTree(Tree):
                 continue
 
             # create a node with brand subnodes
-            node = self.root.add(odm, expand=False)
+            node = self.root.add(odm, expand=expand)
             has_brand_leaves = False
             for brand in sorted(self.odm_to_devices[odm], key=str.casefold):
                 if brands and brand.lower() not in brands:
