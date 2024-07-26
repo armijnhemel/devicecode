@@ -85,17 +85,39 @@ class BrandTree(Tree):
         self.reset("DeviceCode brand results")
 
         brands = kwargs.get('brands', [])
+        chip_vendors = kwargs.get('chip_vendors', [])
         ignore_brands = kwargs.get('ignore_brands', [])
+        ignore_odms = kwargs.get('ignore_odms', [])
+        odms = kwargs.get('odms', [])
 
         for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
             if brands and brand.lower() not in brands:
                 continue
             if ignore_brands and brand.lower() in ignore_brands:
                 continue
+
             # add each brand as a node. Then add each model as a leaf.
             node = self.root.add(brand, expand=False)
+
+            # recurse into the device and add nodes for
+            # devices, after filtering
+            has_leaves = False
             for model in sorted(self.brands_to_devices[brand], key=lambda x: x['model']):
+                if odms:
+                    pass
+
+                if ignore_odms:
+                    if model['data']['manufacturer']['name'].lower() in ignore_odms:
+                        continue
+
                 node.add_leaf(model['model'], data=model['data'])
+                has_leaves = True
+
+            # check if there are any valid leaf nodes.
+            # If not, remove the brand node
+            if not has_leaves:
+                brand_node.remove()
+
 
 class OdmTree(Tree):
     def __init__(self, odm_to_devices, *args: Any, **kwargs: Any) -> None:
@@ -117,7 +139,6 @@ class OdmTree(Tree):
         for odm in sorted(self.odm_to_devices.keys(), key=str.casefold):
             if odms and odm.lower() not in odms:
                 continue
-
             if ignore_odms and odm.lower() in ignore_odms:
                 continue
 
