@@ -927,7 +927,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     # TODO: parse serial information
                                                     serial_fields = value.split(',')
                                                     if serial_fields[0].lower() == 'yes':
-                                                        device.has_serial = 'yes'
+                                                        device.has_serial_port = 'yes'
 
                                                     # parse every single field. As there doesn't seem to
                                                     # be a fixed order to store information the only way
