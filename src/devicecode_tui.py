@@ -290,7 +290,8 @@ class DevicecodeUI(App):
         yield Header()
         with Container(id='app-grid'):
             with Container(id='left-grid'):
-                yield Input(placeholder='Filter', validators=[FilterValidator(brands=brands, odms=odms)], valid_empty=True)
+                yield Input(placeholder='Filter', validators=[FilterValidator(brands=brands, odms=odms)],
+                            valid_empty=True)
                 with TabbedContent():
                     with TabPane('Brand view'):
                         yield self.brand_tree
@@ -350,11 +351,13 @@ class DevicecodeUI(App):
                         passwords.append(value.lower())
 
                 self.brand_tree.build_tree(brands=brands, odms=odms, chips=chips,
-                                           chip_vendors=chip_vendors, flags=flags, ignore_brands=ignore_brands,
-                                           ignore_odms=ignore_odms, passwords=passwords)
+                                           chip_vendors=chip_vendors, flags=flags,
+                                           ignore_brands=ignore_brands, ignore_odms=ignore_odms,
+                                           passwords=passwords)
                 self.odm_tree.build_tree(brands=brands, odms=odms, chips=chips,
-                                         chip_vendors=chip_vendors, flags=flags, ignore_brands=ignore_brands,
-                                         ignore_odms=ignore_odms, passwords=passwords)
+                                         chip_vendors=chip_vendors, flags=flags,
+                                         ignore_brands=ignore_brands, ignore_odms=ignore_odms,
+                                         passwords=passwords)
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass
@@ -376,7 +379,8 @@ class DevicecodeUI(App):
     @group()
     def build_additional_chips_report(self, results):
         if results:
-            result_table = rich.table.Table('', '', title='', show_lines=True, show_header=False, expand=True)
+            result_table = rich.table.Table('', '', title='', show_lines=True,
+                                            show_header=False, expand=True)
             for r in results:
                 result_table.add_row('Description', r['description'])
                 result_table.add_row('Manufacturer', r['manufacturer'])
