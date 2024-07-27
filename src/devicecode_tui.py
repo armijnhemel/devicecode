@@ -486,9 +486,9 @@ class DevicecodeUI(App):
             self.additional_chips_area.update(self.build_additional_chips_report(event.node.data['additional_chips']))
         else:
             self.device_data_area.update()
-            self.regulatory_data_area.document.update('')
+            self.regulatory_data_area.update('')
             self.model_data_area.update()
-            self.additional_chips_area.document.update('')
+            self.additional_chips_area.update('')
 
     def on_tree_node_collapsed(self, event: Tree.NodeCollapsed[None]) -> None:
         pass
