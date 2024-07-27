@@ -391,15 +391,18 @@ class DevicecodeUI(App):
                         yield self.brand_tree
                     with TabPane('ODM view'):
                         yield self.odm_tree
-            with VerticalScroll(id='result-area'):
-                with TabbedContent(id='result-tabs'):
-                    with TabPane('Device data'):
+            with TabbedContent(id='result-tabs'):
+                with TabPane('Device data'):
+                    with VerticalScroll():
                         yield self.device_data_area
-                    with TabPane('Model data'):
+                with TabPane('Model data'):
+                    with VerticalScroll():
                         yield self.model_data_area
-                    with TabPane('Regulatory data'):
+                with TabPane('Regulatory data'):
+                    with VerticalScroll():
                         yield self.regulatory_data_area
-                    with TabPane('Additional chips'):
+                with TabPane('Additional chips'):
+                    with VerticalScroll():
                         yield self.additional_chips_area
 
         # show the footer with controls
