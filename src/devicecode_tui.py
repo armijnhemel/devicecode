@@ -495,7 +495,7 @@ class DevicecodeUI(App):
 
     def build_additional_chips_report(self, results):
         if results:
-            new_markdown = f"| | |\n|--|--|\n"
+            new_markdown = "| | |\n|--|--|\n"
             for r in results:
                 new_markdown += f"| **Description** | {r['description']}|\n"
                 new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
@@ -503,12 +503,11 @@ class DevicecodeUI(App):
                 #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
                 new_markdown += "| | |\n"
             return new_markdown
-        else:
-            return "No additional chips"
+        return "No additional chips"
 
     def build_regulatory_report(self, result):
         if result:
-            new_markdown = f"| | |\n|--|--|\n"
+            new_markdown = "| | |\n|--|--|\n"
             new_markdown += f"|**FCC date** | {result['fcc_date']}\n"
             new_markdown += f"|**WiFi certified** |{ result['wifi_certified']}\n"
             new_markdown += f"|**WiFi date** | {result['wifi_certified_date']}\n"
