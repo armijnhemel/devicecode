@@ -256,8 +256,8 @@ class OdmTree(Tree):
 
                 # recurse into the device and add nodes for
                 # devices, after filtering
-                has_leaves = False
                 brand_node = node.add(brand)
+                brand_node_leaves = 0
                 for model in sorted(self.odm_to_devices[odm][brand], key=lambda x: x['model']):
                     if flags:
                         if not set(map(lambda x: x.lower(), model['data']['flags'])).intersection(flags):
@@ -276,17 +276,18 @@ class OdmTree(Tree):
                                 break
                         if cpu_found:
                             brand_node.add_leaf(model['model'], data=model['data'])
-                            has_leaves = True
+                            brand_node_leaves += 1
                     else:
                         brand_node.add_leaf(model['model'], data=model['data'])
-                        has_leaves = True
+                        brand_node_leaves += 1
 
                 # check if there are any valid leaf nodes.
                 # If not, remove the brand node
-                if not has_leaves:
+                if brand_node_leaves == 0:
                     brand_node.remove()
                 else:
                     has_brand_leaves = True
+                    brand_node.label = f"{brand_node.label} ({brand_node_leaves})"
 
             # check if there are any valid leaf nodes.
             # If not, remove the ODM node
