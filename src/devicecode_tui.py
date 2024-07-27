@@ -381,7 +381,7 @@ class DevicecodeUI(App):
         # not have any associated data with it.
         self.device_data_area = Static()
         self.regulatory_data_area = Markdown()
-        self.model_data_area = Static()
+        self.model_data_area = Markdown()
         self.additional_chips_area = Markdown()
 
         # Yield the elements. The UI is a container with an app grid. On the left
@@ -481,13 +481,13 @@ class DevicecodeUI(App):
         '''Display the reports of a node when it is selected'''
         if event.node.data is not None:
             self.device_data_area.update(Group(self.build_meta_report(event.node.data)))
-            self.model_data_area.update(Group(self.build_model_report(event.node.data['model'])))
+            self.model_data_area.update(self.build_model_report(event.node.data['model']))
             self.regulatory_data_area.update(self.build_regulatory_report(event.node.data['regulatory']))
             self.additional_chips_area.update(self.build_additional_chips_report(event.node.data['additional_chips']))
         else:
             self.device_data_area.update()
             self.regulatory_data_area.update('')
-            self.model_data_area.update()
+            self.model_data_area.update('')
             self.additional_chips_area.update('')
 
     def on_tree_node_collapsed(self, event: Tree.NodeCollapsed[None]) -> None:
@@ -525,20 +525,18 @@ class DevicecodeUI(App):
             new_markdown += f"|**US ids** | {', '.join(result['us_ids'])}"
             return new_markdown
 
-    @group()
     def build_model_report(self, result):
         if result:
-            meta_table = rich.table.Table('', 'Model information', title='',
-                                          show_lines=True, show_header=False, expand=True)
-            meta_table.add_row('Model', result['model'])
-            meta_table.add_row('Part number', result['part_number'])
-            meta_table.add_row('PCB id', result['pcb_id'])
-            meta_table.add_row('Revision', result['revision'])
-            meta_table.add_row('Serial number', result['serial_number'])
-            meta_table.add_row('Series', result['series'])
-            meta_table.add_row('Submodel', result['submodel'])
-            meta_table.add_row('Subrevision', result['subrevision'])
-            yield meta_table
+            new_markdown = "| | |\n|--|--|\n"
+            new_markdown += f"|**Model** | {result['model']}\n"
+            new_markdown += f"|**Part number** |{ result['part_number']}\n"
+            new_markdown += f"|**PCB id** | {result['pcb_id']}\n"
+            new_markdown += f"|**Revision** | {result['revision']}\n"
+            new_markdown += f"|**Serial number** | {result['serial_number']}\n"
+            new_markdown += f"|**Series** | {result['series']}\n"
+            new_markdown += f"|**Submodel** | {result['submodel']}\n"
+            new_markdown += f"|**Subrevision** | {result['subrevision']}\n"
+            return new_markdown
 
     @group()
     def build_meta_report(self, result):
