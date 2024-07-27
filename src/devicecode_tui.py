@@ -385,8 +385,9 @@ class DevicecodeUI(App):
             with Container(id='left-grid'):
                 yield Input(placeholder='Filter',
                             validators=[FilterValidator(brands=brands, odms=odms, chip_vendors=chip_vendors)],
-                            suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False, brands=brands, chip_vendors=chip_vendors, odms=odms, flags=sorted(flags)),
-                            valid_empty=True)
+                            suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
+                            brands=brands, chip_vendors=chip_vendors, odms=odms,
+                            flags=sorted(flags)), valid_empty=True)
                 with TabbedContent():
                     with TabPane('Brand view'):
                         yield self.brand_tree
@@ -498,7 +499,8 @@ class DevicecodeUI(App):
     @group()
     def build_regulatory_report(self, result):
         if result:
-            meta_table = rich.table.Table('', '', title='Regulatory', show_lines=True, show_header=False, expand=True)
+            meta_table = rich.table.Table('', '', title='Regulatory', show_lines=True,
+                                          show_header=False, expand=True)
             meta_table.add_row('FCC date', result['fcc_date'])
             meta_table.add_row('FCC ids', '\n'.join(result['fcc_ids']))
             meta_table.add_row('Industry Canada ids', '\n'.join(result['industry_canada_ids']))
@@ -510,7 +512,8 @@ class DevicecodeUI(App):
     @group()
     def build_model_report(self, result):
         if result:
-            meta_table = rich.table.Table('', 'Model information', title='', show_lines=True, show_header=False, expand=True)
+            meta_table = rich.table.Table('', 'Model information', title='',
+                                          show_lines=True, show_header=False, expand=True)
             meta_table.add_row('Model', result['model'])
             meta_table.add_row('Part number', result['part_number'])
             meta_table.add_row('PCB id', result['pcb_id'])
@@ -524,7 +527,8 @@ class DevicecodeUI(App):
     @group()
     def build_meta_report(self, result):
         if result:
-            meta_table = rich.table.Table('', '', title=result['title'], show_lines=True, show_header=False)
+            meta_table = rich.table.Table('', '', title=result['title'],
+                                          show_lines=True, show_header=False)
             meta_table.add_row('Title', result['title'])
             meta_table.add_row('Brand', result['brand'])
             if result['taglines']:
