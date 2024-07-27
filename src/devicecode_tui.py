@@ -373,6 +373,7 @@ class DevicecodeUI(App):
         # not have any associated data with it.
         self.device_data_area = Static(Group(self.build_meta_report(None)))
         self.regulatory_data_area = Static(Group(self.build_meta_report(None)))
+        self.model_data_area = Static(Group(self.build_meta_report(None)))
         self.additional_chips_area = Static(Group(self.build_meta_report(None)))
 
         # Yield the elements. The UI is a container with an app grid. On the left
@@ -394,6 +395,8 @@ class DevicecodeUI(App):
                 with TabbedContent(id='result-tabs'):
                     with TabPane('Device data'):
                         yield self.device_data_area
+                    with TabPane('Model data'):
+                        yield self.model_data_area
                     with TabPane('Regulatory data'):
                         yield self.regulatory_data_area
                     with TabPane('Additional chips'):
@@ -463,10 +466,12 @@ class DevicecodeUI(App):
         if event.node.data is not None:
             self.device_data_area.update(Group(self.build_meta_report(event.node.data)))
             self.regulatory_data_area.update(Group(self.build_regulatory_report(event.node.data['regulatory'])))
+            self.model_data_area.update(Group(self.build_model_report(event.node.data['model'])))
             self.additional_chips_area.update(Group(self.build_additional_chips_report(event.node.data['additional_chips'])))
         else:
             self.device_data_area.update()
             self.regulatory_data_area.update()
+            self.model_data_area.update()
             self.additional_chips_area.update()
 
     def on_tree_node_collapsed(self, event: Tree.NodeCollapsed[None]) -> None:
@@ -499,11 +504,25 @@ class DevicecodeUI(App):
             yield meta_table
 
     @group()
+    def build_model_report(self, result):
+        if result:
+            meta_table = rich.table.Table('', 'Model information', title='', show_lines=True, show_header=False, expand=True)
+            meta_table.add_row('Model', result['model'])
+            meta_table.add_row('Part number', result['part_number'])
+            meta_table.add_row('PCB id', result['pcb_id'])
+            meta_table.add_row('Revision', result['revision'])
+            meta_table.add_row('Serial number', result['serial_number'])
+            meta_table.add_row('Series', result['series'])
+            meta_table.add_row('Submodel', result['submodel'])
+            meta_table.add_row('Subrevision', result['subrevision'])
+            yield meta_table
+
+    @group()
     def build_meta_report(self, result):
         if result:
             meta_table = rich.table.Table('', '', title=result['title'], show_lines=True, show_header=False)
+            meta_table.add_row('Title', result['title'])
             meta_table.add_row('Brand', result['brand'])
-            meta_table.add_row('Model', str(result['model']))
             if result['taglines']:
                 taglines = "\n".join(result['taglines'])
                 meta_table.add_row('Taglines', taglines)
