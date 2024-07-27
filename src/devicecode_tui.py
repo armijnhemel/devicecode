@@ -179,7 +179,7 @@ class BrandTree(Tree):
 
             # recurse into the device and add nodes for
             # devices, after filtering
-            has_leaves = False
+            node_leaves = 0
             for model in sorted(self.brands_to_devices[brand], key=lambda x: x['model']):
                 if odms:
                     if model['data']['manufacturer']['name'].lower() not in odms:
@@ -204,15 +204,16 @@ class BrandTree(Tree):
                             break
                     if cpu_found:
                         node.add_leaf(model['model'], data=model['data'])
-                        has_leaves = True
+                        node_leaves += 1
                 else:
                     node.add_leaf(model['model'], data=model['data'])
-                    has_leaves = True
+                    node_leaves += 1
 
             # check if there are any valid leaf nodes.
             # If not, remove the brand node
-            if not has_leaves:
+            if node_leaves == 0:
                 node.remove()
+            node.label = f"{node.label} ({node_leaves})"
 
 
 class OdmTree(Tree):
