@@ -248,7 +248,7 @@ class OdmTree(Tree):
 
             # create a node with brand subnodes
             node = self.root.add(odm, expand=expand)
-            has_brand_leaves = False
+            node_leaves = 0
             for brand in sorted(self.odm_to_devices[odm], key=str.casefold):
                 if brands and brand.lower() not in brands:
                     continue
@@ -278,22 +278,24 @@ class OdmTree(Tree):
                         if cpu_found:
                             brand_node.add_leaf(model['model'], data=model['data'])
                             brand_node_leaves += 1
+                            node_leaves += 1
                     else:
                         brand_node.add_leaf(model['model'], data=model['data'])
                         brand_node_leaves += 1
+                        node_leaves += 1
 
                 # check if there are any valid leaf nodes.
                 # If not, remove the brand node
                 if brand_node_leaves == 0:
                     brand_node.remove()
                 else:
-                    has_brand_leaves = True
                     brand_node.label = f"{brand_node.label} ({brand_node_leaves})"
 
             # check if there are any valid leaf nodes.
             # If not, remove the ODM node
-            if not has_brand_leaves:
+            if node_leaves == 0:
                 node.remove()
+            node.label = f"{node.label} ({node_leaves})"
 
 class DevicecodeUI(App):
     BINDINGS = [
