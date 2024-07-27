@@ -7,6 +7,7 @@ import json
 import pathlib
 import shlex
 import sys
+import webbrowser
 
 from typing import Any, Iterable
 
@@ -379,9 +380,9 @@ class DevicecodeUI(App):
         # Create a table with the results. The root element will
         # not have any associated data with it.
         self.device_data_area = Static()
-        self.regulatory_data_area = Static()
+        self.regulatory_data_area = Markdown()
         self.model_data_area = Static()
-        self.additional_chips_area = Static()
+        self.additional_chips_area = Markdown()
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
@@ -469,6 +470,10 @@ class DevicecodeUI(App):
                                          ignore_brands=ignore_brands, ignore_odms=ignore_odms,
                                          passwords=passwords, serials=serials)
 
+    def on_markdown_link_clicked(self, event: Markdown.LinkClicked) -> None:
+        if event.href.startswith('https://'):
+            webbrowser.open(event.href)
+
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass
 
@@ -476,44 +481,50 @@ class DevicecodeUI(App):
         '''Display the reports of a node when it is selected'''
         if event.node.data is not None:
             self.device_data_area.update(Group(self.build_meta_report(event.node.data)))
-            self.regulatory_data_area.update(Group(self.build_regulatory_report(event.node.data['regulatory'])))
             self.model_data_area.update(Group(self.build_model_report(event.node.data['model'])))
-            self.additional_chips_area.update(Group(self.build_additional_chips_report(event.node.data['additional_chips'])))
+            self.regulatory_data_area.update(self.build_regulatory_report(event.node.data['regulatory']))
+            self.additional_chips_area.update(self.build_additional_chips_report(event.node.data['additional_chips']))
         else:
             self.device_data_area.update()
-            self.regulatory_data_area.update()
+            self.regulatory_data_area.document.update('')
             self.model_data_area.update()
-            self.additional_chips_area.update()
+            self.additional_chips_area.document.update('')
 
     def on_tree_node_collapsed(self, event: Tree.NodeCollapsed[None]) -> None:
         pass
 
-    @group()
     def build_additional_chips_report(self, results):
         if results:
-            result_table = rich.table.Table('', '', title='', show_lines=True,
-                                            show_header=False, expand=True)
+            new_markdown = f"| | |\n|--|--|\n"
             for r in results:
-                result_table.add_row('Description', r['description'])
-                result_table.add_row('Manufacturer', r['manufacturer'])
-                result_table.add_row('Model', r['model'])
-                result_table.add_row('Extra info', r['extra_info'])
-            yield result_table
+                new_markdown += f"| **Description** | {r['description']}|\n"
+                new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                new_markdown += f"| **Model** | {r['model']}|\n"
+                #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                new_markdown += "| | |\n"
+            return new_markdown
         else:
-            yield "No additional chips"
+            return "No additional chips"
 
-    @group()
     def build_regulatory_report(self, result):
         if result:
-            meta_table = rich.table.Table('', '', title='Regulatory', show_lines=True,
-                                          show_header=False, expand=True)
-            meta_table.add_row('FCC date', result['fcc_date'])
-            meta_table.add_row('FCC ids', '\n'.join(result['fcc_ids']))
-            meta_table.add_row('Industry Canada ids', '\n'.join(result['industry_canada_ids']))
-            meta_table.add_row('US ids', '\n'.join(result['us_ids']))
-            meta_table.add_row('WiFi certified', result['wifi_certified'])
-            meta_table.add_row('WiFi date', result['wifi_certified_date'])
-            yield meta_table
+            new_markdown = f"| | |\n|--|--|\n"
+            new_markdown += f"|**FCC date** | {result['fcc_date']}\n"
+            new_markdown += f"|**WiFi certified** |{ result['wifi_certified']}\n"
+            new_markdown += f"|**WiFi date** | {result['wifi_certified_date']}\n"
+
+            fcc_ids = ''
+            if result['fcc_ids']:
+                fcc_id = result['fcc_ids'][0]
+                fcc_ids = f"[{fcc_id}](<https://fcc.report/FCC-ID/{fcc_id}>)"
+
+                for f in result['fcc_ids'][1:]:
+                    fcc_ids += f", [{f}](<https://fcc.report/FCC-ID/{f}>)"
+            new_markdown += f"|**FCC ids** | {fcc_ids}\n"
+
+            new_markdown += f"|**Industry Canada ids** | {', '.join(result['industry_canada_ids'])}"
+            new_markdown += f"|**US ids** | {', '.join(result['us_ids'])}"
+            return new_markdown
 
     @group()
     def build_model_report(self, result):
