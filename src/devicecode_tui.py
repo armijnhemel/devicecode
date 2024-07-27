@@ -378,10 +378,10 @@ class DevicecodeUI(App):
 
         # Create a table with the results. The root element will
         # not have any associated data with it.
-        self.device_data_area = Static(Group(self.build_meta_report(None)))
-        self.regulatory_data_area = Static(Group(self.build_meta_report(None)))
-        self.model_data_area = Static(Group(self.build_meta_report(None)))
-        self.additional_chips_area = Static(Group(self.build_meta_report(None)))
+        self.device_data_area = Static()
+        self.regulatory_data_area = Static()
+        self.model_data_area = Static()
+        self.additional_chips_area = Static()
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
