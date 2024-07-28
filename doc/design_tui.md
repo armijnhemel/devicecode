@@ -13,7 +13,7 @@ There are many ways results can be represented and there is no single best way
 to represent these results. Depending on which element is the most important
 the data should be presented in a different way.
 
-An obvious way would be to have a tree, with brands at the top and device
+An obvious way would be to have a tree, with brands as branches and device
 models as leafs, with perhaps an additional layer for the various wiki types
 that were parsed.
 
@@ -25,24 +25,25 @@ If operating system is the most imporant, then the results could be sorted
 by operating system. If release year is the most important, then it could be
 sorted by year, and so on.
 
-Currently there are three views:
+Currently there are two views:
 
 1. brand view: devices are sorted by brand
 2. ODM view: devices are sorted by ODM and then brand
 
 ## Filtering
 
-In the "filter view" devices can be searched using a special filtering
-language. The result after filtering will be a tree containing just some
-of the entries.
+The trees with devices can be searched using a special filtering language.
+The result after filtering will be a tree containing just some of the entries.
 
-For filtering a special purpose filtering language will be used, which can
+For filtering a special purpose filtering language is used, which can
 filter on a few attributes, such as:
 
+* brand
 * chipset manufacturer
 * ODM
-* operating system
-* device type
+* flags
+* serial port
+* password
 * etc.
 
 ### Filtering language
