@@ -419,7 +419,7 @@ class DevicecodeUI(App):
                 with TabPane('Device data'):
                     with VerticalScroll():
                         yield self.device_data_area
-                with TabPane('Model data'):
+                with TabPane('Model & ODM'):
                     with VerticalScroll():
                         yield self.model_data_area
                 with TabPane('Regulatory data'):
@@ -496,7 +496,7 @@ class DevicecodeUI(App):
         '''Display the reports of a node when it is selected'''
         if event.node.data is not None:
             self.device_data_area.update(self.build_meta_report(event.node.data))
-            self.model_data_area.update(self.build_model_report(event.node.data['model']))
+            self.model_data_area.update(self.build_model_report(event.node.data))
             self.regulatory_data_area.update(self.build_regulatory_report(event.node.data['regulatory']))
             self.additional_chips_area.update(self.build_additional_chips_report(event.node.data['additional_chips']))
         else:
@@ -542,15 +542,23 @@ class DevicecodeUI(App):
 
     def build_model_report(self, result):
         if result:
-            new_markdown = "| | |\n|--|--|\n"
-            new_markdown += f"|**Model** | {result['model']}\n"
-            new_markdown += f"|**Part number** |{ result['part_number']}\n"
-            new_markdown += f"|**PCB id** | {result['pcb_id']}\n"
-            new_markdown += f"|**Revision** | {result['revision']}\n"
-            new_markdown += f"|**Serial number** | {result['serial_number']}\n"
-            new_markdown += f"|**Series** | {result['series']}\n"
-            new_markdown += f"|**Submodel** | {result['submodel']}\n"
-            new_markdown += f"|**Subrevision** | {result['subrevision']}\n"
+            new_markdown = "# Model information\n"
+            new_markdown += "| | |\n|--|--|\n"
+            new_markdown += f"|**Model** | {result['model']['model']}\n"
+            new_markdown += f"|**Part number** |{ result['model']['part_number']}\n"
+            new_markdown += f"|**PCB id** | {result['model']['pcb_id']}\n"
+            new_markdown += f"|**Revision** | {result['model']['revision']}\n"
+            new_markdown += f"|**Serial number** | {result['model']['serial_number']}\n"
+            new_markdown += f"|**Series** | {result['model']['series']}\n"
+            new_markdown += f"|**Submodel** | {result['model']['submodel']}\n"
+            new_markdown += f"|**Subrevision** | {result['model']['subrevision']}\n"
+
+            new_markdown += "# ODM information\n"
+            new_markdown += "| | |\n|--|--|\n"
+            new_markdown += f"|**Manufacturer** | {result['manufacturer']['name']}\n"
+            new_markdown += f"|**Country** | {result['manufacturer']['country']}\n"
+            new_markdown += f"|**Model** | {result['manufacturer']['model']}\n"
+            new_markdown += f"|**Revision** | {result['manufacturer']['revision']}\n"
             return new_markdown
 
     def build_meta_report(self, result):
