@@ -3,6 +3,7 @@
 # Licensed under the terms of the Apache license
 # SPDX-License-Identifier: Apache-2.0
 
+import collections
 import json
 import pathlib
 import shlex
@@ -19,7 +20,7 @@ from textual.binding import Binding
 from textual.containers import Container, Horizontal, VerticalScroll
 from textual.suggester import Suggester
 from textual.validation import Function, ValidationResult, Validator
-from textual.widgets import Footer, Markdown, Static, Tree, TabbedContent, TabPane, Input, Header
+from textual.widgets import Footer, Markdown, Static, Tree, TabbedContent, TabPane, Input, Header, DataTable
 
 #from textual.logging import TextualHandler
 
@@ -331,6 +332,7 @@ class DevicecodeUI(App):
             except json.decoder.JSONDecodeError:
                 pass
 
+        brand_odm = []
         for device in self.devices:
             brand_name = device['brand']
             if brand_name not in brands_to_devices:
@@ -361,7 +363,11 @@ class DevicecodeUI(App):
             for cpu in device['cpus']:
                 chip_vendors.append(cpu['manufacturer'].lower())
 
+            brand_odm.append((brand_name.lower(), manufacturer_name.lower()))
+
             flags.update([x.casefold() for x in device['flags']])
+
+        datatable_data = collections.Counter(brand_odm)
 
         # build the various trees.
         self.brand_tree: BrandTree[dict] = BrandTree(brands_to_devices, "DeviceCode brand results")
@@ -373,6 +379,15 @@ class DevicecodeUI(App):
         self.odm_tree.show_root = False
         self.odm_tree.root.expand()
         self.odm_tree.build_tree()
+
+        self.data_table: DataTable() = DataTable()
+        self.data_table.add_columns("rank", "count", "brand", "ODM")
+        rank = 1
+        for i in datatable_data.most_common():
+            self.data_table.add_row(rank, i[1], i[0][0], i[0][1])
+            rank += 1
+
+        datatable_data.fixed_columns = 1
 
         # Create a table with the results. The root element will
         # not have any associated data with it.
@@ -398,6 +413,9 @@ class DevicecodeUI(App):
                         yield self.brand_tree
                     with TabPane('ODM view'):
                         yield self.odm_tree
+                    with TabPane('Table view'):
+                        with VerticalScroll():
+                            yield self.data_table
             with TabbedContent(id='result-tabs'):
                 with TabPane('Device data'):
                     with VerticalScroll():
