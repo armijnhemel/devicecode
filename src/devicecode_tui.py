@@ -524,7 +524,7 @@ class DevicecodeUI(App):
                 #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
                 new_markdown += "| | |\n"
             return new_markdown
-        return "No additional chips"
+        return "No known additional chips"
 
     def build_regulatory_report(self, result):
         if result:
