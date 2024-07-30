@@ -13,9 +13,6 @@ from typing import Any, Iterable
 
 import click
 
-from rich.console import Group, group
-import rich.table
-
 from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
@@ -379,7 +376,8 @@ class DevicecodeUI(App):
 
         # Create a table with the results. The root element will
         # not have any associated data with it.
-        self.device_data_area = Static()
+        #self.device_data_area = Static()
+        self.device_data_area = Markdown()
         self.regulatory_data_area = Markdown()
         self.model_data_area = Markdown()
         self.additional_chips_area = Markdown()
@@ -480,12 +478,12 @@ class DevicecodeUI(App):
     def on_tree_node_selected(self, event: Tree.NodeSelected[None]) -> None:
         '''Display the reports of a node when it is selected'''
         if event.node.data is not None:
-            self.device_data_area.update(Group(self.build_meta_report(event.node.data)))
+            self.device_data_area.update(self.build_meta_report(event.node.data))
             self.model_data_area.update(self.build_model_report(event.node.data['model']))
             self.regulatory_data_area.update(self.build_regulatory_report(event.node.data['regulatory']))
             self.additional_chips_area.update(self.build_additional_chips_report(event.node.data['additional_chips']))
         else:
-            self.device_data_area.update()
+            self.device_data_area.update('')
             self.regulatory_data_area.update('')
             self.model_data_area.update('')
             self.additional_chips_area.update('')
@@ -538,23 +536,19 @@ class DevicecodeUI(App):
             new_markdown += f"|**Subrevision** | {result['subrevision']}\n"
             return new_markdown
 
-    @group()
     def build_meta_report(self, result):
         if result:
-            meta_table = rich.table.Table('', '', title=result['title'],
-                                          show_lines=True, show_header=False)
-            meta_table.add_row('Title', result['title'])
-            meta_table.add_row('Brand', result['brand'])
+            new_markdown = "| | |\n|--|--|\n"
+            new_markdown += f"|**Title** | {result['title']}\n"
+            new_markdown += f"|**Brand** | {result['brand']}\n"
             if result['taglines']:
-                taglines = "\n".join(result['taglines'])
-                meta_table.add_row('Taglines', taglines)
+                taglines = ", ".join(result['taglines'])
+                new_markdown += f"|**Taglines** | {taglines}\n"
             if result['flags']:
-                flags = "\n".join(result['flags'])
-                meta_table.add_row('Flags', flags)
-
-            # then display the various information parts
-            meta_table.add_row('Data', str(result))
-            yield meta_table
+                flags = ", ".join(result['flags'])
+                new_markdown += f"|**Flags** | {flags}\n"
+            new_markdown += f"|**Data** | {result}\n"
+            return new_markdown
 
 @click.command(short_help='Interactive DeviceCode result browser')
 @click.option('--directory', '-d', 'devicecode_directory',
