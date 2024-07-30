@@ -565,6 +565,7 @@ class DevicecodeUI(App):
                 flags = ", ".join(result['flags'])
                 new_markdown += f"|**Flags** | {flags}\n"
             new_markdown += f"|**Data** | {result}\n"
+            new_markdown += f"|**Data origin** | {result['wiki_type']}\n"
             return new_markdown
 
 @click.command(short_help='Interactive DeviceCode result browser')
