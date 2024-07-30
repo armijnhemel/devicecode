@@ -33,3 +33,15 @@ structured data format such as RDF, or others, to reap the benefits of using
 tools available for those formats (such as SPARQL for RDF).
 
 Alternatively, look at representing a device as a graph.
+
+## Create overlays
+
+The data in these wikis is often incomplete and sometimes incorrect. Creating
+overlays that can be enabled/disabled at will to augment the data could be very
+helpful. A good example is the ODM field, where for many devices it isn't known
+which ODM made the device. This makes making comparisons between devices more
+difficult.
+
+If this information becomes available it can be stored in an overlay separate
+from the original data. A possible overlay could be a reconciliation of data
+from the Wikis.
