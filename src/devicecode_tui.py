@@ -394,6 +394,7 @@ class DevicecodeUI(App):
         self.device_data_area = Markdown()
         self.regulatory_data_area = Markdown()
         self.model_data_area = Markdown()
+        self.serial_area = Markdown()
         self.additional_chips_area = Markdown()
 
         # Yield the elements. The UI is a container with an app grid. On the left
@@ -425,6 +426,9 @@ class DevicecodeUI(App):
                 with TabPane('Regulatory data'):
                     with VerticalScroll():
                         yield self.regulatory_data_area
+                with TabPane('Serial information'):
+                    with VerticalScroll():
+                        yield self.serial_area
                 with TabPane('Additional chips'):
                     with VerticalScroll():
                         yield self.additional_chips_area
@@ -498,11 +502,13 @@ class DevicecodeUI(App):
             self.device_data_area.update(self.build_meta_report(event.node.data))
             self.model_data_area.update(self.build_model_report(event.node.data))
             self.regulatory_data_area.update(self.build_regulatory_report(event.node.data['regulatory']))
+            self.serial_area.update('')
             self.additional_chips_area.update(self.build_additional_chips_report(event.node.data['additional_chips']))
         else:
             self.device_data_area.update('')
             self.regulatory_data_area.update('')
             self.model_data_area.update('')
+            self.serial_area.update('')
             self.additional_chips_area.update('')
 
     def on_tree_node_collapsed(self, event: Tree.NodeCollapsed[None]) -> None:
