@@ -258,6 +258,7 @@ class Device:
     switch: list[Chip] = field(default_factory=list)
     title: str = ''
     web: Web = field(default_factory=Web)
+    wiki_type: str = ''
 
 def parse_ls(ls_log):
     '''Parse output from ls'''
@@ -501,6 +502,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                         # create a new Device() for each entry
                         device = Device()
                         device.title = title
+                        device.wiki_type = wiki_type
 
                         # grab the wiki text and parse it. This data
                         # is in the <text> element
