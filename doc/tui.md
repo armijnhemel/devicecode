@@ -25,10 +25,11 @@ If operating system is the most imporant, then the results could be sorted
 by operating system. If release year is the most important, then it could be
 sorted by year, and so on.
 
-Currently there are two views:
+Currently there are three views:
 
-1. brand view: devices are sorted by brand
-2. ODM view: devices are sorted by ODM and then brand
+1. brand view: a tree with devices sorted by brand
+2. ODM view: a tree with devices sorted by ODM and then brand
+3. table view: a table with a count for brand/ODM combinations
 
 ## Filtering
 
