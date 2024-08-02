@@ -17,9 +17,9 @@ import click
 from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Horizontal, VerticalScroll
+from textual.containers import Container, VerticalScroll
 from textual.suggester import Suggester
-from textual.validation import Function, ValidationResult, Validator
+from textual.validation import ValidationResult, Validator
 from textual.widgets import Footer, Markdown, Tree, TabbedContent, TabPane, Input, Header, DataTable
 
 #from textual.logging import TextualHandler
