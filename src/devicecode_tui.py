@@ -558,9 +558,6 @@ class DevicecodeUI(App):
         if result:
             new_markdown = "| | |\n|--|--|\n"
             new_markdown += f"|**FCC date** | {result['fcc_date']}\n"
-            new_markdown += f"|**WiFi certified** |{ result['wifi_certified']}\n"
-            new_markdown += f"|**WiFi date** | {result['wifi_certified_date']}\n"
-
             fcc_ids = ''
             if result['fcc_ids']:
                 fcc_id = result['fcc_ids'][0]
@@ -569,9 +566,10 @@ class DevicecodeUI(App):
                 for f in result['fcc_ids'][1:]:
                     fcc_ids += f", [{f}](<https://fcc.report/FCC-ID/{f}>)"
             new_markdown += f"|**FCC ids** | {fcc_ids}\n"
-
-            new_markdown += f"|**Industry Canada ids** | {', '.join(result['industry_canada_ids'])}"
-            new_markdown += f"|**US ids** | {', '.join(result['us_ids'])}"
+            new_markdown += f"|**Industry Canada ids** | {', '.join(result['industry_canada_ids'])}\n"
+            new_markdown += f"|**US ids** | {', '.join(result['us_ids'])}\n"
+            new_markdown += f"|**WiFi certified** |{ result['wifi_certified']}\n"
+            new_markdown += f"|**WiFi date** | {result['wifi_certified_date']}\n"
             return new_markdown
 
     def build_model_report(self, result):
