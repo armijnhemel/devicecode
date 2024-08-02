@@ -172,7 +172,8 @@ class BrandTree(Tree):
         years = kwargs.get('years', [])
 
         expand = False
-        if brands or chip_vendors or flags or ignore_brands or ignore_odms or odms or passwords or serials or years:
+        if brands or chip_vendors or flags or ignore_brands or \
+            ignore_odms or odms or passwords or serials or years:
             expand = True
 
         for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
@@ -255,7 +256,8 @@ class OdmTree(Tree):
         years = kwargs.get('years', [])
 
         expand = False
-        if brands or chip_vendors or flags or ignore_brands or ignore_odms or odms or passwords or serials or years:
+        if brands or chip_vendors or flags or ignore_brands or \
+            ignore_odms or odms or passwords or serials or years:
             expand = True
 
         # add each manufacturer as a node. Then add each brand as a subtree
