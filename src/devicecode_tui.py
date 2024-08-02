@@ -333,6 +333,8 @@ class DevicecodeUI(App):
                 pass
 
         brand_odm = []
+        brand_cpu = []
+        odm_cpu = []
         for device in self.devices:
             brand_name = device['brand']
             if brand_name not in brands_to_devices:
@@ -361,13 +363,18 @@ class DevicecodeUI(App):
             odms.append(manufacturer_name.lower())
 
             for cpu in device['cpus']:
-                chip_vendors.append(cpu['manufacturer'].lower())
+                cpu_vendor_name = cpu['manufacturer']
+                chip_vendors.append(cpu_vendor_name.lower())
+                brand_cpu.append((brand_name, cpu_vendor_name))
+                odm_cpu.append((manufacturer_name, cpu_vendor_name))
 
-            brand_odm.append((brand_name.lower(), manufacturer_name.lower()))
+            brand_odm.append((brand_name, manufacturer_name))
 
             flags.update([x.casefold() for x in device['flags']])
 
         brand_odm_datatable_data = collections.Counter(brand_odm)
+        brand_cpu_datatable_data = collections.Counter(brand_cpu)
+        odm_cpu_datatable_data = collections.Counter(odm_cpu)
 
         # build the various trees.
         self.brand_tree: BrandTree[dict] = BrandTree(brands_to_devices, "DeviceCode brand results")
@@ -386,8 +393,23 @@ class DevicecodeUI(App):
         for i in brand_odm_datatable_data.most_common():
             self.brand_odm_data_table.add_row(rank, i[1], i[0][0], i[0][1])
             rank += 1
-
         self.brand_odm_data_table.fixed_columns = 1
+
+        self.brand_cpu_data_table: DataTable() = DataTable()
+        self.brand_cpu_data_table.add_columns("rank", "count", "brand", "CPU brand")
+        rank = 1
+        for i in brand_cpu_datatable_data.most_common():
+            self.brand_cpu_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+            rank += 1
+        self.brand_cpu_data_table.fixed_columns = 1
+
+        self.odm_cpu_data_table: DataTable() = DataTable()
+        self.odm_cpu_data_table.add_columns("rank", "count", "ODM", "CPU brand")
+        rank = 1
+        for i in odm_cpu_datatable_data.most_common():
+            self.odm_cpu_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+            rank += 1
+        self.odm_cpu_data_table.fixed_columns = 1
 
         # Create a table with the results. The root element will
         # not have any associated data with it.
@@ -416,6 +438,12 @@ class DevicecodeUI(App):
                     with TabPane('Brand/ODM table view'):
                         with VerticalScroll():
                             yield self.brand_odm_data_table
+                    with TabPane('Brand/CPU table view'):
+                        with VerticalScroll():
+                            yield self.brand_cpu_data_table
+                    with TabPane('ODM/CPU table view'):
+                        with VerticalScroll():
+                            yield self.odm_cpu_data_table
             with TabbedContent(id='result-tabs'):
                 with TabPane('Device data'):
                     with VerticalScroll():
