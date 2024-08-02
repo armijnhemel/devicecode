@@ -5,7 +5,7 @@ let
 
   pkgs = import sources.nixpkgs { config.allowUnfree = true; };
 
-  my-python = pkgs.python3.withPackages (p: with p; [
+  my-python = pkgs.python311.withPackages (p: with p; [
     click
     dataclasses-json
     defusedxml
