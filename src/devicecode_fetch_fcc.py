@@ -15,6 +15,7 @@ import requests
 
 # FCC ids can only consist of letters, numbers and hyphens
 RE_FCC_ID = re.compile(r'[\w\d\-]+$')
+RE_APPROVED_DATE = re.compile(r'(\d{4}-\d{2}-\d{2})')
 
 # time in seconds to sleep in "gentle mode"
 SLEEP_INTERVAL = 2
@@ -122,9 +123,14 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
             in_table = False
             pdf_name = ''
             description = ''
+            approved_dates = []
             for line in result.splitlines():
                 # keep a bit of state and only look at the interesting lines.
                 # This is a bit ugly but hey, it works.
+                if '<span class="label label-success">APPROVED</span>' in line:
+                    res = RE_APPROVED_DATE.search(line)
+                    if res:
+                        approved_dates.append(res.groups()[0])
                 if '<th>File Name</th><th>Document Type</th>' in line:
                     in_table = True
                     description = line.rsplit('<td>', maxsplit=1)[1][:-5]
@@ -176,6 +182,8 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
                 print(f"* writing PDF/description mapping for {fccid}\n")
             with open(store_directory/'descriptions.json', 'w') as output:
                 output.write(json.dumps(pdfs_descriptions, indent=4))
+            with open(store_directory/'approved_dates.json', 'w') as output:
+                output.write(json.dumps(sorted(set(approved_dates)), indent=4))
             processed_fccids += 1
 
         except Exception:
