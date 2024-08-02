@@ -774,7 +774,11 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                 # dataclass. The exceptions here are 'addchip'
                                                 # (TechInfoDepot) and 'addl_chips' (WikiDevi).
                                                 if identifier == 'brand':
-                                                    device.brand = defaults.BRAND_REWRITE.get(value, value)
+                                                    if '<!--' in value and not value.startswith('<!--'):
+                                                        brand = value.split('<!--')[0].strip()
+                                                    else:
+                                                        brand = value
+                                                    device.brand = defaults.BRAND_REWRITE.get(brand, brand)
                                                 elif identifier == 'model':
                                                     device.model.model = value
                                                 elif identifier == 'revision':
@@ -890,7 +894,11 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     device.manufacturer.country = defaults.COUNTRY_REWRITE.get(value, value)
                                                 elif identifier == 'manuf':
                                                     if device.manufacturer.name == '':
-                                                        device.manufacturer.name = defaults.BRAND_REWRITE.get(value, value)
+                                                        if '<!--' in value and not value.startswith('<!--'):
+                                                            manuf = value.split('<!--')[0].strip()
+                                                        else:
+                                                            manuf = value
+                                                        device.manufacturer.name = defaults.BRAND_REWRITE.get(manuf, manuf)
                                                 elif identifier == 'manuf_model':
                                                     device.manufacturer.model = value
                                                 elif identifier in ['manuf_rev', 'manuf_revision']:
