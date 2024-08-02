@@ -13,7 +13,7 @@ There are many ways results can be represented and there is no single best way
 to represent these results. Depending on which element is the most important
 the data should be presented in a different way.
 
-An obvious way would be to have a tree, with brands at the top and device
+An obvious way would be to have a tree, with brands as branches and device
 models as leafs, with perhaps an additional layer for the various wiki types
 that were parsed.
 
@@ -27,22 +27,24 @@ sorted by year, and so on.
 
 Currently there are three views:
 
-1. brand view: devices are sorted by brand
-2. ODM view: devices are sorted by ODM and then brand
+1. brand view: a tree with devices sorted by brand
+2. ODM view: a tree with devices sorted by ODM and then brand
+3. table view: a table with a count for brand/ODM combinations
 
 ## Filtering
 
-In the "filter view" devices can be searched using a special filtering
-language. The result after filtering will be a tree containing just some
-of the entries.
+The trees with devices can be searched using a special filtering language.
+The result after filtering will be a tree containing just some of the entries.
 
-For filtering a special purpose filtering language will be used, which can
+For filtering a special purpose filtering language is used, which can
 filter on a few attributes, such as:
 
+* brand
 * chipset manufacturer
 * ODM
-* operating system
-* device type
+* flags
+* serial port
+* password
 * etc.
 
 ### Filtering language
@@ -70,6 +72,7 @@ where identifier can be one of:
 * `password`
 * `serial`
 * `type`
+* `year`
 
 Values are case insensitive.
 
@@ -150,6 +153,15 @@ known. Valid values are `yes`, `no` and `unknown`.
 
 Currently `password` can only be used to show devices with one or more default
 passwords.
+
+##### Year
+
+`year` can be used to show devices that have a year associated with it. This
+year is either one of:
+
+* release date
+* FCC date
+* WiFi certified date
 
 [rich]:https://github.com/Textualize/rich
 [textual]:https://github.com/Textualize/textual

@@ -45,3 +45,9 @@ difficult.
 If this information becomes available it can be stored in an overlay separate
 from the original data. A possible overlay could be a reconciliation of data
 from the Wikis.
+
+## Add software update information/press releases
+
+Crawl firmware update information, such as ChangeLogs or firmware update pages
+and press releases to get an indication of when devices were released or
+supported. Add this information as an overlay.
