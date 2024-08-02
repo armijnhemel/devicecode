@@ -367,7 +367,7 @@ class DevicecodeUI(App):
 
             flags.update([x.casefold() for x in device['flags']])
 
-        datatable_data = collections.Counter(brand_odm)
+        brand_odm_datatable_data = collections.Counter(brand_odm)
 
         # build the various trees.
         self.brand_tree: BrandTree[dict] = BrandTree(brands_to_devices, "DeviceCode brand results")
@@ -380,14 +380,14 @@ class DevicecodeUI(App):
         self.odm_tree.root.expand()
         self.odm_tree.build_tree()
 
-        self.data_table: DataTable() = DataTable()
-        self.data_table.add_columns("rank", "count", "brand", "ODM")
+        self.brand_odm_data_table: DataTable() = DataTable()
+        self.brand_odm_data_table.add_columns("rank", "count", "brand", "ODM")
         rank = 1
-        for i in datatable_data.most_common():
-            self.data_table.add_row(rank, i[1], i[0][0], i[0][1])
+        for i in brand_odm_datatable_data.most_common():
+            self.brand_odm_data_table.add_row(rank, i[1], i[0][0], i[0][1])
             rank += 1
 
-        datatable_data.fixed_columns = 1
+        self.brand_odm_data_table.fixed_columns = 1
 
         # Create a table with the results. The root element will
         # not have any associated data with it.
@@ -413,9 +413,9 @@ class DevicecodeUI(App):
                         yield self.brand_tree
                     with TabPane('ODM view'):
                         yield self.odm_tree
-                    with TabPane('Table view'):
+                    with TabPane('Brand/ODM table view'):
                         with VerticalScroll():
-                            yield self.data_table
+                            yield self.brand_odm_data_table
             with TabbedContent(id='result-tabs'):
                 with TabPane('Device data'):
                     with VerticalScroll():
