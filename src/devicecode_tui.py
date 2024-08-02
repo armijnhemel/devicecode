@@ -100,7 +100,7 @@ class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
 
     TOKEN_IDENTIFIERS = ['brand', 'chip', 'chip_vendor', 'flag', 'ignore_brand',
-                         'ignore_odm', 'odm', 'password', 'serial', 'type']
+                         'ignore_odm', 'odm', 'password', 'serial', 'type', 'year']
 
     def __init__(self, **kwargs):
         self.brands = kwargs.get('brands', [])
@@ -141,6 +141,13 @@ class FilterValidator(Validator):
                 elif token_identifier == 'serial':
                     if token_value.lower() not in ['no', 'unknown', 'yes']:
                         return self.failure("Invalid serial port information")
+                elif token_identifier == 'year':
+                    try:
+                        year=int(token_value)
+                    except:
+                        return self.failure("Invalid year")
+                    if year < 1990 or year > 2040:
+                        return self.failure("Invalid year")
             return self.success()
         except ValueError:
             return self.failure('Incomplete')
@@ -162,9 +169,10 @@ class BrandTree(Tree):
         odms = kwargs.get('odms', [])
         passwords = kwargs.get('passwords', [])
         serials = kwargs.get('serials', [])
+        years = kwargs.get('years', [])
 
         expand = False
-        if brands or chip_vendors or flags or ignore_brands or ignore_odms or odms or passwords or serials:
+        if brands or chip_vendors or flags or ignore_brands or ignore_odms or odms or passwords or serials or years:
             expand = True
 
         for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
@@ -194,6 +202,18 @@ class BrandTree(Tree):
                         continue
                 if serials:
                     if model['data']['has_serial_port'] not in serials:
+                        continue
+                if years:
+                    # first collect all the years that have been declared
+                    # in the data: FCC, wifi certified, release date
+                    declared_years = []
+                    if model['data']['commercial']['release_date']:
+                        declared_years.append(int(model['data']['commercial']['release_date'][:4]))
+                    if model['data']['regulatory']['fcc_date']:
+                        declared_years.append(int(model['data']['regulatory']['fcc_date'][:4]))
+                    if model['data']['regulatory']['wifi_certified_date']:
+                        declared_years.append(int(model['data']['regulatory']['wifi_certified_date'][:4]))
+                    if not set(years).intersection(declared_years):
                         continue
                 if chip_vendors:
                     cpu_found = False
@@ -232,9 +252,10 @@ class OdmTree(Tree):
         odms = kwargs.get('odms', [])
         passwords = kwargs.get('passwords', [])
         serials = kwargs.get('serials', [])
+        years = kwargs.get('years', [])
 
         expand = False
-        if brands or chip_vendors or flags or ignore_brands or ignore_odms or odms or passwords or serials:
+        if brands or chip_vendors or flags or ignore_brands or ignore_odms or odms or passwords or serials or years:
             expand = True
 
         # add each manufacturer as a node. Then add each brand as a subtree
@@ -267,6 +288,18 @@ class OdmTree(Tree):
                             continue
                     if serials:
                         if model['data']['has_serial_port'] not in serials:
+                            continue
+                    if years:
+                        # first collect all the years that have been declared
+                        # in the data: FCC, wifi certified, release date
+                        declared_years = []
+                        if model['data']['commercial']['release_date']:
+                            declared_years.append(int(model['data']['commercial']['release_date'][:4]))
+                        if model['data']['regulatory']['fcc_date']:
+                            declared_years.append(int(model['data']['regulatory']['fcc_date'][:4]))
+                        if model['data']['regulatory']['wifi_certified_date']:
+                            declared_years.append(int(model['data']['regulatory']['wifi_certified_date'][:4]))
+                        if not set(years).intersection(declared_years):
                             continue
                     if chip_vendors:
                         cpu_found = False
@@ -486,6 +519,7 @@ class DevicecodeUI(App):
                 odms = []
                 passwords = []
                 serials = []
+                years = []
 
                 for t in tokens:
                     identifier, value = t.split('=', maxsplit=1)
@@ -507,15 +541,17 @@ class DevicecodeUI(App):
                         passwords.append(value.lower())
                     elif identifier == 'serial':
                         serials.append(value.lower())
+                    elif identifier == 'year':
+                        years.append(int(value))
 
                 self.brand_tree.build_tree(brands=brands, odms=odms, chips=chips,
                                            chip_vendors=chip_vendors, flags=flags,
                                            ignore_brands=ignore_brands, ignore_odms=ignore_odms,
-                                           passwords=passwords, serials=serials)
+                                           passwords=passwords, serials=serials, years=years)
                 self.odm_tree.build_tree(brands=brands, odms=odms, chips=chips,
                                          chip_vendors=chip_vendors, flags=flags,
                                          ignore_brands=ignore_brands, ignore_odms=ignore_odms,
-                                         passwords=passwords, serials=serials)
+                                         passwords=passwords, serials=serials, years=years)
 
     def on_markdown_link_clicked(self, event: Markdown.LinkClicked) -> None:
         if event.href.startswith('https://'):

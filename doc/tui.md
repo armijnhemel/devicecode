@@ -72,6 +72,7 @@ where identifier can be one of:
 * `password`
 * `serial`
 * `type`
+* `year`
 
 Values are case insensitive.
 
@@ -152,6 +153,15 @@ known. Valid values are `yes`, `no` and `unknown`.
 
 Currently `password` can only be used to show devices with one or more default
 passwords.
+
+##### Year
+
+`year` can be used to show devices that have a year associated with it. This
+year is either one of:
+
+* release date
+* FCC date
+* WiFi certified date
 
 [rich]:https://github.com/Textualize/rich
 [textual]:https://github.com/Textualize/textual
