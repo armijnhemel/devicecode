@@ -81,16 +81,13 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
     headers = {'user-agent': user_agent_string,
               }
 
-    # store 404s
+    # store possible invalid FCC ids
     fcc_id_404 = []
+    fcc_id_invalid = []
     downloaded_documents = 0
     processed_fccids = 0
 
     for fccid in ids:
-        # create a subdirectory, use the FCC id as a path component
-        store_directory = output_directory/fccid
-        store_directory.mkdir(parents=True, exist_ok=True)
-
         try:
             # grab stuff from fcc report
             if verbose:
@@ -153,7 +150,12 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
                     pdf_name = ''
 
             if not pdfs_descriptions:
+                fcc_id_invalid.append(fccid)
                 continue
+
+            # create a subdirectory, use the FCC id as a path component
+            store_directory = output_directory/fccid
+            store_directory.mkdir(parents=True, exist_ok=True)
 
             with open(store_directory/'index.html', 'w') as output:
                 output.write(result)
@@ -193,6 +195,10 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
         print("Statistics")
         print(f"* processed {processed_fccids} FCC ids")
         print(f"* downloaded {downloaded_documents} documents\n")
+        if fcc_id_invalid:
+            print("Possible invalid FCC identifiers")
+            for f in fcc_id_invalid:
+                print(f"* {f}\n")
 
 
 if __name__ == "__main__":
