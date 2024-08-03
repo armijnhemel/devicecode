@@ -87,12 +87,12 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
     downloaded_documents = 0
     processed_fccids = 0
 
-    for fccid in ids:
+    for fcc_id in ids:
         try:
             # grab stuff from fcc report
             if verbose:
-                print(f"Downloading main page for {fccid}")
-            request = requests.get(f'{base_url}/FCC-ID/{fccid}',
+                print(f"Downloading main page for {fcc_id}")
+            request = requests.get(f'{base_url}/FCC-ID/{fcc_id}',
                                    headers=headers, timeout=TIMEOUT)
 
             # now first check the headers to see if it is OK to do more requests
@@ -102,7 +102,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
                     sys.exit(1)
                 elif request.status_code == 404:
                     # record entries that are not available
-                    fcc_id_404.append(fccid)
+                    fcc_id_404.append(fcc_id)
                 elif request.status_code == 500:
                     print("Server error, exiting", file=sys.stderr)
                     sys.exit(1)
@@ -135,7 +135,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
                 if not in_table:
                     continue
 
-                if fccid in line and line.startswith('</tr>') and pdf_name == '':
+                if fcc_id in line and line.startswith('</tr>') and pdf_name == '':
                     # get the description
                     description = line.rsplit('<td>', maxsplit=1)[1][:-5]
                 elif line.startswith('<td>') and '.pdf' in line:
@@ -150,11 +150,11 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
                     pdf_name = ''
 
             if not pdfs_descriptions:
-                fcc_id_invalid.append(fccid)
+                fcc_id_invalid.append(fcc_id)
                 continue
 
             # create a subdirectory, use the FCC id as a path component
-            store_directory = output_directory/fccid
+            store_directory = output_directory/fcc_id
             store_directory.mkdir(parents=True, exist_ok=True)
 
             with open(store_directory/'index.html', 'w') as output:
@@ -181,7 +181,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
                 downloaded_documents += 1
 
             if verbose:
-                print(f"* writing PDF/description mapping for {fccid}\n")
+                print(f"* writing PDF/description mapping for {fcc_id}\n")
             with open(store_directory/'descriptions.json', 'w') as output:
                 output.write(json.dumps(pdfs_descriptions, indent=4))
             with open(store_directory/'approved_dates.json', 'w') as output:
