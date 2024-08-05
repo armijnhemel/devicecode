@@ -98,6 +98,7 @@ class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
 
     def __init__(self, **kwargs):
+        # Known values: only these will be seen as valid.
         self.bootloaders = kwargs.get('bootloaders', set())
         self.brands = kwargs.get('brands', set())
         self.odms = kwargs.get('odms', set())
@@ -165,6 +166,8 @@ class BrandTree(Tree):
         # build the brand_tree.
         self.reset("DeviceCode brand results")
 
+        # Optional filters with data that should
+        # be displayed or ignored.
         bootloaders = kwargs.get('bootloaders', [])
         brands = kwargs.get('brands', [])
         chip_vendors = kwargs.get('chip_vendors', [])
@@ -257,6 +260,8 @@ class OdmTree(Tree):
         # build the odm_tree.
         self.reset("DeviceCode OEM results")
 
+        # Optional filters with data that should
+        # be displayed or ignored.
         bootloaders = kwargs.get('bootloaders', [])
         brands = kwargs.get('brands', [])
         chip_vendors = kwargs.get('chip_vendors', [])
