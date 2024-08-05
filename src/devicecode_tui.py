@@ -124,16 +124,16 @@ class FilterValidator(Validator):
                     return self.failure("Invalid identifier")
                 if token_value == '':
                     return self.failure("Invalid identifier")
-                if token_identifier == 'bootloader':
+                elif token_identifier == 'bootloader':
                     if token_value.lower() not in self.bootloaders:
                         return self.failure("Invalid bootloader")
-                if token_identifier == 'brand':
+                elif token_identifier == 'brand':
                     if token_value.lower() not in self.brands:
                         return self.failure("Invalid brand")
-                if token_identifier == 'chip_vendor':
+                elif token_identifier == 'chip_vendor':
                     if token_value.lower() not in self.chip_vendors:
                         return self.failure("Invalid chip vendor")
-                if token_identifier == 'connector':
+                elif token_identifier == 'connector':
                     if token_value.lower() not in self.connectors:
                         return self.failure("Invalid connector")
                 elif token_identifier == 'ignore_brand':
