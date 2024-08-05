@@ -703,8 +703,7 @@ class DevicecodeUI(App):
             new_markdown += f"|**Universal Product Code** | {upcs}\n"
             neweggs = ", ".join(result['commercial']['newegg'])
             new_markdown += f"|**Newegg item number** | {neweggs}\n"
-            dealextremes = ", ".join(result['commercial']['deal_extreme'])
-            new_markdown += f"|**Deal Extreme item number** | {dealextremes}\n"
+            new_markdown += f"|**Deal Extreme item number** | {result['commercial']['deal_extreme']}\n"
 
             return new_markdown
 
