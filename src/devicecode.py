@@ -802,6 +802,8 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     device.commercial.availability = value
                                                 elif identifier in ['estreldate', 'est_release_date', 'est_reoease_date']:
                                                     device.commercial.release_date = parse_date(value)
+                                                elif identifier == 'dx_sku':
+                                                    device.commercial.deal_extreme = value
                                                 elif identifier in ['newegg', 'neweyg']:
                                                     eggs = value.split(',')
                                                     for egg in eggs:
