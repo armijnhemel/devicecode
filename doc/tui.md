@@ -39,6 +39,7 @@ The result after filtering will be a tree containing just some of the entries.
 For filtering a special purpose filtering language is used, which can
 filter on a few attributes, such as:
 
+* bootloader
 * brand
 * chipset manufacturer
 * ODM
@@ -62,9 +63,11 @@ identifier=value
 
 where identifier can be one of:
 
+* `bootloader`
 * `brand`
 * `chip`
 * `chip_vendor`
+* `connector`
 * `flag`
 * `ignore_brand`
 * `ignore_odm`
@@ -121,6 +124,10 @@ example:
 brand="Banana Pi"
 ```
 
+##### Bootloader
+
+`bootloader` can be used to filter on bootloader.
+
 ##### Brand
 
 There are two ways to filter brands:
@@ -132,6 +139,11 @@ There are two ways to filter brands:
 
 Currently `chip_vendor` can only be used to show the main CPU in one or more
 devices.
+
+##### Connector
+
+`connector` can be used to filter connectors (serial port only for now, JTAG
+in the future as well).
 
 ##### Flag
 
