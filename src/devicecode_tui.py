@@ -22,13 +22,6 @@ from textual.suggester import Suggester
 from textual.validation import ValidationResult, Validator
 from textual.widgets import Footer, Markdown, Tree, TabbedContent, TabPane, Input, Header, DataTable
 
-#from textual.logging import TextualHandler
-
-#logging.basicConfig(
-    #level="NOTSET",
-    #handlers=[TextualHandler()],
-#)
-
 
 class SuggestDevices(Suggester):
     '''A custom suggester, based on the SuggestFromList example from Textual'''
