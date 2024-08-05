@@ -383,6 +383,8 @@ class DevicecodeUI(App):
         brand_odm = []
         brand_cpu = []
         odm_cpu = []
+        odm_connector = []
+        chip_connector = []
         for device in self.devices:
             brand_name = device['brand']
             if brand_name not in brands_to_devices:
@@ -412,12 +414,15 @@ class DevicecodeUI(App):
 
             if device['serial']['connector'] != '':
                 connectors.add(device['serial']['connector'].lower())
+                odm_connector.append((manufacturer_name, device['serial']['connector']))
 
             for cpu in device['cpus']:
                 cpu_vendor_name = cpu['manufacturer']
                 chip_vendors.add(cpu_vendor_name.lower())
                 brand_cpu.append((brand_name, cpu_vendor_name))
                 odm_cpu.append((manufacturer_name, cpu_vendor_name))
+                if device['serial']['connector'] != '':
+                    chip_connector.append((cpu_vendor_name, device['serial']['connector']))
 
             brand_odm.append((brand_name, manufacturer_name))
 
@@ -426,6 +431,8 @@ class DevicecodeUI(App):
         brand_odm_datatable_data = collections.Counter(brand_odm)
         brand_cpu_datatable_data = collections.Counter(brand_cpu)
         odm_cpu_datatable_data = collections.Counter(odm_cpu)
+        odm_connector_data = collections.Counter(odm_connector)
+        chip_connector_data = collections.Counter(chip_connector)
 
         # build the various trees.
         self.brand_tree: BrandTree[dict] = BrandTree(brands_to_devices, "DeviceCode brand results")
@@ -462,6 +469,22 @@ class DevicecodeUI(App):
             rank += 1
         self.odm_cpu_data_table.fixed_columns = 1
 
+        self.odm_connector_data_table: DataTable() = DataTable()
+        self.odm_connector_data_table.add_columns("rank", "count", "ODM", "connector")
+        rank = 1
+        for i in odm_connector_data.most_common():
+            self.odm_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+            rank += 1
+        self.odm_connector_data_table.fixed_columns = 1
+
+        self.chip_connector_data_table: DataTable() = DataTable()
+        self.chip_connector_data_table.add_columns("rank", "count", "CPU", "connector")
+        rank = 1
+        for i in chip_connector_data.most_common():
+            self.chip_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+            rank += 1
+        self.chip_connector_data_table.fixed_columns = 1
+
         # Create a table with the results. The root element will
         # not have any associated data with it.
         self.device_data_area = Markdown()
@@ -487,15 +510,21 @@ class DevicecodeUI(App):
                         yield self.brand_tree
                     with TabPane('ODM view'):
                         yield self.odm_tree
-                    with TabPane('Brand/ODM table view'):
+                    with TabPane('Brand/ODM table'):
                         with VerticalScroll():
                             yield self.brand_odm_data_table
-                    with TabPane('Brand/CPU table view'):
+                    with TabPane('Brand/CPU table'):
                         with VerticalScroll():
                             yield self.brand_cpu_data_table
-                    with TabPane('ODM/CPU table view'):
+                    with TabPane('ODM/CPU table'):
                         with VerticalScroll():
                             yield self.odm_cpu_data_table
+                    with TabPane('ODM/connector table'):
+                        with VerticalScroll():
+                            yield self.odm_connector_data_table
+                    with TabPane('CPU/connector table'):
+                        with VerticalScroll():
+                            yield self.chip_connector_data_table
             with TabbedContent(id='result-tabs'):
                 with TabPane('Device data'):
                     with VerticalScroll():
