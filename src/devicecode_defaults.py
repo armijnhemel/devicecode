@@ -35,6 +35,7 @@ BRAND_REWRITE = {'FON Wireless': 'Fon Wireless',
                  'TenPao': 'Ten Pao',
                  'TI': 'Texas Instruments',
                  'TP-Link': 'TP-LINK',
+                 'U-Media': 'U-MEDIA',
                  'Y-cam': 'Y-cam Solutions'}
 
 # sometimes different names are used for the same country
