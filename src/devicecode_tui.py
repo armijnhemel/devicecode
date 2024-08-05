@@ -639,17 +639,17 @@ class DevicecodeUI(App):
             if result['baud_rate'] != 0:
                 new_markdown += f"|**Baud rate** | {result['baud_rate']}\n"
             else:
-                new_markdown += f"|**Baud rate** |\n"
+                new_markdown += "|**Baud rate** |\n"
             new_markdown += f"|**Connector** |{ result['connector']}\n"
             if result['number_of_pins'] != 0:
-                 new_markdown += f"|**Number of pins** | {result['number_of_pins']}\n"
+                new_markdown += f"|**Number of pins** | {result['number_of_pins']}\n"
             else:
-                 new_markdown += f"|**Number of pins** | \n"
+                new_markdown += "|**Number of pins** | \n"
             new_markdown += f"|**Populated** | {result['populated']}\n"
             if result['voltage']:
                 new_markdown += f"|**Voltage** | {result['voltage']}\n"
             else:
-                new_markdown += f"|**Voltage** |\n"
+                new_markdown += "|**Voltage** |\n"
             return new_markdown
 
     def build_model_report(self, result):
