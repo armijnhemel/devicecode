@@ -103,8 +103,8 @@ class FilterValidator(Validator):
 
     def __init__(self, **kwargs):
         self.bootloaders = kwargs.get('bootloaders', set())
-        self.brands = kwargs.get('brands', [])
-        self.odms = kwargs.get('odms', [])
+        self.brands = kwargs.get('brands', set())
+        self.odms = kwargs.get('odms', set())
         self.chip_vendors = kwargs.get('chip_vendors', set())
         self.connectors = kwargs.get('connectors', set())
 
@@ -375,7 +375,7 @@ class DevicecodeUI(App):
         brands = set()
         chip_vendors = set()
         connectors = set()
-        odms = []
+        odms = set()
         flags = set()
 
         self.devices = []
@@ -422,7 +422,7 @@ class DevicecodeUI(App):
             if brand_name not in odm_to_devices[manufacturer_name]:
                 odm_to_devices[manufacturer_name][brand_name] = []
             odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device})
-            odms.append(manufacturer_name.lower())
+            odms.add(manufacturer_name.lower())
 
             if device['software']['bootloader']['manufacturer'] != '':
                 bootloaders.add(device['software']['bootloader']['manufacturer'].lower())
@@ -516,10 +516,10 @@ class DevicecodeUI(App):
         with Container(id='app-grid'):
             with Container(id='left-grid'):
                 yield Input(placeholder='Filter',
-                            validators=[FilterValidator(bootloaders=bootloaders, brands=sorted(brands), odms=odms, chip_vendors=sorted(chip_vendors), connectors=connectors)],
+                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands, odms=odms, chip_vendors=chip_vendors, connectors=connectors)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             bootloaders=sorted(bootloaders), brands=sorted(brands), chip_vendors=sorted(chip_vendors),
-                            connectors=sorted(connectors), odms=odms,
+                            connectors=sorted(connectors), odms=sorted(odms),
                             flags=sorted(flags)), valid_empty=True)
                 with TabbedContent():
                     with TabPane('Brand view'):
