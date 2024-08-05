@@ -39,6 +39,7 @@ The result after filtering will be a tree containing just some of the entries.
 For filtering a special purpose filtering language is used, which can
 filter on a few attributes, such as:
 
+* bootloader
 * brand
 * chipset manufacturer
 * ODM
@@ -121,6 +122,10 @@ example:
 ```
 brand="Banana Pi"
 ```
+
+##### Bootloader
+
+`bootloader` can be used to filter on bootloader.
 
 ##### Brand
 
