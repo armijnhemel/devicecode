@@ -510,7 +510,7 @@ class DevicecodeUI(App):
         self.model_data_area = Markdown()
         self.serial_area = Markdown()
         self.software_area = Markdown()
-        self.additional_chips_area = Markdown()
+        self.chips_area = Markdown()
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
@@ -551,7 +551,7 @@ class DevicecodeUI(App):
                 with TabPane('Model & ODM'):
                     with VerticalScroll():
                         yield self.model_data_area
-                with TabPane('Regulatory'):
+                with TabPane('Regulatory & Commercial'):
                     with VerticalScroll():
                         yield self.regulatory_data_area
                 with TabPane('Serial port'):
@@ -560,9 +560,9 @@ class DevicecodeUI(App):
                 with TabPane('Software'):
                     with VerticalScroll():
                         yield self.software_area
-                with TabPane('Additional chips'):
+                with TabPane('Chips'):
                     with VerticalScroll():
-                        yield self.additional_chips_area
+                        yield self.chips_area
 
         # show the footer with controls
         footer = Footer()
@@ -641,52 +641,71 @@ class DevicecodeUI(App):
         if event.node.data is not None:
             self.device_data_area.update(self.build_meta_report(event.node.data))
             self.model_data_area.update(self.build_model_report(event.node.data))
-            self.regulatory_data_area.update(self.build_regulatory_report(event.node.data['regulatory']))
+            self.regulatory_data_area.update(self.build_regulatory_report(event.node.data))
             if event.node.data['has_serial_port'] == 'yes':
                 self.serial_area.update(self.build_serial_report(event.node.data['serial']))
             else:
                 self.serial_area.update('')
             self.software_area.update(self.build_software_report(event.node.data['software']))
-            self.additional_chips_area.update(self.build_additional_chips_report(event.node.data['additional_chips']))
+            self.chips_area.update(self.build_chips_report(event.node.data))
         else:
             self.device_data_area.update('')
             self.regulatory_data_area.update('')
             self.model_data_area.update('')
             self.serial_area.update('')
             self.software_area.update('')
-            self.additional_chips_area.update('')
+            self.chips_area.update('')
 
     def on_tree_node_collapsed(self, event: Tree.NodeCollapsed[None]) -> None:
         pass
 
-    def build_additional_chips_report(self, results):
+    def build_chips_report(self, results):
         if results:
-            new_markdown = "| | |\n|--|--|\n"
-            for r in results:
-                new_markdown += f"| **Description** | {r['description']}|\n"
-                new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
-                new_markdown += f"| **Model** | {r['model']}|\n"
-                #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
-                new_markdown += "| | |\n"
+            new_markdown = ''
+            if results['additional_chips']:
+                new_markdown += "# Additional chips\n"
+                new_markdown += "| | |\n|--|--|\n"
+                for r in results['additional_chips']:
+                    new_markdown += f"| **Description** | {r['description']}|\n"
+                    new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                    new_markdown += f"| **Model** | {r['model']}|\n"
+                    #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                    new_markdown += "| | |\n"
             return new_markdown
-        return "No known additional chips"
+        return "No known chips"
 
     def build_regulatory_report(self, result):
         if result:
-            new_markdown = "| | |\n|--|--|\n"
-            new_markdown += f"|**FCC date** | {result['fcc_date']}\n"
+            new_markdown = "# Regulatory\n"
+            new_markdown += "| | |\n|--|--|\n"
+            new_markdown += f"|**FCC date** | {result['regulatory']['fcc_date']}\n"
             fcc_ids = ''
-            if result['fcc_ids']:
-                fcc_id = result['fcc_ids'][0]
+            if result['regulatory']['fcc_ids']:
+                fcc_id = result['regulatory']['fcc_ids'][0]
                 fcc_ids = f"[{fcc_id}](<https://fcc.report/FCC-ID/{fcc_id}>)"
 
-                for f in result['fcc_ids'][1:]:
+                for f in result['regulatory']['fcc_ids'][1:]:
                     fcc_ids += f", [{f}](<https://fcc.report/FCC-ID/{f}>)"
             new_markdown += f"|**FCC ids** | {fcc_ids}\n"
-            new_markdown += f"|**Industry Canada ids** | {', '.join(result['industry_canada_ids'])}\n"
-            new_markdown += f"|**US ids** | {', '.join(result['us_ids'])}\n"
-            new_markdown += f"|**WiFi certified** |{ result['wifi_certified']}\n"
-            new_markdown += f"|**WiFi date** | {result['wifi_certified_date']}\n"
+            new_markdown += f"|**Industry Canada ids** | {', '.join(result['regulatory']['industry_canada_ids'])}\n"
+            new_markdown += f"|**US ids** | {', '.join(result['regulatory']['us_ids'])}\n"
+            new_markdown += f"|**WiFi certified** |{ result['regulatory']['wifi_certified']}\n"
+            new_markdown += f"|**WiFi date** | {result['regulatory']['wifi_certified_date']}\n"
+
+            # Commercial information
+            new_markdown += "# Commercial\n"
+            new_markdown += "| | |\n|--|--|\n"
+            new_markdown += f"|**Availability** | {result['commercial']['availability']}\n"
+            new_markdown += f"|**Release date** | {result['commercial']['release_date']}\n"
+            eans = ", ".join(result['commercial']['ean'])
+            new_markdown += f"|**International Article Number** | {eans}\n"
+            upcs = ", ".join(result['commercial']['upc'])
+            new_markdown += f"|**Universal Product Code** | {upcs}\n"
+            neweggs = ", ".join(result['commercial']['newegg'])
+            new_markdown += f"|**Newegg item number** | {neweggs}\n"
+            dealextremes = ", ".join(result['commercial']['deal_extreme'])
+            new_markdown += f"|**Deal Extreme item number** | {dealextremes}\n"
+
             return new_markdown
 
     def build_serial_report(self, result):
@@ -707,6 +726,8 @@ class DevicecodeUI(App):
             else:
                 new_markdown += "|**Voltage** |\n"
             return new_markdown
+        else:
+            return "No serial information"
 
     def build_software_report(self, result):
         if result:
@@ -766,14 +787,6 @@ class DevicecodeUI(App):
             new_markdown += f"|**Flags** | {flags}\n"
             device_types = ", ".join(result['device_types'])
             new_markdown += f"|**Device types** | {device_types}\n"
-
-            # Commercial information
-            new_markdown += f"|**Availability** | {result['commercial']['availability']}\n"
-            new_markdown += f"|**Release date** | {result['commercial']['release_date']}\n"
-            eans = ", ".join(result['commercial']['ean'])
-            new_markdown += f"|**International Article Number** | {eans}\n"
-            upcs = ", ".join(result['commercial']['upc'])
-            new_markdown += f"|**Universal Product Code** | {upcs}\n"
 
             # Web sites
             product_pages = " , ".join(result['web']['product_page'])
