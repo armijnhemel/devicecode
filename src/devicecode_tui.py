@@ -707,13 +707,22 @@ class DevicecodeUI(App):
             new_markdown = "| | |\n|--|--|\n"
             new_markdown += f"|**Title** | {result['title']}\n"
             new_markdown += f"|**Brand** | {result['brand']}\n"
-            if result['taglines']:
-                taglines = ", ".join(result['taglines'])
-                new_markdown += f"|**Taglines** | {taglines}\n"
+
+            # Taglines, flags, device types
+            taglines = ", ".join(result['taglines'])
+            new_markdown += f"|**Taglines** | {taglines}\n"
             flags = ", ".join(result['flags'])
             new_markdown += f"|**Flags** | {flags}\n"
             device_types = ", ".join(result['device_types'])
             new_markdown += f"|**Device types** | {device_types}\n"
+
+            # Commercial information
+            new_markdown += f"|**Availability** | {result['commercial']['availability']}\n"
+            new_markdown += f"|**Release date** | {result['commercial']['release_date']}\n"
+            eans = ", ".join(result['commercial']['ean'])
+            new_markdown += f"|**International Article Number** | {eans}\n"
+            upcs = ", ".join(result['commercial']['upc'])
+            new_markdown += f"|**Universal Product Code** | {upcs}\n"
 
             # Web sites
             product_pages = " , ".join(result['web']['product_page'])
@@ -721,6 +730,7 @@ class DevicecodeUI(App):
             support_pages = " , ".join(result['web']['support_page'])
             new_markdown += f"|**Support pages** | {support_pages}\n"
 
+            # Misc
             new_markdown += f"|**Data** | {result}\n"
             new_markdown += f"|**Data origin** | {result['wiki_type']}\n"
             return new_markdown
