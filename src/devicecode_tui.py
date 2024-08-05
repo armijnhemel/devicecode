@@ -97,16 +97,13 @@ class SuggestDevices(Suggester):
 class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
 
-    TOKEN_IDENTIFIERS = ['bootloader', 'brand', 'chip', 'chip_vendor', 'connector',
-                         'flag', 'ignore_brand', 'ignore_odm', 'odm', 'password',
-                         'serial', 'type', 'year']
-
     def __init__(self, **kwargs):
         self.bootloaders = kwargs.get('bootloaders', set())
         self.brands = kwargs.get('brands', set())
         self.odms = kwargs.get('odms', set())
         self.chip_vendors = kwargs.get('chip_vendors', set())
         self.connectors = kwargs.get('connectors', set())
+        self.token_identifiers = kwargs.get('token_identifiers', [])
 
     def validate(self, value: str) -> ValidationResult:
         try:
@@ -120,7 +117,7 @@ class FilterValidator(Validator):
                 if '=' not in t:
                     return self.failure("Invalid identifier")
                 token_identifier, token_value = t.split('=', maxsplit=1)
-                if token_identifier not in self.TOKEN_IDENTIFIERS:
+                if token_identifier not in self.token_identifiers:
                     return self.failure("Invalid identifier")
                 if token_value == '':
                     return self.failure("Invalid identifier")
@@ -517,7 +514,7 @@ class DevicecodeUI(App):
         with Container(id='app-grid'):
             with Container(id='left-grid'):
                 yield Input(placeholder='Filter',
-                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands, odms=odms, chip_vendors=chip_vendors, connectors=connectors)],
+                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands, odms=odms, chip_vendors=chip_vendors, connectors=connectors, token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             bootloaders=sorted(bootloaders), brands=sorted(brands), chip_vendors=sorted(chip_vendors),
                             connectors=sorted(connectors), odms=sorted(odms),
