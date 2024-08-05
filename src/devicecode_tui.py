@@ -707,6 +707,7 @@ class DevicecodeUI(App):
 
     def build_software_report(self, result):
         if result:
+            # bootloader
             new_markdown = "# Bootloader\n"
             new_markdown += "| | |\n|--|--|\n"
             new_markdown += f"|**Name** |{ result['bootloader']['manufacturer']}\n"
@@ -714,6 +715,18 @@ class DevicecodeUI(App):
             new_markdown += f"|**Modified** |{ result['bootloader']['vendor_modified']}\n"
             extra_infos = ", ".join(result['bootloader']['extra_info'])
             new_markdown += f"|**Extra info** | {extra_infos}\n"
+
+            # software
+            new_markdown += "# Software\n"
+            new_markdown += "| | |\n|--|--|\n"
+            new_markdown += f"|**OS** |{ result['os']}\n"
+            new_markdown += f"|**SDK** |{ result['sdk']}\n"
+            third_parties = ", ".join(result['third_party'])
+            new_markdown += f"|**Third party software** | {third_parties}\n"
+            #new_markdown += f"|**DD-WRT** |{ result['ddwrt']}\n"
+            #new_markdown += f"|**Gargoyle** |{ result['gargoyle']}\n"
+            #new_markdown += f"|**OpenWrt** |{ result['openwrt']}\n"
+            #new_markdown += f"|**Tomato** |{ result['tomato']}\n"
             return new_markdown
 
     def build_model_report(self, result):
