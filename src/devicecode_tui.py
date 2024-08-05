@@ -486,10 +486,10 @@ class DevicecodeUI(App):
                 with TabPane('Model & ODM'):
                     with VerticalScroll():
                         yield self.model_data_area
-                with TabPane('Regulatory data'):
+                with TabPane('Regulatory'):
                     with VerticalScroll():
                         yield self.regulatory_data_area
-                with TabPane('Serial information'):
+                with TabPane('Serial port'):
                     with VerticalScroll():
                         yield self.serial_area
                 with TabPane('Additional chips'):
@@ -568,7 +568,10 @@ class DevicecodeUI(App):
             self.device_data_area.update(self.build_meta_report(event.node.data))
             self.model_data_area.update(self.build_model_report(event.node.data))
             self.regulatory_data_area.update(self.build_regulatory_report(event.node.data['regulatory']))
-            self.serial_area.update('')
+            if event.node.data['has_serial_port'] == 'yes':
+                self.serial_area.update(self.build_serial_report(event.node.data['serial']))
+            else:
+                self.serial_area.update('')
             self.additional_chips_area.update(self.build_additional_chips_report(event.node.data['additional_chips']))
         else:
             self.device_data_area.update('')
@@ -608,6 +611,25 @@ class DevicecodeUI(App):
             new_markdown += f"|**US ids** | {', '.join(result['us_ids'])}\n"
             new_markdown += f"|**WiFi certified** |{ result['wifi_certified']}\n"
             new_markdown += f"|**WiFi date** | {result['wifi_certified_date']}\n"
+            return new_markdown
+
+    def build_serial_report(self, result):
+        if result:
+            new_markdown = "| | |\n|--|--|\n"
+            if result['baud_rate'] != 0:
+                new_markdown += f"|**Baud rate** | {result['baud_rate']}\n"
+            else:
+                new_markdown += f"|**Baud rate** |\n"
+            new_markdown += f"|**Connector** |{ result['connector']}\n"
+            if result['number_of_pins'] != 0:
+                 new_markdown += f"|**Number of pins** | {result['number_of_pins']}\n"
+            else:
+                 new_markdown += f"|**Number of pins** | \n"
+            new_markdown += f"|**Populated** | {result['populated']}\n"
+            if result['voltage']:
+                new_markdown += f"|**Voltage** | {result['voltage']}\n"
+            else:
+                new_markdown += f"|**Voltage** |\n"
             return new_markdown
 
     def build_model_report(self, result):
