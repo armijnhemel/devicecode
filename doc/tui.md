@@ -63,6 +63,7 @@ identifier=value
 
 where identifier can be one of:
 
+* `bootloader`
 * `brand`
 * `chip`
 * `chip_vendor`
