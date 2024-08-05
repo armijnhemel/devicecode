@@ -710,9 +710,17 @@ class DevicecodeUI(App):
             if result['taglines']:
                 taglines = ", ".join(result['taglines'])
                 new_markdown += f"|**Taglines** | {taglines}\n"
-            if result['flags']:
-                flags = ", ".join(result['flags'])
-                new_markdown += f"|**Flags** | {flags}\n"
+            flags = ", ".join(result['flags'])
+            new_markdown += f"|**Flags** | {flags}\n"
+            device_types = ", ".join(result['device_types'])
+            new_markdown += f"|**Device types** | {device_types}\n"
+
+            # Web sites
+            product_pages = " , ".join(result['web']['product_page'])
+            new_markdown += f"|**Product pages** | {product_pages}\n"
+            support_pages = " , ".join(result['web']['support_page'])
+            new_markdown += f"|**Support pages** | {support_pages}\n"
+
             new_markdown += f"|**Data** | {result}\n"
             new_markdown += f"|**Data origin** | {result['wiki_type']}\n"
             return new_markdown
