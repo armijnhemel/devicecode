@@ -360,7 +360,7 @@ class DevicecodeUI(App):
         # store a mapping of brands to devices
         brands_to_devices = {}
         odm_to_devices = {}
-        brands = []
+        brands = set()
         chip_vendors = set()
         connectors = set()
         odms = []
@@ -398,7 +398,7 @@ class DevicecodeUI(App):
                 model += " "
                 model += device['model']['subrevision']
             brands_to_devices[brand_name].append({'model': model, 'data': device})
-            brands.append(brand_name.lower())
+            brands.add(brand_name.lower())
 
             manufacturer_name = device['manufacturer']['name']
             if manufacturer_name == '':
@@ -477,9 +477,9 @@ class DevicecodeUI(App):
         with Container(id='app-grid'):
             with Container(id='left-grid'):
                 yield Input(placeholder='Filter',
-                            validators=[FilterValidator(brands=brands, odms=odms, chip_vendors=sorted(chip_vendors), connectors=connectors)],
+                            validators=[FilterValidator(brands=sorted(brands), odms=odms, chip_vendors=sorted(chip_vendors), connectors=connectors)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
-                            brands=brands, chip_vendors=sorted(chip_vendors),
+                            brands=sorted(brands), chip_vendors=sorted(chip_vendors),
                             connectors=sorted(connectors), odms=odms,
                             flags=sorted(flags)), valid_empty=True)
                 with TabbedContent():
