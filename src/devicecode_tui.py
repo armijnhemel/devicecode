@@ -105,7 +105,7 @@ class FilterValidator(Validator):
     def __init__(self, **kwargs):
         self.brands = kwargs.get('brands', [])
         self.odms = kwargs.get('odms', [])
-        self.chip_vendors = kwargs.get('chip_vendors', [])
+        self.chip_vendors = kwargs.get('chip_vendors', set())
 
     def validate(self, value: str) -> ValidationResult:
         try:
@@ -349,7 +349,7 @@ class DevicecodeUI(App):
         brands_to_devices = {}
         odm_to_devices = {}
         brands = []
-        chip_vendors = []
+        chip_vendors = set()
         odms = []
         flags = set()
 
@@ -399,7 +399,7 @@ class DevicecodeUI(App):
 
             for cpu in device['cpus']:
                 cpu_vendor_name = cpu['manufacturer']
-                chip_vendors.append(cpu_vendor_name.lower())
+                chip_vendors.add(cpu_vendor_name.lower())
                 brand_cpu.append((brand_name, cpu_vendor_name))
                 odm_cpu.append((manufacturer_name, cpu_vendor_name))
 
@@ -461,9 +461,9 @@ class DevicecodeUI(App):
         with Container(id='app-grid'):
             with Container(id='left-grid'):
                 yield Input(placeholder='Filter',
-                            validators=[FilterValidator(brands=brands, odms=odms, chip_vendors=chip_vendors)],
+                            validators=[FilterValidator(brands=brands, odms=odms, chip_vendors=sorted(chip_vendors))],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
-                            brands=brands, chip_vendors=chip_vendors, odms=odms,
+                            brands=brands, chip_vendors=sorted(chip_vendors), odms=odms,
                             flags=sorted(flags)), valid_empty=True)
                 with TabbedContent():
                     with TabPane('Brand view'):
