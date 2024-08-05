@@ -65,6 +65,7 @@ where identifier can be one of:
 * `brand`
 * `chip`
 * `chip_vendor`
+* `connector`
 * `flag`
 * `ignore_brand`
 * `ignore_odm`
@@ -132,6 +133,11 @@ There are two ways to filter brands:
 
 Currently `chip_vendor` can only be used to show the main CPU in one or more
 devices.
+
+##### Connector
+
+`connector` can be used to filter connectors (serial port only for now, JTAG
+in the future as well).
 
 ##### Flag
 

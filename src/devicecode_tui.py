@@ -99,13 +99,14 @@ class SuggestDevices(Suggester):
 class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
 
-    TOKEN_IDENTIFIERS = ['brand', 'chip', 'chip_vendor', 'flag', 'ignore_brand',
+    TOKEN_IDENTIFIERS = ['brand', 'chip', 'chip_vendor', 'connector', 'flag', 'ignore_brand',
                          'ignore_odm', 'odm', 'password', 'serial', 'type', 'year']
 
     def __init__(self, **kwargs):
         self.brands = kwargs.get('brands', [])
         self.odms = kwargs.get('odms', [])
         self.chip_vendors = kwargs.get('chip_vendors', set())
+        self.connectors = kwargs.get('connectors', set())
 
     def validate(self, value: str) -> ValidationResult:
         try:
@@ -129,6 +130,9 @@ class FilterValidator(Validator):
                 if token_identifier == 'chip_vendor':
                     if token_value.lower() not in self.chip_vendors:
                         return self.failure("Invalid chip vendor")
+                if token_identifier == 'connector':
+                    if token_value.lower() not in self.connectors:
+                        return self.failure("Invalid connector")
                 elif token_identifier == 'ignore_brand':
                     if token_value.lower() not in self.brands:
                         return self.failure("Invalid brand")
@@ -163,6 +167,7 @@ class BrandTree(Tree):
 
         brands = kwargs.get('brands', [])
         chip_vendors = kwargs.get('chip_vendors', [])
+        connectors = kwargs.get('connectors', set())
         flags = kwargs.get('flags', [])
         ignore_brands = kwargs.get('ignore_brands', [])
         ignore_odms = kwargs.get('ignore_odms', [])
@@ -172,7 +177,7 @@ class BrandTree(Tree):
         years = kwargs.get('years', [])
 
         expand = False
-        if brands or chip_vendors or flags or ignore_brands or \
+        if brands or chip_vendors or connectors or flags or ignore_brands or \
             ignore_odms or odms or passwords or serials or years:
             expand = True
 
@@ -203,6 +208,9 @@ class BrandTree(Tree):
                         continue
                 if serials:
                     if model['data']['has_serial_port'] not in serials:
+                        continue
+                if connectors:
+                    if model['data']['serial']['connector'].lower() not in connectors:
                         continue
                 if years:
                     # first collect all the years that have been declared
@@ -247,6 +255,7 @@ class OdmTree(Tree):
 
         brands = kwargs.get('brands', [])
         chip_vendors = kwargs.get('chip_vendors', [])
+        connectors = kwargs.get('connectors', set())
         flags = kwargs.get('flags', [])
         ignore_brands = kwargs.get('ignore_brands', [])
         ignore_odms = kwargs.get('ignore_odms', [])
@@ -256,7 +265,7 @@ class OdmTree(Tree):
         years = kwargs.get('years', [])
 
         expand = False
-        if brands or chip_vendors or flags or ignore_brands or \
+        if brands or chip_vendors or connectors or flags or ignore_brands or \
             ignore_odms or odms or passwords or serials or years:
             expand = True
 
@@ -290,6 +299,9 @@ class OdmTree(Tree):
                             continue
                     if serials:
                         if model['data']['has_serial_port'] not in serials:
+                            continue
+                    if connectors:
+                        if model['data']['serial']['connector'].lower() not in connectors:
                             continue
                     if years:
                         # first collect all the years that have been declared
@@ -350,6 +362,7 @@ class DevicecodeUI(App):
         odm_to_devices = {}
         brands = []
         chip_vendors = set()
+        connectors = set()
         odms = []
         flags = set()
 
@@ -396,6 +409,9 @@ class DevicecodeUI(App):
                 odm_to_devices[manufacturer_name][brand_name] = []
             odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device})
             odms.append(manufacturer_name.lower())
+
+            if device['serial']['connector'] != '':
+                connectors.add(device['serial']['connector'].lower())
 
             for cpu in device['cpus']:
                 cpu_vendor_name = cpu['manufacturer']
@@ -461,9 +477,10 @@ class DevicecodeUI(App):
         with Container(id='app-grid'):
             with Container(id='left-grid'):
                 yield Input(placeholder='Filter',
-                            validators=[FilterValidator(brands=brands, odms=odms, chip_vendors=sorted(chip_vendors))],
+                            validators=[FilterValidator(brands=brands, odms=odms, chip_vendors=sorted(chip_vendors), connectors=connectors)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
-                            brands=brands, chip_vendors=sorted(chip_vendors), odms=odms,
+                            brands=brands, chip_vendors=sorted(chip_vendors),
+                            connectors=sorted(connectors), odms=odms,
                             flags=sorted(flags)), valid_empty=True)
                 with TabbedContent():
                     with TabPane('Brand view'):
@@ -515,6 +532,7 @@ class DevicecodeUI(App):
                 brands = []
                 chips = []
                 chip_vendors = []
+                connectors = set()
                 flags = []
                 ignore_brands = []
                 ignore_odms = []
@@ -531,6 +549,8 @@ class DevicecodeUI(App):
                         chips.append(value.lower())
                     elif identifier == 'chip_vendor':
                         chip_vendors.append(value.lower())
+                    elif identifier == 'connector':
+                        connectors.add(value.lower())
                     elif identifier == 'flag':
                         flags.append(value.lower())
                     elif identifier == 'ignore_brand':
@@ -547,11 +567,11 @@ class DevicecodeUI(App):
                         years.append(int(value))
 
                 self.brand_tree.build_tree(brands=brands, odms=odms, chips=chips,
-                                           chip_vendors=chip_vendors, flags=flags,
+                                           chip_vendors=chip_vendors, connectors=connectors, flags=flags,
                                            ignore_brands=ignore_brands, ignore_odms=ignore_odms,
                                            passwords=passwords, serials=serials, years=years)
                 self.odm_tree.build_tree(brands=brands, odms=odms, chips=chips,
-                                         chip_vendors=chip_vendors, flags=flags,
+                                         chip_vendors=chip_vendors, connectors=connectors, flags=flags,
                                          ignore_brands=ignore_brands, ignore_odms=ignore_odms,
                                          passwords=passwords, serials=serials, years=years)
 
