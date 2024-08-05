@@ -360,8 +360,9 @@ class DevicecodeUI(App):
     ]
 
     CSS_PATH = "devicecode_tui.css"
-    TOKEN_IDENTIFIERS = ['bootloader', 'brand', 'chip', 'chip_vendor', 'flag', 'ignore_brand',
-                         'ignore_odm', 'odm', 'password', 'serial', 'type']
+    TOKEN_IDENTIFIERS = ['bootloader', 'brand', 'chip', 'chip_vendor', 'connector',
+                         'flag', 'ignore_brand', 'ignore_odm', 'odm', 'password',
+                         'serial', 'type', 'year']
 
     def __init__(self, devicecode_dir, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
