@@ -458,6 +458,10 @@ class DevicecodeUI(App):
                 if device['serial']['connector'] != '':
                     chip_connector.append((cpu_vendor_name, device['serial']['connector']))
 
+            for chip in device['network']['chips']:
+                chip_vendor_name = chip['manufacturer']
+                chip_vendors.add(chip_vendor_name.lower())
+
             brand_odm.append((brand_name, manufacturer_name))
 
             flags.update([x.casefold() for x in device['flags']])
