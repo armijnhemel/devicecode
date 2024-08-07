@@ -512,6 +512,7 @@ class DevicecodeUI(App):
         self.serial_area = Markdown()
         self.software_area = Markdown()
         self.chips_area = Markdown()
+        self.power_area = Markdown()
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
@@ -567,6 +568,9 @@ class DevicecodeUI(App):
                 with TabPane('Chips'):
                     with VerticalScroll():
                         yield self.chips_area
+                with TabPane('Power'):
+                    with VerticalScroll():
+                        yield self.power_area
 
         # show the footer with controls
         footer = Footer()
@@ -653,6 +657,7 @@ class DevicecodeUI(App):
                 self.serial_area.update('')
             self.software_area.update(self.build_software_report(event.node.data['software']))
             self.chips_area.update(self.build_chips_report(event.node.data))
+            self.power_area.update('')
         else:
             self.device_data_area.update('')
             self.regulatory_data_area.update('')
@@ -661,6 +666,7 @@ class DevicecodeUI(App):
             self.serial_area.update('')
             self.software_area.update('')
             self.chips_area.update('')
+            self.power_area.update('')
 
     def on_tree_node_collapsed(self, event: Tree.NodeCollapsed[None]) -> None:
         pass
@@ -877,6 +883,15 @@ class DevicecodeUI(App):
             new_markdown += f"|**Product pages** | {product_pages}\n"
             support_pages = " , ".join(result['web']['support_page'])
             new_markdown += f"|**Support pages** | {support_pages}\n"
+
+            # Default values
+            new_markdown += f"|**IP address** | {result['defaults']['ip']}\n"
+            new_markdown += f"|**IP address comment** | {result['defaults']['ip_comment']}\n"
+            logins = " , ".join(result['defaults']['logins'])
+            new_markdown += f"|**Logins** | {logins}\n"
+            new_markdown += f"|**Login comment** | {result['defaults']['logins_comment']}\n"
+            new_markdown += f"|**Password** | {result['defaults']['password']}\n"
+            new_markdown += f"|**Password comment** | {result['defaults']['password_comment']}\n"
 
             # Misc
             new_markdown += f"|**Data** | {result}\n"
