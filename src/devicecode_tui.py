@@ -546,7 +546,7 @@ class DevicecodeUI(App):
                         with VerticalScroll():
                             yield self.chip_connector_data_table
             with TabbedContent(id='result-tabs'):
-                with TabPane('Device data'):
+                with TabPane('Device'):
                     with VerticalScroll():
                         yield self.device_data_area
                 with TabPane('Model & ODM'):
@@ -558,7 +558,7 @@ class DevicecodeUI(App):
                 with TabPane('Regulatory & Commercial'):
                     with VerticalScroll():
                         yield self.regulatory_data_area
-                with TabPane('Serial port & JTAG'):
+                with TabPane('Serial & JTAG'):
                     with VerticalScroll():
                         yield self.serial_area
                 with TabPane('Software'):
