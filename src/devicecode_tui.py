@@ -479,6 +479,13 @@ class DevicecodeUI(App):
                 if chip['model'] != '':
                     chips.add(chip['model'].lower())
 
+            for chip in device['flash']:
+                chip_vendor_name = chip['manufacturer']
+                chip_vendors.add(chip_vendor_name.lower())
+
+                if chip['model'] != '':
+                    chips.add(chip['model'].lower())
+
             brand_odm.append((brand_name, manufacturer_name))
 
             flags.update([x.casefold() for x in device['flags']])
