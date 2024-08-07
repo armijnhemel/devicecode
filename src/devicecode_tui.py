@@ -643,7 +643,7 @@ class DevicecodeUI(App):
     def on_tree_node_selected(self, event: Tree.NodeSelected[None]) -> None:
         '''Display the reports of a node when it is selected'''
         if event.node.data is not None:
-            self.device_data_area.update(self.build_meta_report(event.node.data))
+            self.device_data_area.update(self.build_device_report(event.node.data))
             self.model_data_area.update(self.build_model_report(event.node.data))
             self.network_data_area.update(self.build_network_report(event.node.data['network']))
             self.regulatory_data_area.update(self.build_regulatory_report(event.node.data))
@@ -829,7 +829,7 @@ class DevicecodeUI(App):
     def build_network_report(self, result):
         if result:
             new_markdown = "# Network information\n"
-            new_markdown = "| | |\n|--|--|\n"
+            new_markdown += "| | |\n|--|--|\n"
             new_markdown += f"|**DOCSIS version** | {result['docsis_version']}\n"
             new_markdown += f"|**LAN ports** | {result['lan_ports']}\n"
             ethernet_ouis = ", ".join(result['ethernet_oui'])
@@ -847,19 +847,30 @@ class DevicecodeUI(App):
                     new_markdown += "| | |\n"
             return new_markdown
 
-    def build_meta_report(self, result):
+    def build_device_report(self, result):
         if result:
             new_markdown = "| | |\n|--|--|\n"
             new_markdown += f"|**Title** | {result['title']}\n"
             new_markdown += f"|**Brand** | {result['brand']}\n"
 
+            declared_years = set()
+            if result['commercial']['release_date']:
+                declared_years.add(result['commercial']['release_date'][:4])
+            if result['regulatory']['fcc_date']:
+                declared_years.add(result['regulatory']['fcc_date'][:4])
+            if result['regulatory']['wifi_certified_date']:
+                declared_years.add(result['regulatory']['wifi_certified_date'][:4])
+
+            estimated_years = ", ".join(sorted(declared_years))
+            new_markdown += f"|**Estimated year** | {estimated_years}\n"
+
             # Taglines, flags, device types
             taglines = ", ".join(result['taglines'])
             new_markdown += f"|**Taglines** | {taglines}\n"
-            flags = ", ".join(result['flags'])
-            new_markdown += f"|**Flags** | {flags}\n"
             device_types = ", ".join(result['device_types'])
             new_markdown += f"|**Device types** | {device_types}\n"
+            flags = ", ".join(result['flags'])
+            new_markdown += f"|**Flags** | {flags}\n"
 
             # Web sites
             product_pages = " , ".join(result['web']['product_page'])
