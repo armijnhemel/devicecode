@@ -503,6 +503,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                         device = Device()
                         device.title = title
                         device.wiki_type = wiki_type
+                        have_valid_data = False
 
                         # grab the wiki text and parse it. This data
                         # is in the <text> element
@@ -678,6 +679,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                     # contains the identifier and '=', followed by a
                                     # value. Subsequent lines are values belonging to
                                     # the same identifier.
+                                    have_valid_data = True
 
                                     if wiki_type == 'TechInfoDepot':
                                         # First walk the params to see how many ASINs,
@@ -1352,6 +1354,9 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                 pass
                             else:
                                 pass
+
+                        if not have_valid_data:
+                            continue
 
                         # Write to a Git repository to keep some history
                         # use the title as part of the file name as it is unique
