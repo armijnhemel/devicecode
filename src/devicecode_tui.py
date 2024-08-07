@@ -175,14 +175,15 @@ class BrandTree(Tree):
         flags = kwargs.get('flags', [])
         ignore_brands = kwargs.get('ignore_brands', [])
         ignore_odms = kwargs.get('ignore_odms', [])
+        ips = kwargs.get('ips', [])
         odms = kwargs.get('odms', [])
         passwords = kwargs.get('passwords', [])
         serials = kwargs.get('serials', [])
         years = kwargs.get('years', [])
 
         expand = False
-        if brands or chip_vendors or connectors or flags or ignore_brands or \
-            ignore_odms or odms or passwords or serials or years:
+        if bootloaders or brands or chip_vendors or connectors or flags or ignore_brands or \
+            ignore_odms or ips or odms or passwords or serials or years:
             expand = True
 
         for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
@@ -218,6 +219,9 @@ class BrandTree(Tree):
                         continue
                 if connectors:
                     if model['data']['serial']['connector'].lower() not in connectors:
+                        continue
+                if ips:
+                    if model['data']['defaults']['ip'] not in ips:
                         continue
                 if years:
                     # first collect all the years that have been declared
@@ -269,14 +273,15 @@ class OdmTree(Tree):
         flags = kwargs.get('flags', [])
         ignore_brands = kwargs.get('ignore_brands', [])
         ignore_odms = kwargs.get('ignore_odms', [])
+        ips = kwargs.get('ips', [])
         odms = kwargs.get('odms', [])
         passwords = kwargs.get('passwords', [])
         serials = kwargs.get('serials', [])
         years = kwargs.get('years', [])
 
         expand = False
-        if brands or chip_vendors or connectors or flags or ignore_brands or \
-            ignore_odms or odms or passwords or serials or years:
+        if bootloaders or brands or chip_vendors or connectors or flags or ignore_brands or \
+            ignore_odms or ips or odms or passwords or serials or years:
             expand = True
 
         # add each manufacturer as a node. Then add each brand as a subtree
@@ -315,6 +320,9 @@ class OdmTree(Tree):
                             continue
                     if connectors:
                         if model['data']['serial']['connector'].lower() not in connectors:
+                            continue
+                    if ips:
+                        if model['data']['defaults']['ip'] not in ips:
                             continue
                     if years:
                         # first collect all the years that have been declared
@@ -363,7 +371,7 @@ class DevicecodeUI(App):
 
     CSS_PATH = "devicecode_tui.css"
     TOKEN_IDENTIFIERS = ['bootloader', 'brand', 'chip', 'chip_vendor', 'connector',
-                         'flag', 'ignore_brand', 'ignore_odm', 'odm', 'password',
+                         'flag', 'ignore_brand', 'ignore_odm', 'ip', 'odm', 'password',
                          'serial', 'type', 'year']
 
     def __init__(self, devicecode_dir, *args: Any, **kwargs: Any) -> None:
@@ -596,6 +604,7 @@ class DevicecodeUI(App):
                 flags = []
                 ignore_brands = []
                 ignore_odms = []
+                ips = []
                 odms = []
                 passwords = []
                 serials = []
@@ -619,6 +628,8 @@ class DevicecodeUI(App):
                         ignore_brands.append(value.lower())
                     elif identifier == 'ignore_odm':
                         ignore_odms.append(value.lower())
+                    elif identifier == 'ip':
+                        ips.append(value.lower())
                     elif identifier == 'odm':
                         odms.append(value.lower())
                     elif identifier == 'password':
@@ -630,11 +641,11 @@ class DevicecodeUI(App):
 
                 self.brand_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
                                            chip_vendors=chip_vendors, connectors=connectors, flags=flags,
-                                           ignore_brands=ignore_brands, ignore_odms=ignore_odms,
+                                           ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
                                            passwords=passwords, serials=serials, years=years)
                 self.odm_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
                                          chip_vendors=chip_vendors, connectors=connectors, flags=flags,
-                                         ignore_brands=ignore_brands, ignore_odms=ignore_odms,
+                                         ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
                                          passwords=passwords, serials=serials, years=years)
 
     def on_markdown_link_clicked(self, event: Markdown.LinkClicked) -> None:
