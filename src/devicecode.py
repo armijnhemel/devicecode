@@ -788,8 +788,9 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                 elif identifier == 'series':
                                                     device.model.series = value
                                                 elif identifier == 'type':
+                                                    value = value.replace('outdppr', 'outdoor')
                                                     device_types = [x.strip() for x in value.split(',') if x.strip() != '']
-                                                    device.device_types= device_types
+                                                    device.device_types = device_types
                                                 elif identifier == 'flags':
                                                     device.flags = sorted([x.strip() for x in value.split(',') if x.strip() != ''])
                                                 elif identifier in ['boardid', 'pcb_id']:
