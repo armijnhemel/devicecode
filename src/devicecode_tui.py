@@ -554,7 +554,7 @@ class DevicecodeUI(App):
                 with TabPane('Regulatory & Commercial'):
                     with VerticalScroll():
                         yield self.regulatory_data_area
-                with TabPane('Serial port'):
+                with TabPane('Serial port & JTAG'):
                     with VerticalScroll():
                         yield self.serial_area
                 with TabPane('Software'):
@@ -755,7 +755,8 @@ class DevicecodeUI(App):
 
     def build_serial_report(self, result):
         if result:
-            new_markdown = "| | |\n|--|--|\n"
+            new_markdown = "# Serial port\n"
+            new_markdown += "| | |\n|--|--|\n"
             if result['baud_rate'] != 0:
                 new_markdown += f"|**Baud rate** | {result['baud_rate']}\n"
             else:
