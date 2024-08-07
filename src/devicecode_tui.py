@@ -662,8 +662,54 @@ class DevicecodeUI(App):
     def build_chips_report(self, results):
         if results:
             new_markdown = ''
+            if results['cpus']:
+                new_markdown += f"# Main chips ({len(results['cpus'])})\n"
+                new_markdown += "| | |\n|--|--|\n"
+                for r in results['cpus']:
+                    new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                    new_markdown += f"| **Model** | {r['model']}|\n"
+                    #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                    new_markdown += "| | |\n"
+            if results['flash']:
+                new_markdown += f"# Flash chips ({len(results['flash'])})\n"
+                new_markdown += "| | |\n|--|--|\n"
+                for r in results['flash']:
+                    new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                    new_markdown += f"| **Model** | {r['model']}|\n"
+                    #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                    new_markdown += "| | |\n"
+            if results['network']:
+                if results['network']['chips']:
+                    new_markdown += f"# Network chips ({len(results['network']['chips'])})\n"
+                    new_markdown += "| | |\n|--|--|\n"
+                    for r in results['network']['chips']:
+                        new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                        new_markdown += f"| **Model** | {r['model']}|\n"
+                        #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                        new_markdown += "| | |\n"
+            if results['switch']:
+                new_markdown += f"# Switch chips ({len(results['switch'])})\n"
+                new_markdown += "| | |\n|--|--|\n"
+                for r in results['switch']:
+                    new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                    new_markdown += f"| **Model** | {r['model']}|\n"
+                    #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                    new_markdown += "| | |\n"
+            if results['radios']:
+                radios = []
+                for r in results['radios']:
+                    if r['chips']:
+                        radios += r['chips']
+                if radios:
+                    new_markdown += f"# Radio chips ({len(radios)})\n"
+                    new_markdown += "| | |\n|--|--|\n"
+                    for r in radios:
+                        new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                        new_markdown += f"| **Model** | {r['model']}|\n"
+                        #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                        new_markdown += "| | |\n"
             if results['additional_chips']:
-                new_markdown += "# Additional chips\n"
+                new_markdown += f"# Additional chips ({len(results['additional_chips'])})\n"
                 new_markdown += "| | |\n|--|--|\n"
                 for r in results['additional_chips']:
                     new_markdown += f"| **Description** | {r['description']}|\n"
