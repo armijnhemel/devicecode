@@ -1231,7 +1231,9 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                             device.network.docsis_version = value
                                                     elif identifier in ['eth1chip', 'eth2chip', 'eth3chip',
                                                                         'eth4chip', 'eth5chip', 'eth6chip']:
-                                                        device.network.chips.append(parse_chip(value))
+                                                        chip_result = parse_chip(value)
+                                                        if chip_result is not None:
+                                                            device.network.chips.append(chip_result)
 
                                                     # various OUI
                                                     elif identifier in ['rad1oui', 'rad2oui',
