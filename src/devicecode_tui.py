@@ -104,6 +104,7 @@ class FilterValidator(Validator):
         self.odms = kwargs.get('odms', set())
         self.chip_vendors = kwargs.get('chip_vendors', set())
         self.connectors = kwargs.get('connectors', set())
+        self.ips = kwargs.get('ips', set())
         self.token_identifiers = kwargs.get('token_identifiers', [])
 
     def validate(self, value: str) -> ValidationResult:
@@ -140,6 +141,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'ignore_odm':
                     if token_value.lower() not in self.odms:
                         return self.failure("Invalid ODM")
+                elif token_identifier == 'ip':
+                    if token_value.lower() not in self.ips:
+                        return self.failure("Invalid IP")
                 elif token_identifier == 'odm':
                     if token_value.lower() not in self.odms:
                         return self.failure("Invalid ODM")
@@ -388,6 +392,7 @@ class DevicecodeUI(App):
         connectors = set()
         odms = set()
         flags = set()
+        ips = set()
 
         self.devices = []
 
@@ -434,6 +439,9 @@ class DevicecodeUI(App):
                 odm_to_devices[manufacturer_name][brand_name] = []
             odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device})
             odms.add(manufacturer_name.lower())
+
+            if device['defaults']['ip'] != '':
+                ips.add(device['defaults']['ip'])
 
             if device['software']['bootloader']['manufacturer'] != '':
                 bootloaders.add(device['software']['bootloader']['manufacturer'].lower())
@@ -529,7 +537,7 @@ class DevicecodeUI(App):
         with Container(id='app-grid'):
             with Container(id='left-grid'):
                 yield Input(placeholder='Filter',
-                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands, odms=odms, chip_vendors=chip_vendors, connectors=connectors, token_identifiers=self.TOKEN_IDENTIFIERS)],
+                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands, odms=odms, chip_vendors=chip_vendors, connectors=connectors, ips=ips, token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             bootloaders=sorted(bootloaders), brands=sorted(brands), chip_vendors=sorted(chip_vendors),
                             connectors=sorted(connectors), odms=sorted(odms),
