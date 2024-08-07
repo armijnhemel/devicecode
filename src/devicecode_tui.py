@@ -508,6 +508,7 @@ class DevicecodeUI(App):
         self.device_data_area = Markdown()
         self.regulatory_data_area = Markdown()
         self.model_data_area = Markdown()
+        self.network_data_area = Markdown()
         self.serial_area = Markdown()
         self.software_area = Markdown()
         self.chips_area = Markdown()
@@ -551,6 +552,9 @@ class DevicecodeUI(App):
                 with TabPane('Model & ODM'):
                     with VerticalScroll():
                         yield self.model_data_area
+                with TabPane('Network'):
+                    with VerticalScroll():
+                        yield self.network_data_area
                 with TabPane('Regulatory & Commercial'):
                     with VerticalScroll():
                         yield self.regulatory_data_area
@@ -641,6 +645,7 @@ class DevicecodeUI(App):
         if event.node.data is not None:
             self.device_data_area.update(self.build_meta_report(event.node.data))
             self.model_data_area.update(self.build_model_report(event.node.data))
+            self.network_data_area.update(self.build_network_report(event.node.data['network']))
             self.regulatory_data_area.update(self.build_regulatory_report(event.node.data))
             if event.node.data['has_serial_port'] == 'yes':
                 self.serial_area.update(self.build_serial_report(event.node.data['serial']))
@@ -652,6 +657,7 @@ class DevicecodeUI(App):
             self.device_data_area.update('')
             self.regulatory_data_area.update('')
             self.model_data_area.update('')
+            self.network_data_area.update("")
             self.serial_area.update('')
             self.software_area.update('')
             self.chips_area.update('')
@@ -818,6 +824,27 @@ class DevicecodeUI(App):
             new_markdown += f"|**Country** | {result['manufacturer']['country']}\n"
             new_markdown += f"|**Model** | {result['manufacturer']['model']}\n"
             new_markdown += f"|**Revision** | {result['manufacturer']['revision']}\n"
+            return new_markdown
+
+    def build_network_report(self, result):
+        if result:
+            new_markdown = "# Network information\n"
+            new_markdown = "| | |\n|--|--|\n"
+            new_markdown += f"|**DOCSIS version** | {result['docsis_version']}\n"
+            new_markdown += f"|**LAN ports** | {result['lan_ports']}\n"
+            ethernet_ouis = ", ".join(result['ethernet_oui'])
+            new_markdown += f"|**Ethernet OUI** | {ethernet_ouis}\n"
+            wireless_ouis = ", ".join(result['wireless_oui'])
+            new_markdown += f"|**Wireless OUI** | {wireless_ouis}\n"
+
+            if result['chips']:
+                new_markdown += f"# Network chips ({len(result['chips'])})\n"
+                new_markdown += "| | |\n|--|--|\n"
+                for r in result['chips']:
+                    new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                    new_markdown += f"| **Model** | {r['model']}|\n"
+                    #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                    new_markdown += "| | |\n"
             return new_markdown
 
     def build_meta_report(self, result):
