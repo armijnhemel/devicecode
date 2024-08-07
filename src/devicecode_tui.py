@@ -657,7 +657,7 @@ class DevicecodeUI(App):
                                          passwords=passwords, serials=serials, years=years)
 
     def on_markdown_link_clicked(self, event: Markdown.LinkClicked) -> None:
-        if event.href.startswith('https://'):
+        if event.href.startswith('http://') or event.href.startswith('https://'):
             webbrowser.open(event.href)
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
