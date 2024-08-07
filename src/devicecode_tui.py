@@ -104,6 +104,7 @@ class FilterValidator(Validator):
         self.odms = kwargs.get('odms', set())
         self.chip_vendors = kwargs.get('chip_vendors', set())
         self.connectors = kwargs.get('connectors', set())
+        self.ips = kwargs.get('ips', set())
         self.token_identifiers = kwargs.get('token_identifiers', [])
 
     def validate(self, value: str) -> ValidationResult:
@@ -140,6 +141,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'ignore_odm':
                     if token_value.lower() not in self.odms:
                         return self.failure("Invalid ODM")
+                elif token_identifier == 'ip':
+                    if token_value.lower() not in self.ips:
+                        return self.failure("Invalid IP")
                 elif token_identifier == 'odm':
                     if token_value.lower() not in self.odms:
                         return self.failure("Invalid ODM")
@@ -175,14 +179,15 @@ class BrandTree(Tree):
         flags = kwargs.get('flags', [])
         ignore_brands = kwargs.get('ignore_brands', [])
         ignore_odms = kwargs.get('ignore_odms', [])
+        ips = kwargs.get('ips', [])
         odms = kwargs.get('odms', [])
         passwords = kwargs.get('passwords', [])
         serials = kwargs.get('serials', [])
         years = kwargs.get('years', [])
 
         expand = False
-        if brands or chip_vendors or connectors or flags or ignore_brands or \
-            ignore_odms or odms or passwords or serials or years:
+        if bootloaders or brands or chip_vendors or connectors or flags or ignore_brands or \
+            ignore_odms or ips or odms or passwords or serials or years:
             expand = True
 
         for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
@@ -218,6 +223,9 @@ class BrandTree(Tree):
                         continue
                 if connectors:
                     if model['data']['serial']['connector'].lower() not in connectors:
+                        continue
+                if ips:
+                    if model['data']['defaults']['ip'] not in ips:
                         continue
                 if years:
                     # first collect all the years that have been declared
@@ -269,14 +277,15 @@ class OdmTree(Tree):
         flags = kwargs.get('flags', [])
         ignore_brands = kwargs.get('ignore_brands', [])
         ignore_odms = kwargs.get('ignore_odms', [])
+        ips = kwargs.get('ips', [])
         odms = kwargs.get('odms', [])
         passwords = kwargs.get('passwords', [])
         serials = kwargs.get('serials', [])
         years = kwargs.get('years', [])
 
         expand = False
-        if brands or chip_vendors or connectors or flags or ignore_brands or \
-            ignore_odms or odms or passwords or serials or years:
+        if bootloaders or brands or chip_vendors or connectors or flags or ignore_brands or \
+            ignore_odms or ips or odms or passwords or serials or years:
             expand = True
 
         # add each manufacturer as a node. Then add each brand as a subtree
@@ -315,6 +324,9 @@ class OdmTree(Tree):
                             continue
                     if connectors:
                         if model['data']['serial']['connector'].lower() not in connectors:
+                            continue
+                    if ips:
+                        if model['data']['defaults']['ip'] not in ips:
                             continue
                     if years:
                         # first collect all the years that have been declared
@@ -363,7 +375,7 @@ class DevicecodeUI(App):
 
     CSS_PATH = "devicecode_tui.css"
     TOKEN_IDENTIFIERS = ['bootloader', 'brand', 'chip', 'chip_vendor', 'connector',
-                         'flag', 'ignore_brand', 'ignore_odm', 'odm', 'password',
+                         'flag', 'ignore_brand', 'ignore_odm', 'ip', 'odm', 'password',
                          'serial', 'type', 'year']
 
     def __init__(self, devicecode_dir, *args: Any, **kwargs: Any) -> None:
@@ -380,6 +392,7 @@ class DevicecodeUI(App):
         connectors = set()
         odms = set()
         flags = set()
+        ips = set()
 
         self.devices = []
 
@@ -426,6 +439,9 @@ class DevicecodeUI(App):
                 odm_to_devices[manufacturer_name][brand_name] = []
             odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device})
             odms.add(manufacturer_name.lower())
+
+            if device['defaults']['ip'] != '':
+                ips.add(device['defaults']['ip'])
 
             if device['software']['bootloader']['manufacturer'] != '':
                 bootloaders.add(device['software']['bootloader']['manufacturer'].lower())
@@ -508,9 +524,11 @@ class DevicecodeUI(App):
         self.device_data_area = Markdown()
         self.regulatory_data_area = Markdown()
         self.model_data_area = Markdown()
+        self.network_data_area = Markdown()
         self.serial_area = Markdown()
         self.software_area = Markdown()
-        self.additional_chips_area = Markdown()
+        self.chips_area = Markdown()
+        self.power_area = Markdown()
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
@@ -519,7 +537,7 @@ class DevicecodeUI(App):
         with Container(id='app-grid'):
             with Container(id='left-grid'):
                 yield Input(placeholder='Filter',
-                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands, odms=odms, chip_vendors=chip_vendors, connectors=connectors, token_identifiers=self.TOKEN_IDENTIFIERS)],
+                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands, odms=odms, chip_vendors=chip_vendors, connectors=connectors, ips=ips, token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             bootloaders=sorted(bootloaders), brands=sorted(brands), chip_vendors=sorted(chip_vendors),
                             connectors=sorted(connectors), odms=sorted(odms),
@@ -545,24 +563,30 @@ class DevicecodeUI(App):
                         with VerticalScroll():
                             yield self.chip_connector_data_table
             with TabbedContent(id='result-tabs'):
-                with TabPane('Device data'):
+                with TabPane('Device'):
                     with VerticalScroll():
                         yield self.device_data_area
                 with TabPane('Model & ODM'):
                     with VerticalScroll():
                         yield self.model_data_area
-                with TabPane('Regulatory'):
+                with TabPane('Network'):
+                    with VerticalScroll():
+                        yield self.network_data_area
+                with TabPane('Regulatory & Commercial'):
                     with VerticalScroll():
                         yield self.regulatory_data_area
-                with TabPane('Serial port'):
+                with TabPane('Serial & JTAG'):
                     with VerticalScroll():
                         yield self.serial_area
                 with TabPane('Software'):
                     with VerticalScroll():
                         yield self.software_area
-                with TabPane('Additional chips'):
+                with TabPane('Chips'):
                     with VerticalScroll():
-                        yield self.additional_chips_area
+                        yield self.chips_area
+                with TabPane('Power'):
+                    with VerticalScroll():
+                        yield self.power_area
 
         # show the footer with controls
         footer = Footer()
@@ -588,6 +612,7 @@ class DevicecodeUI(App):
                 flags = []
                 ignore_brands = []
                 ignore_odms = []
+                ips = []
                 odms = []
                 passwords = []
                 serials = []
@@ -611,6 +636,8 @@ class DevicecodeUI(App):
                         ignore_brands.append(value.lower())
                     elif identifier == 'ignore_odm':
                         ignore_odms.append(value.lower())
+                    elif identifier == 'ip':
+                        ips.append(value.lower())
                     elif identifier == 'odm':
                         odms.append(value.lower())
                     elif identifier == 'password':
@@ -622,11 +649,11 @@ class DevicecodeUI(App):
 
                 self.brand_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
                                            chip_vendors=chip_vendors, connectors=connectors, flags=flags,
-                                           ignore_brands=ignore_brands, ignore_odms=ignore_odms,
+                                           ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
                                            passwords=passwords, serials=serials, years=years)
                 self.odm_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
                                          chip_vendors=chip_vendors, connectors=connectors, flags=flags,
-                                         ignore_brands=ignore_brands, ignore_odms=ignore_odms,
+                                         ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
                                          passwords=passwords, serials=serials, years=years)
 
     def on_markdown_link_clicked(self, event: Markdown.LinkClicked) -> None:
@@ -639,59 +666,128 @@ class DevicecodeUI(App):
     def on_tree_node_selected(self, event: Tree.NodeSelected[None]) -> None:
         '''Display the reports of a node when it is selected'''
         if event.node.data is not None:
-            self.device_data_area.update(self.build_meta_report(event.node.data))
+            self.device_data_area.update(self.build_device_report(event.node.data))
             self.model_data_area.update(self.build_model_report(event.node.data))
-            self.regulatory_data_area.update(self.build_regulatory_report(event.node.data['regulatory']))
+            self.network_data_area.update(self.build_network_report(event.node.data['network']))
+            self.regulatory_data_area.update(self.build_regulatory_report(event.node.data))
             if event.node.data['has_serial_port'] == 'yes':
                 self.serial_area.update(self.build_serial_report(event.node.data['serial']))
             else:
                 self.serial_area.update('')
             self.software_area.update(self.build_software_report(event.node.data['software']))
-            self.additional_chips_area.update(self.build_additional_chips_report(event.node.data['additional_chips']))
+            self.chips_area.update(self.build_chips_report(event.node.data))
+            self.power_area.update('')
         else:
             self.device_data_area.update('')
             self.regulatory_data_area.update('')
             self.model_data_area.update('')
+            self.network_data_area.update("")
             self.serial_area.update('')
             self.software_area.update('')
-            self.additional_chips_area.update('')
+            self.chips_area.update('')
+            self.power_area.update('')
 
     def on_tree_node_collapsed(self, event: Tree.NodeCollapsed[None]) -> None:
         pass
 
-    def build_additional_chips_report(self, results):
+    def build_chips_report(self, results):
         if results:
-            new_markdown = "| | |\n|--|--|\n"
-            for r in results:
-                new_markdown += f"| **Description** | {r['description']}|\n"
-                new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
-                new_markdown += f"| **Model** | {r['model']}|\n"
-                #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
-                new_markdown += "| | |\n"
+            new_markdown = ''
+            if results['cpus']:
+                new_markdown += f"# Main chips ({len(results['cpus'])})\n"
+                new_markdown += "| | |\n|--|--|\n"
+                for r in results['cpus']:
+                    new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                    new_markdown += f"| **Model** | {r['model']}|\n"
+                    #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                    new_markdown += "| | |\n"
+            if results['flash']:
+                new_markdown += f"# Flash chips ({len(results['flash'])})\n"
+                new_markdown += "| | |\n|--|--|\n"
+                for r in results['flash']:
+                    new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                    new_markdown += f"| **Model** | {r['model']}|\n"
+                    #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                    new_markdown += "| | |\n"
+            if results['network']:
+                if results['network']['chips']:
+                    new_markdown += f"# Network chips ({len(results['network']['chips'])})\n"
+                    new_markdown += "| | |\n|--|--|\n"
+                    for r in results['network']['chips']:
+                        new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                        new_markdown += f"| **Model** | {r['model']}|\n"
+                        #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                        new_markdown += "| | |\n"
+            if results['switch']:
+                new_markdown += f"# Switch chips ({len(results['switch'])})\n"
+                new_markdown += "| | |\n|--|--|\n"
+                for r in results['switch']:
+                    new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                    new_markdown += f"| **Model** | {r['model']}|\n"
+                    #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                    new_markdown += "| | |\n"
+            if results['radios']:
+                radios = []
+                for r in results['radios']:
+                    if r['chips']:
+                        radios += r['chips']
+                if radios:
+                    new_markdown += f"# Radio chips ({len(radios)})\n"
+                    new_markdown += "| | |\n|--|--|\n"
+                    for r in radios:
+                        new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                        new_markdown += f"| **Model** | {r['model']}|\n"
+                        #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                        new_markdown += "| | |\n"
+            if results['additional_chips']:
+                new_markdown += f"# Additional chips ({len(results['additional_chips'])})\n"
+                new_markdown += "| | |\n|--|--|\n"
+                for r in results['additional_chips']:
+                    new_markdown += f"| **Description** | {r['description']}|\n"
+                    new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                    new_markdown += f"| **Model** | {r['model']}|\n"
+                    #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                    new_markdown += "| | |\n"
             return new_markdown
-        return "No known additional chips"
+        return "No known chips"
 
     def build_regulatory_report(self, result):
         if result:
-            new_markdown = "| | |\n|--|--|\n"
-            new_markdown += f"|**FCC date** | {result['fcc_date']}\n"
+            new_markdown = "# Regulatory\n"
+            new_markdown += "| | |\n|--|--|\n"
+            new_markdown += f"|**FCC date** | {result['regulatory']['fcc_date']}\n"
             fcc_ids = ''
-            if result['fcc_ids']:
-                fcc_id = result['fcc_ids'][0]
+            if result['regulatory']['fcc_ids']:
+                fcc_id = result['regulatory']['fcc_ids'][0]
                 fcc_ids = f"[{fcc_id}](<https://fcc.report/FCC-ID/{fcc_id}>)"
 
-                for f in result['fcc_ids'][1:]:
+                for f in result['regulatory']['fcc_ids'][1:]:
                     fcc_ids += f", [{f}](<https://fcc.report/FCC-ID/{f}>)"
             new_markdown += f"|**FCC ids** | {fcc_ids}\n"
-            new_markdown += f"|**Industry Canada ids** | {', '.join(result['industry_canada_ids'])}\n"
-            new_markdown += f"|**US ids** | {', '.join(result['us_ids'])}\n"
-            new_markdown += f"|**WiFi certified** |{ result['wifi_certified']}\n"
-            new_markdown += f"|**WiFi date** | {result['wifi_certified_date']}\n"
+            new_markdown += f"|**Industry Canada ids** | {', '.join(result['regulatory']['industry_canada_ids'])}\n"
+            new_markdown += f"|**US ids** | {', '.join(result['regulatory']['us_ids'])}\n"
+            new_markdown += f"|**WiFi certified** |{ result['regulatory']['wifi_certified']}\n"
+            new_markdown += f"|**WiFi date** | {result['regulatory']['wifi_certified_date']}\n"
+
+            # Commercial information
+            new_markdown += "# Commercial\n"
+            new_markdown += "| | |\n|--|--|\n"
+            new_markdown += f"|**Availability** | {result['commercial']['availability']}\n"
+            new_markdown += f"|**Release date** | {result['commercial']['release_date']}\n"
+            eans = ", ".join(result['commercial']['ean'])
+            new_markdown += f"|**International Article Number** | {eans}\n"
+            upcs = ", ".join(result['commercial']['upc'])
+            new_markdown += f"|**Universal Product Code** | {upcs}\n"
+            neweggs = ", ".join(result['commercial']['newegg'])
+            new_markdown += f"|**Newegg item number** | {neweggs}\n"
+            new_markdown += f"|**Deal Extreme item number** | {result['commercial']['deal_extreme']}\n"
+
             return new_markdown
 
     def build_serial_report(self, result):
         if result:
-            new_markdown = "| | |\n|--|--|\n"
+            new_markdown = "# Serial port\n"
+            new_markdown += "| | |\n|--|--|\n"
             if result['baud_rate'] != 0:
                 new_markdown += f"|**Baud rate** | {result['baud_rate']}\n"
             else:
@@ -707,6 +803,8 @@ class DevicecodeUI(App):
             else:
                 new_markdown += "|**Voltage** |\n"
             return new_markdown
+        else:
+            return "No serial information"
 
     def build_software_report(self, result):
         if result:
@@ -753,33 +851,66 @@ class DevicecodeUI(App):
             new_markdown += f"|**Revision** | {result['manufacturer']['revision']}\n"
             return new_markdown
 
-    def build_meta_report(self, result):
+    def build_network_report(self, result):
+        if result:
+            new_markdown = "# Network information\n"
+            new_markdown += "| | |\n|--|--|\n"
+            new_markdown += f"|**DOCSIS version** | {result['docsis_version']}\n"
+            new_markdown += f"|**LAN ports** | {result['lan_ports']}\n"
+            ethernet_ouis = ", ".join(result['ethernet_oui'])
+            new_markdown += f"|**Ethernet OUI** | {ethernet_ouis}\n"
+            wireless_ouis = ", ".join(result['wireless_oui'])
+            new_markdown += f"|**Wireless OUI** | {wireless_ouis}\n"
+
+            if result['chips']:
+                new_markdown += f"# Network chips ({len(result['chips'])})\n"
+                new_markdown += "| | |\n|--|--|\n"
+                for r in result['chips']:
+                    new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                    new_markdown += f"| **Model** | {r['model']}|\n"
+                    #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                    new_markdown += "| | |\n"
+            return new_markdown
+
+    def build_device_report(self, result):
         if result:
             new_markdown = "| | |\n|--|--|\n"
             new_markdown += f"|**Title** | {result['title']}\n"
             new_markdown += f"|**Brand** | {result['brand']}\n"
 
+            declared_years = set()
+            if result['commercial']['release_date']:
+                declared_years.add(result['commercial']['release_date'][:4])
+            if result['regulatory']['fcc_date']:
+                declared_years.add(result['regulatory']['fcc_date'][:4])
+            if result['regulatory']['wifi_certified_date']:
+                declared_years.add(result['regulatory']['wifi_certified_date'][:4])
+
+            estimated_years = ", ".join(sorted(declared_years))
+            new_markdown += f"|**Estimated year** | {estimated_years}\n"
+
             # Taglines, flags, device types
             taglines = ", ".join(result['taglines'])
             new_markdown += f"|**Taglines** | {taglines}\n"
-            flags = ", ".join(result['flags'])
-            new_markdown += f"|**Flags** | {flags}\n"
             device_types = ", ".join(result['device_types'])
             new_markdown += f"|**Device types** | {device_types}\n"
-
-            # Commercial information
-            new_markdown += f"|**Availability** | {result['commercial']['availability']}\n"
-            new_markdown += f"|**Release date** | {result['commercial']['release_date']}\n"
-            eans = ", ".join(result['commercial']['ean'])
-            new_markdown += f"|**International Article Number** | {eans}\n"
-            upcs = ", ".join(result['commercial']['upc'])
-            new_markdown += f"|**Universal Product Code** | {upcs}\n"
+            flags = ", ".join(result['flags'])
+            new_markdown += f"|**Flags** | {flags}\n"
 
             # Web sites
             product_pages = " , ".join(result['web']['product_page'])
             new_markdown += f"|**Product pages** | {product_pages}\n"
             support_pages = " , ".join(result['web']['support_page'])
             new_markdown += f"|**Support pages** | {support_pages}\n"
+
+            # Default values
+            new_markdown += f"|**IP address** | {result['defaults']['ip']}\n"
+            new_markdown += f"|**IP address comment** | {result['defaults']['ip_comment']}\n"
+            logins = " , ".join(result['defaults']['logins'])
+            new_markdown += f"|**Logins** | {logins}\n"
+            new_markdown += f"|**Login comment** | {result['defaults']['logins_comment']}\n"
+            new_markdown += f"|**Password** | {result['defaults']['password']}\n"
+            new_markdown += f"|**Password comment** | {result['defaults']['password_comment']}\n"
 
             # Misc
             new_markdown += f"|**Data** | {result}\n"
