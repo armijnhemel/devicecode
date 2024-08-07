@@ -38,6 +38,7 @@ class SuggestDevices(Suggester):
         )
         self.bootloaders = kwargs.get('bootloaders', [])
         self.brands = kwargs.get('brands', [])
+        self.chips = kwargs.get('chips', [])
         self.chip_vendors = kwargs.get('chip_vendors', [])
         self.flags = kwargs.get('flags', [])
         self.odms = kwargs.get('odms', [])
@@ -76,6 +77,10 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(self.bootloaders):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + self.bootloaders[idx][len(check_value)-11:]
+        elif check_value.startswith('chip='):
+            for idx, chk in enumerate(self.chips):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.chips[idx][len(check_value)-5:]
         elif check_value.startswith('chip_vendor='):
             for idx, chk in enumerate(self.chip_vendors):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
@@ -102,6 +107,7 @@ class FilterValidator(Validator):
         self.bootloaders = kwargs.get('bootloaders', set())
         self.brands = kwargs.get('brands', set())
         self.odms = kwargs.get('odms', set())
+        self.chips = kwargs.get('chips', set())
         self.chip_vendors = kwargs.get('chip_vendors', set())
         self.connectors = kwargs.get('connectors', set())
         self.ips = kwargs.get('ips', set())
@@ -129,6 +135,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'brand':
                     if token_value.lower() not in self.brands:
                         return self.failure("Invalid brand")
+                elif token_identifier == 'chip':
+                    if token_value.lower() not in self.chips:
+                        return self.failure("Invalid chip")
                 elif token_identifier == 'chip_vendor':
                     if token_value.lower() not in self.chip_vendors:
                         return self.failure("Invalid chip vendor")
@@ -174,6 +183,7 @@ class BrandTree(Tree):
         # be displayed or ignored.
         bootloaders = kwargs.get('bootloaders', [])
         brands = kwargs.get('brands', [])
+        chips = kwargs.get('chips', [])
         chip_vendors = kwargs.get('chip_vendors', [])
         connectors = kwargs.get('connectors', set())
         flags = kwargs.get('flags', [])
@@ -186,8 +196,8 @@ class BrandTree(Tree):
         years = kwargs.get('years', [])
 
         expand = False
-        if bootloaders or brands or chip_vendors or connectors or flags or ignore_brands or \
-            ignore_odms or ips or odms or passwords or serials or years:
+        if bootloaders or brands or chips or chip_vendors or connectors or flags or \
+            ignore_brands or ignore_odms or ips or odms or passwords or serials or years:
             expand = True
 
         for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
@@ -272,6 +282,7 @@ class OdmTree(Tree):
         # be displayed or ignored.
         bootloaders = kwargs.get('bootloaders', [])
         brands = kwargs.get('brands', [])
+        chips = kwargs.get('chips', [])
         chip_vendors = kwargs.get('chip_vendors', [])
         connectors = kwargs.get('connectors', set())
         flags = kwargs.get('flags', [])
@@ -284,8 +295,8 @@ class OdmTree(Tree):
         years = kwargs.get('years', [])
 
         expand = False
-        if bootloaders or brands or chip_vendors or connectors or flags or ignore_brands or \
-            ignore_odms or ips or odms or passwords or serials or years:
+        if bootloaders or brands or chips or chip_vendors or connectors or flags or \
+            ignore_brands or ignore_odms or ips or odms or passwords or serials or years:
             expand = True
 
         # add each manufacturer as a node. Then add each brand as a subtree
@@ -388,6 +399,7 @@ class DevicecodeUI(App):
         odm_to_devices = {}
         bootloaders = set()
         brands = set()
+        chips = set()
         chip_vendors = set()
         connectors = set()
         odms = set()
@@ -453,6 +465,8 @@ class DevicecodeUI(App):
             for cpu in device['cpus']:
                 cpu_vendor_name = cpu['manufacturer']
                 chip_vendors.add(cpu_vendor_name.lower())
+                if cpu['model'] != '':
+                    chips.add(cpu['model'].lower())
                 brand_cpu.append((brand_name, cpu_vendor_name))
                 odm_cpu.append((manufacturer_name, cpu_vendor_name))
                 if device['serial']['connector'] != '':
@@ -461,6 +475,9 @@ class DevicecodeUI(App):
             for chip in device['network']['chips']:
                 chip_vendor_name = chip['manufacturer']
                 chip_vendors.add(chip_vendor_name.lower())
+
+                if chip['model'] != '':
+                    chips.add(chip['model'].lower())
 
             brand_odm.append((brand_name, manufacturer_name))
 
@@ -541,9 +558,10 @@ class DevicecodeUI(App):
         with Container(id='app-grid'):
             with Container(id='left-grid'):
                 yield Input(placeholder='Filter',
-                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands, odms=odms, chip_vendors=chip_vendors, connectors=connectors, ips=ips, token_identifiers=self.TOKEN_IDENTIFIERS)],
+                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips, chip_vendors=chip_vendors, connectors=connectors, ips=ips, token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
-                            bootloaders=sorted(bootloaders), brands=sorted(brands), chip_vendors=sorted(chip_vendors),
+                            bootloaders=sorted(bootloaders), brands=sorted(brands),
+                            chips=sorted(chips), chip_vendors=sorted(chip_vendors),
                             connectors=sorted(connectors), odms=sorted(odms),
                             flags=sorted(flags)), valid_empty=True)
                 with TabbedContent():
