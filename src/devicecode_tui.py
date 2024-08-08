@@ -192,8 +192,15 @@ class BrandTree(Tree):
                 for d in model['data']['device_types']:
                     if "voip" in d.lower() or 'phone' in d.lower():
                         labels.add(":phone:")
+                if 'linux' in model['data']['software']['os'].lower():
+                    labels.add(":penguin:")
+                if 'android' in model['data']['software']['os'].lower():
+                    labels.add(":robot:")
 
-                node.add_leaf(f"{model['model']}  {"".join(sorted(labels))}", data=model['data'])
+                if labels:
+                    node.add_leaf(f"{model['model']}  {''.join(sorted(labels))}", data=model['data'])
+                else:
+                    node.add_leaf(f"{model['model']}", data=model['data'])
                 node_leaves += 1
             node.label = f"{node.label} ({node_leaves})"
 
@@ -244,10 +251,6 @@ class BrandTree(Tree):
                 if flags:
                     if not set(map(lambda x: x.lower(), model['data']['flags'])).intersection(flags):
                         continue
-                for f in model['data']['flags']:
-                    if "voip" in f.lower() or 'phone' in f.lower():
-                        labels.add(":phone:")
-
                 if passwords:
                     if model['data']['defaults']['password'] not in passwords:
                         continue
@@ -294,11 +297,24 @@ class BrandTree(Tree):
                     if not show_node:
                         continue
 
+                # add labels
+                for f in model['data']['flags']:
+                    if "voip" in f.lower() or 'phone' in f.lower():
+                        labels.add(":phone:")
+
                 for d in model['data']['device_types']:
                     if "voip" in d.lower() or 'phone' in d.lower():
                         labels.add(":phone:")
 
-                node.add_leaf(f"{model['model']}  {"".join(sorted(labels))}", data=model['data'])
+                if 'linux' in model['data']['software']['os'].lower():
+                    labels.add(":penguin:")
+                if 'android' in model['data']['software']['os'].lower():
+                    labels.add(":robot:")
+
+                if labels:
+                    node.add_leaf(f"{model['model']}  {''.join(sorted(labels))}", data=model['data'])
+                else:
+                    node.add_leaf(f"{model['model']}", data=model['data'])
                 node_leaves += 1
 
             # check if there are any valid leaf nodes.
@@ -364,10 +380,6 @@ class OdmTree(Tree):
                     if flags:
                         if not set(map(lambda x: x.lower(), model['data']['flags'])).intersection(flags):
                             continue
-                    for f in model['data']['flags']:
-                        if "voip" in f.lower() or 'phone' in f.lower():
-                            labels.add(":phone:")
-
                     if passwords:
                         if model['data']['defaults']['password'] not in passwords:
                             continue
@@ -414,12 +426,24 @@ class OdmTree(Tree):
                         if not show_node:
                             continue
 
+                    for f in model['data']['flags']:
+                        if "voip" in f.lower() or 'phone' in f.lower():
+                            labels.add(":phone:")
+
                     for d in model['data']['device_types']:
                         if "voip" in d.lower() or 'phone' in d.lower():
                             labels.add(":phone:")
 
+                    if 'linux' in model['data']['software']['os'].lower():
+                        labels.add(":penguin:")
+                    if 'android' in model['data']['software']['os'].lower():
+                        labels.add(":robot:")
+
                     # default case
-                    brand_node.add_leaf(f"{model['model']}  {"".join(sorted(labels))}", data=model['data'])
+                    if labels:
+                        brand_node.add_leaf(f"{model['model']}  {''.join(sorted(labels))}", data=model['data'])
+                    else:
+                        brand_node.add_leaf(f"{model['model']}", data=model['data'])
                     brand_node_leaves += 1
                     node_leaves += 1
 

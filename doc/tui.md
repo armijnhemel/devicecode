@@ -60,8 +60,10 @@ functionality, or characteristics of the device. This extra visual indication
 allows a user to quickly navigate to devices of interest. Currently the
 following extra icons are used:
 
-* telephone - this indicates that the device is either a (VoIP) phone, (analog)
-  phone gateway or has VoIP functionality
+* penguin - the device runs Linux by default
+* robot - the device runs Android by default
+* telephone - the device is either a (VoIP) phone, (analog) phone gateway or
+  has VoIP functionality
 
 ## Filtering
 
