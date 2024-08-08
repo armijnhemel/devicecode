@@ -15,6 +15,7 @@ import requests
 
 # FCC ids can only consist of letters, numbers and hyphens
 RE_FCC_ID = re.compile(r'[\w\d\-]+$')
+RE_APPROVED_DATE = re.compile(r'(\d{4}-\d{2}-\d{2})')
 
 # time in seconds to sleep in "gentle mode"
 SLEEP_INTERVAL = 2
@@ -80,21 +81,18 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
     headers = {'user-agent': user_agent_string,
               }
 
-    # store 404s
+    # store possible invalid FCC ids
     fcc_id_404 = []
+    fcc_id_invalid = []
     downloaded_documents = 0
     processed_fccids = 0
 
-    for fccid in ids:
-        # create a subdirectory, use the FCC id as a path component
-        store_directory = output_directory/fccid
-        store_directory.mkdir(parents=True, exist_ok=True)
-
+    for fcc_id in ids:
         try:
             # grab stuff from fcc report
             if verbose:
-                print(f"Downloading main page for {fccid}")
-            request = requests.get(f'{base_url}/FCC-ID/{fccid}',
+                print(f"Downloading main page for {fcc_id}")
+            request = requests.get(f'{base_url}/FCC-ID/{fcc_id}',
                                    headers=headers, timeout=TIMEOUT)
 
             # now first check the headers to see if it is OK to do more requests
@@ -104,7 +102,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
                     sys.exit(1)
                 elif request.status_code == 404:
                     # record entries that are not available
-                    fcc_id_404.append(fccid)
+                    fcc_id_404.append(fcc_id)
                 elif request.status_code == 500:
                     print("Server error, exiting", file=sys.stderr)
                     sys.exit(1)
@@ -122,9 +120,14 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
             in_table = False
             pdf_name = ''
             description = ''
+            approved_dates = []
             for line in result.splitlines():
                 # keep a bit of state and only look at the interesting lines.
                 # This is a bit ugly but hey, it works.
+                if '<span class="label label-success">APPROVED</span>' in line:
+                    res = RE_APPROVED_DATE.search(line)
+                    if res:
+                        approved_dates.append(res.groups()[0])
                 if '<th>File Name</th><th>Document Type</th>' in line:
                     in_table = True
                     description = line.rsplit('<td>', maxsplit=1)[1][:-5]
@@ -132,7 +135,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
                 if not in_table:
                     continue
 
-                if fccid in line and line.startswith('</tr>') and pdf_name == '':
+                if fcc_id in line and line.startswith('</tr>') and pdf_name == '':
                     # get the description
                     description = line.rsplit('<td>', maxsplit=1)[1][:-5]
                 elif line.startswith('<td>') and '.pdf' in line:
@@ -147,7 +150,12 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
                     pdf_name = ''
 
             if not pdfs_descriptions:
+                fcc_id_invalid.append(fcc_id)
                 continue
+
+            # create a subdirectory, use the FCC id as a path component
+            store_directory = output_directory/fcc_id
+            store_directory.mkdir(parents=True, exist_ok=True)
 
             with open(store_directory/'index.html', 'w') as output:
                 output.write(result)
@@ -173,9 +181,11 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
                 downloaded_documents += 1
 
             if verbose:
-                print(f"* writing PDF/description mapping for {fccid}\n")
+                print(f"* writing PDF/description mapping for {fcc_id}\n")
             with open(store_directory/'descriptions.json', 'w') as output:
                 output.write(json.dumps(pdfs_descriptions, indent=4))
+            with open(store_directory/'approved_dates.json', 'w') as output:
+                output.write(json.dumps(sorted(set(approved_dates)), indent=4))
             processed_fccids += 1
 
         except Exception:
@@ -185,6 +195,10 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
         print("Statistics")
         print(f"* processed {processed_fccids} FCC ids")
         print(f"* downloaded {downloaded_documents} documents\n")
+        if fcc_id_invalid:
+            print("Possible invalid FCC identifiers")
+            for f in fcc_id_invalid:
+                print(f"* {f}\n")
 
 
 if __name__ == "__main__":

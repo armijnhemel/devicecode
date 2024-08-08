@@ -25,6 +25,10 @@ TEXT_TO_FUNCTIONALITY = {
 
 REGEX_IP = re.compile(r'(\d+\\.\d+\\.\d+\\.\d+)(?::\d+)?')
 
+PROGRAMS = ['arptables', 'bpalogin', 'bridge-utils', 'busybox', 'ebtables', 'glibc',
+            'hostapd', 'iproute', 'ipset', 'iptables', 'iputils', 'linux', 'nmap', 'ppp',
+            'pptpd', 'rp-pppoe', 'wireless_tools', 'wpa_supplicant']
+
 # extract interesting information and patterns from extracted text
 def search_text(texts):
     text =  "\n".join(texts).lower()
