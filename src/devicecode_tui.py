@@ -175,8 +175,26 @@ class BrandTree(Tree):
         super().__init__(*args, **kwargs)
         self.brands_to_devices = brands_to_devices
 
-    def build_tree(self, **kwargs):
+    def build_initial_tree(self):
         # build the brand_tree.
+        self.reset("DeviceCode brand results")
+        for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
+            # add each brand as a node. Then add each model as a leaf.
+            node = self.root.add(brand)
+            node_leaves = 0
+
+            # recurse into the device and add nodes for devices
+            for model in sorted(self.brands_to_devices[brand], key=lambda x: x['model']):
+                labels = set()
+                for d in model['data']['device_types']:
+                    if "voip" in d.lower() or 'phone' in d.lower():
+                        labels.add(":phone:")
+
+                node.add_leaf(f"{model['model']}  {"".join(sorted(labels))}", data=model['data'])
+                node_leaves += 1
+            node.label = f"{node.label} ({node_leaves})"
+
+    def build_tree(self, **kwargs):
         self.reset("DeviceCode brand results")
 
         # Optional filters with data that should
@@ -588,6 +606,7 @@ class DevicecodeUI(App):
         self.brand_tree.show_root = False
         self.brand_tree.root.expand()
         self.brand_tree.build_tree()
+        #self.brand_tree.build_initial_tree()
 
         self.odm_tree: OdmTree[dict] = OdmTree(odm_to_devices, "DeviceCode ODM results")
         self.odm_tree.show_root = False
@@ -729,6 +748,7 @@ class DevicecodeUI(App):
                                  ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
                                  passwords=passwords, serials=serials, years=years)
 
+        # reset the data areas to prevent old data being displayed
         self.device_data_area.update('')
         self.regulatory_data_area.update('')
         self.model_data_area.update('')
@@ -758,7 +778,7 @@ class DevicecodeUI(App):
                 self.serial_area.update('')
             self.software_area.update(self.build_software_report(event.node.data['software']))
             self.chips_area.update(self.build_chips_report(event.node.data))
-            self.power_area.update('')
+            self.power_area.update(self.build_power_report(event.node.data))
         else:
             self.device_data_area.update('')
             self.regulatory_data_area.update('')
@@ -955,6 +975,13 @@ class DevicecodeUI(App):
                     new_markdown += f"| **Model** | {r['model']}|\n"
                     #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
                     new_markdown += "| | |\n"
+        return new_markdown
+
+    def build_power_report(self, result):
+        new_markdown = ''
+        if result:
+            new_markdown += "# Power information\n"
+            new_markdown += "| | |\n|--|--|\n"
         return new_markdown
 
     def build_device_report(self, result):
