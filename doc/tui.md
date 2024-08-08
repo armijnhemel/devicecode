@@ -25,16 +25,54 @@ If operating system is the most imporant, then the results could be sorted
 by operating system. If release year is the most important, then it could be
 sorted by year, and so on.
 
-Currently there are three views:
+Currently there are two types views:
+
+1. tree view
+2. table view
+
+The tree view has two members:
 
 1. brand view: a tree with devices sorted by brand
 2. ODM view: a tree with devices sorted by ODM and then brand
-3. table view: a table with a count for brand/ODM combinations
+
+The table view currently has several views:
+
+1. brand/ODM: brand/ODM combinations
+2. brand/CPU vendor: brand/CPU vendor combinations
+3. ODM/CPU vendor: ODM/CPU vendor combinations
+4. ODM/connector: ODM/connector combinations (serial/JTAG)
+5. CPU vendor/connector: CPU vendor/connector combinations (serial/JTAG)
+
+![Screenshot of the start screen showing the tree with devices](tui-start-screen.png)
+
+By default the tree will not be expanded. The tree can be expanded by clicking
+on the subtrees to reveal the devices/ODMs (depending on the view).
+
+![Screenshot of the tree with devices with one branch expanded](tui-tree-expanded.png)
+
+Whenever a device in the tree is clicked, then various results will be shown
+in the data areas on the right side of the screen.
+
+![Screenshot of the tree with one device selected](tui-device-selected.png)
+
+Some devices have extra icons next to the name. These indicate special
+functionality, or characteristics of the device. This extra visual indication
+allows a user to quickly navigate to devices of interest. Currently the
+following extra icons are used:
+
+* penguin - the device runs Linux by default
+* robot - the device runs Android by default
+* telephone - the device is either a (VoIP) phone, (analog) phone gateway or
+  has VoIP functionality
 
 ## Filtering
 
-The trees with devices can be searched using a special filtering language.
+The trees with devices can be searched using a special filtering language
+(tables can currently not be filtered).
+
 The result after filtering will be a tree containing just some of the entries.
+
+![Screenshot of the tree with some filters enabled](tui-filtering.png)
 
 For filtering a special purpose filtering language is used, which can
 filter on a few attributes, such as:
@@ -77,7 +115,7 @@ where identifier can be one of:
 * `type`
 * `year`
 
-Values are case insensitive.
+Both identifiers and values are case insensitive.
 
 An identifier can appear multiple times. Multiple instances with the same
 identifer should be interpreted as "OR". Instances with a different identifier
@@ -115,6 +153,18 @@ should be read as:
 
 ```
 (odm=edimax OR odm=accton) AND brand=asus
+```
+
+or even more complex combinations, such as:
+
+```
+brand=asus brand=cisco odm=arcadyan odm=edimax brand=netgear brand=sitecom chip_vendor=ralink
+```
+
+which should be read as:
+
+```
+(brand=asus OR brand=cisco OR brand=netgear OR brand=sitecom) AND (odm=arcadyan OR odm=edimax) AND chip_vendor=ralink
 ```
 
 In case there are special characters or spaces, then these can be quoted, for

@@ -38,6 +38,7 @@ class SuggestDevices(Suggester):
         )
         self.bootloaders = kwargs.get('bootloaders', [])
         self.brands = kwargs.get('brands', [])
+        self.chips = kwargs.get('chips', [])
         self.chip_vendors = kwargs.get('chip_vendors', [])
         self.flags = kwargs.get('flags', [])
         self.odms = kwargs.get('odms', [])
@@ -76,6 +77,10 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(self.bootloaders):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + self.bootloaders[idx][len(check_value)-11:]
+        elif check_value.startswith('chip='):
+            for idx, chk in enumerate(self.chips):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.chips[idx][len(check_value)-5:]
         elif check_value.startswith('chip_vendor='):
             for idx, chk in enumerate(self.chip_vendors):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
@@ -98,10 +103,11 @@ class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
 
     def __init__(self, **kwargs):
-        # Known values: only these will be seen as valid.
+        # Known values: only these will be regarded as valid.
         self.bootloaders = kwargs.get('bootloaders', set())
         self.brands = kwargs.get('brands', set())
         self.odms = kwargs.get('odms', set())
+        self.chips = kwargs.get('chips', set())
         self.chip_vendors = kwargs.get('chip_vendors', set())
         self.connectors = kwargs.get('connectors', set())
         self.ips = kwargs.get('ips', set())
@@ -110,7 +116,7 @@ class FilterValidator(Validator):
     def validate(self, value: str) -> ValidationResult:
         try:
             # split the value into tokens
-            tokens = shlex.split(value)
+            tokens = shlex.split(value.lower())
             if not tokens:
                 return self.failure("Empty string")
 
@@ -123,32 +129,35 @@ class FilterValidator(Validator):
                     return self.failure("Invalid identifier")
                 if token_value == '':
                     return self.failure("Invalid identifier")
-                elif token_identifier == 'bootloader':
-                    if token_value.lower() not in self.bootloaders:
+                if token_identifier == 'bootloader':
+                    if token_value not in self.bootloaders:
                         return self.failure("Invalid bootloader")
                 elif token_identifier == 'brand':
-                    if token_value.lower() not in self.brands:
+                    if token_value not in self.brands:
                         return self.failure("Invalid brand")
+                elif token_identifier == 'chip':
+                    if token_value not in self.chips:
+                        return self.failure("Invalid chip")
                 elif token_identifier == 'chip_vendor':
-                    if token_value.lower() not in self.chip_vendors:
+                    if token_value not in self.chip_vendors:
                         return self.failure("Invalid chip vendor")
                 elif token_identifier == 'connector':
-                    if token_value.lower() not in self.connectors:
+                    if token_value not in self.connectors:
                         return self.failure("Invalid connector")
                 elif token_identifier == 'ignore_brand':
-                    if token_value.lower() not in self.brands:
+                    if token_value not in self.brands:
                         return self.failure("Invalid brand")
                 elif token_identifier == 'ignore_odm':
-                    if token_value.lower() not in self.odms:
+                    if token_value not in self.odms:
                         return self.failure("Invalid ODM")
                 elif token_identifier == 'ip':
-                    if token_value.lower() not in self.ips:
+                    if token_value not in self.ips:
                         return self.failure("Invalid IP")
                 elif token_identifier == 'odm':
-                    if token_value.lower() not in self.odms:
+                    if token_value not in self.odms:
                         return self.failure("Invalid ODM")
                 elif token_identifier == 'serial':
-                    if token_value.lower() not in ['no', 'unknown', 'yes']:
+                    if token_value not in ['no', 'unknown', 'yes']:
                         return self.failure("Invalid serial port information")
                 elif token_identifier == 'year':
                     try:
@@ -166,14 +175,43 @@ class BrandTree(Tree):
         super().__init__(*args, **kwargs)
         self.brands_to_devices = brands_to_devices
 
-    def build_tree(self, **kwargs):
+    def build_initial_tree(self):
         # build the brand_tree.
+        self.reset("DeviceCode brand results")
+        for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
+            # add each brand as a node. Then add each model as a leaf.
+            node = self.root.add(brand)
+            node_leaves = 0
+
+            # recurse into the device and add nodes for devices
+            for model in sorted(self.brands_to_devices[brand], key=lambda x: x['model']):
+                labels = set()
+                for f in model['data']['flags']:
+                    if "voip" in f.lower() or 'phone' in f.lower():
+                        labels.add(":phone:")
+                for d in model['data']['device_types']:
+                    if "voip" in d.lower() or 'phone' in d.lower():
+                        labels.add(":phone:")
+                if 'linux' in model['data']['software']['os'].lower():
+                    labels.add(":penguin:")
+                if 'android' in model['data']['software']['os'].lower():
+                    labels.add(":robot:")
+
+                if labels:
+                    node.add_leaf(f"{model['model']}  {''.join(sorted(labels))}", data=model['data'])
+                else:
+                    node.add_leaf(f"{model['model']}", data=model['data'])
+                node_leaves += 1
+            node.label = f"{node.label} ({node_leaves})"
+
+    def build_tree(self, **kwargs):
         self.reset("DeviceCode brand results")
 
         # Optional filters with data that should
         # be displayed or ignored.
         bootloaders = kwargs.get('bootloaders', [])
         brands = kwargs.get('brands', [])
+        chips = kwargs.get('chips', [])
         chip_vendors = kwargs.get('chip_vendors', [])
         connectors = kwargs.get('connectors', set())
         flags = kwargs.get('flags', [])
@@ -186,8 +224,8 @@ class BrandTree(Tree):
         years = kwargs.get('years', [])
 
         expand = False
-        if bootloaders or brands or chip_vendors or connectors or flags or ignore_brands or \
-            ignore_odms or ips or odms or passwords or serials or years:
+        if bootloaders or brands or chips or chip_vendors or connectors or flags or \
+            ignore_brands or ignore_odms or ips or odms or passwords or serials or years:
             expand = True
 
         for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
@@ -203,6 +241,7 @@ class BrandTree(Tree):
             # devices, after filtering
             node_leaves = 0
             for model in sorted(self.brands_to_devices[brand], key=lambda x: x['model']):
+                labels = set()
                 if odms:
                     if model['data']['manufacturer']['name'].lower() not in odms:
                         continue
@@ -239,18 +278,44 @@ class BrandTree(Tree):
                         declared_years.append(int(model['data']['regulatory']['wifi_certified_date'][:4]))
                     if not set(years).intersection(declared_years):
                         continue
+
+                if chips:
+                    show_node = False
+                    for cpu in model['data']['cpus']:
+                        if cpu['model'].lower() in chips:
+                            show_node = True
+                            break
+                    if not show_node:
+                        continue
+
                 if chip_vendors:
-                    cpu_found = False
+                    show_node = False
                     for cpu in model['data']['cpus']:
                         if cpu['manufacturer'].lower() in chip_vendors:
-                            cpu_found = True
+                            show_node = True
                             break
-                    if cpu_found:
-                        node.add_leaf(model['model'], data=model['data'])
-                        node_leaves += 1
+                    if not show_node:
+                        continue
+
+                # add labels
+                for f in model['data']['flags']:
+                    if "voip" in f.lower() or 'phone' in f.lower():
+                        labels.add(":phone:")
+
+                for d in model['data']['device_types']:
+                    if "voip" in d.lower() or 'phone' in d.lower():
+                        labels.add(":phone:")
+
+                if 'linux' in model['data']['software']['os'].lower():
+                    labels.add(":penguin:")
+                if 'android' in model['data']['software']['os'].lower():
+                    labels.add(":robot:")
+
+                if labels:
+                    node.add_leaf(f"{model['model']}  {''.join(sorted(labels))}", data=model['data'])
                 else:
-                    node.add_leaf(model['model'], data=model['data'])
-                    node_leaves += 1
+                    node.add_leaf(f"{model['model']}", data=model['data'])
+                node_leaves += 1
 
             # check if there are any valid leaf nodes.
             # If not, remove the brand node
@@ -272,6 +337,7 @@ class OdmTree(Tree):
         # be displayed or ignored.
         bootloaders = kwargs.get('bootloaders', [])
         brands = kwargs.get('brands', [])
+        chips = kwargs.get('chips', [])
         chip_vendors = kwargs.get('chip_vendors', [])
         connectors = kwargs.get('connectors', set())
         flags = kwargs.get('flags', [])
@@ -284,8 +350,8 @@ class OdmTree(Tree):
         years = kwargs.get('years', [])
 
         expand = False
-        if bootloaders or brands or chip_vendors or connectors or flags or ignore_brands or \
-            ignore_odms or ips or odms or passwords or serials or years:
+        if bootloaders or brands or chips or chip_vendors or connectors or flags or \
+            ignore_brands or ignore_odms or ips or odms or passwords or serials or years:
             expand = True
 
         # add each manufacturer as a node. Then add each brand as a subtree
@@ -310,6 +376,7 @@ class OdmTree(Tree):
                 brand_node = node.add(brand)
                 brand_node_leaves = 0
                 for model in sorted(self.odm_to_devices[odm][brand], key=lambda x: x['model']):
+                    labels = set()
                     if flags:
                         if not set(map(lambda x: x.lower(), model['data']['flags'])).intersection(flags):
                             continue
@@ -340,20 +407,45 @@ class OdmTree(Tree):
                             declared_years.append(int(model['data']['regulatory']['wifi_certified_date'][:4]))
                         if not set(years).intersection(declared_years):
                             continue
+
+                    if chips:
+                        show_node = False
+                        for cpu in model['data']['cpus']:
+                            if cpu['model'].lower() in chips:
+                                show_node = True
+                                break
+                        if not show_node:
+                            continue
+
                     if chip_vendors:
-                        cpu_found = False
+                        show_node = False
                         for cpu in model['data']['cpus']:
                             if cpu['manufacturer'].lower() in chip_vendors:
-                                cpu_found = True
+                                show_node = True
                                 break
-                        if cpu_found:
-                            brand_node.add_leaf(model['model'], data=model['data'])
-                            brand_node_leaves += 1
-                            node_leaves += 1
+                        if not show_node:
+                            continue
+
+                    for f in model['data']['flags']:
+                        if "voip" in f.lower() or 'phone' in f.lower():
+                            labels.add(":phone:")
+
+                    for d in model['data']['device_types']:
+                        if "voip" in d.lower() or 'phone' in d.lower():
+                            labels.add(":phone:")
+
+                    if 'linux' in model['data']['software']['os'].lower():
+                        labels.add(":penguin:")
+                    if 'android' in model['data']['software']['os'].lower():
+                        labels.add(":robot:")
+
+                    # default case
+                    if labels:
+                        brand_node.add_leaf(f"{model['model']}  {''.join(sorted(labels))}", data=model['data'])
                     else:
-                        brand_node.add_leaf(model['model'], data=model['data'])
-                        brand_node_leaves += 1
-                        node_leaves += 1
+                        brand_node.add_leaf(f"{model['model']}", data=model['data'])
+                    brand_node_leaves += 1
+                    node_leaves += 1
 
                 # check if there are any valid leaf nodes.
                 # If not, remove the brand node
@@ -383,15 +475,34 @@ class DevicecodeUI(App):
         self.devicecode_directory = devicecode_dir
 
     def compose(self) -> ComposeResult:
-        # store a mapping of brands to devices
+        # mapping of brands to devices
         brands_to_devices = {}
+
+        # mapping of odms to devices
         odm_to_devices = {}
+
+        # known bootloaders
         bootloaders = set()
+
+        # known brands
         brands = set()
+
+        # known chips
+        chips = set()
+
+        # known chip vendors
         chip_vendors = set()
+
+        # known serial/JTAG connectors
         connectors = set()
+
+        # known ODMS
         odms = set()
+
+        # known flags
         flags = set()
+
+        # known default IP addresses
         ips = set()
 
         self.devices = []
@@ -453,31 +564,37 @@ class DevicecodeUI(App):
             for cpu in device['cpus']:
                 cpu_vendor_name = cpu['manufacturer']
                 chip_vendors.add(cpu_vendor_name.lower())
+                if cpu['model'] != '':
+                    chips.add(cpu['model'].lower())
                 brand_cpu.append((brand_name, cpu_vendor_name))
                 odm_cpu.append((manufacturer_name, cpu_vendor_name))
                 if device['serial']['connector'] != '':
                     chip_connector.append((cpu_vendor_name, device['serial']['connector']))
 
+            for chip in device['network']['chips']:
+                chip_vendor_name = chip['manufacturer']
+                chip_vendors.add(chip_vendor_name.lower())
+
+                if chip['model'] != '':
+                    chips.add(chip['model'].lower())
+
+            for chip in device['flash']:
+                chip_vendor_name = chip['manufacturer']
+                chip_vendors.add(chip_vendor_name.lower())
+
+                if chip['model'] != '':
+                    chips.add(chip['model'].lower())
+
             brand_odm.append((brand_name, manufacturer_name))
 
             flags.update([x.casefold() for x in device['flags']])
 
+        # build the various datatables.
         brand_odm_datatable_data = collections.Counter(brand_odm)
         brand_cpu_datatable_data = collections.Counter(brand_cpu)
         odm_cpu_datatable_data = collections.Counter(odm_cpu)
         odm_connector_data = collections.Counter(odm_connector)
         chip_connector_data = collections.Counter(chip_connector)
-
-        # build the various trees.
-        self.brand_tree: BrandTree[dict] = BrandTree(brands_to_devices, "DeviceCode brand results")
-        self.brand_tree.show_root = False
-        self.brand_tree.root.expand()
-        self.brand_tree.build_tree()
-
-        self.odm_tree: OdmTree[dict] = OdmTree(odm_to_devices, "DeviceCode ODM results")
-        self.odm_tree.show_root = False
-        self.odm_tree.root.expand()
-        self.odm_tree.build_tree()
 
         self.brand_odm_data_table: DataTable() = DataTable()
         self.brand_odm_data_table.add_columns("rank", "count", "brand", "ODM")
@@ -519,6 +636,18 @@ class DevicecodeUI(App):
             rank += 1
         self.chip_connector_data_table.fixed_columns = 1
 
+        # build the various trees.
+        self.brand_tree: BrandTree[dict] = BrandTree(brands_to_devices, "DeviceCode brand results")
+        self.brand_tree.show_root = False
+        self.brand_tree.root.expand()
+        self.brand_tree.build_tree()
+        #self.brand_tree.build_initial_tree()
+
+        self.odm_tree: OdmTree[dict] = OdmTree(odm_to_devices, "DeviceCode ODM results")
+        self.odm_tree.show_root = False
+        self.odm_tree.root.expand()
+        self.odm_tree.build_tree()
+
         # Create a table with the results. The root element will
         # not have any associated data with it.
         self.device_data_area = Markdown()
@@ -537,9 +666,10 @@ class DevicecodeUI(App):
         with Container(id='app-grid'):
             with Container(id='left-grid'):
                 yield Input(placeholder='Filter',
-                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands, odms=odms, chip_vendors=chip_vendors, connectors=connectors, ips=ips, token_identifiers=self.TOKEN_IDENTIFIERS)],
+                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips, chip_vendors=chip_vendors, connectors=connectors, ips=ips, token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
-                            bootloaders=sorted(bootloaders), brands=sorted(brands), chip_vendors=sorted(chip_vendors),
+                            bootloaders=sorted(bootloaders), brands=sorted(brands),
+                            chips=sorted(chips), chip_vendors=sorted(chip_vendors),
                             connectors=sorted(connectors), odms=sorted(odms),
                             flags=sorted(flags)), valid_empty=True)
                 with TabbedContent():
@@ -547,19 +677,19 @@ class DevicecodeUI(App):
                         yield self.brand_tree
                     with TabPane('ODM view'):
                         yield self.odm_tree
-                    with TabPane('Brand/ODM table'):
+                    with TabPane('Brand/ODM'):
                         with VerticalScroll():
                             yield self.brand_odm_data_table
-                    with TabPane('Brand/CPU table'):
+                    with TabPane('Brand/CPU vendor'):
                         with VerticalScroll():
                             yield self.brand_cpu_data_table
-                    with TabPane('ODM/CPU table'):
+                    with TabPane('ODM/CPU vendor'):
                         with VerticalScroll():
                             yield self.odm_cpu_data_table
-                    with TabPane('ODM/connector table'):
+                    with TabPane('ODM/connector'):
                         with VerticalScroll():
                             yield self.odm_connector_data_table
-                    with TabPane('CPU/connector table'):
+                    with TabPane('CPU vendor/connector'):
                         with VerticalScroll():
                             yield self.chip_connector_data_table
             with TabbedContent(id='result-tabs'):
@@ -596,68 +726,75 @@ class DevicecodeUI(App):
     @on(Input.Submitted)
     def process_filter(self, event: Input.Submitted) -> None:
         '''Process the filter, create new tree'''
-        if event.validation_result is None:
-            self.brand_tree.build_tree()
-            self.odm_tree.build_tree()
-        else:
+        bootloaders = []
+        brands = []
+        chips = []
+        chip_vendors = []
+        connectors = set()
+        flags = []
+        ignore_brands = []
+        ignore_odms = []
+        ips = []
+        odms = []
+        passwords = []
+        serials = []
+        years = []
+
+        if event.validation_result is not None:
             if event.validation_result.is_valid:
                 # input was already syntactically validated.
-                tokens = shlex.split(event.value)
-
-                bootloaders = []
-                brands = []
-                chips = []
-                chip_vendors = []
-                connectors = set()
-                flags = []
-                ignore_brands = []
-                ignore_odms = []
-                ips = []
-                odms = []
-                passwords = []
-                serials = []
-                years = []
+                tokens = shlex.split(event.value.lower())
 
                 for t in tokens:
                     identifier, value = t.split('=', maxsplit=1)
                     if identifier == 'bootloader':
-                        bootloaders.append(value.lower())
+                        bootloaders.append(value)
                     elif identifier == 'brand':
-                        brands.append(value.lower())
+                        brands.append(value)
                     elif identifier == 'chip':
-                        chips.append(value.lower())
+                        chips.append(value)
                     elif identifier == 'chip_vendor':
-                        chip_vendors.append(value.lower())
+                        chip_vendors.append(value)
                     elif identifier == 'connector':
-                        connectors.add(value.lower())
+                        connectors.add(value)
                     elif identifier == 'flag':
-                        flags.append(value.lower())
+                        flags.append(value)
                     elif identifier == 'ignore_brand':
-                        ignore_brands.append(value.lower())
+                        ignore_brands.append(value)
                     elif identifier == 'ignore_odm':
-                        ignore_odms.append(value.lower())
+                        ignore_odms.append(value)
                     elif identifier == 'ip':
-                        ips.append(value.lower())
+                        ips.append(value)
                     elif identifier == 'odm':
-                        odms.append(value.lower())
+                        odms.append(value)
                     elif identifier == 'password':
-                        passwords.append(value.lower())
+                        passwords.append(value)
                     elif identifier == 'serial':
-                        serials.append(value.lower())
+                        serials.append(value)
                     elif identifier == 'year':
                         years.append(int(value))
 
-                self.brand_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
-                                           chip_vendors=chip_vendors, connectors=connectors, flags=flags,
-                                           ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
-                                           passwords=passwords, serials=serials, years=years)
-                self.odm_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
-                                         chip_vendors=chip_vendors, connectors=connectors, flags=flags,
-                                         ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
-                                         passwords=passwords, serials=serials, years=years)
+        self.brand_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
+                                   chip_vendors=chip_vendors, connectors=connectors, flags=flags,
+                                   ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
+                                   passwords=passwords, serials=serials, years=years)
+        self.odm_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
+                                 chip_vendors=chip_vendors, connectors=connectors, flags=flags,
+                                 ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
+                                 passwords=passwords, serials=serials, years=years)
+
+        # reset the data areas to prevent old data being displayed
+        self.device_data_area.update('')
+        self.regulatory_data_area.update('')
+        self.model_data_area.update('')
+        self.network_data_area.update("")
+        self.serial_area.update('')
+        self.software_area.update('')
+        self.chips_area.update('')
+        self.power_area.update('')
 
     def on_markdown_link_clicked(self, event: Markdown.LinkClicked) -> None:
-        if event.href.startswith('https://'):
+        if event.href.startswith('http://') or event.href.startswith('https://'):
             webbrowser.open(event.href)
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
@@ -676,7 +813,7 @@ class DevicecodeUI(App):
                 self.serial_area.update('')
             self.software_area.update(self.build_software_report(event.node.data['software']))
             self.chips_area.update(self.build_chips_report(event.node.data))
-            self.power_area.update('')
+            self.power_area.update(self.build_power_report(event.node.data))
         else:
             self.device_data_area.update('')
             self.regulatory_data_area.update('')
@@ -752,8 +889,9 @@ class DevicecodeUI(App):
         return "No known chips"
 
     def build_regulatory_report(self, result):
+        new_markdown = ""
         if result:
-            new_markdown = "# Regulatory\n"
+            new_markdown += "# Regulatory\n"
             new_markdown += "| | |\n|--|--|\n"
             new_markdown += f"|**FCC date** | {result['regulatory']['fcc_date']}\n"
             fcc_ids = ''
@@ -782,7 +920,7 @@ class DevicecodeUI(App):
             new_markdown += f"|**Newegg item number** | {neweggs}\n"
             new_markdown += f"|**Deal Extreme item number** | {result['commercial']['deal_extreme']}\n"
 
-            return new_markdown
+        return new_markdown
 
     def build_serial_report(self, result):
         if result:
@@ -803,13 +941,13 @@ class DevicecodeUI(App):
             else:
                 new_markdown += "|**Voltage** |\n"
             return new_markdown
-        else:
-            return "No serial information"
+        return "No serial information"
 
     def build_software_report(self, result):
+        new_markdown = ""
         if result:
             # bootloader
-            new_markdown = "# Bootloader\n"
+            new_markdown += "# Bootloader\n"
             new_markdown += "| | |\n|--|--|\n"
             new_markdown += f"|**Name** |{ result['bootloader']['manufacturer']}\n"
             new_markdown += f"|**Version** |{ result['bootloader']['version']}\n"
@@ -828,11 +966,12 @@ class DevicecodeUI(App):
             #new_markdown += f"|**Gargoyle** |{ result['gargoyle']}\n"
             #new_markdown += f"|**OpenWrt** |{ result['openwrt']}\n"
             #new_markdown += f"|**Tomato** |{ result['tomato']}\n"
-            return new_markdown
+        return new_markdown
 
     def build_model_report(self, result):
+        new_markdown = ""
         if result:
-            new_markdown = "# Model information\n"
+            new_markdown += "# Model information\n"
             new_markdown += "| | |\n|--|--|\n"
             new_markdown += f"|**Model** | {result['model']['model']}\n"
             new_markdown += f"|**Part number** |{ result['model']['part_number']}\n"
@@ -849,11 +988,12 @@ class DevicecodeUI(App):
             new_markdown += f"|**Country** | {result['manufacturer']['country']}\n"
             new_markdown += f"|**Model** | {result['manufacturer']['model']}\n"
             new_markdown += f"|**Revision** | {result['manufacturer']['revision']}\n"
-            return new_markdown
+        return new_markdown
 
     def build_network_report(self, result):
+        new_markdown = ''
         if result:
-            new_markdown = "# Network information\n"
+            new_markdown += "# Network information\n"
             new_markdown += "| | |\n|--|--|\n"
             new_markdown += f"|**DOCSIS version** | {result['docsis_version']}\n"
             new_markdown += f"|**LAN ports** | {result['lan_ports']}\n"
@@ -870,9 +1010,17 @@ class DevicecodeUI(App):
                     new_markdown += f"| **Model** | {r['model']}|\n"
                     #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
                     new_markdown += "| | |\n"
-            return new_markdown
+        return new_markdown
+
+    def build_power_report(self, result):
+        new_markdown = ''
+        if result:
+            new_markdown += "# Power information\n"
+            new_markdown += "| | |\n|--|--|\n"
+        return new_markdown
 
     def build_device_report(self, result):
+        new_markdown = ""
         if result:
             new_markdown = "| | |\n|--|--|\n"
             new_markdown += f"|**Title** | {result['title']}\n"
@@ -913,9 +1061,9 @@ class DevicecodeUI(App):
             new_markdown += f"|**Password comment** | {result['defaults']['password_comment']}\n"
 
             # Misc
-            new_markdown += f"|**Data** | {result}\n"
+            #new_markdown += f"|**Data** | {result}\n"
             new_markdown += f"|**Data origin** | {result['wiki_type']}\n"
-            return new_markdown
+        return new_markdown
 
 @click.command(short_help='Interactive DeviceCode result browser')
 @click.option('--directory', '-d', 'devicecode_directory',
