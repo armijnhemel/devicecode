@@ -185,20 +185,8 @@ class BrandTree(Tree):
 
             # recurse into the device and add nodes for devices
             for model in sorted(self.brands_to_devices[brand], key=lambda x: x['model']):
-                labels = set()
-                for f in model['data']['flags']:
-                    if "voip" in f.lower() or 'telephone' in f.lower() or " phone" in f.lower():
-                        labels.add(":phone:")
-                for d in model['data']['device_types']:
-                    if "voip" in d.lower() or 'telephone' in d.lower() or " phone" in d.lower():
-                        labels.add(":phone:")
-                if 'linux' in model['data']['software']['os'].lower():
-                    labels.add(":penguin:")
-                if 'android' in model['data']['software']['os'].lower():
-                    labels.add(":robot:")
-
-                if labels:
-                    node.add_leaf(f"{model['model']}  {''.join(sorted(labels))}", data=model['data'])
+                if model['labels']:
+                    node.add_leaf(f"{model['model']}  {''.join(model['labels'])}", data=model['data'])
                 else:
                     node.add_leaf(f"{model['model']}", data=model['data'])
                 node_leaves += 1
@@ -241,7 +229,6 @@ class BrandTree(Tree):
             # devices, after filtering
             node_leaves = 0
             for model in sorted(self.brands_to_devices[brand], key=lambda x: x['model']):
-                labels = set()
                 if odms:
                     if model['data']['manufacturer']['name'].lower() not in odms:
                         continue
@@ -297,22 +284,8 @@ class BrandTree(Tree):
                     if not show_node:
                         continue
 
-                # add labels
-                for f in model['data']['flags']:
-                    if "voip" in f.lower() or 'telephone' in f.lower() or " phone" in f.lower():
-                        labels.add(":phone:")
-
-                for d in model['data']['device_types']:
-                    if "voip" in d.lower() or 'telephone' in d.lower() or " phone" in d.lower():
-                        labels.add(":phone:")
-
-                if 'linux' in model['data']['software']['os'].lower():
-                    labels.add(":penguin:")
-                if 'android' in model['data']['software']['os'].lower():
-                    labels.add(":robot:")
-
-                if labels:
-                    node.add_leaf(f"{model['model']}  {''.join(sorted(labels))}", data=model['data'])
+                if model['labels']:
+                    node.add_leaf(f"{model['model']}  {''.join(model['labels'])}", data=model['data'])
                 else:
                     node.add_leaf(f"{model['model']}", data=model['data'])
                 node_leaves += 1
@@ -376,7 +349,6 @@ class OdmTree(Tree):
                 brand_node = node.add(brand)
                 brand_node_leaves = 0
                 for model in sorted(self.odm_to_devices[odm][brand], key=lambda x: x['model']):
-                    labels = set()
                     if flags:
                         if not set(map(lambda x: x.lower(), model['data']['flags'])).intersection(flags):
                             continue
@@ -426,22 +398,9 @@ class OdmTree(Tree):
                         if not show_node:
                             continue
 
-                    for f in model['data']['flags']:
-                        if "voip" in f.lower() or 'telephone' in f.lower() or " phone" in f.lower():
-                            labels.add(":phone:")
-
-                    for d in model['data']['device_types']:
-                        if "voip" in d.lower() or 'telephone' in d.lower() or " phone" in d.lower():
-                            labels.add(":phone:")
-
-                    if 'linux' in model['data']['software']['os'].lower():
-                        labels.add(":penguin:")
-                    if 'android' in model['data']['software']['os'].lower():
-                        labels.add(":robot:")
-
                     # default case
-                    if labels:
-                        brand_node.add_leaf(f"{model['model']}  {''.join(sorted(labels))}", data=model['data'])
+                    if model['labels']:
+                        brand_node.add_leaf(f"{model['model']}  {''.join(model['labels'])}", data=model['data'])
                     else:
                         brand_node.add_leaf(f"{model['model']}", data=model['data'])
                     brand_node_leaves += 1
@@ -538,7 +497,21 @@ class DevicecodeUI(App):
             if device['model']['subrevision'] != '':
                 model += " "
                 model += device['model']['subrevision']
-            brands_to_devices[brand_name].append({'model': model, 'data': device})
+
+            # determine the labels
+            labels = set()
+            for f in device['flags']:
+                if "voip" in f.lower() or 'telephone' in f.lower() or " phone" in f.lower():
+                    labels.add(":phone:")
+            for d in device['device_types']:
+                if "voip" in d.lower() or 'telephone' in d.lower() or " phone" in d.lower():
+                    labels.add(":phone:")
+            if 'linux' in device['software']['os'].lower():
+                labels.add(":penguin:")
+            if 'android' in device['software']['os'].lower():
+                labels.add(":robot:")
+
+            brands_to_devices[brand_name].append({'model': model, 'data': device, 'labels': sorted(labels)})
             brands.add(brand_name.lower())
 
             manufacturer_name = device['manufacturer']['name']
@@ -548,7 +521,7 @@ class DevicecodeUI(App):
                 odm_to_devices[manufacturer_name] = {}
             if brand_name not in odm_to_devices[manufacturer_name]:
                 odm_to_devices[manufacturer_name][brand_name] = []
-            odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device})
+            odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device, 'labels': sorted(labels)})
             odms.add(manufacturer_name.lower())
 
             if device['defaults']['ip'] != '':
