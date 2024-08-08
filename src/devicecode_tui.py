@@ -594,19 +594,19 @@ class DevicecodeUI(App):
                         yield self.brand_tree
                     with TabPane('ODM view'):
                         yield self.odm_tree
-                    with TabPane('Brand/ODM table'):
+                    with TabPane('Brand/ODM'):
                         with VerticalScroll():
                             yield self.brand_odm_data_table
-                    with TabPane('Brand/CPU table'):
+                    with TabPane('Brand/CPU vendor'):
                         with VerticalScroll():
                             yield self.brand_cpu_data_table
-                    with TabPane('ODM/CPU table'):
+                    with TabPane('ODM/CPU vendor'):
                         with VerticalScroll():
                             yield self.odm_cpu_data_table
-                    with TabPane('ODM/connector table'):
+                    with TabPane('ODM/connector'):
                         with VerticalScroll():
                             yield self.odm_connector_data_table
-                    with TabPane('CPU/connector table'):
+                    with TabPane('CPU vendor/connector'):
                         with VerticalScroll():
                             yield self.chip_connector_data_table
             with TabbedContent(id='result-tabs'):
@@ -960,7 +960,7 @@ class DevicecodeUI(App):
             new_markdown += f"|**Password comment** | {result['defaults']['password_comment']}\n"
 
             # Misc
-            new_markdown += f"|**Data** | {result}\n"
+            #new_markdown += f"|**Data** | {result}\n"
             new_markdown += f"|**Data origin** | {result['wiki_type']}\n"
             return new_markdown
 
