@@ -503,6 +503,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                         device = Device()
                         device.title = title
                         device.wiki_type = wiki_type
+                        have_valid_data = False
 
                         # grab the wiki text and parse it. This data
                         # is in the <text> element
@@ -678,6 +679,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                     # contains the identifier and '=', followed by a
                                     # value. Subsequent lines are values belonging to
                                     # the same identifier.
+                                    have_valid_data = True
 
                                     if wiki_type == 'TechInfoDepot':
                                         # First walk the params to see how many ASINs,
@@ -786,10 +788,11 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                 elif identifier == 'series':
                                                     device.model.series = value
                                                 elif identifier == 'type':
-                                                    device_types = list(map(lambda x: x.strip(), value.split(',')))
-                                                    device.device_types= device_types
+                                                    value = value.replace('outdppr', 'outdoor')
+                                                    device_types = [x.strip() for x in value.split(',') if x.strip() != '']
+                                                    device.device_types = device_types
                                                 elif identifier == 'flags':
-                                                    device.flags = sorted(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
+                                                    device.flags = sorted([x.strip() for x in value.split(',') if x.strip() != ''])
                                                 elif identifier in ['boardid', 'pcb_id']:
                                                     if '<!--' in value:
                                                         continue
@@ -802,6 +805,8 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     device.commercial.availability = value
                                                 elif identifier in ['estreldate', 'est_release_date', 'est_reoease_date']:
                                                     device.commercial.release_date = parse_date(value)
+                                                elif identifier == 'dx_sku':
+                                                    device.commercial.deal_extreme = value
                                                 elif identifier in ['newegg', 'neweyg']:
                                                     eggs = value.split(',')
                                                     for egg in eggs:
@@ -1226,7 +1231,9 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                             device.network.docsis_version = value
                                                     elif identifier in ['eth1chip', 'eth2chip', 'eth3chip',
                                                                         'eth4chip', 'eth5chip', 'eth6chip']:
-                                                        device.network.chips.append(parse_chip(value))
+                                                        chip_result = parse_chip(value)
+                                                        if chip_result is not None:
+                                                            device.network.chips.append(chip_result)
 
                                                     # various OUI
                                                     elif identifier in ['rad1oui', 'rad2oui',
@@ -1350,6 +1357,9 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                 pass
                             else:
                                 pass
+
+                        if not have_valid_data:
+                            continue
 
                         # Write to a Git repository to keep some history
                         # use the title as part of the file name as it is unique
