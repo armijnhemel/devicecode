@@ -249,18 +249,27 @@ class BrandTree(Tree):
                         declared_years.append(int(model['data']['regulatory']['wifi_certified_date'][:4]))
                     if not set(years).intersection(declared_years):
                         continue
+
+                if chips:
+                    show_node = False
+                    for cpu in model['data']['cpus']:
+                        if cpu['model'].lower() in chips:
+                            show_node = True
+                            break
+                    if not show_node:
+                        continue
+
                 if chip_vendors:
-                    cpu_found = False
+                    show_node = False
                     for cpu in model['data']['cpus']:
                         if cpu['manufacturer'].lower() in chip_vendors:
-                            cpu_found = True
+                            show_node = True
                             break
-                    if cpu_found:
-                        node.add_leaf(model['model'], data=model['data'])
-                        node_leaves += 1
-                else:
-                    node.add_leaf(model['model'], data=model['data'])
-                    node_leaves += 1
+                    if not show_node:
+                        continue
+
+                node.add_leaf(model['model'], data=model['data'])
+                node_leaves += 1
 
             # check if there are any valid leaf nodes.
             # If not, remove the brand node
@@ -351,20 +360,29 @@ class OdmTree(Tree):
                             declared_years.append(int(model['data']['regulatory']['wifi_certified_date'][:4]))
                         if not set(years).intersection(declared_years):
                             continue
+
+                    if chips:
+                        show_node = False
+                        for cpu in model['data']['cpus']:
+                            if cpu['model'].lower() in chips:
+                                show_node = True
+                                break
+                        if not show_node:
+                            continue
+
                     if chip_vendors:
-                        cpu_found = False
+                        show_node = False
                         for cpu in model['data']['cpus']:
                             if cpu['manufacturer'].lower() in chip_vendors:
-                                cpu_found = True
+                                show_node = True
                                 break
-                        if cpu_found:
-                            brand_node.add_leaf(model['model'], data=model['data'])
-                            brand_node_leaves += 1
-                            node_leaves += 1
-                    else:
-                        brand_node.add_leaf(model['model'], data=model['data'])
-                        brand_node_leaves += 1
-                        node_leaves += 1
+                        if not show_node:
+                            continue
+
+                    # default case
+                    brand_node.add_leaf(model['model'], data=model['data'])
+                    brand_node_leaves += 1
+                    node_leaves += 1
 
                 # check if there are any valid leaf nodes.
                 # If not, remove the brand node
