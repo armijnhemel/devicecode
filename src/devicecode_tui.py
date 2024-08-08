@@ -129,7 +129,7 @@ class FilterValidator(Validator):
                     return self.failure("Invalid identifier")
                 if token_value == '':
                     return self.failure("Invalid identifier")
-                elif token_identifier == 'bootloader':
+                if token_identifier == 'bootloader':
                     if token_value.lower() not in self.bootloaders:
                         return self.failure("Invalid bootloader")
                 elif token_identifier == 'brand':
@@ -847,8 +847,7 @@ class DevicecodeUI(App):
             else:
                 new_markdown += "|**Voltage** |\n"
             return new_markdown
-        else:
-            return "No serial information"
+        return "No serial information"
 
     def build_software_report(self, result):
         if result:
