@@ -729,6 +729,15 @@ class DevicecodeUI(App):
                                  ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
                                  passwords=passwords, serials=serials, years=years)
 
+        self.device_data_area.update('')
+        self.regulatory_data_area.update('')
+        self.model_data_area.update('')
+        self.network_data_area.update("")
+        self.serial_area.update('')
+        self.software_area.update('')
+        self.chips_area.update('')
+        self.power_area.update('')
+
     def on_markdown_link_clicked(self, event: Markdown.LinkClicked) -> None:
         if event.href.startswith('http://') or event.href.startswith('https://'):
             webbrowser.open(event.href)
