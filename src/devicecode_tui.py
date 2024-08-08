@@ -116,7 +116,7 @@ class FilterValidator(Validator):
     def validate(self, value: str) -> ValidationResult:
         try:
             # split the value into tokens
-            tokens = shlex.split(value)
+            tokens = shlex.split(value.lower())
             if not tokens:
                 return self.failure("Empty string")
 
@@ -130,34 +130,34 @@ class FilterValidator(Validator):
                 if token_value == '':
                     return self.failure("Invalid identifier")
                 if token_identifier == 'bootloader':
-                    if token_value.lower() not in self.bootloaders:
+                    if token_value not in self.bootloaders:
                         return self.failure("Invalid bootloader")
                 elif token_identifier == 'brand':
-                    if token_value.lower() not in self.brands:
+                    if token_value not in self.brands:
                         return self.failure("Invalid brand")
                 elif token_identifier == 'chip':
-                    if token_value.lower() not in self.chips:
+                    if token_value not in self.chips:
                         return self.failure("Invalid chip")
                 elif token_identifier == 'chip_vendor':
-                    if token_value.lower() not in self.chip_vendors:
+                    if token_value not in self.chip_vendors:
                         return self.failure("Invalid chip vendor")
                 elif token_identifier == 'connector':
-                    if token_value.lower() not in self.connectors:
+                    if token_value not in self.connectors:
                         return self.failure("Invalid connector")
                 elif token_identifier == 'ignore_brand':
-                    if token_value.lower() not in self.brands:
+                    if token_value not in self.brands:
                         return self.failure("Invalid brand")
                 elif token_identifier == 'ignore_odm':
-                    if token_value.lower() not in self.odms:
+                    if token_value not in self.odms:
                         return self.failure("Invalid ODM")
                 elif token_identifier == 'ip':
-                    if token_value.lower() not in self.ips:
+                    if token_value not in self.ips:
                         return self.failure("Invalid IP")
                 elif token_identifier == 'odm':
-                    if token_value.lower() not in self.odms:
+                    if token_value not in self.odms:
                         return self.failure("Invalid ODM")
                 elif token_identifier == 'serial':
-                    if token_value.lower() not in ['no', 'unknown', 'yes']:
+                    if token_value not in ['no', 'unknown', 'yes']:
                         return self.failure("Invalid serial port information")
                 elif token_identifier == 'year':
                     try:
@@ -689,34 +689,34 @@ class DevicecodeUI(App):
         if event.validation_result is not None:
             if event.validation_result.is_valid:
                 # input was already syntactically validated.
-                tokens = shlex.split(event.value)
+                tokens = shlex.split(event.value.lower())
 
                 for t in tokens:
                     identifier, value = t.split('=', maxsplit=1)
                     if identifier == 'bootloader':
-                        bootloaders.append(value.lower())
+                        bootloaders.append(value)
                     elif identifier == 'brand':
-                        brands.append(value.lower())
+                        brands.append(value)
                     elif identifier == 'chip':
-                        chips.append(value.lower())
+                        chips.append(value)
                     elif identifier == 'chip_vendor':
-                        chip_vendors.append(value.lower())
+                        chip_vendors.append(value)
                     elif identifier == 'connector':
-                        connectors.add(value.lower())
+                        connectors.add(value)
                     elif identifier == 'flag':
-                        flags.append(value.lower())
+                        flags.append(value)
                     elif identifier == 'ignore_brand':
-                        ignore_brands.append(value.lower())
+                        ignore_brands.append(value)
                     elif identifier == 'ignore_odm':
-                        ignore_odms.append(value.lower())
+                        ignore_odms.append(value)
                     elif identifier == 'ip':
-                        ips.append(value.lower())
+                        ips.append(value)
                     elif identifier == 'odm':
-                        odms.append(value.lower())
+                        odms.append(value)
                     elif identifier == 'password':
-                        passwords.append(value.lower())
+                        passwords.append(value)
                     elif identifier == 'serial':
-                        serials.append(value.lower())
+                        serials.append(value)
                     elif identifier == 'year':
                         years.append(int(value))
 
