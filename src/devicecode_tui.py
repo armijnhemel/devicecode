@@ -241,6 +241,10 @@ class BrandTree(Tree):
                 if flags:
                     if not set(map(lambda x: x.lower(), model['data']['flags'])).intersection(flags):
                         continue
+                for f in model['data']['flags']:
+                    if "voip" in f.lower() or 'phone' in f.lower():
+                        labels.add(":phone:")
+
                 if passwords:
                     if model['data']['defaults']['password'] not in passwords:
                         continue
@@ -357,6 +361,10 @@ class OdmTree(Tree):
                     if flags:
                         if not set(map(lambda x: x.lower(), model['data']['flags'])).intersection(flags):
                             continue
+                    for f in model['data']['flags']:
+                        if "voip" in f.lower() or 'phone' in f.lower():
+                            labels.add(":phone:")
+
                     if passwords:
                         if model['data']['defaults']['password'] not in passwords:
                             continue
