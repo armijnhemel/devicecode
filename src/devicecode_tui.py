@@ -412,16 +412,34 @@ class DevicecodeUI(App):
         self.devicecode_directory = devicecode_dir
 
     def compose(self) -> ComposeResult:
-        # store a mapping of brands to devices
+        # mapping of brands to devices
         brands_to_devices = {}
+
+        # mapping of odms to devices
         odm_to_devices = {}
+
+        # known bootloaders
         bootloaders = set()
+
+        # known brands
         brands = set()
+
+        # known chips
         chips = set()
+
+        # known chip vendors
         chip_vendors = set()
+
+        # known serial/JTAG connectors
         connectors = set()
+
+        # known ODMS
         odms = set()
+
+        # known flags
         flags = set()
+
+        # known default IP addresses
         ips = set()
 
         self.devices = []
@@ -508,22 +526,12 @@ class DevicecodeUI(App):
 
             flags.update([x.casefold() for x in device['flags']])
 
+        # build the various datatables.
         brand_odm_datatable_data = collections.Counter(brand_odm)
         brand_cpu_datatable_data = collections.Counter(brand_cpu)
         odm_cpu_datatable_data = collections.Counter(odm_cpu)
         odm_connector_data = collections.Counter(odm_connector)
         chip_connector_data = collections.Counter(chip_connector)
-
-        # build the various trees.
-        self.brand_tree: BrandTree[dict] = BrandTree(brands_to_devices, "DeviceCode brand results")
-        self.brand_tree.show_root = False
-        self.brand_tree.root.expand()
-        self.brand_tree.build_tree()
-
-        self.odm_tree: OdmTree[dict] = OdmTree(odm_to_devices, "DeviceCode ODM results")
-        self.odm_tree.show_root = False
-        self.odm_tree.root.expand()
-        self.odm_tree.build_tree()
 
         self.brand_odm_data_table: DataTable() = DataTable()
         self.brand_odm_data_table.add_columns("rank", "count", "brand", "ODM")
@@ -564,6 +572,17 @@ class DevicecodeUI(App):
             self.chip_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
             rank += 1
         self.chip_connector_data_table.fixed_columns = 1
+
+        # build the various trees.
+        self.brand_tree: BrandTree[dict] = BrandTree(brands_to_devices, "DeviceCode brand results")
+        self.brand_tree.show_root = False
+        self.brand_tree.root.expand()
+        self.brand_tree.build_tree()
+
+        self.odm_tree: OdmTree[dict] = OdmTree(odm_to_devices, "DeviceCode ODM results")
+        self.odm_tree.show_root = False
+        self.odm_tree.root.expand()
+        self.odm_tree.build_tree()
 
         # Create a table with the results. The root element will
         # not have any associated data with it.
