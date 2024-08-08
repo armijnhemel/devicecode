@@ -643,27 +643,24 @@ class DevicecodeUI(App):
     @on(Input.Submitted)
     def process_filter(self, event: Input.Submitted) -> None:
         '''Process the filter, create new tree'''
-        if event.validation_result is None:
-            self.brand_tree.build_tree()
-            self.odm_tree.build_tree()
-        else:
+        bootloaders = []
+        brands = []
+        chips = []
+        chip_vendors = []
+        connectors = set()
+        flags = []
+        ignore_brands = []
+        ignore_odms = []
+        ips = []
+        odms = []
+        passwords = []
+        serials = []
+        years = []
+
+        if event.validation_result is not None:
             if event.validation_result.is_valid:
                 # input was already syntactically validated.
                 tokens = shlex.split(event.value)
-
-                bootloaders = []
-                brands = []
-                chips = []
-                chip_vendors = []
-                connectors = set()
-                flags = []
-                ignore_brands = []
-                ignore_odms = []
-                ips = []
-                odms = []
-                passwords = []
-                serials = []
-                years = []
 
                 for t in tokens:
                     identifier, value = t.split('=', maxsplit=1)
@@ -694,14 +691,14 @@ class DevicecodeUI(App):
                     elif identifier == 'year':
                         years.append(int(value))
 
-                self.brand_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
-                                           chip_vendors=chip_vendors, connectors=connectors, flags=flags,
-                                           ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
-                                           passwords=passwords, serials=serials, years=years)
-                self.odm_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
-                                         chip_vendors=chip_vendors, connectors=connectors, flags=flags,
-                                         ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
-                                         passwords=passwords, serials=serials, years=years)
+        self.brand_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
+                                   chip_vendors=chip_vendors, connectors=connectors, flags=flags,
+                                   ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
+                                   passwords=passwords, serials=serials, years=years)
+        self.odm_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
+                                 chip_vendors=chip_vendors, connectors=connectors, flags=flags,
+                                 ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
+                                 passwords=passwords, serials=serials, years=years)
 
     def on_markdown_link_clicked(self, event: Markdown.LinkClicked) -> None:
         if event.href.startswith('http://') or event.href.startswith('https://'):
