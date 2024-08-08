@@ -190,7 +190,7 @@ class BrandTree(Tree):
                 else:
                     node.add_leaf(f"{model['model']}", data=model['data'])
                 node_leaves += 1
-            node.label = f"{node.label} ({node_leaves})"
+            node.label = f"{node.label}  ({node_leaves})"
 
     def build_tree(self, **kwargs):
         self.reset("DeviceCode brand results")
@@ -294,7 +294,7 @@ class BrandTree(Tree):
             # If not, remove the brand node
             if node_leaves == 0:
                 node.remove()
-            node.label = f"{node.label} ({node_leaves})"
+            node.label = f"{node.label}  ({node_leaves})"
 
 
 class OdmTree(Tree):
@@ -411,13 +411,13 @@ class OdmTree(Tree):
                 if brand_node_leaves == 0:
                     brand_node.remove()
                 else:
-                    brand_node.label = f"{brand_node.label} ({brand_node_leaves})"
+                    brand_node.label = f"{brand_node.label}  ({brand_node_leaves})"
 
             # check if there are any valid leaf nodes.
             # If not, remove the ODM node
             if node_leaves == 0:
                 node.remove()
-            node.label = f"{node.label} ({node_leaves})"
+            node.label = f"{node.label}  ({node_leaves})"
 
 class DevicecodeUI(App):
     BINDINGS = [
