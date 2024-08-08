@@ -187,10 +187,10 @@ class BrandTree(Tree):
             for model in sorted(self.brands_to_devices[brand], key=lambda x: x['model']):
                 labels = set()
                 for f in model['data']['flags']:
-                    if "voip" in f.lower() or 'phone' in f.lower():
+                    if "voip" in f.lower() or 'telephone' in f.lower() or " phone" in f.lower():
                         labels.add(":phone:")
                 for d in model['data']['device_types']:
-                    if "voip" in d.lower() or 'phone' in d.lower():
+                    if "voip" in d.lower() or 'telephone' in d.lower() or " phone" in d.lower():
                         labels.add(":phone:")
                 if 'linux' in model['data']['software']['os'].lower():
                     labels.add(":penguin:")
@@ -299,11 +299,11 @@ class BrandTree(Tree):
 
                 # add labels
                 for f in model['data']['flags']:
-                    if "voip" in f.lower() or 'phone' in f.lower():
+                    if "voip" in f.lower() or 'telephone' in f.lower() or " phone" in f.lower():
                         labels.add(":phone:")
 
                 for d in model['data']['device_types']:
-                    if "voip" in d.lower() or 'phone' in d.lower():
+                    if "voip" in d.lower() or 'telephone' in d.lower() or " phone" in d.lower():
                         labels.add(":phone:")
 
                 if 'linux' in model['data']['software']['os'].lower():
@@ -427,11 +427,11 @@ class OdmTree(Tree):
                             continue
 
                     for f in model['data']['flags']:
-                        if "voip" in f.lower() or 'phone' in f.lower():
+                        if "voip" in f.lower() or 'telephone' in f.lower() or " phone" in f.lower():
                             labels.add(":phone:")
 
                     for d in model['data']['device_types']:
-                        if "voip" in d.lower() or 'phone' in d.lower():
+                        if "voip" in d.lower() or 'telephone' in d.lower() or " phone" in d.lower():
                             labels.add(":phone:")
 
                     if 'linux' in model['data']['software']['os'].lower():
