@@ -103,7 +103,7 @@ class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
 
     def __init__(self, **kwargs):
-        # Known values: only these will be seen as valid.
+        # Known values: only these will be regarded as valid.
         self.bootloaders = kwargs.get('bootloaders', set())
         self.brands = kwargs.get('brands', set())
         self.odms = kwargs.get('odms', set())
@@ -815,8 +815,9 @@ class DevicecodeUI(App):
         return "No known chips"
 
     def build_regulatory_report(self, result):
+        new_markdown = ""
         if result:
-            new_markdown = "# Regulatory\n"
+            new_markdown += "# Regulatory\n"
             new_markdown += "| | |\n|--|--|\n"
             new_markdown += f"|**FCC date** | {result['regulatory']['fcc_date']}\n"
             fcc_ids = ''
@@ -845,7 +846,7 @@ class DevicecodeUI(App):
             new_markdown += f"|**Newegg item number** | {neweggs}\n"
             new_markdown += f"|**Deal Extreme item number** | {result['commercial']['deal_extreme']}\n"
 
-            return new_markdown
+        return new_markdown
 
     def build_serial_report(self, result):
         if result:
@@ -869,9 +870,10 @@ class DevicecodeUI(App):
         return "No serial information"
 
     def build_software_report(self, result):
+        new_markdown = ""
         if result:
             # bootloader
-            new_markdown = "# Bootloader\n"
+            new_markdown += "# Bootloader\n"
             new_markdown += "| | |\n|--|--|\n"
             new_markdown += f"|**Name** |{ result['bootloader']['manufacturer']}\n"
             new_markdown += f"|**Version** |{ result['bootloader']['version']}\n"
@@ -890,11 +892,12 @@ class DevicecodeUI(App):
             #new_markdown += f"|**Gargoyle** |{ result['gargoyle']}\n"
             #new_markdown += f"|**OpenWrt** |{ result['openwrt']}\n"
             #new_markdown += f"|**Tomato** |{ result['tomato']}\n"
-            return new_markdown
+        return new_markdown
 
     def build_model_report(self, result):
+        new_markdown = ""
         if result:
-            new_markdown = "# Model information\n"
+            new_markdown += "# Model information\n"
             new_markdown += "| | |\n|--|--|\n"
             new_markdown += f"|**Model** | {result['model']['model']}\n"
             new_markdown += f"|**Part number** |{ result['model']['part_number']}\n"
@@ -911,11 +914,12 @@ class DevicecodeUI(App):
             new_markdown += f"|**Country** | {result['manufacturer']['country']}\n"
             new_markdown += f"|**Model** | {result['manufacturer']['model']}\n"
             new_markdown += f"|**Revision** | {result['manufacturer']['revision']}\n"
-            return new_markdown
+        return new_markdown
 
     def build_network_report(self, result):
+        new_markdown = ''
         if result:
-            new_markdown = "# Network information\n"
+            new_markdown += "# Network information\n"
             new_markdown += "| | |\n|--|--|\n"
             new_markdown += f"|**DOCSIS version** | {result['docsis_version']}\n"
             new_markdown += f"|**LAN ports** | {result['lan_ports']}\n"
@@ -932,9 +936,10 @@ class DevicecodeUI(App):
                     new_markdown += f"| **Model** | {r['model']}|\n"
                     #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
                     new_markdown += "| | |\n"
-            return new_markdown
+        return new_markdown
 
     def build_device_report(self, result):
+        new_markdown = ""
         if result:
             new_markdown = "| | |\n|--|--|\n"
             new_markdown += f"|**Title** | {result['title']}\n"
@@ -977,7 +982,7 @@ class DevicecodeUI(App):
             # Misc
             #new_markdown += f"|**Data** | {result}\n"
             new_markdown += f"|**Data origin** | {result['wiki_type']}\n"
-            return new_markdown
+        return new_markdown
 
 @click.command(short_help='Interactive DeviceCode result browser')
 @click.option('--directory', '-d', 'devicecode_directory',
