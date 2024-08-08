@@ -43,8 +43,17 @@ The table view currently has several views:
 4. ODM/connector: ODM/connector combinations (serial/JTAG)
 5. CPU vendor/connector: CPU vendor/connector combinations (serial/JTAG)
 
+![Screenshot of the start screen showing the tree with devices](tui-start-screen.png)
+
+By default the tree will not be expanded. The tree can be expanded by clicking
+on the subtrees to reveal the devices/ODMs (depending on the view).
+
+![Screenshot of the tree with devices with one branch expanded](tui-tree-expanded.png)
+
 Whenever a device in the tree is clicked, then various results will be shown
 in the data areas on the right side of the screen.
+
+![Screenshot of the tree with one device selected](tui-device-selected.png)
 
 ## Filtering
 
@@ -52,6 +61,8 @@ The trees with devices can be searched using a special filtering language
 (tables can currently not be filtered).
 
 The result after filtering will be a tree containing just some of the entries.
+
+![Screenshot of the tree with some filters enabled](tui-filtering.png)
 
 For filtering a special purpose filtering language is used, which can
 filter on a few attributes, such as:
