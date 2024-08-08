@@ -94,7 +94,7 @@ where identifier can be one of:
 * `type`
 * `year`
 
-Values are case insensitive.
+Both identifiers and values are case insensitive.
 
 An identifier can appear multiple times. Multiple instances with the same
 identifer should be interpreted as "OR". Instances with a different identifier
