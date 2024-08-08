@@ -55,6 +55,14 @@ in the data areas on the right side of the screen.
 
 ![Screenshot of the tree with one device selected](tui-device-selected.png)
 
+Some devices have extra icons next to the name. These indicate special
+functionality, or characteristics of the device. This extra visual indication
+allows a user to quickly navigate to devices of interest. Currently the
+following extra icons are used:
+
+* telephone - this indicates that the device is either a (VoIP) phone, (analog)
+  phone gateway or has VoIP functionality
+
 ## Filtering
 
 The trees with devices can be searched using a special filtering language
