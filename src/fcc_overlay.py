@@ -20,7 +20,7 @@ import click
 @click.option('--output', '-o', 'output_directory', required=True,
               help='top level output directory, data will be stored in a subdirectory',
               type=click.Path(path_type=pathlib.Path, exists=True))
-@click.option('--verbose', is_flag=True, help='be verbose')
+@click.option('--verbose', '-v', is_flag=True, help='be verbose')
 def main(fcc_input_directory, devicecode_directory, output_directory, verbose):
     if not fcc_input_directory.is_dir():
         print(f"{fcc_input_directory} is not a directory, exiting.", file=sys.stderr)
@@ -52,16 +52,21 @@ def main(fcc_input_directory, devicecode_directory, output_directory, verbose):
                         continue
 
                     for fcc_id in fcc_ids:
+                        if fcc_date == '':
+                            if verbose:
+                                print(f"No FCC date defined for {fcc_id}")
+
                         if (fcc_input_directory / fcc_id).is_dir():
                             approved_file = fcc_input_directory / fcc_id / 'approved_dates.json'
                             if approved_file.exists():
                                 with open(approved_file, 'r') as approved:
                                     dates += json.load(approved)
                             if fcc_date not in dates:
+                                # wrong date?
                                 pass
                         else:
                             if verbose:
-                                print(f"Missing FCC data for {fcc_id}")
+                                print(f"FCC data missing for {fcc_id}")
 
         except json.decoder.JSONDecodeError:
             pass
