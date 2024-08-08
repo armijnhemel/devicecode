@@ -213,6 +213,7 @@ class BrandTree(Tree):
             # devices, after filtering
             node_leaves = 0
             for model in sorted(self.brands_to_devices[brand], key=lambda x: x['model']):
+                labels = set()
                 if odms:
                     if model['data']['manufacturer']['name'].lower() not in odms:
                         continue
@@ -268,7 +269,11 @@ class BrandTree(Tree):
                     if not show_node:
                         continue
 
-                node.add_leaf(model['model'], data=model['data'])
+                for d in model['data']['device_types']:
+                    if "voip" in d.lower() or 'phone' in d.lower():
+                        labels.add(":phone:")
+
+                node.add_leaf(f"{model['model']}  {"".join(sorted(labels))}", data=model['data'])
                 node_leaves += 1
 
             # check if there are any valid leaf nodes.
@@ -330,6 +335,7 @@ class OdmTree(Tree):
                 brand_node = node.add(brand)
                 brand_node_leaves = 0
                 for model in sorted(self.odm_to_devices[odm][brand], key=lambda x: x['model']):
+                    labels = set()
                     if flags:
                         if not set(map(lambda x: x.lower(), model['data']['flags'])).intersection(flags):
                             continue
@@ -379,8 +385,12 @@ class OdmTree(Tree):
                         if not show_node:
                             continue
 
+                    for d in model['data']['device_types']:
+                        if "voip" in d.lower() or 'phone' in d.lower():
+                            labels.add(":phone:")
+
                     # default case
-                    brand_node.add_leaf(model['model'], data=model['data'])
+                    brand_node.add_leaf(f"{model['model']}  {"".join(sorted(labels))}", data=model['data'])
                     brand_node_leaves += 1
                     node_leaves += 1
 
