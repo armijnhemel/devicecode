@@ -500,7 +500,8 @@ class DevicecodeUI(App):
             except json.decoder.JSONDecodeError:
                 pass
 
-        # Extract useful data from each of the devices
+        # Extract useful data from each of the devices for quick
+        # access when building the trees and the datatables.
         brand_odm = []
         brand_cpu = []
         odm_cpu = []
@@ -523,7 +524,7 @@ class DevicecodeUI(App):
                 model += " "
                 model += device['model']['subrevision']
 
-            # determine the labels
+            # compute the labels used in the leaves
             labels = set()
             for f in device['flags']:
                 if "voip" in f.lower() or 'telephone' in f.lower() or " phone" in f.lower():
