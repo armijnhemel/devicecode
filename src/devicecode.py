@@ -97,6 +97,9 @@ class Defaults:
 class JTAG:
     connector: str = ''
     populated: str = 'unknown'
+    voltage: float = None
+    baud_rate: int = 0
+    number_of_pins: int = 0
 
 @dataclass_json
 @dataclass
@@ -245,6 +248,7 @@ class Device:
     has_jtag: str = 'unknown'
     has_serial_port: str = 'unknown'
     images: list[str] = field(default_factory=list)
+    jtag: JTAG = field(default_factory=JTAG)
     manufacturer: Manufacturer = field(default_factory=Manufacturer)
     model: Model = field(default_factory=Model)
     network: Network = field(default_factory=Network)
@@ -1046,10 +1050,20 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         device.has_jtag = 'no'
                                                         continue
 
-                                                    # TODO: parse JTAG information
-                                                    jtag_fields = value.split(',')
-                                                    if jtag_fields[0].lower() == 'yes':
-                                                        device.has_jtag = 'yes'
+                                                    jtag_result = parse_serial_jtag(value)
+
+                                                    if 'has_port' in jtag_result:
+                                                        device.has_jtag = jtag_result['has_port']
+                                                    if 'connector' in jtag_result:
+                                                        device.jtag.connector = jtag_result['connector']
+                                                    if 'baud_rate' in jtag_result:
+                                                        device.jtag.baud_rate = jtag_result['baud_rate']
+                                                    if 'populated' in jtag_result:
+                                                        device.jtag.populated = jtag_result['populated']
+                                                    if 'voltage' in jtag_result:
+                                                        device.jtag.populated = jtag_result['voltage']
+                                                    if 'number_of_pins' in jtag_result:
+                                                        device.jtag.populated = jtag_result['number_of_pins']
 
                                                 # third party firmware
                                                 elif identifier in ['tpfirmware', 'tp_firmware']:
