@@ -20,8 +20,8 @@ import click
 @click.option('--output', '-o', 'output_directory', required=True,
               help='top level output directory, overlays will be stored in a subdirectory called \'overlay\'',
               type=click.Path(path_type=pathlib.Path, exists=True))
-@click.option('--verbose', '-v', is_flag=True, help='be verbose')
-def main(fcc_input_directory, devicecode_directory, output_directory, verbose):
+@click.option('--report-only', '-r', is_flag=True, help='report only')
+def main(fcc_input_directory, devicecode_directory, output_directory, report_only):
     if not fcc_input_directory.is_dir():
         print(f"{fcc_input_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -58,8 +58,9 @@ def main(fcc_input_directory, devicecode_directory, output_directory, verbose):
 
                     for fcc_id in fcc_ids:
                         if fcc_date == '':
-                            if verbose:
+                            if report_only:
                                 print(f"No FCC date defined for {fcc_id}")
+                                continue
 
                         if (fcc_input_directory / fcc_id).is_dir():
 
@@ -83,7 +84,7 @@ def main(fcc_input_directory, devicecode_directory, output_directory, verbose):
                                     pass
 
                         else:
-                            if verbose:
+                            if report_only:
                                 print(f"FCC data missing for {fcc_id}")
 
         except json.decoder.JSONDecodeError:

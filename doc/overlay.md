@@ -43,3 +43,21 @@ for example:
 ```console
 $ python fcc_overlay.py -f ~/fcc/ -d ~/devices/TechInfoDepot/devices/ -o ~/devices/TechInfoDepot/
 ```
+
+For this script to create useful overlay files enough FCC data needs to be
+downloaded. To find out what FCC data would be useful to download (without
+generating the overlay files) use the `--report-only` option and then look
+at the output:
+
+```console
+$ python fcc_overlay.py -f ~/fcc/ -d /tmp/blebber/TechInfoDepot/devices/ -o /tmp/blebber/TechInfoDepot/ --report-only| grep defined
+No FCC date defined for H9PLA4111
+No FCC date defined for Z9W-CM1
+No FCC date defined for 2AFQA-DB410C
+No FCC date defined for TFB-1003
+[...]
+```
+
+This data can then be downloaded using the the `devicecode_fetch_fcc.py`
+script. Use the `-no-pdf` option to only download the FCC metadata needed for
+creating overlays.
