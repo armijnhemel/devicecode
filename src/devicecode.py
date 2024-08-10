@@ -421,6 +421,91 @@ def parse_date(date_string):
                     return ""
     return parsed_date.strftime("%Y-%m-%d")
 
+def parse_serial_jtag(serial_string):
+    '''Parse serial port or JTAG information'''
+    result = {}
+
+    fields = serial_string.split(',')
+
+    # TODO: there are some devices where the first field
+    # is not explicitly 'yes' but there is clear serial port
+    # information. These should also be processed.
+    if fields[0].lower() == 'yes':
+        result['has_port'] = 'yes'
+
+    # parse every single field. As there doesn't seem to
+    # be a fixed order to store information the only way
+    # is to process every single field.
+    fields_to_process = []
+    for field in fields:
+        if field.strip() == '':
+            # skip empty fields
+            continue
+        if field.strip().lower() == 'yes':
+            continue
+        if field.strip().lower() == 'internal':
+            continue
+        if ';' in field.strip():
+            # fields have been concatenated with ; and
+            # should first be split
+            fs = field.split(';')
+            for ff in fs:
+                if ff.strip().strip() == '':
+                    # skip empty fields
+                    continue
+                if ff.strip().lower() == 'yes':
+                    continue
+                if ff.strip().lower() == 'internal':
+                    continue
+                fields_to_process.append(ff.strip())
+        else:
+            fields_to_process.append(field.strip())
+
+    for field in fields_to_process:
+        # try to find where the connector can be found
+        # (typically which solder pads)
+        regex_result = defaults.REGEX_SERIAL_CONNECTOR.match(field.upper())
+        if regex_result is not None:
+            result['connector'] = regex_result.groups()[0]
+            continue
+
+        # baud rates
+        baud_rate = None
+        for br in defaults.BAUD_RATES:
+            if str(br) in field:
+                baud_rate = br
+                result['baud_rate'] = baud_rate
+                break
+
+        if baud_rate is not None:
+            # verified to be a baud rate
+            continue
+
+        # populated or not?
+        if 'populated' in field:
+            if field == 'unpopulated':
+                result['populated'] = 'no'
+            elif field == 'populated':
+                result['populated'] = 'yes'
+            continue
+
+        # voltage
+        if field.upper() in '3.3V TTL':
+            result['voltage'] = 3.3
+            continue
+
+        # pin header
+        regex_result = defaults.REGEX_SERIAL_PIN_HEADER.match(field)
+        if regex_result is not None:
+            result['number_of_pins'] = int(regex_result.groups()[0])
+            continue
+
+        # console via RJ45? TODO.
+        regex_result = defaults.REGEX_SERIAL_RJ45.match(field)
+        if regex_result is not None:
+            continue
+
+    return result
 
 @click.command(short_help='Process TechInfoDepot or WikiDevi XML dump')
 @click.option('--input', '-i', 'input_file', required=True,
@@ -939,82 +1024,21 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     if value == 'no':
                                                         device.has_serial_port = 'no'
                                                         continue
-                                                    # TODO: parse serial information
-                                                    serial_fields = value.split(',')
-                                                    if serial_fields[0].lower() == 'yes':
-                                                        device.has_serial_port = 'yes'
 
-                                                    # parse every single field. As there doesn't seem to
-                                                    # be a fixed order to store information the only way
-                                                    # is to process every single field.
-                                                    serial_fields_to_process = []
-                                                    for serial_field in serial_fields:
-                                                        if serial_field.strip() == '':
-                                                            # skip empty fields
-                                                            continue
-                                                        if serial_field.strip().lower() == 'yes':
-                                                            continue
-                                                        if serial_field.strip().lower() == 'internal':
-                                                            continue
-                                                        if ';' in serial_field.strip():
-                                                            # fields have been concatenated with ; and
-                                                            # should first be split
-                                                            fs = serial_field.split(';')
-                                                            for ff in fs:
-                                                                if ff.strip().strip() == '':
-                                                                    # skip empty fields
-                                                                    continue
-                                                                if ff.strip().lower() == 'yes':
-                                                                    continue
-                                                                if ff.strip().lower() == 'internal':
-                                                                    continue
-                                                                serial_fields_to_process.append(ff.strip())
-                                                        else:
-                                                            serial_fields_to_process.append(serial_field.strip())
+                                                    serial_result = parse_serial_jtag(value)
 
-                                                    for serial_field in serial_fields_to_process:
-                                                        # try to find where the connector can be found
-                                                        # (typically which solder pads)
-                                                        regex_result = defaults.REGEX_SERIAL_CONNECTOR.match(serial_field.upper())
-                                                        if regex_result is not None:
-                                                            device.serial.connector = regex_result.groups()[0]
-                                                            continue
-
-                                                        # baud rates
-                                                        baud_rate = None
-                                                        for br in defaults.BAUD_RATES:
-                                                            if str(br) in serial_field:
-                                                                baud_rate = br
-                                                                device.serial.baud_rate = baud_rate
-                                                                break
-
-                                                        if baud_rate is not None:
-                                                            # verified to be a baud rate
-                                                            continue
-
-                                                        # populated or not?
-                                                        if 'populated' in serial_field:
-                                                            if serial_field == 'unpopulated':
-                                                                device.serial.populated = 'no'
-                                                            elif serial_field == 'populated':
-                                                                device.serial.populated = 'yes'
-                                                            continue
-
-                                                        # voltage
-                                                        if serial_field.upper() in '3.3V TTL':
-                                                            device.serial.voltage = 3.3
-                                                            continue
-
-                                                        # pin header
-                                                        regex_result = defaults.REGEX_SERIAL_PIN_HEADER.match(serial_field)
-                                                        if regex_result is not None:
-                                                            device.serial.number_of_pins = int(regex_result.groups()[0])
-                                                            continue
-
-                                                        # console via RJ45?
-                                                        regex_result = defaults.REGEX_SERIAL_RJ45.match(serial_field)
-                                                        if regex_result is not None:
-                                                            continue
+                                                    if 'has_port' in serial_result:
+                                                        device.has_serial_port = serial_result['has_port']
+                                                    if 'connector' in serial_result:
+                                                        device.serial.connector = serial_result['connector']
+                                                    if 'baud_rate' in serial_result:
+                                                        device.serial.baud_rate = serial_result['baud_rate']
+                                                    if 'populated' in serial_result:
+                                                        device.serial.populated = serial_result['populated']
+                                                    if 'voltage' in serial_result:
+                                                        device.serial.populated = serial_result['voltage']
+                                                    if 'number_of_pins' in serial_result:
+                                                        device.serial.populated = serial_result['number_of_pins']
 
                                                 # JTAG
                                                 elif identifier == 'jtag':
