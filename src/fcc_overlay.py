@@ -18,7 +18,7 @@ import click
               help='DeviceCode results directory', required=True,
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--output', '-o', 'output_directory', required=True,
-              help='top level output directory, data will be stored in a subdirectory',
+              help='top level output directory, overlays will be stored in a subdirectory called \'overlay\'',
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--verbose', '-v', is_flag=True, help='be verbose')
 def main(fcc_input_directory, devicecode_directory, output_directory, verbose):
@@ -34,6 +34,9 @@ def main(fcc_input_directory, devicecode_directory, output_directory, verbose):
         print(f"{devicecode_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
 
+    overlay_directory = output_directory / 'overlays'
+    overlay_directory.mkdir(exist_ok=True)
+
     # Then walk all the result files, check the FCC ids of the
     for result_file in devicecode_directory.glob('**/*'):
         if not result_file.is_file():
@@ -47,23 +50,31 @@ def main(fcc_input_directory, devicecode_directory, output_directory, verbose):
                     fcc_date = device['regulatory']['fcc_date']
 
                     # if there are multiple FCC ids associated with
+                    # a device then things get a little bit more complicated
+                    # so skip for now.
                     dates = []
                     if len(fcc_ids) != 1:
                         continue
 
                     for fcc_id in fcc_ids:
-                        if fcc_date == '':
-                            if verbose:
-                                print(f"No FCC date defined for {fcc_id}")
-
                         if (fcc_input_directory / fcc_id).is_dir():
                             approved_file = fcc_input_directory / fcc_id / 'approved_dates.json'
                             if approved_file.exists():
                                 with open(approved_file, 'r') as approved:
                                     dates += json.load(approved)
-                            if fcc_date not in dates:
-                                # wrong date?
+                            if fcc_date == '':
+                                if verbose:
+                                    print(f"No FCC date defined for {fcc_id}")
+
+                                overlay_data = {'type': 'overlay', 'source': 'fcc'}
+                                overlay_data['data'] = {'regulatory': {'fcc_date': dates[0]}}
+                                overlay_file = overlay_directory / result_file.name
+                                with open(overlay_file, 'w') as overlay:
+                                    overlay.write(json.dumps(overlay_data, indent=4))
+                            elif fcc_date not in dates:
+                                # wrong data, create an overlay
                                 pass
+
                         else:
                             if verbose:
                                 print(f"FCC data missing for {fcc_id}")
