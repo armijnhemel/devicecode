@@ -57,6 +57,11 @@ class SuggestDevices(Suggester):
 
         # first split the value
         check_value = value.rsplit(' ', maxsplit=1)[-1]
+
+        # then check and suggest a value. Don't ask how it works,
+        # but it works. When adding a new value, don't forget to
+        # correctly compute the lengths, otherwise some characters
+        # will appear to have been overwritten.
         if check_value.startswith('odm='):
             for idx, chk in enumerate(self.odms):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
@@ -495,6 +500,7 @@ class DevicecodeUI(App):
             except json.decoder.JSONDecodeError:
                 pass
 
+        # Extract useful data from each of the devices
         brand_odm = []
         brand_cpu = []
         odm_cpu = []
