@@ -196,7 +196,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
         print(f"* processed {processed_fccids} FCC ids")
         print(f"* downloaded {downloaded_documents} documents\n")
         if fcc_id_invalid:
-            print("Possible invalid FCC identifiers")
+            print("Possibly invalid FCC identifiers")
             for f in fcc_id_invalid:
                 print(f"* {f}\n")
 
