@@ -629,7 +629,7 @@ class DevicecodeUI(App):
         self.regulatory_data_area = Markdown()
         self.model_data_area = Markdown()
         self.network_data_area = Markdown()
-        self.serial_area = Markdown()
+        self.serial_jtag_area = Markdown()
         self.software_area = Markdown()
         self.chips_area = Markdown()
         self.power_area = Markdown()
@@ -682,7 +682,7 @@ class DevicecodeUI(App):
                         yield self.regulatory_data_area
                 with TabPane('Serial & JTAG'):
                     with VerticalScroll():
-                        yield self.serial_area
+                        yield self.serial_jtag_area
                 with TabPane('Software'):
                     with VerticalScroll():
                         yield self.software_area
@@ -763,7 +763,7 @@ class DevicecodeUI(App):
         self.regulatory_data_area.update('')
         self.model_data_area.update('')
         self.network_data_area.update("")
-        self.serial_area.update('')
+        self.serial_jtag_area.update('')
         self.software_area.update('')
         self.chips_area.update('')
         self.power_area.update('')
@@ -782,10 +782,10 @@ class DevicecodeUI(App):
             self.model_data_area.update(self.build_model_report(event.node.data))
             self.network_data_area.update(self.build_network_report(event.node.data['network']))
             self.regulatory_data_area.update(self.build_regulatory_report(event.node.data))
-            if event.node.data['has_serial_port'] == 'yes':
-                self.serial_area.update(self.build_serial_report(event.node.data['serial']))
+            if event.node.data['has_serial_port'] == 'yes' or event.node.data['has_jtag'] == 'yes':
+                self.serial_jtag_area.update(self.build_serial_jtag_report(event.node.data))
             else:
-                self.serial_area.update('')
+                self.serial_jtag_area.update('')
             self.software_area.update(self.build_software_report(event.node.data['software']))
             self.chips_area.update(self.build_chips_report(event.node.data))
             self.power_area.update(self.build_power_report(event.node.data))
@@ -794,7 +794,7 @@ class DevicecodeUI(App):
             self.regulatory_data_area.update('')
             self.model_data_area.update('')
             self.network_data_area.update("")
-            self.serial_area.update('')
+            self.serial_jtag_area.update('')
             self.software_area.update('')
             self.chips_area.update('')
             self.power_area.update('')
@@ -897,24 +897,43 @@ class DevicecodeUI(App):
 
         return new_markdown
 
-    def build_serial_report(self, result):
+    def build_serial_jtag_report(self, result):
         if result:
-            new_markdown = "# Serial port\n"
-            new_markdown += "| | |\n|--|--|\n"
-            if result['baud_rate'] != 0:
-                new_markdown += f"|**Baud rate** | {result['baud_rate']}\n"
-            else:
-                new_markdown += "|**Baud rate** |\n"
-            new_markdown += f"|**Connector** |{ result['connector']}\n"
-            if result['number_of_pins'] != 0:
-                new_markdown += f"|**Number of pins** | {result['number_of_pins']}\n"
-            else:
-                new_markdown += "|**Number of pins** | \n"
-            new_markdown += f"|**Populated** | {result['populated']}\n"
-            if result['voltage']:
-                new_markdown += f"|**Voltage** | {result['voltage']}\n"
-            else:
-                new_markdown += "|**Voltage** |\n"
+            new_markdown = ''
+            if result['has_serial_port'] == 'yes':
+                new_markdown += "# Serial port\n"
+                new_markdown += "| | |\n|--|--|\n"
+                if result['serial']['baud_rate'] != 0:
+                    new_markdown += f"|**Baud rate** | {result['serial']['baud_rate']}\n"
+                else:
+                    new_markdown += "|**Baud rate** |\n"
+                new_markdown += f"|**Connector** |{ result['serial']['connector']}\n"
+                if result['serial']['number_of_pins'] != 0:
+                    new_markdown += f"|**Number of pins** | {result['serial']['number_of_pins']}\n"
+                else:
+                    new_markdown += "|**Number of pins** | \n"
+                new_markdown += f"|**Populated** | {result['serial']['populated']}\n"
+                if result['serial']['voltage']:
+                    new_markdown += f"|**Voltage** | {result['serial']['voltage']}\n"
+                else:
+                    new_markdown += "|**Voltage** |\n"
+            if result['has_jtag'] == 'yes':
+                new_markdown += "# JTAG\n"
+                new_markdown += "| | |\n|--|--|\n"
+                if result['jtag']['baud_rate'] != 0:
+                    new_markdown += f"|**Baud rate** | {result['jtag']['baud_rate']}\n"
+                else:
+                    new_markdown += "|**Baud rate** |\n"
+                new_markdown += f"|**Connector** |{ result['jtag']['connector']}\n"
+                if result['jtag']['number_of_pins'] != 0:
+                    new_markdown += f"|**Number of pins** | {result['jtag']['number_of_pins']}\n"
+                else:
+                    new_markdown += "|**Number of pins** | \n"
+                new_markdown += f"|**Populated** | {result['jtag']['populated']}\n"
+                if result['jtag']['voltage']:
+                    new_markdown += f"|**Voltage** | {result['jtag']['voltage']}\n"
+                else:
+                    new_markdown += "|**Voltage** |\n"
             return new_markdown
         return "No serial information"
 
