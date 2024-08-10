@@ -484,6 +484,8 @@ class DevicecodeUI(App):
         odm_connector = []
         chip_connector = []
         for device in self.devices:
+            if 'brand' not in device:
+                continue
             brand_name = device['brand']
             if brand_name not in brands_to_devices:
                 brands_to_devices[brand_name] = []
@@ -1047,6 +1049,13 @@ def main(devicecode_directory):
         print(f"Directory {devicecode_directory} is not a valid directory, exiting.",
               file=sys.stderr)
         sys.exit(1)
+
+    # verify the directory names, they should be one of the following
+    valid_directory_names = ['TechInfoDepot', 'WikiDevi']
+
+    # Inside these directories a directory called 'devices' should always
+    # be present. Optionally there can be a directory called 'overlays'
+    # with overlay files.
 
     app = DevicecodeUI(devicecode_directory)
     app.run()
