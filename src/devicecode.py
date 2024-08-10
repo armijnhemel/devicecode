@@ -1040,9 +1040,9 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     if 'populated' in serial_result:
                                                         device.serial.populated = serial_result['populated']
                                                     if 'voltage' in serial_result:
-                                                        device.serial.populated = serial_result['voltage']
+                                                        device.serial.voltage = serial_result['voltage']
                                                     if 'number_of_pins' in serial_result:
-                                                        device.serial.populated = serial_result['number_of_pins']
+                                                        device.serial.number_of_pins = serial_result['number_of_pins']
 
                                                 # JTAG
                                                 elif identifier == 'jtag':
@@ -1061,9 +1061,9 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                     if 'populated' in jtag_result:
                                                         device.jtag.populated = jtag_result['populated']
                                                     if 'voltage' in jtag_result:
-                                                        device.jtag.populated = jtag_result['voltage']
+                                                        device.jtag.voltage = jtag_result['voltage']
                                                     if 'number_of_pins' in jtag_result:
-                                                        device.jtag.populated = jtag_result['number_of_pins']
+                                                        device.jtag.number_of_pins = jtag_result['number_of_pins']
 
                                                 # third party firmware
                                                 elif identifier in ['tpfirmware', 'tp_firmware']:
