@@ -53,7 +53,7 @@ class SuggestDevices(Suggester):
             A valid completion suggestion or `None`.
         """
 
-        serial_values = ['no', 'unknown', 'yes']
+        jtag_values = serial_values = ['no', 'unknown', 'yes']
 
         # first split the value
         check_value = value.rsplit(' ', maxsplit=1)[-1]
@@ -93,6 +93,10 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(serial_values):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + serial_values[idx][len(check_value)-7:]
+        elif check_value.startswith('jtag='):
+            for idx, chk in enumerate(jtag_values):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + jtag_values[idx][len(check_value)-5:]
 
         for idx, suggestion in enumerate(self._for_comparison):
             if suggestion.startswith(check_value):
@@ -159,6 +163,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'serial':
                     if token_value not in ['no', 'unknown', 'yes']:
                         return self.failure("Invalid serial port information")
+                elif token_identifier == 'jtag':
+                    if token_value not in ['no', 'unknown', 'yes']:
+                        return self.failure("Invalid jtag port information")
                 elif token_identifier == 'year':
                     try:
                         year=int(token_value)
@@ -206,6 +213,7 @@ class BrandTree(Tree):
         ignore_brands = kwargs.get('ignore_brands', [])
         ignore_odms = kwargs.get('ignore_odms', [])
         ips = kwargs.get('ips', [])
+        jtags = kwargs.get('jtags', [])
         odms = kwargs.get('odms', [])
         passwords = kwargs.get('passwords', [])
         serials = kwargs.get('serials', [])
@@ -213,7 +221,8 @@ class BrandTree(Tree):
 
         expand = False
         if bootloaders or brands or chips or chip_vendors or connectors or flags or \
-            ignore_brands or ignore_odms or ips or odms or passwords or serials or years:
+            ignore_brands or ignore_odms or ips or jtags or odms or passwords or \
+            serials or years:
             expand = True
 
         for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
@@ -243,6 +252,9 @@ class BrandTree(Tree):
                         continue
                 if bootloaders:
                     if model['data']['software']['bootloader']['manufacturer'].lower() not in bootloaders:
+                        continue
+                if jtags:
+                    if model['data']['has_jtag'] not in jtags:
                         continue
                 if serials:
                     if model['data']['has_serial_port'] not in serials:
@@ -317,6 +329,7 @@ class OdmTree(Tree):
         ignore_brands = kwargs.get('ignore_brands', [])
         ignore_odms = kwargs.get('ignore_odms', [])
         ips = kwargs.get('ips', [])
+        jtags = kwargs.get('jtags', [])
         odms = kwargs.get('odms', [])
         passwords = kwargs.get('passwords', [])
         serials = kwargs.get('serials', [])
@@ -324,7 +337,8 @@ class OdmTree(Tree):
 
         expand = False
         if bootloaders or brands or chips or chip_vendors or connectors or flags or \
-            ignore_brands or ignore_odms or ips or odms or passwords or serials or years:
+            ignore_brands or ignore_odms or ips or jtags or odms or passwords or \
+            serials or years:
             expand = True
 
         # add each manufacturer as a node. Then add each brand as a subtree
@@ -357,6 +371,9 @@ class OdmTree(Tree):
                             continue
                     if bootloaders:
                         if model['data']['software']['bootloader']['manufacturer'].lower() not in bootloaders:
+                            continue
+                    if jtags:
+                        if model['data']['has_jtag'] not in jtags:
                             continue
                     if serials:
                         if model['data']['has_serial_port'] not in serials:
@@ -426,8 +443,8 @@ class DevicecodeUI(App):
 
     CSS_PATH = "devicecode_tui.css"
     TOKEN_IDENTIFIERS = ['bootloader', 'brand', 'chip', 'chip_vendor', 'connector',
-                         'flag', 'ignore_brand', 'ignore_odm', 'ip', 'odm', 'password',
-                         'serial', 'type', 'year']
+                         'flag', 'ignore_brand', 'ignore_odm', 'ip', 'jtag', 'odm',
+                         'password', 'serial', 'type', 'year']
 
     def __init__(self, devicecode_dir, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -710,6 +727,7 @@ class DevicecodeUI(App):
         ignore_brands = []
         ignore_odms = []
         ips = []
+        jtags = []
         odms = []
         passwords = []
         serials = []
@@ -746,17 +764,19 @@ class DevicecodeUI(App):
                         passwords.append(value)
                     elif identifier == 'serial':
                         serials.append(value)
+                    elif identifier == 'jtag':
+                        jtags.append(value)
                     elif identifier == 'year':
                         years.append(int(value))
 
         self.brand_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
                                    chip_vendors=chip_vendors, connectors=connectors, flags=flags,
                                    ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
-                                   passwords=passwords, serials=serials, years=years)
+                                   jtags=jtags, passwords=passwords, serials=serials, years=years)
         self.odm_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
                                  chip_vendors=chip_vendors, connectors=connectors, flags=flags,
                                  ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
-                                 passwords=passwords, serials=serials, years=years)
+                                 jtags=jtags, passwords=passwords, serials=serials, years=years)
 
         # reset the data areas to prevent old data being displayed
         self.device_data_area.update('')

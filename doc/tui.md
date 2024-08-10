@@ -109,6 +109,7 @@ where identifier can be one of:
 * `flag`
 * `ignore_brand`
 * `ignore_odm`
+* `jtag`
 * `odm`
 * `password`
 * `serial`
@@ -209,6 +210,11 @@ There are two ways to filter brands:
 ##### Serial
 
 `serial` can be used to show if a device has a serial port, or if it is not
+known. Valid values are `yes`, `no` and `unknown`.
+
+##### JTAG
+
+`jtag` can be used to show if a device has a JTAG port, or if it is not
 known. Valid values are `yes`, `no` and `unknown`.
 
 ##### Password
