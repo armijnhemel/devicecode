@@ -57,23 +57,30 @@ def main(fcc_input_directory, devicecode_directory, output_directory, verbose):
                         continue
 
                     for fcc_id in fcc_ids:
+                        if fcc_date == '':
+                            if verbose:
+                                print(f"No FCC date defined for {fcc_id}")
+
                         if (fcc_input_directory / fcc_id).is_dir():
+
+                            # load the file with approved dates, if it exists
                             approved_file = fcc_input_directory / fcc_id / 'approved_dates.json'
                             if approved_file.exists():
                                 with open(approved_file, 'r') as approved:
                                     dates += json.load(approved)
-                            if fcc_date == '':
-                                if verbose:
-                                    print(f"No FCC date defined for {fcc_id}")
 
-                                overlay_data = {'type': 'overlay', 'source': 'fcc'}
-                                overlay_data['data'] = {'regulatory': {'fcc_date': dates[0]}}
-                                overlay_file = overlay_directory / result_file.name
-                                with open(overlay_file, 'w') as overlay:
-                                    overlay.write(json.dumps(overlay_data, indent=4))
-                            elif fcc_date not in dates:
-                                # wrong data, create an overlay
-                                pass
+                                # if there is no date at all create an overlay with
+                                # the earliest date defined as the FCC date.
+                                if fcc_date == '':
+                                    overlay_data = {'type': 'overlay', 'source': 'fcc'}
+                                    overlay_data['data'] = {'regulatory': {'fcc_date': dates[0]}}
+                                    overlay_file = overlay_directory / result_file.stem / 'fcc.json'
+                                    overlay_file.parent.mkdir(parents=True, exist_ok=True)
+                                    with open(overlay_file, 'w') as overlay:
+                                        overlay.write(json.dumps(overlay_data, indent=4))
+                                elif fcc_date not in dates:
+                                    # wrong data, create an overlay
+                                    pass
 
                         else:
                             if verbose:
