@@ -1032,8 +1032,23 @@ class DevicecodeUI(App):
     def build_power_report(self, result):
         new_markdown = ''
         if result:
-            new_markdown += "# Power information\n"
+            new_markdown += "# Power Supply\n"
             new_markdown += "| | |\n|--|--|\n"
+            new_markdown += f"|**Brand** | {result['power_supply']['brand']}\n"
+            new_markdown += f"|**Model** | {result['power_supply']['model']}\n"
+            new_markdown += f"|**Revision** | {result['power_supply']['revision']}\n"
+            new_markdown += f"|**Style** | {result['power_supply']['style']}\n"
+            new_markdown += f"|**Country** | {result['power_supply']['country']}\n"
+            new_markdown += f"|**e-level** | {result['power_supply']['e_level']}\n"
+            new_markdown += f"|**Input amperage** | {result['power_supply']['input_amperage']}\n"
+            new_markdown += f"|**Input connector** | {result['power_supply']['input_connector']}\n"
+            new_markdown += f"|**Input current** | {result['power_supply']['input_current']}\n"
+            new_markdown += f"|**Input Hz** | {result['power_supply']['input_hz']}\n"
+            new_markdown += f"|**Input voltage** | {result['power_supply']['input_voltage']}\n"
+            new_markdown += f"|**Output amperage** | {result['power_supply']['output_amperage']}\n"
+            new_markdown += f"|**Output connector** | {result['power_supply']['output_connector']}\n"
+            new_markdown += f"|**Output current** | {result['power_supply']['output_current']}\n"
+            new_markdown += f"|**Output voltage** | {result['power_supply']['output_voltage']}\n"
         return new_markdown
 
     def build_device_report(self, result):
