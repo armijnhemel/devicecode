@@ -33,7 +33,8 @@ TIMEOUT = 60
 @click.option('--verbose', is_flag=True, help='be verbose')
 @click.option('--force', is_flag=True, help='always force downloads')
 @click.option('--gentle', is_flag=True, help=f'pause {SLEEP_INTERVAL} seconds between downloads')
-def main(fccids, output_directory, grantees, verbose, force, gentle):
+@click.option('--no-pdf', is_flag=True, help='do not download PDFs, just metadata')
+def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf):
     if not output_directory.is_dir():
         print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -163,22 +164,23 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
             # now download the individual PDF files and write them
             # to the directory for this FCC entry
 
-            for pdf_url, pdf_basename, _ in pdfs_descriptions:
-                # verify if there already was data downloaded for this
-                # particular device by checking the contents of the result first
-                # and skipping it there were no changes.
-                if not force and (store_directory/pdf_basename).exists():
-                    continue
+            if not no_pdf:
+                for pdf_url, pdf_basename, _ in pdfs_descriptions:
+                    # verify if there already was data downloaded for this
+                    # particular device by checking the contents of the result first
+                    # and skipping it there were no changes.
+                    if not force and (store_directory/pdf_basename).exists():
+                        continue
 
-                if verbose:
-                    print(f"* downloading {pdf_url}")
-                if gentle:
-                    time.sleep(SLEEP_INTERVAL)
-                request = requests.get(pdf_url, headers=headers, timeout=TIMEOUT)
+                    if verbose:
+                        print(f"* downloading {pdf_url}")
+                    if gentle:
+                        time.sleep(SLEEP_INTERVAL)
+                    request = requests.get(pdf_url, headers=headers, timeout=TIMEOUT)
 
-                with open(store_directory/pdf_basename, 'wb') as output:
-                    output.write(request.content)
-                downloaded_documents += 1
+                    with open(store_directory/pdf_basename, 'wb') as output:
+                        output.write(request.content)
+                    downloaded_documents += 1
 
             if verbose:
                 print(f"* writing PDF/description mapping for {fcc_id}\n")
@@ -187,6 +189,9 @@ def main(fccids, output_directory, grantees, verbose, force, gentle):
             with open(store_directory/'approved_dates.json', 'w') as output:
                 output.write(json.dumps(sorted(set(approved_dates)), indent=4))
             processed_fccids += 1
+
+            if gentle:
+                time.sleep(SLEEP_INTERVAL)
 
         except Exception:
             pass
