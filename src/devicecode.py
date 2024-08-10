@@ -701,7 +701,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                             case 'revision':
                                                 device.power_supply.revision = value
                                             case 'style':
-                                                device.power_supply.style = value
+                                                device.power_supply.style = defaults.STYLE_REWRITE.get(value, value)
                                             case 'countrymanuf':
                                                 device.power_supply.country = value
                                             case 'input_a':

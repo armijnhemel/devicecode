@@ -90,6 +90,11 @@ EXPANSION_REWRITE = {'usb': 'USB',
                      'usb type c': 'USB Type-C',
                      'usb (unk. version)': 'USB (unknown version)'}
 
+# power supply style rewrites
+STYLE_REWRITE = {'medium, horiz.': 'medium, horizontal',
+                 'small, horiz.': 'small, horizontal'}
+
+
 # a lookup table for default values for each of the
 # identifiers in the TechInfoDepot data which should be ignored.
 # For some fields different default values were used over time.
