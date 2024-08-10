@@ -808,10 +808,7 @@ class DevicecodeUI(App):
             self.model_data_area.update(self.build_model_report(event.node.data))
             self.network_data_area.update(self.build_network_report(event.node.data['network']))
             self.regulatory_data_area.update(self.build_regulatory_report(event.node.data))
-            if event.node.data['has_serial_port'] == 'yes' or event.node.data['has_jtag'] == 'yes':
-                self.serial_jtag_area.update(self.build_serial_jtag_report(event.node.data))
-            else:
-                self.serial_jtag_area.update('')
+            self.serial_jtag_area.update(self.build_serial_jtag_report(event.node.data))
             self.software_area.update(self.build_software_report(event.node.data['software']))
             self.chips_area.update(self.build_chips_report(event.node.data))
             self.power_area.update(self.build_power_report(event.node.data))
