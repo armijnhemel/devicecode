@@ -51,6 +51,12 @@ class Chip:
     manufacturer_verified: bool = False
     model: str = ''
     model_verified: bool = False
+
+    # should this be a list?
+    # Chips could have multiple different cores,
+    # for example ARM big.LITTLE chips.
+    chip_type: str = ''
+    chip_type_revision: str = ''
     extra_info: str = ''
 
     # for addchip
@@ -1250,6 +1256,26 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                         chip_result = parse_chip(value)
                                                         if chip_result is not None:
                                                             device.cpus.append(chip_result)
+
+                                                    elif identifier in ['cpu1_type', 'cpu2_type']:
+                                                        if '<!--' in value:
+                                                            # TODO: fix
+                                                            continue
+                                                        chip_index = int(identifier[3]) - 1
+                                                        try:
+                                                            device.cpus[chip_index].chip_type = value
+                                                        except IndexError:
+                                                            continue
+
+                                                    elif identifier in ['cpu1_type_rev', 'cpu2_type_rev']:
+                                                        if '<!--' in value:
+                                                            # TODO: fix
+                                                            continue
+                                                        chip_index = int(identifier[3]) - 1
+                                                        try:
+                                                            device.cpus[chip_index].chip_type_revision = value
+                                                        except IndexError:
+                                                            continue
 
                                                     # network (continued)
                                                     elif identifier == 'auto_mdix':
