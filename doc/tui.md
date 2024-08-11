@@ -104,6 +104,7 @@ where identifier can be one of:
 * `bootloader`
 * `brand`
 * `chip`
+* `chip_type`
 * `chip_vendor`
 * `connector`
 * `flag`
@@ -185,6 +186,11 @@ There are two ways to filter brands:
 
 1. use the `brand` statement to show devices from one or more brands
 2. use the `ignore_brand` statement to hide devices from one or more brands
+
+##### Chip type
+
+Currently `chip_type` can only be used to show the type of the main CPU in one
+or more devices.
 
 ##### Chip vendor
 

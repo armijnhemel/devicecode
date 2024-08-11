@@ -39,6 +39,7 @@ class SuggestDevices(Suggester):
         self.bootloaders = kwargs.get('bootloaders', [])
         self.brands = kwargs.get('brands', [])
         self.chips = kwargs.get('chips', [])
+        self.chip_types = kwargs.get('chip_types', [])
         self.chip_vendors = kwargs.get('chip_vendors', [])
         self.flags = kwargs.get('flags', [])
         self.odms = kwargs.get('odms', [])
@@ -86,6 +87,10 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(self.chips):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + self.chips[idx][len(check_value)-5:]
+        elif check_value.startswith('chip_type='):
+            for idx, chk in enumerate(self.chip_types):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.chip_types[idx][len(check_value)-10:]
         elif check_value.startswith('chip_vendor='):
             for idx, chk in enumerate(self.chip_vendors):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
@@ -117,6 +122,7 @@ class FilterValidator(Validator):
         self.brands = kwargs.get('brands', set())
         self.odms = kwargs.get('odms', set())
         self.chips = kwargs.get('chips', set())
+        self.chip_types = kwargs.get('chip_types', set())
         self.chip_vendors = kwargs.get('chip_vendors', set())
         self.connectors = kwargs.get('connectors', set())
         self.ips = kwargs.get('ips', set())
@@ -147,6 +153,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'chip':
                     if token_value not in self.chips:
                         return self.failure("Invalid chip")
+                elif token_identifier == 'chip_type':
+                    if token_value not in self.chip_types:
+                        return self.failure("Invalid chip type")
                 elif token_identifier == 'chip_vendor':
                     if token_value not in self.chip_vendors:
                         return self.failure("Invalid chip vendor")
@@ -212,6 +221,7 @@ class BrandTree(Tree):
         bootloaders = kwargs.get('bootloaders', [])
         brands = kwargs.get('brands', [])
         chips = kwargs.get('chips', [])
+        chip_types = kwargs.get('chip_types', [])
         chip_vendors = kwargs.get('chip_vendors', [])
         connectors = kwargs.get('connectors', set())
         flags = kwargs.get('flags', [])
@@ -225,7 +235,7 @@ class BrandTree(Tree):
         years = kwargs.get('years', [])
 
         expand = False
-        if bootloaders or brands or chips or chip_vendors or connectors or flags or \
+        if bootloaders or brands or chips or chip_types or chip_vendors or connectors or flags or \
             ignore_brands or ignore_odms or ips or jtags or odms or passwords or \
             serials or years:
             expand = True
@@ -292,6 +302,15 @@ class BrandTree(Tree):
                     if not show_node:
                         continue
 
+                if chip_types:
+                    show_node = False
+                    for cpu in model['data']['cpus']:
+                        if cpu['chip_type'].lower() in chip_types:
+                            show_node = True
+                            break
+                    if not show_node:
+                        continue
+
                 if chip_vendors:
                     show_node = False
                     for cpu in model['data']['cpus']:
@@ -328,6 +347,7 @@ class OdmTree(Tree):
         bootloaders = kwargs.get('bootloaders', [])
         brands = kwargs.get('brands', [])
         chips = kwargs.get('chips', [])
+        chip_types = kwargs.get('chip_types', [])
         chip_vendors = kwargs.get('chip_vendors', [])
         connectors = kwargs.get('connectors', set())
         flags = kwargs.get('flags', [])
@@ -341,7 +361,7 @@ class OdmTree(Tree):
         years = kwargs.get('years', [])
 
         expand = False
-        if bootloaders or brands or chips or chip_vendors or connectors or flags or \
+        if bootloaders or brands or chips or chip_types or chip_vendors or connectors or flags or \
             ignore_brands or ignore_odms or ips or jtags or odms or passwords or \
             serials or years:
             expand = True
@@ -411,6 +431,15 @@ class OdmTree(Tree):
                         if not show_node:
                             continue
 
+                    if chip_types:
+                        show_node = False
+                        for cpu in model['data']['cpus']:
+                            if cpu['chip_type'].lower() in chip_types:
+                                show_node = True
+                                break
+                        if not show_node:
+                            continue
+
                     if chip_vendors:
                         show_node = False
                         for cpu in model['data']['cpus']:
@@ -447,9 +476,9 @@ class DevicecodeUI(App):
     ]
 
     CSS_PATH = "devicecode_tui.css"
-    TOKEN_IDENTIFIERS = ['bootloader', 'brand', 'chip', 'chip_vendor', 'connector',
-                         'flag', 'ignore_brand', 'ignore_odm', 'ip', 'jtag', 'odm',
-                         'password', 'serial', 'type', 'year']
+    TOKEN_IDENTIFIERS = ['bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
+                         'connector', 'flag', 'ignore_brand', 'ignore_odm', 'ip',
+                         'jtag', 'odm', 'password', 'serial', 'type', 'year']
 
     def __init__(self, devicecode_dir, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -470,6 +499,9 @@ class DevicecodeUI(App):
 
         # known chips
         chips = set()
+
+        # known chip types
+        chip_types = set()
 
         # known chip vendors
         chip_vendors = set()
@@ -565,6 +597,8 @@ class DevicecodeUI(App):
                 chip_vendors.add(cpu_vendor_name.lower())
                 if cpu['model'] != '':
                     chips.add(cpu['model'].lower())
+                if cpu['chip_type'] != '':
+                    chip_types.add(cpu['chip_type'].lower())
                 brand_cpu.append((brand_name, cpu_vendor_name))
                 odm_cpu.append((manufacturer_name, cpu_vendor_name))
                 if device['serial']['connector'] != '':
@@ -665,10 +699,11 @@ class DevicecodeUI(App):
         with Container(id='app-grid'):
             with Container(id='left-grid'):
                 yield Input(placeholder='Filter',
-                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips, chip_vendors=chip_vendors, connectors=connectors, ips=ips, token_identifiers=self.TOKEN_IDENTIFIERS)],
+                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips, chip_types=chip_types, chip_vendors=chip_vendors, connectors=connectors, ips=ips, token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             bootloaders=sorted(bootloaders), brands=sorted(brands),
-                            chips=sorted(chips), chip_vendors=sorted(chip_vendors),
+                            chips=sorted(chips), chip_types=sorted(chip_types),
+                            chip_vendors=sorted(chip_vendors),
                             connectors=sorted(connectors), odms=sorted(odms),
                             flags=sorted(flags)), valid_empty=True)
                 with TabbedContent():
@@ -728,6 +763,7 @@ class DevicecodeUI(App):
         bootloaders = []
         brands = []
         chips = []
+        chip_types = []
         chip_vendors = []
         connectors = set()
         flags = []
@@ -753,6 +789,8 @@ class DevicecodeUI(App):
                         brands.append(value)
                     elif identifier == 'chip':
                         chips.append(value)
+                    elif identifier == 'chip_type':
+                        chip_types.append(value)
                     elif identifier == 'chip_vendor':
                         chip_vendors.append(value)
                     elif identifier == 'connector':
@@ -777,11 +815,13 @@ class DevicecodeUI(App):
                         years.append(int(value))
 
         self.brand_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
-                                   chip_vendors=chip_vendors, connectors=connectors, flags=flags,
+                                   chip_types=chip_types, chip_vendors=chip_vendors,
+                                   connectors=connectors, flags=flags,
                                    ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
                                    jtags=jtags, passwords=passwords, serials=serials, years=years)
         self.odm_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
-                                 chip_vendors=chip_vendors, connectors=connectors, flags=flags,
+                                 chip_types=chip_types, chip_vendors=chip_vendors,
+                                 connectors=connectors, flags=flags,
                                  ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
                                  jtags=jtags, passwords=passwords, serials=serials, years=years)
 
@@ -835,6 +875,8 @@ class DevicecodeUI(App):
                 for r in results['cpus']:
                     new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
                     new_markdown += f"| **Model** | {r['model']}|\n"
+                    new_markdown += f"| **Type** | {r['chip_type']}|\n"
+                    new_markdown += f"| **Revision** | {r['chip_type_revision']}|\n"
                     #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
                     new_markdown += "| | |\n"
             if results['flash']:
