@@ -53,6 +53,7 @@ from the Wikis.
 * CPU type information: for many devices the chip vendor and model are given
   but not the architecture (ARM/MIPS/etc.). By using some lookup table mapping
   model to architecture it should be fairly simple to create these overlays.
+* CPE mapping: see <https://nvd.nist.gov/products/cpe>
 
 ## Add software update information/press releases
 
