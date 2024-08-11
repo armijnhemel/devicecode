@@ -196,7 +196,7 @@ class BrandTree(Tree):
         super().__init__(*args, **kwargs)
         self.brands_to_devices = brands_to_devices
 
-    def build_initial_tree(self):
+    def build_tree(self):
         # build the brand_tree.
         self.reset("DeviceCode brand results")
         for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
@@ -213,7 +213,7 @@ class BrandTree(Tree):
                 node_leaves += 1
             node.label = f"{node.label}  ({node_leaves})"
 
-    def build_tree(self, **kwargs):
+    def update_tree(self, **kwargs):
         self.reset("DeviceCode brand results")
 
         # Optional filters with data that should
@@ -484,7 +484,25 @@ class DevicecodeUI(App):
         super().__init__(*args, **kwargs)
         self.devicecode_directory = devicecode_dir
 
-    def compose_data_sets(self, devices):
+    def compose_data_sets(self, devices, **kwargs):
+        # Optional filters with data that should
+        # be displayed or ignored.
+        filter_bootloaders = kwargs.get('bootloaders', [])
+        filter_brands = kwargs.get('brands', [])
+        filter_chips = kwargs.get('chips', [])
+        filter_chip_types = kwargs.get('chip_types', [])
+        filter_chip_vendors = kwargs.get('chip_vendors', [])
+        filter_connectors = kwargs.get('connectors', set())
+        filter_flags = kwargs.get('flags', [])
+        filter_ignore_brands = kwargs.get('ignore_brands', [])
+        filter_ignore_odms = kwargs.get('ignore_odms', [])
+        filter_ips = kwargs.get('ips', [])
+        filter_jtags = kwargs.get('jtags', [])
+        filter_odms = kwargs.get('odms', [])
+        filter_passwords = kwargs.get('passwords', [])
+        filter_serials = kwargs.get('serials', [])
+        filter_years = kwargs.get('years', [])
+
         # mapping of brands to devices
         brands_to_devices = {}
 
@@ -529,6 +547,83 @@ class DevicecodeUI(App):
             if 'brand' not in device:
                 continue
             brand_name = device['brand']
+
+            # filter brands
+            if filter_brands and brand_name.lower() not in filter_brands:
+                continue
+            if filter_ignore_brands and brand_name.lower() in filter_ignore_brands:
+                continue
+
+            # filter ODMs
+            if filter_odms:
+                if device['manufacturer']['name'].lower() not in filter_odms:
+                    continue
+            if filter_ignore_odms:
+                if device['manufacturer']['name'].lower() in filter_ignore_odms:
+                    continue
+
+            if filter_flags:
+                if not set(map(lambda x: x.lower(), device['flags'])).intersection(filter_flags):
+                    continue
+            if filter_passwords:
+                if device['defaults']['password'] not in filter_passwords:
+                    continue
+            if filter_bootloaders:
+                if device['software']['bootloader']['manufacturer'].lower() not in filter_bootloaders:
+                    continue
+            if filter_jtags:
+                if device['has_jtag'] not in filter_jtags:
+                    continue
+            if filter_serials:
+                if device['has_serial_port'] not in filter_serials:
+                    continue
+            if filter_connectors:
+                if device['serial']['connector'].lower() not in filter_connectors:
+                    continue
+            if filter_ips:
+                if device['defaults']['ip'] not in filter_ips:
+                    continue
+
+            if filter_years:
+                # first collect all the years that have been declared
+                # in the data: FCC, wifi certified, release date
+                declared_years = []
+                if device['commercial']['release_date']:
+                    declared_years.append(int(device['commercial']['release_date'][:4]))
+                if device['regulatory']['fcc_date']:
+                    declared_years.append(int(device['regulatory']['fcc_date'][:4]))
+                if device['regulatory']['wifi_certified_date']:
+                    declared_years.append(int(device['regulatory']['wifi_certified_date'][:4]))
+                if not set(filter_years).intersection(declared_years):
+                    continue
+
+            if filter_chips:
+                show_node = False
+                for cpu in device['cpus']:
+                    if cpu['model'].lower() in filter_chips:
+                        show_node = True
+                        break
+                if not show_node:
+                    continue
+
+            if filter_chip_types:
+                show_node = False
+                for cpu in device['cpus']:
+                    if cpu['chip_type'].lower() in filter_chip_types:
+                        show_node = True
+                        break
+                if not show_node:
+                    continue
+
+            if filter_chip_vendors:
+                show_node = False
+                for cpu in device['cpus']:
+                    if cpu['manufacturer'].lower() in filter_chip_vendors:
+                        show_node = True
+                        break
+                if not show_node:
+                    continue
+
             if brand_name not in brands_to_devices:
                 brands_to_devices[brand_name] = []
             model = device['model']['model']
@@ -617,7 +712,7 @@ class DevicecodeUI(App):
 
 
     def compose(self) -> ComposeResult:
-        devices = []
+        self.devices = []
 
         # process all the JSON files in the directory
         for result_file in self.devicecode_directory.glob('**/*'):
@@ -627,11 +722,11 @@ class DevicecodeUI(App):
             try:
                 with open(result_file, 'r') as wiki_file:
                     device = json.load(wiki_file)
-                    devices.append(device)
+                    self.devices.append(device)
             except json.decoder.JSONDecodeError:
                 pass
 
-        data = self.compose_data_sets(devices)
+        data = self.compose_data_sets(self.devices)
 
         brands_to_devices = data['brands_to_devices']
         odm_to_devices = data['odm_to_devices']
@@ -702,7 +797,6 @@ class DevicecodeUI(App):
         self.brand_tree.show_root = False
         self.brand_tree.root.expand()
         self.brand_tree.build_tree()
-        #self.brand_tree.build_initial_tree()
 
         self.odm_tree: OdmTree[dict] = OdmTree(odm_to_devices, "DeviceCode ODM results")
         self.odm_tree.show_root = False
@@ -842,7 +936,7 @@ class DevicecodeUI(App):
                     elif identifier == 'year':
                         years.append(int(value))
 
-        self.brand_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
+        self.brand_tree.update_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
                                    chip_types=chip_types, chip_vendors=chip_vendors,
                                    connectors=connectors, flags=flags,
                                    ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
