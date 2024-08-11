@@ -194,10 +194,11 @@ class FilterValidator(Validator):
 class BrandTree(Tree):
     def __init__(self, brands_to_devices, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
+        # store the pristine brands_to_devices data
         self.brands_to_devices = brands_to_devices
 
     def build_tree(self):
-        # build the brand_tree.
+        # build the initial brand_tree.
         self.reset("DeviceCode brand results")
         for brand in sorted(self.brands_to_devices.keys(), key=str.casefold):
             # add each brand as a node. Then add each model as a leaf.
@@ -214,6 +215,7 @@ class BrandTree(Tree):
             node.label = f"{node.label}  ({node_leaves})"
 
     def update_tree(self, **kwargs):
+        # first reset the tree
         self.reset("DeviceCode brand results")
 
         # Optional filters with data that should
