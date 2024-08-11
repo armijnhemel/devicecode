@@ -484,7 +484,7 @@ class DevicecodeUI(App):
         super().__init__(*args, **kwargs)
         self.devicecode_directory = devicecode_dir
 
-    def compose(self) -> ComposeResult:
+    def compose_data_sets(self, devices):
         # mapping of brands to devices
         brands_to_devices = {}
 
@@ -518,20 +518,6 @@ class DevicecodeUI(App):
         # known default IP addresses
         ips = set()
 
-        self.devices = []
-
-        # process all the JSON files in the directory
-        for result_file in self.devicecode_directory.glob('**/*'):
-            if not result_file.is_file():
-                continue
-
-            try:
-                with open(result_file, 'r') as wiki_file:
-                    device = json.load(wiki_file)
-                    self.devices.append(device)
-            except json.decoder.JSONDecodeError:
-                pass
-
         # Extract useful data from each of the devices for quick
         # access when building the trees and the datatables.
         brand_odm = []
@@ -539,7 +525,7 @@ class DevicecodeUI(App):
         odm_cpu = []
         odm_connector = []
         chip_connector = []
-        for device in self.devices:
+        for device in devices:
             if 'brand' not in device:
                 continue
             brand_name = device['brand']
@@ -621,6 +607,48 @@ class DevicecodeUI(App):
             brand_odm.append((brand_name, manufacturer_name))
 
             flags.update([x.casefold() for x in device['flags']])
+
+        return {'brands_to_devices': brands_to_devices, 'odm_to_devices': odm_to_devices,
+                'bootloaders': bootloaders, 'brands': brands, 'chips': chips,
+                'chip_types': chip_types, 'chip_vendors': chip_vendors, 'connectors': connectors,
+                'odms': odms, 'flags': flags, 'ips': ips, 'brand_odm': brand_odm,
+                'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu, 'odm_connector': odm_connector,
+                'chip_connector': chip_connector}
+
+
+    def compose(self) -> ComposeResult:
+        devices = []
+
+        # process all the JSON files in the directory
+        for result_file in self.devicecode_directory.glob('**/*'):
+            if not result_file.is_file():
+                continue
+
+            try:
+                with open(result_file, 'r') as wiki_file:
+                    device = json.load(wiki_file)
+                    devices.append(device)
+            except json.decoder.JSONDecodeError:
+                pass
+
+        data = self.compose_data_sets(devices)
+
+        brands_to_devices = data['brands_to_devices']
+        odm_to_devices = data['odm_to_devices']
+        bootloaders = data['bootloaders']
+        brands = data['brands']
+        chips = data['chips']
+        chip_types = data['chip_types']
+        chip_vendors = data['chip_vendors']
+        connectors = data['connectors']
+        odms = data['odms']
+        flags = data['flags']
+        ips = data['ips']
+        brand_odm = data['brand_odm']
+        brand_cpu = data['brand_cpu']
+        odm_cpu = data['odm_cpu']
+        odm_connector = data['odm_connector']
+        chip_connector = data['chip_connector']
 
         # build the various datatables.
         brand_odm_datatable_data = collections.Counter(brand_odm)
