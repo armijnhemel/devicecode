@@ -295,6 +295,7 @@ class DevicecodeUI(App):
 
         # known brands
         brands = set()
+        brand_data = []
 
         # known chips
         chips = set()
@@ -436,6 +437,7 @@ class DevicecodeUI(App):
 
             brands_to_devices[brand_name].append({'model': model, 'data': device, 'labels': sorted(labels)})
             brands.add(brand_name.lower())
+            brand_data.append(brand_name)
 
             manufacturer_name = device['manufacturer']['name']
             if manufacturer_name == '':
@@ -488,11 +490,11 @@ class DevicecodeUI(App):
             flags.update([x.casefold() for x in device['flags']])
 
         return {'brands_to_devices': brands_to_devices, 'odm_to_devices': odm_to_devices,
-                'bootloaders': bootloaders, 'brands': brands, 'chips': chips,
-                'chip_types': chip_types, 'chip_vendors': chip_vendors, 'connectors': connectors,
-                'odms': odms, 'flags': flags, 'ips': ips, 'brand_odm': brand_odm,
-                'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu, 'odm_connector': odm_connector,
-                'chip_vendor_connector': chip_vendor_connector}
+                'bootloaders': bootloaders, 'brands': brands, 'brand_data': brand_data,
+                'chips': chips, 'chip_types': chip_types, 'chip_vendors': chip_vendors,
+                'connectors': connectors, 'odms': odms, 'flags': flags, 'ips': ips,
+                'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
+                'odm_connector': odm_connector, 'chip_vendor_connector': chip_vendor_connector}
 
 
     def compose(self) -> ComposeResult:
@@ -516,6 +518,7 @@ class DevicecodeUI(App):
         odm_to_devices = data['odm_to_devices']
         bootloaders = data['bootloaders']
         brands = data['brands']
+        brand_data = data['brand_data']
         chips = data['chips']
         chip_types = data['chip_types']
         chip_vendors = data['chip_vendors']
@@ -531,11 +534,19 @@ class DevicecodeUI(App):
         chip_vendor_connector = data['chip_vendor_connector']
 
         # build the various datatables.
+        brand_datatable_data = collections.Counter(brand_data)
         brand_odm_datatable_data = collections.Counter(brand_odm)
         brand_cpu_datatable_data = collections.Counter(brand_cpu)
         odm_cpu_datatable_data = collections.Counter(odm_cpu)
         odm_connector_data = collections.Counter(odm_connector)
         chip_vendor_connector_data = collections.Counter(chip_vendor_connector)
+
+        self.brand_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
+        self.brand_data_table.add_columns("rank", "count", "brand")
+        rank = 1
+        for i in brand_datatable_data.most_common():
+            self.brand_data_table.add_row(rank, i[1], i[0])
+            rank += 1
 
         self.brand_odm_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.brand_odm_data_table.add_columns("rank", "count", "brand", "ODM")
@@ -619,6 +630,9 @@ class DevicecodeUI(App):
                         yield self.brand_tree
                     with TabPane('ODM view'):
                         yield self.odm_tree
+                    with TabPane('Brand'):
+                        with VerticalScroll():
+                            yield self.brand_data_table
                     with TabPane('Brand/ODM'):
                         with VerticalScroll():
                             yield self.brand_odm_data_table
@@ -738,6 +752,7 @@ class DevicecodeUI(App):
         self.odm_tree.build_tree(filtered_data['odm_to_devices'], is_filtered)
 
         # build the various datatables.
+        brand_datatable_data = collections.Counter(filtered_data['brand_data'])
         brand_odm_datatable_data = collections.Counter(filtered_data['brand_odm'])
         brand_cpu_datatable_data = collections.Counter(filtered_data['brand_cpu'])
         odm_cpu_datatable_data = collections.Counter(filtered_data['odm_cpu'])
@@ -745,6 +760,12 @@ class DevicecodeUI(App):
         chip_vendor_connector_data = collections.Counter(filtered_data['chip_vendor_connector'])
 
         # clear and rebuild the data tables
+        self.brand_data_table.clear()
+        rank = 1
+        for i in brand_datatable_data.most_common():
+            self.brand_data_table.add_row(rank, i[1], i[0])
+            rank += 1
+
         self.brand_odm_data_table.clear()
         rank = 1
         for i in brand_odm_datatable_data.most_common():

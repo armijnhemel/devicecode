@@ -37,11 +37,12 @@ The tree view has two members:
 
 The table view currently has several views:
 
-1. brand/ODM: brand/ODM combinations
-2. brand/CPU vendor: brand/CPU vendor combinations
-3. ODM/CPU vendor: ODM/CPU vendor combinations
-4. ODM/connector: ODM/connector combinations (serial/JTAG)
-5. CPU vendor/connector: CPU vendor/connector combinations (serial/JTAG)
+1. brand: brands
+2. brand/ODM: brand/ODM combinations
+3. brand/CPU vendor: brand/CPU vendor combinations
+4. ODM/CPU vendor: ODM/CPU vendor combinations
+5. ODM/connector: ODM/connector combinations (serial/JTAG)
+6. CPU vendor/connector: CPU vendor/connector combinations (serial/JTAG)
 
 ![Screenshot of the start screen showing the tree with devices](tui-start-screen.png)
 
