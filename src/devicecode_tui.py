@@ -143,8 +143,6 @@ class FilterValidator(Validator):
                 token_identifier, token_value = t.split('=', maxsplit=1)
                 if token_identifier not in self.token_identifiers:
                     return self.failure("Invalid identifier")
-                if token_value == '':
-                    return self.failure("Invalid identifier")
                 if token_identifier == 'bootloader':
                     if token_value not in self.bootloaders:
                         return self.failure("Invalid bootloader")
@@ -699,10 +697,14 @@ class DevicecodeUI(App):
         serials = []
         years = []
         is_filtered = False
+        refresh = False
 
-        if event.validation_result is not None:
+        if event.validation_result is None:
+            refresh = True
+        else:
             if event.validation_result.is_valid:
                 is_filtered = True
+                refresh = True
                 # input was already syntactically validated.
                 tokens = shlex.split(event.value.lower())
 
@@ -741,70 +743,71 @@ class DevicecodeUI(App):
                     elif identifier == 'year':
                         years.append(int(value))
 
-        filtered_data = self.compose_data_sets(bootloaders=bootloaders, brands=brands, odms=odms,
-                                   chips=chips, chip_types=chip_types, chip_vendors=chip_vendors,
-                                   connectors=connectors, flags=flags, ignore_brands=ignore_brands,
-                                   ignore_odms=ignore_odms, ips=ips, jtags=jtags,
-                                   operating_systems=operating_systems, passwords=passwords,
-                                   serials=serials, years=years)
+        if refresh:
+            filtered_data = self.compose_data_sets(bootloaders=bootloaders, brands=brands, odms=odms,
+                                       chips=chips, chip_types=chip_types, chip_vendors=chip_vendors,
+                                       connectors=connectors, flags=flags, ignore_brands=ignore_brands,
+                                       ignore_odms=ignore_odms, ips=ips, jtags=jtags,
+                                       operating_systems=operating_systems, passwords=passwords,
+                                       serials=serials, years=years)
 
-        self.brand_tree.build_tree(filtered_data['brands_to_devices'], is_filtered)
-        self.odm_tree.build_tree(filtered_data['odm_to_devices'], is_filtered)
+            self.brand_tree.build_tree(filtered_data['brands_to_devices'], is_filtered)
+            self.odm_tree.build_tree(filtered_data['odm_to_devices'], is_filtered)
 
-        # build the various datatables.
-        brand_datatable_data = collections.Counter(filtered_data['brand_data'])
-        brand_odm_datatable_data = collections.Counter(filtered_data['brand_odm'])
-        brand_cpu_datatable_data = collections.Counter(filtered_data['brand_cpu'])
-        odm_cpu_datatable_data = collections.Counter(filtered_data['odm_cpu'])
-        odm_connector_data = collections.Counter(filtered_data['odm_connector'])
-        chip_vendor_connector_data = collections.Counter(filtered_data['chip_vendor_connector'])
+            # build the various datatables.
+            brand_datatable_data = collections.Counter(filtered_data['brand_data'])
+            brand_odm_datatable_data = collections.Counter(filtered_data['brand_odm'])
+            brand_cpu_datatable_data = collections.Counter(filtered_data['brand_cpu'])
+            odm_cpu_datatable_data = collections.Counter(filtered_data['odm_cpu'])
+            odm_connector_data = collections.Counter(filtered_data['odm_connector'])
+            chip_vendor_connector_data = collections.Counter(filtered_data['chip_vendor_connector'])
 
-        # clear and rebuild the data tables
-        self.brand_data_table.clear()
-        rank = 1
-        for i in brand_datatable_data.most_common():
-            self.brand_data_table.add_row(rank, i[1], i[0])
-            rank += 1
+            # clear and rebuild the data tables
+            self.brand_data_table.clear()
+            rank = 1
+            for i in brand_datatable_data.most_common():
+                self.brand_data_table.add_row(rank, i[1], i[0])
+                rank += 1
 
-        self.brand_odm_data_table.clear()
-        rank = 1
-        for i in brand_odm_datatable_data.most_common():
-            self.brand_odm_data_table.add_row(rank, i[1], i[0][0], i[0][1])
-            rank += 1
+            self.brand_odm_data_table.clear()
+            rank = 1
+            for i in brand_odm_datatable_data.most_common():
+                self.brand_odm_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+                rank += 1
 
-        self.brand_cpu_data_table.clear()
-        rank = 1
-        for i in brand_cpu_datatable_data.most_common():
-            self.brand_cpu_data_table.add_row(rank, i[1], i[0][0], i[0][1])
-            rank += 1
+            self.brand_cpu_data_table.clear()
+            rank = 1
+            for i in brand_cpu_datatable_data.most_common():
+                self.brand_cpu_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+                rank += 1
 
-        self.odm_cpu_data_table.clear()
-        rank = 1
-        for i in odm_cpu_datatable_data.most_common():
-            self.odm_cpu_data_table.add_row(rank, i[1], i[0][0], i[0][1])
-            rank += 1
+            self.odm_cpu_data_table.clear()
+            rank = 1
+            for i in odm_cpu_datatable_data.most_common():
+                self.odm_cpu_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+                rank += 1
 
-        self.odm_connector_data_table.clear()
-        rank = 1
-        for i in odm_connector_data.most_common():
-            self.odm_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
-            rank += 1
+            self.odm_connector_data_table.clear()
+            rank = 1
+            for i in odm_connector_data.most_common():
+                self.odm_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+                rank += 1
 
-        self.chip_vendor_connector_data_table.clear()
-        rank = 1
-        for i in chip_vendor_connector_data.most_common():
-            self.chip_vendor_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
-            rank += 1
+            self.chip_vendor_connector_data_table.clear()
+            rank = 1
+            for i in chip_vendor_connector_data.most_common():
+                self.chip_vendor_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+                rank += 1
 
-        # reset the data areas to prevent old data being displayed
-        self.device_data_area.update('')
-        self.regulatory_data_area.update('')
-        self.model_data_area.update('')
-        self.network_data_area.update("")
-        self.serial_jtag_area.update('')
-        self.software_area.update('')
-        self.chips_area.update('')
-        self.power_area.update('')
+            # reset the data areas to prevent old data being displayed
+            self.device_data_area.update('')
+            self.regulatory_data_area.update('')
+            self.model_data_area.update('')
+            self.network_data_area.update("")
+            self.serial_jtag_area.update('')
+            self.software_area.update('')
+            self.chips_area.update('')
+            self.power_area.update('')
 
     def on_markdown_link_clicked(self, event: Markdown.LinkClicked) -> None:
         if event.href.startswith('http://') or event.href.startswith('https://'):
