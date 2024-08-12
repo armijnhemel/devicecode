@@ -439,6 +439,35 @@ def parse_os(os_string):
     if fields[0] not in defaults.KNOWN_OS:
         return result
     result['os'] = fields[0]
+
+    re_linux_kernel = re.compile(r"^([2-6]\.[\d\w\-\.\+]*)$")
+
+    if len(fields) > 1:
+        for field in fields[1:]:
+            if fields[0] == 'Linux':
+                if field in ['', ',']:
+                    continue
+                if 'LSDK' in field:
+                    # Atheros/Qualcomm Atheros SDK version
+                    sdk_version = field.split('-', maxsplit=1)[1]
+                    result['sdk'] = 'LSDK'
+                    result['sdk_version'] = sdk_version
+                if 'Android' in field:
+                    result['distribution'] = 'Android'
+                elif 'Debian' in field:
+                    result['distribution'] = 'Debian'
+                elif 'Ubuntu' in field:
+                    result['distribution'] = 'Ubuntu'
+                elif 'Fedora' in field:
+                    result['distribution'] = 'Fedora'
+                elif 'OpenWrt' in field:
+                    result['distribution'] = 'OpenWrt'
+                elif 'Yocto' in field:
+                    result['distribution'] = 'Yocto'
+                else:
+                    regex_res = re_linux_kernel.match(field)
+                    if regex_res is not None:
+                        result['kernel_version'] = regex_res.groups()[0]
     return result
 
 def parse_serial_jtag(serial_string):
