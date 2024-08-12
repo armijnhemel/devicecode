@@ -351,6 +351,8 @@ def parse_log(boot_log):
         interesting_findings['adtran bootloader'] = set(res)
 
     # find functionality
+    if 'console [ttyS0] enabled' in str(boot_log):
+        interesting_findings['functionality'] = {'serial port': 'ttyS0'}
 
     # find source code files
 
