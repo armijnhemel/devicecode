@@ -212,121 +212,22 @@ class BrandTree(Tree):
 
 
 class OdmTree(Tree):
-    def __init__(self, odm_to_devices, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.odm_to_devices = odm_to_devices
 
-    def build_tree(self, **kwargs):
+    def build_tree(self, odm_to_devices, is_filtered=False):
         # build the odm_tree.
         self.reset("DeviceCode OEM results")
 
-        # Optional filters with data that should
-        # be displayed or ignored.
-        bootloaders = kwargs.get('bootloaders', [])
-        brands = kwargs.get('brands', [])
-        chips = kwargs.get('chips', [])
-        chip_types = kwargs.get('chip_types', [])
-        chip_vendors = kwargs.get('chip_vendors', [])
-        connectors = kwargs.get('connectors', set())
-        flags = kwargs.get('flags', [])
-        ignore_brands = kwargs.get('ignore_brands', [])
-        ignore_odms = kwargs.get('ignore_odms', [])
-        ips = kwargs.get('ips', [])
-        jtags = kwargs.get('jtags', [])
-        odms = kwargs.get('odms', [])
-        passwords = kwargs.get('passwords', [])
-        serials = kwargs.get('serials', [])
-        years = kwargs.get('years', [])
-
-        expand = False
-        if bootloaders or brands or chips or chip_types or chip_vendors or connectors or flags or \
-            ignore_brands or ignore_odms or ips or jtags or odms or passwords or \
-            serials or years:
-            expand = True
-
         # add each manufacturer as a node. Then add each brand as a subtree
         # and each model as a leaf. Optionally filter for brands and prune.
-        for odm in sorted(self.odm_to_devices.keys(), key=str.casefold):
-            if odms and odm.lower() not in odms:
-                continue
-            if ignore_odms and odm.lower() in ignore_odms:
-                continue
-
+        for odm in sorted(odm_to_devices.keys(), key=str.casefold):
             # create a node with brand subnodes
-            node = self.root.add(odm, expand=expand)
+            node = self.root.add(odm, expand=is_filtered)
             node_leaves = 0
-            for brand in sorted(self.odm_to_devices[odm], key=str.casefold):
-                if brands and brand.lower() not in brands:
-                    continue
-                if ignore_brands and brand.lower() in ignore_brands:
-                    continue
-
-                # recurse into the device and add nodes for
-                # devices, after filtering
+            for brand in sorted(odm_to_devices[odm], key=str.casefold):
+                # recurse into the device and add nodes for devices
                 brand_node = node.add(brand)
                 brand_node_leaves = 0
-                for model in sorted(self.odm_to_devices[odm][brand], key=lambda x: x['model']):
-                    if flags:
-                        if not set(map(lambda x: x.lower(), model['data']['flags'])).intersection(flags):
-                            continue
-                    if passwords:
-                        if model['data']['defaults']['password'] not in passwords:
-                            continue
-                    if bootloaders:
-                        if model['data']['software']['bootloader']['manufacturer'].lower() not in bootloaders:
-                            continue
-                    if jtags:
-                        if model['data']['has_jtag'] not in jtags:
-                            continue
-                    if serials:
-                        if model['data']['has_serial_port'] not in serials:
-                            continue
-                    if connectors:
-                        if model['data']['serial']['connector'].lower() not in connectors:
-                            continue
-                    if ips:
-                        if model['data']['defaults']['ip'] not in ips:
-                            continue
-                    if years:
-                        # first collect all the years that have been declared
-                        # in the data: FCC, wifi certified, release date
-                        declared_years = []
-                        if model['data']['commercial']['release_date']:
-                            declared_years.append(int(model['data']['commercial']['release_date'][:4]))
-                        if model['data']['regulatory']['fcc_date']:
-                            declared_years.append(int(model['data']['regulatory']['fcc_date'][:4]))
-                        if model['data']['regulatory']['wifi_certified_date']:
-                            declared_years.append(int(model['data']['regulatory']['wifi_certified_date'][:4]))
-                        if not set(years).intersection(declared_years):
-                            continue
-
-                    if chips:
-                        show_node = False
-                        for cpu in model['data']['cpus']:
-                            if cpu['model'].lower() in chips:
-                                show_node = True
-                                break
-                        if not show_node:
-                            continue
-
-                    if chip_types:
-                        show_node = False
-                        for cpu in model['data']['cpus']:
-                            if cpu['chip_type'].lower() in chip_types:
-                                show_node = True
-                                break
-                        if not show_node:
-                            continue
-
-                    if chip_vendors:
-                        show_node = False
-                        for cpu in model['data']['cpus']:
-                            if cpu['manufacturer'].lower() in chip_vendors:
-                                show_node = True
-                                break
-                        if not show_node:
-                            continue
-
+                for model in sorted(odm_to_devices[odm][brand], key=lambda x: x['model']):
                     # default case
                     if model['labels']:
                         brand_node.add_leaf(f"{model['model']}  {''.join(model['labels'])}", data=model['data'])
@@ -671,10 +572,10 @@ class DevicecodeUI(App):
         self.brand_tree.root.expand()
         self.brand_tree.build_tree(brands_to_devices)
 
-        self.odm_tree: OdmTree[dict] = OdmTree(odm_to_devices, "DeviceCode ODM results")
+        self.odm_tree: OdmTree[dict] = OdmTree("DeviceCode ODM results")
         self.odm_tree.show_root = False
         self.odm_tree.root.expand()
-        self.odm_tree.build_tree()
+        self.odm_tree.build_tree(odm_to_devices)
 
         # Create a table with the results. The root element will
         # not have any associated data with it.
@@ -818,12 +719,7 @@ class DevicecodeUI(App):
                                    jtags=jtags, passwords=passwords, serials=serials, years=years)
 
         self.brand_tree.build_tree(filtered_data['brands_to_devices'], is_filtered)
-
-        self.odm_tree.build_tree(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
-                                 chip_types=chip_types, chip_vendors=chip_vendors,
-                                 connectors=connectors, flags=flags,
-                                 ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
-                                 jtags=jtags, passwords=passwords, serials=serials, years=years)
+        self.odm_tree.build_tree(filtered_data['odm_to_devices'], is_filtered)
 
         # reset the data areas to prevent old data being displayed
         self.device_data_area.update('')
