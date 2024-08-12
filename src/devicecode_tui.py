@@ -634,45 +634,40 @@ class DevicecodeUI(App):
         odm_connector_data = collections.Counter(odm_connector)
         chip_connector_data = collections.Counter(chip_connector)
 
-        self.brand_odm_data_table: DataTable() = DataTable()
+        self.brand_odm_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.brand_odm_data_table.add_columns("rank", "count", "brand", "ODM")
         rank = 1
         for i in brand_odm_datatable_data.most_common():
             self.brand_odm_data_table.add_row(rank, i[1], i[0][0], i[0][1])
             rank += 1
-        self.brand_odm_data_table.fixed_columns = 1
 
-        self.brand_cpu_data_table: DataTable() = DataTable()
+        self.brand_cpu_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.brand_cpu_data_table.add_columns("rank", "count", "brand", "CPU brand")
         rank = 1
         for i in brand_cpu_datatable_data.most_common():
             self.brand_cpu_data_table.add_row(rank, i[1], i[0][0], i[0][1])
             rank += 1
-        self.brand_cpu_data_table.fixed_columns = 1
 
-        self.odm_cpu_data_table: DataTable() = DataTable()
+        self.odm_cpu_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.odm_cpu_data_table.add_columns("rank", "count", "ODM", "CPU brand")
         rank = 1
         for i in odm_cpu_datatable_data.most_common():
             self.odm_cpu_data_table.add_row(rank, i[1], i[0][0], i[0][1])
             rank += 1
-        self.odm_cpu_data_table.fixed_columns = 1
 
-        self.odm_connector_data_table: DataTable() = DataTable()
+        self.odm_connector_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.odm_connector_data_table.add_columns("rank", "count", "ODM", "connector")
         rank = 1
         for i in odm_connector_data.most_common():
             self.odm_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
             rank += 1
-        self.odm_connector_data_table.fixed_columns = 1
 
-        self.chip_connector_data_table: DataTable() = DataTable()
+        self.chip_connector_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.chip_connector_data_table.add_columns("rank", "count", "CPU", "connector")
         rank = 1
         for i in chip_connector_data.most_common():
             self.chip_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
             rank += 1
-        self.chip_connector_data_table.fixed_columns = 1
 
         # build the various trees.
         self.brand_tree: BrandTree[dict] = BrandTree(brands_to_devices, "DeviceCode brand results")
