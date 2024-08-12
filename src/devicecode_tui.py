@@ -192,10 +192,6 @@ class FilterValidator(Validator):
             return self.failure('Incomplete')
 
 class BrandTree(Tree):
-    def __init__(self, brands_to_devices, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        # store the pristine brands_to_devices data
-        self.brands_to_devices = brands_to_devices
 
     def build_tree(self, brands_to_devices, is_filtered=False):
         # build the initial brand_tree.
@@ -670,7 +666,7 @@ class DevicecodeUI(App):
             rank += 1
 
         # build the various trees.
-        self.brand_tree: BrandTree[dict] = BrandTree(brands_to_devices, "DeviceCode brand results")
+        self.brand_tree: BrandTree[dict] = BrandTree("DeviceCode brand results")
         self.brand_tree.show_root = False
         self.brand_tree.root.expand()
         self.brand_tree.build_tree(brands_to_devices)
