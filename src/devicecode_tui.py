@@ -990,7 +990,7 @@ class DevicecodeUI(App):
             new_markdown += f"|**Extra info** | {extra_infos}\n"
 
             # software
-            new_markdown += "# Software\n"
+            new_markdown += "# Operating system, SDK & Third party software\n"
             new_markdown += "| | |\n|--|--|\n"
             new_markdown += f"|**OS** |{ result['os']}\n"
             new_markdown += f"|**SDK** |{ result['sdk']}\n"
@@ -1000,6 +1000,10 @@ class DevicecodeUI(App):
             #new_markdown += f"|**Gargoyle** |{ result['gargoyle']}\n"
             #new_markdown += f"|**OpenWrt** |{ result['openwrt']}\n"
             #new_markdown += f"|**Tomato** |{ result['tomato']}\n"
+
+            # packages
+            new_markdown += "# Packages\n"
+            new_markdown += "| | |\n|--|--|\n"
         return new_markdown
 
     def build_model_report(self, result):
