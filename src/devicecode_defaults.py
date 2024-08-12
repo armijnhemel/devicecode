@@ -408,7 +408,7 @@ KNOWN_RADIO_IDENTIFIERS = set(["rad1a", "rad1ac", "rad1ad", "rad1_ant_conn", "ra
     "rad3txchains", "rad4b", "rad4chip1', 'rad4chip2', 'rad4chip3", "rad4freq", "rad4g", "rad4mod",
     "rad4n", "rad4rxchains", "rad4sstreams", "rad4stand", "rad4txchains",])
 
-KNOWN_OS = set(['airOS', 'Android', 'Android TV', 'ArubaOS', 'AVM', 'Bananian', 'CBOS v2.0',
+KNOWN_OS = set(['airOS', 'Android', 'Android TV', 'ArubaOS', 'Bananian', 'CBOS v2.0',
                 'CompexWRT', 'Debian', 'delos', 'DrayOS', 'eCos', 'eeroOS', 'FreeRTOS', 'ISOS',
                 'Linux', 'mFiOS', 'Nucleus RTOS', 'OpenWrt', 'PharOS', 'QTS Lite', 'Q-WRT',
                 'reyeeOS', 'RokuOS', 'RouterOS', 'SonicOS', 'SuperTask!', 'ThreadX', 'tvOS',
