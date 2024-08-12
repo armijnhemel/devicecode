@@ -112,6 +112,7 @@ where identifier can be one of:
 * `ignore_odm`
 * `jtag`
 * `odm`
+* `os`
 * `password`
 * `serial`
 * `type`
@@ -212,6 +213,11 @@ There are two ways to filter brands:
 
 1. use the `odm` statement to show devices made by one or more ODMs
 2. use the `ignore_odm` statement to hide devices made by one or more ODMs
+
+##### Default operating system
+
+`os` can be used to show the default operating system that is installed on
+the device.
 
 ##### Serial
 

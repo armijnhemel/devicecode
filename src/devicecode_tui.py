@@ -22,6 +22,7 @@ from textual.suggester import Suggester
 from textual.validation import ValidationResult, Validator
 from textual.widgets import Footer, Markdown, Tree, TabbedContent, TabPane, Input, Header, DataTable
 
+import devicecode_defaults as defaults
 
 class SuggestDevices(Suggester):
     '''A custom suggester, based on the SuggestFromList example from Textual'''
@@ -257,7 +258,7 @@ class DevicecodeUI(App):
     CSS_PATH = "devicecode_tui.css"
     TOKEN_IDENTIFIERS = ['bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
                          'connector', 'flag', 'ignore_brand', 'ignore_odm', 'ip',
-                         'jtag', 'odm', 'password', 'serial', 'type', 'year']
+                         'jtag', 'odm', 'os', 'password', 'serial', 'type', 'year']
 
     def __init__(self, devicecode_dir, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -278,6 +279,7 @@ class DevicecodeUI(App):
         filter_ips = kwargs.get('ips', [])
         filter_jtags = kwargs.get('jtags', [])
         filter_odms = kwargs.get('odms', [])
+        filter_operating_systems = kwargs.get('operating_systems', [])
         filter_passwords = kwargs.get('passwords', [])
         filter_serials = kwargs.get('serials', [])
         filter_years = kwargs.get('years', [])
@@ -352,6 +354,9 @@ class DevicecodeUI(App):
                     continue
             if filter_jtags:
                 if device['has_jtag'] not in filter_jtags:
+                    continue
+            if filter_operating_systems:
+                if device['software']['os'].lower() not in filter_operating_systems:
                     continue
             if filter_serials:
                 if device['has_serial_port'] not in filter_serials:
@@ -522,6 +527,7 @@ class DevicecodeUI(App):
         brand_cpu = data['brand_cpu']
         odm_cpu = data['odm_cpu']
         odm_connector = data['odm_connector']
+        operating_systems = defaults.KNOWN_OS
         chip_vendor_connector = data['chip_vendor_connector']
 
         # build the various datatables.
@@ -597,8 +603,8 @@ class DevicecodeUI(App):
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             bootloaders=sorted(bootloaders), brands=sorted(brands),
                             chips=sorted(chips), chip_types=sorted(chip_types),
-                            chip_vendors=sorted(chip_vendors),
-                            connectors=sorted(connectors), odms=sorted(odms),
+                            chip_vendors=sorted(chip_vendors), connectors=sorted(connectors),
+                            odms=sorted(odms), operating_systems=sorted(operating_systems),
                             flags=sorted(flags)), valid_empty=True)
 
         # Yield the elements. The UI is a container with an app grid. On the left
@@ -674,6 +680,7 @@ class DevicecodeUI(App):
         ips = []
         jtags = []
         odms = []
+        operating_systems = []
         passwords = []
         serials = []
         years = []
@@ -709,6 +716,8 @@ class DevicecodeUI(App):
                         ips.append(value)
                     elif identifier == 'odm':
                         odms.append(value)
+                    elif identifier == 'os':
+                        operating_systems.append(value)
                     elif identifier == 'password':
                         passwords.append(value)
                     elif identifier == 'serial':
@@ -720,9 +729,10 @@ class DevicecodeUI(App):
 
         filtered_data = self.compose_data_sets(bootloaders=bootloaders, brands=brands, odms=odms,
                                    chips=chips, chip_types=chip_types, chip_vendors=chip_vendors,
-                                   connectors=connectors, flags=flags,
-                                   ignore_brands=ignore_brands, ignore_odms=ignore_odms, ips=ips,
-                                   jtags=jtags, passwords=passwords, serials=serials, years=years)
+                                   connectors=connectors, flags=flags, ignore_brands=ignore_brands,
+                                   ignore_odms=ignore_odms, ips=ips, jtags=jtags,
+                                   operating_systems=operating_systems, passwords=passwords,
+                                   serials=serials, years=years)
 
         self.brand_tree.build_tree(filtered_data['brands_to_devices'], is_filtered)
         self.odm_tree.build_tree(filtered_data['odm_to_devices'], is_filtered)
