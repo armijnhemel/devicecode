@@ -321,7 +321,7 @@ class DevicecodeUI(App):
         brand_cpu = []
         odm_cpu = []
         odm_connector = []
-        chip_connector = []
+        chip_vendor_connector = []
         for device in self.devices:
             if 'brand' not in device:
                 continue
@@ -462,7 +462,7 @@ class DevicecodeUI(App):
                 brand_cpu.append((brand_name, cpu_vendor_name))
                 odm_cpu.append((manufacturer_name, cpu_vendor_name))
                 if device['serial']['connector'] != '':
-                    chip_connector.append((cpu_vendor_name, device['serial']['connector']))
+                    chip_vendor_connector.append((cpu_vendor_name, device['serial']['connector']))
 
             for chip in device['network']['chips']:
                 chip_vendor_name = chip['manufacturer']
@@ -487,7 +487,7 @@ class DevicecodeUI(App):
                 'chip_types': chip_types, 'chip_vendors': chip_vendors, 'connectors': connectors,
                 'odms': odms, 'flags': flags, 'ips': ips, 'brand_odm': brand_odm,
                 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu, 'odm_connector': odm_connector,
-                'chip_connector': chip_connector}
+                'chip_vendor_connector': chip_vendor_connector}
 
 
     def compose(self) -> ComposeResult:
@@ -522,14 +522,14 @@ class DevicecodeUI(App):
         brand_cpu = data['brand_cpu']
         odm_cpu = data['odm_cpu']
         odm_connector = data['odm_connector']
-        chip_connector = data['chip_connector']
+        chip_vendor_connector = data['chip_vendor_connector']
 
         # build the various datatables.
         brand_odm_datatable_data = collections.Counter(brand_odm)
         brand_cpu_datatable_data = collections.Counter(brand_cpu)
         odm_cpu_datatable_data = collections.Counter(odm_cpu)
         odm_connector_data = collections.Counter(odm_connector)
-        chip_connector_data = collections.Counter(chip_connector)
+        chip_vendor_connector_data = collections.Counter(chip_vendor_connector)
 
         self.brand_odm_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.brand_odm_data_table.add_columns("rank", "count", "brand", "ODM")
@@ -559,11 +559,11 @@ class DevicecodeUI(App):
             self.odm_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
             rank += 1
 
-        self.chip_connector_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
-        self.chip_connector_data_table.add_columns("rank", "count", "CPU", "connector")
+        self.chip_vendor_connector_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
+        self.chip_vendor_connector_data_table.add_columns("rank", "count", "CPU", "connector")
         rank = 1
-        for i in chip_connector_data.most_common():
-            self.chip_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+        for i in chip_vendor_connector_data.most_common():
+            self.chip_vendor_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
             rank += 1
 
         # build the various trees.
@@ -588,20 +588,26 @@ class DevicecodeUI(App):
         self.chips_area = Markdown()
         self.power_area = Markdown()
 
-        # Yield the elements. The UI is a container with an app grid. On the left
-        # there are some tabs, each containing a tree. On the right there is a
-        # an area to display the results.
-        yield Header()
-        with Container(id='app-grid'):
-            with Container(id='left-grid'):
-                yield Input(placeholder='Filter',
-                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips, chip_types=chip_types, chip_vendors=chip_vendors, connectors=connectors, ips=ips, token_identifiers=self.TOKEN_IDENTIFIERS)],
+        # input field
+        input_filter = Input(placeholder='Filter',
+                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands,
+                                                        odms=odms, chips=chips, chip_types=chip_types,
+                                                        chip_vendors=chip_vendors, connectors=connectors,
+                                                        ips=ips, token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             bootloaders=sorted(bootloaders), brands=sorted(brands),
                             chips=sorted(chips), chip_types=sorted(chip_types),
                             chip_vendors=sorted(chip_vendors),
                             connectors=sorted(connectors), odms=sorted(odms),
                             flags=sorted(flags)), valid_empty=True)
+
+        # Yield the elements. The UI is a container with an app grid. On the left
+        # there are some tabs, each containing a tree. On the right there is a
+        # an area to display the results.
+        yield Header()
+        with Container(id='app-grid'):
+            with Container(id='left-grid'):
+                yield input_filter
                 with TabbedContent():
                     with TabPane('Brand view'):
                         yield self.brand_tree
@@ -621,7 +627,7 @@ class DevicecodeUI(App):
                             yield self.odm_connector_data_table
                     with TabPane('CPU vendor/connector'):
                         with VerticalScroll():
-                            yield self.chip_connector_data_table
+                            yield self.chip_vendor_connector_data_table
             with TabbedContent(id='result-tabs'):
                 with TabPane('Device'):
                     with VerticalScroll():
@@ -720,6 +726,44 @@ class DevicecodeUI(App):
 
         self.brand_tree.build_tree(filtered_data['brands_to_devices'], is_filtered)
         self.odm_tree.build_tree(filtered_data['odm_to_devices'], is_filtered)
+
+        # build the various datatables.
+        brand_odm_datatable_data = collections.Counter(filtered_data['brand_odm'])
+        brand_cpu_datatable_data = collections.Counter(filtered_data['brand_cpu'])
+        odm_cpu_datatable_data = collections.Counter(filtered_data['odm_cpu'])
+        odm_connector_data = collections.Counter(filtered_data['odm_connector'])
+        chip_vendor_connector_data = collections.Counter(filtered_data['chip_vendor_connector'])
+
+        # clear and rebuild the data tables
+        self.brand_odm_data_table.clear()
+        rank = 1
+        for i in brand_odm_datatable_data.most_common():
+            self.brand_odm_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+            rank += 1
+
+        self.brand_cpu_data_table.clear()
+        rank = 1
+        for i in brand_cpu_datatable_data.most_common():
+            self.brand_cpu_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+            rank += 1
+
+        self.odm_cpu_data_table.clear()
+        rank = 1
+        for i in odm_cpu_datatable_data.most_common():
+            self.odm_cpu_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+            rank += 1
+
+        self.odm_connector_data_table.clear()
+        rank = 1
+        for i in odm_connector_data.most_common():
+            self.odm_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+            rank += 1
+
+        self.chip_vendor_connector_data_table.clear()
+        rank = 1
+        for i in chip_vendor_connector_data.most_common():
+            self.chip_vendor_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+            rank += 1
 
         # reset the data areas to prevent old data being displayed
         self.device_data_area.update('')
