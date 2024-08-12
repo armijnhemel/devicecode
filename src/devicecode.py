@@ -204,6 +204,7 @@ class Software:
     '''Software information: stock OS/bootloader, third party support'''
     bootloader: Bootloader = field(default_factory=Bootloader)
     os: str = ''
+    os_version: str = ''
     sdk: str = ''
     ddwrt: str = 'unknown'
     gargoyle: str = 'unknown'
@@ -430,6 +431,15 @@ def parse_date(date_string):
                 except ValueError:
                     return ""
     return parsed_date.strftime("%Y-%m-%d")
+
+def parse_os(os_string):
+    '''Parse OS information'''
+    result = {}
+    fields = os_string.split(';')
+    if fields[0] not in defaults.KNOWN_OS:
+        return result
+    result['os'] = fields[0]
+    return result
 
 def parse_serial_jtag(serial_string):
     '''Parse serial port or JTAG information'''
@@ -1160,7 +1170,9 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                 elif identifier in ['stockos', 'stock_os']:
                                                     if device.software.os == '':
                                                         # TODO: parse stock OS information
-                                                        device.software.os = value
+                                                        result = parse_os(value)
+                                                        if result:
+                                                            device.software.os = result['os']
                                                 elif identifier in ['stockbootloader', 'stock_bootloader', 'stock_boot']:
                                                     bootloader_split = value.split(';')
 
