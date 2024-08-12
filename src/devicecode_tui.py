@@ -588,20 +588,26 @@ class DevicecodeUI(App):
         self.chips_area = Markdown()
         self.power_area = Markdown()
 
-        # Yield the elements. The UI is a container with an app grid. On the left
-        # there are some tabs, each containing a tree. On the right there is a
-        # an area to display the results.
-        yield Header()
-        with Container(id='app-grid'):
-            with Container(id='left-grid'):
-                yield Input(placeholder='Filter',
-                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands, odms=odms, chips=chips, chip_types=chip_types, chip_vendors=chip_vendors, connectors=connectors, ips=ips, token_identifiers=self.TOKEN_IDENTIFIERS)],
+        # input field
+        input_filter = Input(placeholder='Filter',
+                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands,
+                                                        odms=odms, chips=chips, chip_types=chip_types,
+                                                        chip_vendors=chip_vendors, connectors=connectors,
+                                                        ips=ips, token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             bootloaders=sorted(bootloaders), brands=sorted(brands),
                             chips=sorted(chips), chip_types=sorted(chip_types),
                             chip_vendors=sorted(chip_vendors),
                             connectors=sorted(connectors), odms=sorted(odms),
                             flags=sorted(flags)), valid_empty=True)
+
+        # Yield the elements. The UI is a container with an app grid. On the left
+        # there are some tabs, each containing a tree. On the right there is a
+        # an area to display the results.
+        yield Header()
+        with Container(id='app-grid'):
+            with Container(id='left-grid'):
+                yield input_filter
                 with TabbedContent():
                     with TabPane('Brand view'):
                         yield self.brand_tree
