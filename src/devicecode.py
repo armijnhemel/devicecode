@@ -290,6 +290,7 @@ def parse_ps(ps_log):
     # that were given to ps, so for example the output of
     # "ps aux" is different from the output of "ps e".
     # This is a TODO.
+    results = []
     header_seen = False
     for line in ps_log.splitlines():
         if 'PID  Uid' in line:
@@ -309,8 +310,16 @@ def parse_ps(ps_log):
         ps_res = defaults.REGEX_PS.search(line)
         if ps_res is not None:
             # extract interesting information here
-            pass
-    return
+            ps_line = ps_res.groups()[0]
+            res_split = ps_line.split()
+            program = res_split[0]
+            program_name = pathlib.Path(program).name
+            parameters = res_split[1:]
+            program_res = {'type': 'ps', 'name': program_name,
+                           'full_name': program, 'parameters': parameters,
+                           'ps_line': ps_line}
+            results.append(program_res)
+    return results
 
 def parse_log(boot_log):
     '''Parse logs, such as boot logs or serial output'''
