@@ -335,11 +335,15 @@ class DevicecodeUI(App):
                 continue
 
             # filter ODMs
+            if device['manufacturer']['name'] == '':
+                filter_manufacturer_name = "***unknown***"
+            else:
+                filter_manufacturer_name = device['manufacturer']['name'].lower()
             if filter_odms:
-                if device['manufacturer']['name'].lower() not in filter_odms:
+                if filter_manufacturer_name not in filter_odms:
                     continue
             if filter_ignore_odms:
-                if device['manufacturer']['name'].lower() in filter_ignore_odms:
+                if filter_manufacturer_name in filter_ignore_odms:
                     continue
 
             if filter_flags:
