@@ -282,6 +282,15 @@ def parse_ls(ls_log):
     for line in ls_log.splitlines():
         if line in ['<pre>', '</pre>', '</syntaxhighlight>']:
             continue
+
+        # process each individual line (except pipes and sockets, TODO)
+        # Because users have not been very consistent with how 'ls'
+        # was invoked the directory portions of the output (obtained
+        # for example when running:
+        #
+        # $ ls -la /*
+        #
+        # are omitted.
         if line.startswith('l'):
             res = defaults.REGEX_LS_SYMLINK.match(line)
             if res:
