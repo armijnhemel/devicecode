@@ -192,7 +192,12 @@ class Regulatory:
 @dataclass_json
 @dataclass
 class Serial:
+    # connector on the board
     connector: str = ''
+
+    # device file on the device (for serial port)
+    device: str = ''
+
     populated: str = 'unknown'
     voltage: float = None
     baud_rate: int = 0
@@ -315,44 +320,50 @@ def parse_log(boot_log):
     # and proprietary) and functionality, as well as names of
     # source code files that were found, that could be used for
     # fingerprinting
-    interesting_findings = {}
+    results = []
 
     # now try a bunch of regular expressions to find packages
     # BusyBox
     res = defaults.REGEX_BUSYBOX.findall(str(boot_log))
     if res != []:
-        interesting_findings['busybox'] = set(res)
+        package_res = {'type': 'package', 'name': 'busybox', 'versions': set(res)}
+        results.append(package_res)
 
     # Linux kernel version
     res = defaults.REGEX_LINUX_VERSION.findall(str(boot_log))
     if res != []:
-        interesting_findings['Linux'] = set(res)
+        package_res = {'type': 'package', 'name': 'Linux', 'versions': set(res)}
+        results.append(package_res)
 
-    # CFE bootloader
+    # CFE bootloader. There could be multiple hits in the same log file
+    # but the findings should be consolidated somewhere else in the
+    # code that is processing the results from this parser.
     res = defaults.REGEX_CFE.findall(str(boot_log))
     if res != []:
-        interesting_findings['CFE'] = set(res)
+        package_res = {'type': 'bootloader', 'name': 'CFE', 'versions': set(res)}
+        results.append(package_res)
 
     res = defaults.REGEX_CFE_BROADCOM.findall(str(boot_log))
     if res != []:
-        if 'CFE' in interesting_findings:
-            interesting_findings['CFE'].update(set(res))
-        else:
-            interesting_findings['CFE'] = set(res)
+        package_res = {'type': 'bootloader', 'name': 'CFE', 'versions': set(res)}
+        results.append(package_res)
 
     # Ralink U-Boot bootloader (modified U-Boot)
     res = defaults.REGEX_UBOOT_RALINK.findall(str(boot_log))
     if res != []:
-        interesting_findings['Ralink U-Boot'] = set(res)
+        package_res = {'type': 'bootloader', 'name': 'Ralink U-Boot', 'versions': set(res)}
+        results.append(package_res)
 
     # Adtran bootloader (proprietary)
     res = defaults.REGEX_ADTRAN_BOOTLOADER.findall(str(boot_log))
     if res != []:
-        interesting_findings['adtran bootloader'] = set(res)
+        package_res = {'type': 'bootloader', 'name': 'adtran bootloader', 'versions': set(res)}
+        results.append(package_res)
 
     # find functionality
     if 'console [ttyS0] enabled' in str(boot_log):
-        interesting_findings['functionality'] = {'serial port': 'ttyS0'}
+        serial_res = {'type': 'serial port', 'console': 'ttyS0'}
+        results.append(serial_res)
 
     # find source code files
 
@@ -361,9 +372,16 @@ def parse_log(boot_log):
     # Linux kernel command line
     res = defaults.REGEX_LINUX_KERNEL_COMMANDLINE.findall(str(boot_log))
     if res != []:
-        interesting_findings['Linux kernel commandline'] = set(res)
+        func_res = {'type': 'Linux kernel commandline', 'values': set(res)}
+        for fr in res:
+            if 'console=' in fr:
+                console_res = re.search(r'console=([\w\d]+),(\d+)', fr)
+                if console_res is not None:
+                    console, baudrate = console_res.groups()
+                    serial_res = {'type': 'serial port', 'console': console, 'baudrate': baudrate}
+                    results.append(serial_res)
 
-    return interesting_findings
+    return results
 
 def parse_oui(oui_string):
     '''Parse OUI values, returns a list of values'''
@@ -678,7 +696,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
 
                                             # parse and store the boot log.
                                             # TODO: further mine the boot log
-                                            parse_result = parse_log(f.params[1].value)
+                                            parse_results = parse_log(f.params[1].value)
                                             break
                                     if is_processed:
                                         continue
