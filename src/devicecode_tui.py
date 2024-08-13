@@ -44,6 +44,7 @@ class SuggestDevices(Suggester):
         self.chip_vendors = kwargs.get('chip_vendors', [])
         self.flags = kwargs.get('flags', [])
         self.odms = kwargs.get('odms', [])
+        self.packages = kwargs.get('packages', [])
         self.passwords = kwargs.get('passwords', [])
 
     async def get_suggestion(self, value: str) -> str | None:
@@ -113,6 +114,10 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(self.passwords):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + self.passwords[idx][len(check_value)-9:]
+        elif check_value.startswith('package='):
+            for idx, chk in enumerate(self.packages):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.packages[idx][len(check_value)-8:]
 
         for idx, suggestion in enumerate(self._for_comparison):
             if suggestion.startswith(check_value):
@@ -132,6 +137,7 @@ class FilterValidator(Validator):
         self.chip_vendors = kwargs.get('chip_vendors', set())
         self.connectors = kwargs.get('connectors', set())
         self.ips = kwargs.get('ips', set())
+        self.packages = kwargs.get('packages', set())
         self.passwords = kwargs.get('passwords', set())
         self.token_identifiers = kwargs.get('token_identifiers', [])
 
@@ -182,6 +188,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'password':
                     if token_value not in self.passwords:
                         return self.failure("Invalid password")
+                elif token_identifier == 'package':
+                    if token_value not in self.packages:
+                        return self.failure("Invalid package")
                 elif token_identifier == 'serial':
                     if token_value not in ['no', 'unknown', 'yes']:
                         return self.failure("Invalid serial port information")
@@ -428,6 +437,15 @@ class DevicecodeUI(App):
                 if not show_node:
                     continue
 
+            if filter_packages:
+                show_node = False
+                for package in device['software']['packages']:
+                    if package['name'].lower() in filter_packages:
+                        show_node = True
+                        break
+                if not show_node:
+                    continue
+
             if brand_name not in brands_to_devices:
                 brands_to_devices[brand_name] = []
             model = device['model']['model']
@@ -506,6 +524,10 @@ class DevicecodeUI(App):
 
                 if chip['model'] != '':
                     chips.add(chip['model'].lower())
+
+            for package in device['software']['packages']:
+                package_name = package['name'].lower()
+                packages.add(package_name)
 
             brand_odm.append((brand_name, manufacturer_name))
 
@@ -722,6 +744,7 @@ class DevicecodeUI(App):
         jtags = []
         odms = []
         operating_systems = []
+        packages = []
         passwords = []
         serials = []
         years = []
@@ -763,6 +786,8 @@ class DevicecodeUI(App):
                         odms.append(value)
                     elif identifier == 'os':
                         operating_systems.append(value)
+                    elif identifier == 'package':
+                        packages.append(value)
                     elif identifier == 'password':
                         passwords.append(value)
                     elif identifier == 'serial':
@@ -778,7 +803,7 @@ class DevicecodeUI(App):
                                        connectors=connectors, flags=flags, ignore_brands=ignore_brands,
                                        ignore_odms=ignore_odms, ips=ips, jtags=jtags,
                                        operating_systems=operating_systems, passwords=passwords,
-                                       serials=serials, years=years)
+                                       packages=packages, serials=serials, years=years)
 
             self.brand_tree.build_tree(filtered_data['brands_to_devices'], is_filtered)
             self.odm_tree.build_tree(filtered_data['odm_to_devices'], is_filtered)
@@ -1033,6 +1058,9 @@ class DevicecodeUI(App):
             # packages
             new_markdown += "# Packages\n"
             new_markdown += "| | |\n|--|--|\n"
+            for p in result['packages']:
+                versions = ", ".join(p['versions'])
+                new_markdown += f"| {p['name']} | {versions} |\n"
         return new_markdown
 
     def build_model_report(self, result):

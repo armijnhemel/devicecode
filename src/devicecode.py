@@ -205,6 +205,13 @@ class Serial:
 
 @dataclass_json
 @dataclass
+class Package:
+    '''Package information: name + versions'''
+    name: str = ''
+    versions: list[str] = field(default_factory=list)
+
+@dataclass_json
+@dataclass
 class Software:
     '''Software information: stock OS/bootloader, third party support'''
     bootloader: Bootloader = field(default_factory=Bootloader)
@@ -216,6 +223,7 @@ class Software:
     openwrt: str = 'unknown'
     tomato: str = 'unknown'
     third_party: list[str] = field(default_factory=list)
+    packages: list[Package] = field(default_factory=list)
 
 @dataclass_json
 @dataclass
@@ -754,6 +762,12 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                             # parse and store the boot log.
                                             # TODO: further mine the boot log
                                             parse_results = parse_log(f.params[1].value)
+                                            for p in parse_results:
+                                                if p['type'] == 'package':
+                                                    found_package = Package()
+                                                    found_package.name = p['name']
+                                                    found_package.versions = p['versions']
+                                                    device.software.packages.append(found_package)
                                             break
                                     if is_processed:
                                         continue
