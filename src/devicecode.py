@@ -277,8 +277,42 @@ class Device:
     wiki_type: str = ''
 
 def parse_ls(ls_log):
-    '''Parse output from ls'''
-    pass
+    '''Parse output from ls -l'''
+    results = []
+    for line in ls_log.splitlines():
+        if line in ['<pre>', '</pre>', '</syntaxhighlight>']:
+            continue
+        if line.startswith('l'):
+            res = defaults.REGEX_LS_SYMLINK.match(line)
+            if res:
+                _, _, group, user, _, _, _, _, name, target = res.groups()
+                results.append({'type': 'symlink', 'name': name, 'target': target,
+                                'user': user, 'group': group})
+        elif line.startswith('-'):
+            res = defaults.REGEX_LS_REGULAR_DIRECTORY.match(line)
+            if res:
+                _, _, group, user, size, _, _, _, name = res.groups()
+                results.append({'type': 'file', 'name': name, 'size': size,
+                                'user': user, 'group': group})
+        elif line.startswith('d'):
+            res = defaults.REGEX_LS_REGULAR_DIRECTORY.match(line)
+            if res:
+                _, _, group, user, _, _, _, _, name = res.groups()
+                results.append({'type': 'directory', 'name': name,
+                                'user': user, 'group': group})
+        elif line.startswith('b'):
+            res = defaults.REGEX_LS_DEVICE.match(line)
+            if res:
+                _, _, group, user, major, minor, _, _, _, name = res.groups()
+                results.append({'type': 'block device', 'name': name,
+                                'user': user, 'group': group})
+        elif line.startswith('c'):
+            res = defaults.REGEX_LS_DEVICE.match(line)
+            if res:
+                _, _, group, user, major, minor, _, _, _, name = res.groups()
+                results.append({'type': 'character device', 'name': name,
+                                'user': user, 'group': group})
+    return results
 
 
 def parse_ps(ps_log):
