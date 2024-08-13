@@ -44,6 +44,7 @@ class SuggestDevices(Suggester):
         self.chip_vendors = kwargs.get('chip_vendors', [])
         self.flags = kwargs.get('flags', [])
         self.odms = kwargs.get('odms', [])
+        self.passwords = kwargs.get('passwords', [])
 
     async def get_suggestion(self, value: str) -> str | None:
         """Gets a completion from the given possibilities.
@@ -108,6 +109,10 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(jtag_values):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + jtag_values[idx][len(check_value)-5:]
+        elif check_value.startswith('password='):
+            for idx, chk in enumerate(self.passwords):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.passwords[idx][len(check_value)-9:]
 
         for idx, suggestion in enumerate(self._for_comparison):
             if suggestion.startswith(check_value):
@@ -127,6 +132,7 @@ class FilterValidator(Validator):
         self.chip_vendors = kwargs.get('chip_vendors', set())
         self.connectors = kwargs.get('connectors', set())
         self.ips = kwargs.get('ips', set())
+        self.passwords = kwargs.get('passwords', set())
         self.token_identifiers = kwargs.get('token_identifiers', [])
 
     def validate(self, value: str) -> ValidationResult:
@@ -173,6 +179,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'odm':
                     if token_value not in self.odms:
                         return self.failure("Invalid ODM")
+                elif token_identifier == 'password':
+                    if token_value not in self.passwords:
+                        return self.failure("Invalid password")
                 elif token_identifier == 'serial':
                     if token_value not in ['no', 'unknown', 'yes']:
                         return self.failure("Invalid serial port information")
@@ -316,6 +325,9 @@ class DevicecodeUI(App):
         # known default IP addresses
         ips = set()
 
+        # known default passwords
+        passwords = set()
+
         # Extract useful data from each of the devices for quick
         # access when building the trees and the datatables.
         brand_odm = []
@@ -454,6 +466,9 @@ class DevicecodeUI(App):
             if device['defaults']['ip'] != '':
                 ips.add(device['defaults']['ip'])
 
+            if device['defaults']['password'] != '':
+                passwords.add(device['defaults']['password'])
+
             if device['software']['bootloader']['manufacturer'] != '':
                 bootloaders.add(device['software']['bootloader']['manufacturer'].lower())
 
@@ -496,7 +511,8 @@ class DevicecodeUI(App):
                 'chips': chips, 'chip_types': chip_types, 'chip_vendors': chip_vendors,
                 'connectors': connectors, 'odms': odms, 'flags': flags, 'ips': ips,
                 'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
-                'odm_connector': odm_connector, 'chip_vendor_connector': chip_vendor_connector}
+                'odm_connector': odm_connector, 'chip_vendor_connector': chip_vendor_connector,
+                'passwords': passwords}
 
 
     def compose(self) -> ComposeResult:
@@ -533,6 +549,7 @@ class DevicecodeUI(App):
         odm_cpu = data['odm_cpu']
         odm_connector = data['odm_connector']
         operating_systems = defaults.KNOWN_OS
+        passwords = data['passwords']
         chip_vendor_connector = data['chip_vendor_connector']
 
         # build the various datatables.
@@ -612,13 +629,14 @@ class DevicecodeUI(App):
                             validators=[FilterValidator(bootloaders=bootloaders, brands=brands,
                                                         odms=odms, chips=chips, chip_types=chip_types,
                                                         chip_vendors=chip_vendors, connectors=connectors,
-                                                        ips=ips, token_identifiers=self.TOKEN_IDENTIFIERS)],
+                                                        ips=ips, passwords=passwords,
+                                                        token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             bootloaders=sorted(bootloaders), brands=sorted(brands),
                             chips=sorted(chips), chip_types=sorted(chip_types),
                             chip_vendors=sorted(chip_vendors), connectors=sorted(connectors),
                             odms=sorted(odms), operating_systems=sorted(operating_systems),
-                            flags=sorted(flags)), valid_empty=True)
+                            flags=sorted(flags), passwords=sorted(passwords)), valid_empty=True)
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
