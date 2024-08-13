@@ -265,7 +265,8 @@ class DevicecodeUI(App):
     CSS_PATH = "devicecode_tui.css"
     TOKEN_IDENTIFIERS = ['bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
                          'connector', 'flag', 'ignore_brand', 'ignore_odm', 'ip',
-                         'jtag', 'odm', 'os', 'password', 'serial', 'type', 'year']
+                         'jtag', 'odm', 'os', 'package', 'password', 'serial',
+                         'type', 'year']
 
     def __init__(self, devicecode_dir, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -287,6 +288,7 @@ class DevicecodeUI(App):
         filter_jtags = kwargs.get('jtags', [])
         filter_odms = kwargs.get('odms', [])
         filter_operating_systems = kwargs.get('operating_systems', [])
+        filter_packages = kwargs.get('packages', [])
         filter_passwords = kwargs.get('passwords', [])
         filter_serials = kwargs.get('serials', [])
         filter_years = kwargs.get('years', [])
@@ -324,6 +326,9 @@ class DevicecodeUI(App):
 
         # known default IP addresses
         ips = set()
+
+        # known packages
+        packages = set()
 
         # known default passwords
         passwords = set()
@@ -512,7 +517,7 @@ class DevicecodeUI(App):
                 'connectors': connectors, 'odms': odms, 'flags': flags, 'ips': ips,
                 'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
                 'odm_connector': odm_connector, 'chip_vendor_connector': chip_vendor_connector,
-                'passwords': passwords}
+                'packages': packages, 'passwords': passwords}
 
 
     def compose(self) -> ComposeResult:
@@ -549,6 +554,7 @@ class DevicecodeUI(App):
         odm_cpu = data['odm_cpu']
         odm_connector = data['odm_connector']
         operating_systems = defaults.KNOWN_OS
+        packages = data['packages']
         passwords = data['passwords']
         chip_vendor_connector = data['chip_vendor_connector']
 
@@ -629,14 +635,15 @@ class DevicecodeUI(App):
                             validators=[FilterValidator(bootloaders=bootloaders, brands=brands,
                                                         odms=odms, chips=chips, chip_types=chip_types,
                                                         chip_vendors=chip_vendors, connectors=connectors,
-                                                        ips=ips, passwords=passwords,
+                                                        ips=ips, packages=packages, passwords=passwords,
                                                         token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             bootloaders=sorted(bootloaders), brands=sorted(brands),
                             chips=sorted(chips), chip_types=sorted(chip_types),
                             chip_vendors=sorted(chip_vendors), connectors=sorted(connectors),
                             odms=sorted(odms), operating_systems=sorted(operating_systems),
-                            flags=sorted(flags), passwords=sorted(passwords)), valid_empty=True)
+                            flags=sorted(flags), packages=sorted(packages),
+                            passwords=sorted(passwords)), valid_empty=True)
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
