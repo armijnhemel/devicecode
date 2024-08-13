@@ -368,6 +368,11 @@ def parse_log(boot_log):
     # find source code files
 
     # extract other information
+    res = re.findall(r"(\w+): module license 'Proprietary' taints kernel.", str(boot_log))
+    if res != []:
+        for r in res:
+            module_res = {'type': 'proprietary kernel module', 'name': r}
+            results.append(module_res)
 
     # Linux kernel command line
     res = defaults.REGEX_LINUX_KERNEL_COMMANDLINE.findall(str(boot_log))
@@ -378,7 +383,7 @@ def parse_log(boot_log):
                 console_res = re.search(r'console=([\w\d]+),(\d+)', fr)
                 if console_res is not None:
                     console, baudrate = console_res.groups()
-                    serial_res = {'type': 'serial port', 'console': console, 'baudrate': baudrate}
+                    serial_res = {'type': 'serial port', 'console': console, 'baudrate': int(baudrate)}
                     results.append(serial_res)
 
     return results
