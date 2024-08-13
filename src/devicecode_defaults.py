@@ -420,6 +420,34 @@ REGEX_ASIN = re.compile(r'^B[\d\w]{9}$')
 # regular expression for an IPv4 address
 REGEX_IP = re.compile(r'^\d+\.\d+\.\d+\.\d+(?::\d+)?$')
 
+# regular expression for symlinks, extracts:
+# - permissions
+# - number of links
+# - group + user (either name or numerical id)
+# - size
+# - month, day, year or time
+# - name
+# - target
+REGEX_LS_SYMLINK = re.compile(r'(l[\-rwx]{9})\s+(\d+)\s+([\w\d]+)\s+([\w\d]+)\s+(\d+)\s+(\w+)\s+(\d+)\s+([\d:]{4,5})\s+([\[\w\d\.\-/]+)\s+\->\s+([\w\d\.\-/]+)')
+
+# regular expression for regular files and directories, extracts:
+# - permissions
+# - number of links
+# - group + user (either name or numerical id)
+# - size
+# - month, day, year or time
+# - name
+REGEX_LS_REGULAR_DIRECTORY = re.compile(r'([\-d][\-rwx]{9})\s+(\d+)\s+([\w\d]+)\s+([\w\d]+)\s+(\d+)\s+(\w+)\s+(\d+)\s+([\d:]{4,5})\s+([\[\w\d\.\-/]+)')
+
+# regular expression for character and block devices, extracts:
+# - permissions
+# - number of links
+# - group + user (either name or numerical id)
+# - major + minor device number
+# - month, day, year or time
+# - name
+REGEX_LS_DEVICE = re.compile(r'([bc][\-rwx]{9})\s+(\d+)\s+([\w\d]+)\s+([\w\d]+)\s+(\d+)\s*,\s+(\d+)\s+(\w+)\s+(\d+)\s+([\d:]{4,5})\s+([\[\w\d\.\-/]+)')
+
 # regular expression for OUI
 # https://en.wikipedia.org/wiki/Organizationally_unique_identifier
 REGEX_OUI = re.compile(r'^[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}$')
