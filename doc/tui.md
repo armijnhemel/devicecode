@@ -114,6 +114,7 @@ where identifier can be one of:
 * `jtag`
 * `odm`
 * `os`
+* `package`
 * `password`
 * `serial`
 * `type`
@@ -229,6 +230,11 @@ known. Valid values are `yes`, `no` and `unknown`.
 
 `jtag` can be used to show if a device has a JTAG port, or if it is not
 known. Valid values are `yes`, `no` and `unknown`.
+
+##### Package
+
+`package` can be used to show devices containing the package. Package
+information is currently extracted from parsing boot logs.
 
 ##### Password
 
