@@ -277,9 +277,9 @@ class DevicecodeUI(App):
                          'jtag', 'odm', 'os', 'package', 'password', 'serial',
                          'type', 'year']
 
-    def __init__(self, devicecode_dir, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, devicecode_dirs, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.devicecode_directory = devicecode_dir
+        self.devicecode_directories = devicecode_dirs
 
     def compose_data_sets(self, **kwargs):
         # Optional filters with data that should
@@ -350,8 +350,17 @@ class DevicecodeUI(App):
         odm_connector = []
         chip_vendor_connector = []
         for device in self.devices:
+            if 'title' not in device:
+                continue
+            if device['title'] in self.overlays:
+                # apply overlays
+                for overlay in self.overlays[device['title']]:
+                    if overlay['source'] == 'fcc':
+                        device['regulatory'].update(overlay['data']['regulatory'])
+
             if 'brand' not in device:
                 continue
+
             brand_name = device['brand']
 
             # filter brands
@@ -544,18 +553,39 @@ class DevicecodeUI(App):
 
     def compose(self) -> ComposeResult:
         self.devices = []
+        self.overlays = {}
 
-        # process all the JSON files in the directory
-        for result_file in self.devicecode_directory.glob('**/*'):
-            if not result_file.is_file():
-                continue
+        # process all the JSON files in the directories,
+        # right now just the TechInfoDepot one.
+        for devicecode_directory in self.devicecode_directories:
+            for result_file in devicecode_directory.glob('**/*'):
+                if not result_file.is_file():
+                    continue
 
-            try:
-                with open(result_file, 'r') as wiki_file:
-                    device = json.load(wiki_file)
-                    self.devices.append(device)
-            except json.decoder.JSONDecodeError:
-                pass
+                try:
+                    with open(result_file, 'r') as wiki_file:
+                        device = json.load(wiki_file)
+                        self.devices.append(device)
+                except json.decoder.JSONDecodeError:
+                    pass
+            overlays_directory = devicecode_directory.parent / 'overlays'
+            if overlays_directory.exists and overlays_directory.is_dir():
+                for result_file in overlays_directory.glob('**/*'):
+                    if not result_file.is_file():
+                        continue
+                    device_name = result_file.parent.name
+                    if device_name not in self.overlays:
+                        self.overlays[device_name] = []
+                    try:
+                        with open(result_file, 'r') as wiki_file:
+                            overlay = json.load(wiki_file)
+                            if 'type' not in overlay:
+                                continue
+                            if overlay['type'] != 'overlay':
+                                continue
+                            self.overlays[device_name].append(overlay)
+                    except json.decoder.JSONDecodeError:
+                        pass
 
         data = self.compose_data_sets()
 
@@ -1192,7 +1222,18 @@ def main(devicecode_directory):
     # be present. Optionally there can be a directory called 'overlays'
     # with overlay files.
 
-    app = DevicecodeUI(devicecode_directory)
+    devicecode_dirs = []
+    for p in devicecode_directory.iterdir():
+        if not p.is_dir():
+            continue
+        if not p.name in valid_directory_names:
+            continue
+        devices_dir = p / 'devices'
+        if not (devices_dir.exists() and devices_dir.is_dir()):
+            continue
+        devicecode_dirs.append(devices_dir)
+
+    app = DevicecodeUI(devicecode_dirs)
     app.run()
 
 if __name__ == "__main__":
