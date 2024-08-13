@@ -27,6 +27,9 @@ have been forked from (a predecessor of) WikiDevi.
 
 ### Creating a dump file
 
+If you want to get a pregenerated set of data, checkout the
+[devicecode-data][devicecode-data] repository.
+
 See [creating a dump file](doc/creating_a_dump_file.md).
 
 ### Running the scripts
@@ -108,6 +111,26 @@ $ git commit -m "add initial dump"
 
 When processing updates the `--no-git` flag could then be skipped.
 
+### Exploring the data using the DeviceCode TUI
+
+The data is easiest explored using the DeviceCode TUI. For a full description
+of the TUI (design, filtering language, and so on) see the
+[TUI design document](doc/tui.md).
+
+Simply point the script to the top level directory containing the directory
+`TechInfoDepot`:
+
+```console
+$ python devicecode_tui.py -d /path/to/top/level
+```
+
+for example if the [devicecode-data][devicecode-data] repository was cloned
+in `$HOME/git/devicecode-data` the command would be:
+
+```console
+$ python devicecode_tui.py -d ~/git/devicecode-data
+```
+
 # Acknowledgements
 
 This project was funded through the NGI0 Entrust Fund, a fund established by
@@ -119,3 +142,4 @@ Technology under grant agreement No 101069594.
 [metacrap]:https://people.well.com/user/doctorow/metacrap.htm
 [wikidevi]:https://wikidevi.wi-cat.ru/
 [vulnerablecode]:https://github.com/nexB/vulnerablecode/
+[devicecode-data]:https://github.com/armijnhemel/devicecode-data
