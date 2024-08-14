@@ -129,30 +129,30 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
 
             # Results are written to an unpack directory for each PDF
             # as the file names can be the same in different PDFs.
-            for _, pdf_name, description in descriptions:
-                if not (fcc_directory / pdf_name).exists():
-                    print(f"{pdf_name} does not exist, skipping.", file=sys.stderr)
+            for pdf in descriptions:
+                if not (fcc_directory / pdf['name']).exists():
+                    print(f"{pdf['name']} does not exist, skipping.", file=sys.stderr)
                     continue
 
                 if verbose:
-                    print(f"Processing {pdf_name}")
+                    print(f"Processing {pdf['name']}")
 
                 # create two directories for output
                 # for original output
                 # TODO: these directories should not exist
                 # and an error should be thrown, unless --force is used
-                pdf_orig_output_directory = output_directory / fccid / pdf_name / 'orig'
+                pdf_orig_output_directory = output_directory / fccid / pdf['name'] / 'orig'
                 if pdf_orig_output_directory.exists():
                     if not force:
-                        print(f"Output directory '{pdf_orig_output_directory}' already exists, skipping {pdf_name}.", file=sys.stderr)
+                        print(f"Output directory '{pdf_orig_output_directory}' already exists, skipping {pdf['name']}.", file=sys.stderr)
                         continue
                 pdf_orig_output_directory.mkdir(exist_ok=True, parents=True)
 
                 # for post processed output (such as combined images)
-                pdf_output_directory = output_directory / fccid / pdf_name / 'processed'
+                pdf_output_directory = output_directory / fccid / pdf['name'] / 'processed'
                 if pdf_output_directory.exists():
                     if not force:
-                        print(f"Output directory '{pdf_output_directory}' already exists, skipping {pdf_name}.", file=sys.stderr)
+                        print(f"Output directory '{pdf_output_directory}' already exists, skipping {pdf['name']}.", file=sys.stderr)
                         continue
                 pdf_output_directory.mkdir(exist_ok=True, parents=True)
 
@@ -166,7 +166,7 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                 # keep metadata per page
                 image_metadata = {}
 
-                for page_layout in extract_pages(fcc_directory / pdf_name):
+                for page_layout in extract_pages(fcc_directory / pdf['name']):
                     page_number += 1
 
                     # keep track of images
@@ -287,7 +287,7 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                             image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
 
                 # write various metadata to files for further processing
-                with open(output_directory / fccid / pdf_name / 'images.json', 'w') as output_file:
+                with open(output_directory / fccid / pdf['name'] / 'images.json', 'w') as output_file:
                     output_file.write(json.dumps(image_metadata, indent=4))
 
 
