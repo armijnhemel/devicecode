@@ -26,7 +26,7 @@ def main(fcc_input_directory, devicecode_directory, output_directory, report_onl
         print(f"{fcc_input_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
 
-    if not output_directory.is_dir():
+    if not report_only and not output_directory.is_dir():
         print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
 
@@ -34,8 +34,9 @@ def main(fcc_input_directory, devicecode_directory, output_directory, report_onl
         print(f"{devicecode_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
 
-    overlay_directory = output_directory / 'overlays'
-    overlay_directory.mkdir(exist_ok=True)
+    if not report_only:
+        overlay_directory = output_directory / 'overlays'
+        overlay_directory.mkdir(exist_ok=True)
 
     # Then walk all the result files, check the FCC ids of the
     for result_file in devicecode_directory.glob('**/*'):
