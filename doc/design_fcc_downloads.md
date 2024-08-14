@@ -35,13 +35,14 @@ the FCC website, republish the documents and offer search functionality.
 Some these were mainly created to serve advertisements.
 
 Automatically querying the main FCC website is not doable: it is very slow
-and output is ugly.
+and output is ugly, so it is hard to automatically process results.
 
 ## Storing FCC data
 
 Because there is not a 1:1 correlation between FCC ids and devices the FCC
 data is stored separately from devices in a subdirectory with the name of
-the FCC id.
+the FCC id. Some devices that combine different components that each of a
+separate FCC id can have multiple FCC ids associated with them.
 
 ## Processing FCC data
 
@@ -62,8 +63,8 @@ single image. Extracted images are stored per page.
 
 Sometimes text on a picture is actually a text overlay in the PDF and it is not
 part of the picture (this has mostly been observed in user manuals). These
-elements are extracted separately and not recombined. In case of doubt always
-look at the original PDF file.
+elements are extracted separately and not recombined. In case of doubt you
+should always look at the original PDF file.
 
 ### Text
 

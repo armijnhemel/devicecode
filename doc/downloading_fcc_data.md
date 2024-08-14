@@ -76,6 +76,8 @@ to 2 seconds) called `--gentle`:
 $ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data --gentle
 ```
 
+Using the `--gentle` option is highly recommended.
+
 To print more details about what is downloaded use the `--verbose` flag:
 
 ```console
