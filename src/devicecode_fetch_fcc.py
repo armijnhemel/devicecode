@@ -145,7 +145,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf):
                     pdf_basename = pdf_name.rsplit('/', maxsplit=1)[1]
 
                     # store the pdf/description combination
-                    pdfs_descriptions.append((f'{base_url}/{pdf_name}', pdf_basename, description))
+                    pdfs_descriptions.append({'url': f'{base_url}/{pdf_name}', 'name': pdf_basename, 'description': description})
 
                     # reset the pdf name
                     pdf_name = ''
@@ -165,20 +165,20 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf):
             # to the directory for this FCC entry
 
             if not no_pdf:
-                for pdf_url, pdf_basename, _ in pdfs_descriptions:
+                for pdf in pdfs_descriptions:
                     # verify if there already was data downloaded for this
                     # particular device by checking the contents of the result first
                     # and skipping it there were no changes.
-                    if not force and (store_directory/pdf_basename).exists():
+                    if not force and (store_directory/pdf['name']).exists():
                         continue
 
                     if verbose:
-                        print(f"* downloading {pdf_url}")
+                        print(f"* downloading {pdf['url']}")
                     if gentle:
                         time.sleep(SLEEP_INTERVAL)
-                    request = requests.get(pdf_url, headers=headers, timeout=TIMEOUT)
+                    request = requests.get(pdf['url'], headers=headers, timeout=TIMEOUT)
 
-                    with open(store_directory/pdf_basename, 'wb') as output:
+                    with open(store_directory/pdf['name'], 'wb') as output:
                         output.write(request.content)
                     downloaded_documents += 1
 
