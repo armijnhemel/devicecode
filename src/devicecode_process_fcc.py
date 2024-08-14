@@ -23,8 +23,6 @@ TEXT_TO_FUNCTIONALITY = {
     'syslog': 'syslog',
 }
 
-REGEX_IP = re.compile(r'(\d+\\.\d+\\.\d+\\.\d+)(?::\d+)?')
-
 PROGRAMS = ['arptables', 'bpalogin', 'bridge-utils', 'busybox', 'ebtables', 'glibc',
             'hostapd', 'iproute', 'ipset', 'iptables', 'iputils', 'linux', 'nmap', 'ppp',
             'pptpd', 'rp-pppoe', 'wireless_tools', 'wpa_supplicant']
@@ -44,7 +42,7 @@ def search_text(texts):
             results['functionality'].append(TEXT_TO_FUNCTIONALITY[t])
             results_found = True
 
-    result_ip = REGEX_IP.search(text)
+    result_ip = defaults.REGEX_IP.search(text)
     if result_ip is not None:
         results['ip_address'].append(result_ip.groups()[0])
         results_found = True

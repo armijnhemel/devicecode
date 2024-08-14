@@ -418,7 +418,7 @@ KNOWN_OS = set(['airOS', 'Android', 'Android TV', 'ArubaOS', 'Bananian', 'CBOS v
 REGEX_ASIN = re.compile(r'^B[\d\w]{9}$')
 
 # regular expression for an IPv4 address
-REGEX_IP = re.compile(r'^\d+\.\d+\.\d+\.\d+(?::\d+)?$')
+REGEX_IP = re.compile(r'(\d+\\.\d+\\.\d+\\.\d+)(?::\d+)?')
 
 # regular expression for symlinks, extracts:
 # - permissions
