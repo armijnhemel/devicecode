@@ -240,10 +240,10 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
 
                             # first try to figure out a stitching orientation, if any
                             if orientation is None:
-                                if to_stitch[-1][0].x0 - image[0].width == image[0].x0:
+                                if round(to_stitch[-1][0].x0 - image[0].width) == round(image[0].x0):
                                     orientation = 'horizontal'
                                     to_stitch.append(image)
-                                elif to_stitch[-1][0].y0 - image[0].height == image[0].y0:
+                                elif round(to_stitch[-1][0].y0 - image[0].height) == round(image[0].y0):
                                     orientation = 'vertical'
                                     to_stitch.append(image)
                                 else:
