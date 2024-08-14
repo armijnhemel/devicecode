@@ -183,6 +183,14 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                 img_name = image_writer.export_image(element._objs[0])
                                 images.append((element, img_name))
                                 image_names.append(img_name)
+                            except IndexError:
+                                # TODO: fix this. sometimes images aren't
+                                # correctly exported and an IndexError exception
+                                # is thrown with the message:
+                                # "IndexError: list index out of range"
+                                # Is this an error in pdfminer?
+                                # example: FCC ID: RAFXWL-11GRAR, file: 769930.pdf
+                                pass
                             except UnboundLocalError:
                                 # TODO: fix this. sometimes images aren't
                                 # correctly exported and an UnboundLocalError exception
