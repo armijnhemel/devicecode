@@ -121,6 +121,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf):
             in_table = False
             pdf_name = ''
             description = ''
+            document_type = ''
             approved_dates = []
             for line in result.splitlines():
                 # keep a bit of state and only look at the interesting lines.
@@ -131,21 +132,23 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf):
                         approved_dates.append(res.groups()[0])
                 if '<th>File Name</th><th>Document Type</th>' in line:
                     in_table = True
-                    description = line.rsplit('<td>', maxsplit=1)[1][:-5]
+                    document_type = line.rsplit('<td>', maxsplit=1)[1][:-5]
+                    description = line.rsplit('<td>', maxsplit=1)[0][:-9].rsplit('>', maxsplit=1)[1]
                     continue
                 if not in_table:
                     continue
 
                 if fcc_id in line and line.startswith('</tr>') and pdf_name == '':
-                    # get the description
-                    description = line.rsplit('<td>', maxsplit=1)[1][:-5]
+                    # get the document_type and description
+                    document_type = line.rsplit('<td>', maxsplit=1)[1][:-5]
+                    description = line.rsplit('<td>', maxsplit=1)[0][:-9].rsplit('>', maxsplit=1)[1]
                 elif line.startswith('<td>') and '.pdf' in line:
                     # extract the file name
                     _, pdf_name, _ = line.split('"', maxsplit=2)
                     pdf_basename = pdf_name.rsplit('/', maxsplit=1)[1]
 
                     # store the pdf/description combination
-                    pdfs_descriptions.append({'url': f'{base_url}/{pdf_name}', 'name': pdf_basename, 'description': description})
+                    pdfs_descriptions.append({'url': f'{base_url}/{pdf_name}', 'name': pdf_basename, 'type': document_type, 'description': description})
 
                     # reset the pdf name
                     pdf_name = ''
