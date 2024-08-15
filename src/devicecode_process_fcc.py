@@ -52,6 +52,8 @@ CLASS2_PERMISSIVE = ['2adwc-ai7688h_cvrltr_fcc class ii permissive change',
                      'change id permission letter', 'change in id cover letter',
                      'change in id permission letter', 'change in id request letter']
 
+IGNORE_FILES = ['Test Report', 'RF Exposure Info']
+
 # extract interesting information and patterns from extracted text
 def search_text(texts):
     text =  "\n".join(texts).lower()
@@ -124,7 +126,8 @@ def stitch(images, orientation, image_directory, stitch_directory):
 @click.argument('fccids', required=True, nargs=-1)
 @click.option('--verbose', is_flag=True, help='be verbose')
 @click.option('--force', is_flag=True, help='always force processing')
-def main(fccids, fcc_input_directory, output_directory, verbose, force):
+@click.option('--ignore-uninteresting', is_flag=True, help='Ignore uninteresting files')
+def main(fccids, fcc_input_directory, output_directory, verbose, force, ignore_uninteresting):
     if not fcc_input_directory.is_dir():
         print(f"{fcc_input_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -159,6 +162,10 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                 if not (fcc_directory / pdf['name']).exists():
                     print(f"{pdf['name']} does not exist, skipping.", file=sys.stderr)
                     continue
+
+                if ignore_uninteresting:
+                    if pdf['type'] in IGNORE_FILES:
+                        continue
 
                 if verbose:
                     print(f"Processing {pdf['name']}")
@@ -213,6 +220,14 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                                 img_name = image_writer.export_image(element._objs[0])
                                 images.append((element, img_name))
                                 image_names.append(img_name)
+                            except AttributeError:
+                                # TODO: fix this. sometimes images aren't
+                                # correctly exported and an AttributeError exception
+                                # is thrown with the message:
+                                # AttributeError: 'LTFigure' object has no attribute 'srcsize'
+                                # Is this an error in pdfminer?
+                                # example: FCC ID: 2AD4X-WP25M1200, file: 3788894.pdf
+                                pass
                             except IndexError:
                                 # TODO: fix this. sometimes images aren't
                                 # correctly exported and an IndexError exception
