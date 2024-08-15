@@ -28,6 +28,30 @@ PROGRAMS = ['arptables', 'bpalogin', 'bridge-utils', 'busybox', 'ebtables', 'gli
             'hostapd', 'iproute', 'ipset', 'iptables', 'iputils', 'linux', 'nmap', 'ppp',
             'pptpd', 'rp-pppoe', 'wireless_tools', 'wpa_supplicant']
 
+# names of files used as descriptions that could possibly contain hints about devices
+# like MiniPCIe cards being embedded or used in other devices where the FCC id would
+# serve as a secondary FCC id, and not as the primary.
+# As an example: PPD-AR5B95
+CLASS2_PERMISSIVE = ['2adwc-ai7688h_cvrltr_fcc class ii permissive change',
+                     'class 2 permissive change', 'class 2 permissive change letter',
+                     'class ii change letter', 'class ii change request', 'class ii cover letter',
+                     'class ii letter', 'class ii pc letter 1', 'class ii permisive change letter',
+                     'class ii permissive change', 'class ii permissive change cover letter',
+                     'class ii permissive change letter', 'class ii permissive change letter for fcc',
+                     'class ii permissive change request letter',
+                     'class ii permissive request cover letter', 'class ii premissive change letter',
+                     'class ii rf info', 'class ii test photos', 'class ii test report',
+                     'description of class ii permissive change', 'fcc class ii change letter',
+                     'fcc declaration of class ii change', 'test report bt classics part 1',
+                     'test report bt classics part 2', '(tv500i) class ii change_2016-06-01',
+                     'c2pc', 'c2pc and lma', 'c2pc_basp-1920', 'c2pc cover letter', 'c2pc details',
+                     'c2pc detials', 'c2pc fcc v1', 'c2pc fcc v1 letter',
+                     'c2pc host manufacturer design response', 'c2pc letter',
+                     'c2pc letter detector', 'c2pc letter scu', 'c2pc request',
+                     'c2pc request letter', 'ciipc', 'change description', 'change id letter',
+                     'change id permission letter', 'change in id cover letter',
+                     'change in id permission letter', 'change in id request letter']
+
 # extract interesting information and patterns from extracted text
 def search_text(texts):
     text =  "\n".join(texts).lower()
