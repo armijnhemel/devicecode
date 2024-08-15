@@ -4,6 +4,7 @@
 # Licensed under Apache 2.0, see LICENSE file for details
 # SPDX-License-Identifier: Apache-2.0
 
+import hashlib
 import json
 import pathlib
 import re
@@ -124,6 +125,7 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
                 continue
 
             # Then process each individual PDF file.
+            # * compute SHA256 hash
             # * extract text
             # * extract pictures
 
@@ -136,6 +138,10 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force):
 
                 if verbose:
                     print(f"Processing {pdf['name']}")
+
+                # compute the SHA256 hash of the PDF file
+                with open(fcc_directory / pdf['name'], 'rb') as pdf_file:
+                    pdf_hash = hashlib.sha256(pdf_file.read()).hexdigest()
 
                 # create two directories for output
                 # for original output

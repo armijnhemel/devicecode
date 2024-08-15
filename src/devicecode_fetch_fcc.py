@@ -4,6 +4,7 @@
 # Licensed under Apache 2.0, see LICENSE file for details
 # SPDX-License-Identifier: Apache-2.0
 
+import hashlib
 import json
 import pathlib
 import re
@@ -184,6 +185,17 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf):
                     with open(store_directory/pdf['name'], 'wb') as output:
                         output.write(request.content)
                     downloaded_documents += 1
+
+            # compute SHA256 of any PDF files that were downloaded. This
+            # is regardless of the --no-pdf option was given (as that
+            # might have been used just to update the metadata).
+            for pdf in pdfs_descriptions:
+                # verify if there already was data downloaded for this
+                # particular device by checking the contents of the result first
+                # and skipping it there were no changes.
+                if (store_directory/pdf['name']).exists():
+                    with open(store_directory/pdf['name'], 'rb') as pdf_file:
+                        pdf['sha256'] = hashlib.sha256(pdf_file.read()).hexdigest()
 
             if verbose:
                 print(f"* writing PDF/description mapping for {fcc_id}\n")
