@@ -35,7 +35,9 @@ TIMEOUT = 60
 @click.option('--force', is_flag=True, help='always force downloads')
 @click.option('--gentle', is_flag=True, help=f'pause {SLEEP_INTERVAL} seconds between downloads')
 @click.option('--no-pdf', is_flag=True, help='do not download PDFs, just metadata')
-def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf):
+@click.option('--no-download', is_flag=True,
+              help='do not any data, only reprocess already downloaded data')
+def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_download):
     if not output_directory.is_dir():
         print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -70,7 +72,6 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf):
         print("No valid FCC ids found, exiting.", file=sys.stderr)
         sys.exit(1)
 
-    # then download the data from one of the FCC clone sites.
     # It seems that fcc.report is the most useful one (least junk
     # on the website, and fairly easy to parse.
     base_url = 'https://fcc.report'
@@ -89,34 +90,51 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf):
     downloaded_documents = 0
     processed_fccids = 0
 
+    # Loop over all FCC ids to download the index file and PDF
+    # files, compute SHA256 checksums of the PDF files and extract
+    # some metadata.
+    #
+    # In case all data has already been downloaded and the
+    # descriptions.json format changes, there is no need to
+    # redownload data and --no-download can be used to process
+    # the already downloaded data.
     for fcc_id in ids:
         try:
-            # grab stuff from fcc report
-            if verbose:
-                print(f"Downloading main page for {fcc_id}")
-            request = requests.get(f'{base_url}/FCC-ID/{fcc_id}',
-                                   headers=headers, timeout=TIMEOUT)
+            store_directory = output_directory/fcc_id
+            if not no_download:
+                # grab stuff from fcc report
+                if verbose:
+                    print(f"Downloading main page for {fcc_id}")
+                request = requests.get(f'{base_url}/FCC-ID/{fcc_id}',
+                                       headers=headers, timeout=TIMEOUT)
 
-            # now first check the headers to see if it is OK to do more requests
-            if request.status_code != 200:
-                if request.status_code == 401:
-                    print("Denied by fcc.report, exiting", file=sys.stderr)
-                    sys.exit(1)
-                elif request.status_code == 404:
-                    # record entries that are not available
-                    fcc_id_404.append(fcc_id)
-                elif request.status_code == 500:
-                    print("Server error, exiting", file=sys.stderr)
-                    sys.exit(1)
-                continue
+                # now first check the headers to see if it is OK to do more requests
+                if request.status_code != 200:
+                    if request.status_code == 401:
+                        print("Denied by fcc.report, exiting", file=sys.stderr)
+                        sys.exit(1)
+                    elif request.status_code == 404:
+                        # record entries that are not available
+                        fcc_id_404.append(fcc_id)
+                    elif request.status_code == 500:
+                        print("Server error, exiting", file=sys.stderr)
+                        sys.exit(1)
+                    continue
+
+                result = request.text
+                if result == '':
+                    continue
+            if no_download:
+                if (store_directory / 'index.html').exists():
+                    with open((store_directory / 'index.html'), 'r') as index_html:
+                        result = index_html.read()
+                else:
+                    continue
 
             # now process the results. Parse, grab the names of
             # the PDFs plus descriptions, then download the PDFs and
             # store the results, along with the description in a simple
             # tag/value format, in JSON.
-            result = request.text
-            if result == '':
-                continue
 
             pdfs_descriptions = []
             in_table = False
@@ -158,33 +176,33 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf):
                 fcc_id_invalid.append(fcc_id)
                 continue
 
-            # create a subdirectory, use the FCC id as a path component
-            store_directory = output_directory/fcc_id
-            store_directory.mkdir(parents=True, exist_ok=True)
+            if not no_download:
+                # create the subdirectory, use the FCC id as a path component
+                store_directory.mkdir(parents=True, exist_ok=True)
 
-            with open(store_directory/'index.html', 'w') as output:
-                output.write(result)
+                with open(store_directory/'index.html', 'w') as output:
+                    output.write(result)
 
-            # now download the individual PDF files and write them
-            # to the directory for this FCC entry
+                # now download the individual PDF files and write them
+                # to the directory for this FCC entry
 
-            if not no_pdf:
-                for pdf in pdfs_descriptions:
-                    # verify if there already was data downloaded for this
-                    # particular device by checking the contents of the result first
-                    # and skipping it there were no changes.
-                    if not force and (store_directory/pdf['name']).exists():
-                        continue
+                if not no_pdf:
+                    for pdf in pdfs_descriptions:
+                        # verify if there already was data downloaded for this
+                        # particular device by checking the contents of the result first
+                        # and skipping it there were no changes.
+                        if not force and (store_directory/pdf['name']).exists():
+                            continue
 
-                    if verbose:
-                        print(f"* downloading {pdf['url']}")
-                    if gentle:
-                        time.sleep(SLEEP_INTERVAL)
-                    request = requests.get(pdf['url'], headers=headers, timeout=TIMEOUT)
+                        if verbose:
+                            print(f"* downloading {pdf['url']}")
+                        if gentle:
+                            time.sleep(SLEEP_INTERVAL)
+                        request = requests.get(pdf['url'], headers=headers, timeout=TIMEOUT)
 
-                    with open(store_directory/pdf['name'], 'wb') as output:
-                        output.write(request.content)
-                    downloaded_documents += 1
+                        with open(store_directory/pdf['name'], 'wb') as output:
+                            output.write(request.content)
+                        downloaded_documents += 1
 
             # compute SHA256 of any PDF files that were downloaded. This
             # is regardless of the --no-pdf option was given (as that
@@ -205,7 +223,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf):
                 output.write(json.dumps(sorted(set(approved_dates)), indent=4))
             processed_fccids += 1
 
-            if gentle:
+            if not no_download and gentle:
                 time.sleep(SLEEP_INTERVAL)
 
         except Exception:
