@@ -173,12 +173,21 @@ class Radio:
 
 @dataclass_json
 @dataclass
+class FCC:
+    '''FCC id'''
+    fcc_id: str = ''
+    fcc_date: str = ''
+
+    # main, auxiliary, unknown
+    fcc_type: str = 'unknown'
+
+@dataclass_json
+@dataclass
 class Regulatory:
     '''Regulatory information such as FCC
        as well as certification such as Wi-Fi Certified'''
     # all dates are YYYY-MM-DD
-    fcc_ids: list[str] = field(default_factory=list)
-    fcc_date: str = ''
+    fcc_ids: list[FCC] = field(default_factory=list)
 
     industry_canada_ids: list[str] = field(default_factory=list)
 
@@ -1061,9 +1070,17 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
 
                                                 # default values: IP, login, passwd, etc.
                                                 elif identifier in ['defaulip', 'default_ip']:
-                                                    # verify IP address via regex
-                                                    if defaults.REGEX_IP.match(value) is not None:
-                                                        device.defaults.ip = value
+                                                    # verify IP address via regex.
+                                                    # TODO: clean up for example:
+                                                    # * Compal Broadband Networks CH7465LG-LC
+                                                    # * Ruckus Wireless ZoneFlex 7055
+                                                    #
+                                                    # Also extract optional port for the default web interface
+                                                    # if present, example:
+                                                    # * D-Link DWL-1750
+                                                    ip_res = defaults.REGEX_IP.match(value)
+                                                    if ip_res is not None:
+                                                        device.defaults.ip = ip_res.groups()[0]
                                                     else:
                                                         match value:
                                                             case 'acquired via DHCP':
@@ -1144,13 +1161,19 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                                                 # regulatory
                                                 elif identifier in ['fccapprovdate', 'fcc_date']:
                                                     try:
-                                                        device.regulatory.fcc_date = parse_date(value)
+                                                        device.regulatory.fcc_ids[0].fcc_date = parse_date(value)
                                                     except ValueError:
+                                                        continue
+                                                    except IndexError:
+                                                        # fcc date without an FCC id. Sigh.
                                                         continue
                                                 elif identifier == 'fcc_id':
                                                     # some devices apparently can have more than one FCC id.
                                                     fcc_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
-                                                    device.regulatory.fcc_ids = fcc_values
+                                                    for f in fcc_values:
+                                                        new_fcc = FCC()
+                                                        new_fcc.fcc_id = f
+                                                        device.regulatory.fcc_ids.append(new_fcc)
                                                 elif identifier == 'us_id':
                                                     usid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     device.regulatory.us_ids = usid_values

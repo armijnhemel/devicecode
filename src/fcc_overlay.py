@@ -38,33 +38,59 @@ def main(fcc_input_directory, devicecode_directory, output_directory, report_onl
         overlay_directory = output_directory / 'overlays'
         overlay_directory.mkdir(exist_ok=True)
 
-    # Then walk all the result files, check the FCC ids of the
-    for result_file in devicecode_directory.glob('**/*'):
-        if not result_file.is_file():
+    # verify the directory names, they should be one of the following
+    valid_directory_names = ['TechInfoDepot', 'WikiDevi']
+
+    # Inside these directories a directory called 'devices' should always
+    # be present. Optionally there can be a directory called 'overlays'
+    # with overlay files.
+
+    devicecode_dirs = []
+    for p in devicecode_directory.iterdir():
+        if not p.is_dir():
             continue
+        if not p.name in valid_directory_names:
+            continue
+        devices_dir = p / 'devices'
+        if not (devices_dir.exists() and devices_dir.is_dir()):
+            continue
+        devicecode_dirs.append(devices_dir)
 
-        try:
-            with open(result_file, 'r') as wiki_file:
-                device = json.load(wiki_file)
-                fcc_ids = device['regulatory']['fcc_ids']
-                if fcc_ids:
-                    fcc_date = device['regulatory']['fcc_date']
+    if not devicecode_dirs:
+        print(f"No valid directories found in {devicecode_directory}, should contain one of {valid_directory_names}.", file=sys.stderr)
+        sys.exit(1)
 
-                    # if there are multiple FCC ids associated with
-                    # a device then things get a little bit more complicated
-                    # so skip for now.
-                    dates = []
+    # Then walk all the result files, check the FCC ids and optionally create overlays
+    for devicecode_dir in devicecode_dirs:
+        for result_file in devicecode_dir.glob('**/*'):
+            if not result_file.is_file():
+                continue
+
+            try:
+                with open(result_file, 'r') as wiki_file:
+                    device = json.load(wiki_file)
+                    if 'regulatory' not in device:
+                        continue
+                    fcc_ids = device['regulatory']['fcc_ids']
+                    overlay_data = {'type': 'overlay', 'name': 'fcc_id', 'source': 'fcc'}
+                    write_overlay = False
+                    overlay_fcc_ids = []
+
                     if len(fcc_ids) != 1:
+                        # TODO: fix for files with multiple FCC ids
                         continue
 
-                    for fcc_id in fcc_ids:
+                    for f in fcc_ids:
+                        fcc_id = f['fcc_id']
+                        fcc_date = f['fcc_date']
                         if fcc_date == '':
                             if report_only:
                                 print(f"No FCC date defined for {fcc_id}")
                                 continue
 
-                        if (fcc_input_directory / fcc_id).is_dir():
+                        dates = []
 
+                        if (fcc_input_directory / fcc_id).is_dir():
                             # load the file with approved dates, if it exists
                             approved_file = fcc_input_directory / fcc_id / 'approved_dates.json'
                             if approved_file.exists():
@@ -74,22 +100,30 @@ def main(fcc_input_directory, devicecode_directory, output_directory, report_onl
                                 # if there is no date at all create an overlay with
                                 # the earliest date defined as the FCC date.
                                 if fcc_date == '':
-                                    overlay_data = {'type': 'overlay', 'source': 'fcc'}
-                                    overlay_data['data'] = {'regulatory': {'fcc_date': dates[0]}}
-                                    overlay_file = overlay_directory / result_file.stem / 'fcc.json'
-                                    overlay_file.parent.mkdir(parents=True, exist_ok=True)
-                                    with open(overlay_file, 'w') as overlay:
-                                        overlay.write(json.dumps(overlay_data, indent=4))
+                                    overlay_fcc_ids.append({'fcc_date': dates[0], 'fcc_id': fcc_id, 'fcc_type': 'unknown'})
+                                    write_overlay=True
                                 elif fcc_date not in dates:
-                                    # wrong data, create an overlay
-                                    pass
-
+                                    # possibly wrong data, create an overlay (TODO)
+                                    # copy the existing data to the overlay data
+                                    overlay_fcc_ids.append(f)
+                                else:
+                                    # copy the existing data to the overlay data
+                                    overlay_fcc_ids.append(f)
                         else:
                             if report_only:
                                 print(f"FCC data missing for {fcc_id}")
+                            # copy the existing data to the overlay data
+                            overlay_fcc_ids.append(f)
 
-        except json.decoder.JSONDecodeError:
-            pass
+                    if write_overlay:
+                        overlay_data['data'] = overlay_fcc_ids
+                        overlay_file = overlay_directory / result_file.stem / 'fcc_id.json'
+                        overlay_file.parent.mkdir(parents=True, exist_ok=True)
+                        with open(overlay_file, 'w') as overlay:
+                            overlay.write(json.dumps(overlay_data, indent=4))
+
+            except json.decoder.JSONDecodeError:
+                pass
 
 
 

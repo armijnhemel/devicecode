@@ -355,8 +355,9 @@ class DevicecodeUI(App):
             if device['title'] in self.overlays:
                 # apply overlays
                 for overlay in self.overlays[device['title']]:
-                    if overlay['source'] == 'fcc':
-                        device['regulatory'].update(overlay['data']['regulatory'])
+                    if overlay['name'] == 'fcc_id':
+                        device['regulatory']['fcc_ids'] = overlay['data']
+                    break
 
             if 'brand' not in device:
                 continue
@@ -412,8 +413,10 @@ class DevicecodeUI(App):
                 declared_years = []
                 if device['commercial']['release_date']:
                     declared_years.append(int(device['commercial']['release_date'][:4]))
-                if device['regulatory']['fcc_date']:
-                    declared_years.append(int(device['regulatory']['fcc_date'][:4]))
+                for f in device['regulatory']['fcc_ids']:
+                    if f['fcc_date']:
+                        if f['fcc_type'] in ['main', 'unknown']:
+                            declared_years.append(int(f['fcc_date'][:4]))
                 if device['regulatory']['wifi_certified_date']:
                     declared_years.append(int(device['regulatory']['wifi_certified_date'][:4]))
                 if not set(filter_years).intersection(declared_years):
@@ -992,14 +995,22 @@ class DevicecodeUI(App):
         if result:
             new_markdown += "# Regulatory\n"
             new_markdown += "| | |\n|--|--|\n"
-            new_markdown += f"|**FCC date** | {result['regulatory']['fcc_date']}\n"
             fcc_ids = ''
             if result['regulatory']['fcc_ids']:
-                fcc_id = result['regulatory']['fcc_ids'][0]
-                fcc_ids = f"[{fcc_id}](<https://fcc.report/FCC-ID/{fcc_id}>)"
+                fcc_id = result['regulatory']['fcc_ids'][0]['fcc_id']
+                fcc_date = result['regulatory']['fcc_ids'][0]['fcc_date']
+                if fcc_date != '':
+                    fcc_ids = f"[{fcc_id}](<https://fcc.report/FCC-ID/{fcc_id}>) ({fcc_date})"
+                else:
+                    fcc_ids = f"[{fcc_id}](<https://fcc.report/FCC-ID/{fcc_id}>)"
 
                 for f in result['regulatory']['fcc_ids'][1:]:
-                    fcc_ids += f", [{f}](<https://fcc.report/FCC-ID/{f}>)"
+                    fcc_id = f['fcc_id']
+                    fcc_date = f['fcc_date']
+                    if fcc_date != '':
+                        fcc_ids += f, "[{fcc_id}](<https://fcc.report/FCC-ID/{fcc_id}>) ({fcc_date})'"
+                    else:
+                        fcc_ids += f", [{fcc_id}](<https://fcc.report/FCC-ID/{fcc_id}>)"
             new_markdown += f"|**FCC ids** | {fcc_ids}\n"
             new_markdown += f"|**Industry Canada ids** | {', '.join(result['regulatory']['industry_canada_ids'])}\n"
             new_markdown += f"|**US ids** | {', '.join(result['regulatory']['us_ids'])}\n"
@@ -1169,8 +1180,10 @@ class DevicecodeUI(App):
             declared_years = set()
             if result['commercial']['release_date']:
                 declared_years.add(result['commercial']['release_date'][:4])
-            if result['regulatory']['fcc_date']:
-                declared_years.add(result['regulatory']['fcc_date'][:4])
+            for f in result['regulatory']['fcc_ids']:
+                if f['fcc_date']:
+                    if f['fcc_type'] in ['main', 'unknown']:
+                        declared_years.add(f['fcc_date'][:4])
             if result['regulatory']['wifi_certified_date']:
                 declared_years.add(result['regulatory']['wifi_certified_date'][:4])
 
