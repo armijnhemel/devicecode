@@ -358,7 +358,11 @@ def process_fcc(task):
                 pass
             except pdfminer.psexceptions.PSSyntaxError:
                 pass
+            except pdfminer.psexceptions.PSEOF:
+                pass
             except pdfminer.pdfdocument.PDFNoValidXRef:
+                pass
+            except pdfminer.ccitt.CCITTG4Parser.InvalidData:
                 pass
 
             # write various metadata to files for further processing
