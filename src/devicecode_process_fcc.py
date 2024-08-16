@@ -25,7 +25,7 @@ TEXT_TO_FUNCTIONALITY = {
 }
 
 PROGRAMS = ['arptables', 'bpalogin', 'bridge-utils', 'busybox', 'ebtables', 'glibc',
-            'hostapd', 'iproute', 'ipset', 'iptables', 'iputils', 'linux', 'nmap', 'ppp',
+            'hostapd', 'iproute', 'iptables', 'iputils', 'linux', 'nmap',
             'pptpd', 'rp-pppoe', 'wireless_tools', 'wpa_supplicant']
 
 # names of files used as descriptions that could possibly contain hints about devices
@@ -77,6 +77,12 @@ def search_text(texts):
     if 'gnu general public license' in text:
         results['license'].append("GNU GPL")
         results_found = True
+
+    for t in PROGRAMS:
+        if t in text:
+            results['programs'].append(t)
+            results_found = True
+
     return (results_found, results)
 
 # Stitch images. Only the image name is needed, not any of the data
