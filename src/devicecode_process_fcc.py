@@ -170,10 +170,12 @@ def process_fcc(task):
             with open(fcc_directory / pdf['name'], 'rb') as pdf_file:
                 pdf_hash = hashlib.sha256(pdf_file.read()).hexdigest()
 
-            # create two directories for output
-            # for original output
-            # TODO: these directories should not exist
-            # and an error should be thrown, unless --force is used
+            # create two directories for output:
+            # one for original output (original images and extracted text)
+            # and one for post processed output (such as text search results,
+            # recombined images).
+            # These directories should not exist (because that means the file
+            # has already been processed) and an error is thrown, unless --force is used
             pdf_orig_output_directory = output_directory / fccid / pdf['name'] / 'orig'
             if pdf_orig_output_directory.exists():
                 if not force:
@@ -181,7 +183,6 @@ def process_fcc(task):
                     continue
             pdf_orig_output_directory.mkdir(exist_ok=True, parents=True)
 
-            # for post processed output (such as combined images)
             pdf_output_directory = output_directory / fccid / pdf['name'] / 'processed'
             if pdf_output_directory.exists():
                 if not force:
@@ -193,7 +194,7 @@ def process_fcc(task):
             # a few reasons: first, keeping a mapping between elements
             # and page numbers is useful, especially if there are many
             # pages in the document. Second, images that need to be
-            # combined into a single image will appear on a single page.
+            # combined into a single image always are on a single page.
             page_number = 0
 
             # keep metadata per page
