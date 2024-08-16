@@ -9,6 +9,7 @@ import json
 import multiprocessing
 import pathlib
 import re
+import struct
 import sys
 
 import click
@@ -163,7 +164,7 @@ def process_fcc(task):
                     continue
 
             if verbose:
-                print(f"Processing {pdf['name']}")
+                print(f"Processing {fccid} - {pdf['name']}")
 
             # compute the SHA256 hash of the PDF file
             with open(fcc_directory / pdf['name'], 'rb') as pdf_file:
@@ -348,6 +349,16 @@ def process_fcc(task):
                 # Example: 3869887.pdf in FCC id 2APJB-NE1
                 # Error:
                 # TypeError: 'PDFObjRef' object is not iterable
+                pass
+            except struct.error:
+                # TODO: fix this. It is likely an error in pdfminer
+                # Example: 1509933.pdf in FCC id PPD-AR5B95
+                # Error:
+                # struct.error: unpack requires a buffer of 2 bytes
+                pass
+            except pdfminer.psexceptions.PSSyntaxError:
+                pass
+            except pdfminer.pdfdocument.PDFNoValidXRef:
                 pass
 
             # write various metadata to files for further processing
