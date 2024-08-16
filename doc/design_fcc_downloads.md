@@ -44,4 +44,10 @@ data is stored separately from devices in a subdirectory with the name of
 the FCC id. Some devices that combine different components that each of a
 separate FCC id can have multiple FCC ids associated with them.
 
+Per FCC id the following is stored:
+
+1. original HTML data from <FCC.report>
+2. PDFs listed in the HTML
+3. metadata for the PDFs: filename, original download URL SHA256, description
+
 [fcc]:https://en.wikipedia.org/wiki/Federal_Communications_Commission
