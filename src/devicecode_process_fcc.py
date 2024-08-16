@@ -365,7 +365,7 @@ def main(fccids, fcc_input_directory, output_directory, jobs, verbose, force, pr
 
     tasks = map(lambda x: (x, meta_information), fccids)
     pool = multiprocessing.Pool(jobs)
-    pool.map(process_fcc, tasks)
+    pool.map(process_fcc, tasks, chunksize=1)
 
 
 if __name__ == "__main__":
