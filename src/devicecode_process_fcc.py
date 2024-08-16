@@ -198,141 +198,149 @@ def process_fcc(task):
             # keep metadata per page
             image_metadata = {}
 
-            for page_layout in extract_pages(fcc_directory / pdf['name']):
-                page_number += 1
+            try:
+                for page_layout in extract_pages(fcc_directory / pdf['name']):
+                    page_number += 1
 
-                # keep track of images
-                images = []
-                image_names = []
-                image_metadata[page_number] = {'original': [], 'processed': {}}
-                img_directory = pdf_orig_output_directory / str(page_number) / 'images'
-                image_writer = pdfminer.image.ImageWriter(img_directory)
+                    # keep track of images
+                    images = []
+                    image_names = []
+                    image_metadata[page_number] = {'original': [], 'processed': {}}
+                    img_directory = pdf_orig_output_directory / str(page_number) / 'images'
+                    image_writer = pdfminer.image.ImageWriter(img_directory)
 
-                extracted_texts = []
-                for element in page_layout:
-                    if isinstance(element, pdfminer.layout.LTFigure):
-                        try:
-                            img_name = image_writer.export_image(element._objs[0])
-                            images.append((element, img_name))
-                            image_names.append(img_name)
-                        except AttributeError:
-                            # TODO: fix this. sometimes images aren't
-                            # correctly exported and an AttributeError exception
-                            # is thrown with the message:
-                            # AttributeError: 'LTFigure' object has no attribute 'srcsize'
-                            # Is this an error in pdfminer?
-                            # example: FCC ID: 2AD4X-WP25M1200, file: 3788894.pdf
-                            pass
-                        except pdfminer.pdfexceptions.PDFValueError:
-                            # TODO: fix this
-                            pass
-                        except IndexError:
-                            # TODO: fix this. sometimes images aren't
-                            # correctly exported and an IndexError exception
-                            # is thrown with the message:
-                            # "IndexError: list index out of range"
-                            # Is this an error in pdfminer?
-                            # example: FCC ID: RAFXWL-11GRAR, file: 769930.pdf
-                            pass
-                        except UnboundLocalError:
-                            # TODO: fix this. sometimes images aren't
-                            # correctly exported and an UnboundLocalError exception
-                            # is thrown with the message:
-                            # "cannot access local variable 'mode' where it is not associated with a value"
-                            # Is this an error in pdfminer?
-                            # example: FCC ID: ODMAM5N, file: 1876480.pdf
-                            pass
-                        except PIL.UnidentifiedImageError as e:
-                            # TODO: fix this.
-                            # example: FCC ID: HDCWLAN192XF1, file 1930164.pdf
-                            # could be related to missing JPEG2000 support.
-                            pass
-                        except OSError as e:
-                            # TODO: fix this.
-                            # example: FCC ID: TE7M4R, file 4041072.pdf
-                            # could be related to missing JPEG2000 support.
-                            pass
-                    else:
-                        try:
-                            if element.get_text().strip() != '':
-                                text_directory = pdf_orig_output_directory / str(page_number) / 'text'
-                                text_directory.mkdir(exist_ok=True, parents=True)
-                                extracted_texts.append(element.get_text())
-                        except AttributeError:
-                            pass
+                    extracted_texts = []
+                    for element in page_layout:
+                        if isinstance(element, pdfminer.layout.LTFigure):
+                            try:
+                                img_name = image_writer.export_image(element._objs[0])
+                                images.append((element, img_name))
+                                image_names.append(img_name)
+                            except AttributeError:
+                                # TODO: fix this. sometimes images aren't
+                                # correctly exported and an AttributeError exception
+                                # is thrown with the message:
+                                # AttributeError: 'LTFigure' object has no attribute 'srcsize'
+                                # Is this an error in pdfminer?
+                                # example: FCC ID: 2AD4X-WP25M1200, file: 3788894.pdf
+                                pass
+                            except pdfminer.pdfexceptions.PDFValueError:
+                                # TODO: fix this
+                                pass
+                            except IndexError:
+                                # TODO: fix this. sometimes images aren't
+                                # correctly exported and an IndexError exception
+                                # is thrown with the message:
+                                # "IndexError: list index out of range"
+                                # Is this an error in pdfminer?
+                                # example: FCC ID: RAFXWL-11GRAR, file: 769930.pdf
+                                pass
+                            except UnboundLocalError:
+                                # TODO: fix this. sometimes images aren't
+                                # correctly exported and an UnboundLocalError exception
+                                # is thrown with the message:
+                                # "cannot access local variable 'mode' where it is not associated with a value"
+                                # Is this an error in pdfminer?
+                                # example: FCC ID: ODMAM5N, file: 1876480.pdf
+                                pass
+                            except PIL.UnidentifiedImageError as e:
+                                # TODO: fix this.
+                                # example: FCC ID: HDCWLAN192XF1, file 1930164.pdf
+                                # could be related to missing JPEG2000 support.
+                                pass
+                            except OSError as e:
+                                # TODO: fix this.
+                                # example: FCC ID: TE7M4R, file 4041072.pdf
+                                # could be related to missing JPEG2000 support.
+                                pass
+                        else:
+                            try:
+                                if element.get_text().strip() != '':
+                                    text_directory = pdf_orig_output_directory / str(page_number) / 'text'
+                                    text_directory.mkdir(exist_ok=True, parents=True)
+                                    extracted_texts.append(element.get_text())
+                            except AttributeError:
+                                pass
 
-                # write the extracted text per page
-                if extracted_texts:
-                    with open(text_directory / 'extracted.txt', 'w') as output_file:
-                        for line in extracted_texts:
-                            output_file.write(line)
-                    results_found, search_results = search_text(extracted_texts)
-                    if results_found:
-                        text_result_directory = pdf_output_directory / str(page_number) / 'text'
-                        text_result_directory.mkdir(exist_ok=True, parents=True)
+                    # write the extracted text per page
+                    if extracted_texts:
+                        with open(text_directory / 'extracted.txt', 'w') as output_file:
+                            for line in extracted_texts:
+                                output_file.write(line)
+                        results_found, search_results = search_text(extracted_texts)
+                        if results_found:
+                            text_result_directory = pdf_output_directory / str(page_number) / 'text'
+                            text_result_directory.mkdir(exist_ok=True, parents=True)
 
-                        with open(text_result_directory / 'extracted.json', 'w') as output_file:
-                            output_file.write(json.dumps(search_results, indent=4))
+                            with open(text_result_directory / 'extracted.json', 'w') as output_file:
+                                output_file.write(json.dumps(search_results, indent=4))
 
-                image_metadata[page_number]['original'] = image_names
+                    image_metadata[page_number]['original'] = image_names
 
-                if len(images) > 1:
-                    to_stitch = []
-                    orientation = None
-                    stitch_directory = pdf_output_directory / str(page_number) / 'images'
-                    for image in images:
-                        if not to_stitch:
-                            # store the first image as a potential starting point.
-                            to_stitch.append(image)
-                            continue
-
-                        # first try to figure out a stitching orientation, if any
-                        if orientation is None:
-                            if round(to_stitch[-1][0].x0 - image[0].width) == round(image[0].x0):
-                                orientation = 'horizontal'
+                    if len(images) > 1:
+                        to_stitch = []
+                        orientation = None
+                        stitch_directory = pdf_output_directory / str(page_number) / 'images'
+                        for image in images:
+                            if not to_stitch:
+                                # store the first image as a potential starting point.
                                 to_stitch.append(image)
-                            elif round(to_stitch[-1][0].y0 - image[0].height) == round(image[0].y0):
-                                orientation = 'vertical'
-                                to_stitch.append(image)
-                            else:
-                                to_stitch = [image]
-                            continue
+                                continue
 
-                        # check if an image is still part of a "stitch chain" or
-                        # if it is the start of a new image. If it is part of a new
-                        # image stitch the images that were stored.
-                        if orientation == 'horizontal':
-                            if round(to_stitch[-1][0].x0 - image[0].width, 2) == round(image[0].x0, 2):
-                                to_stitch.append(image)
-                            else:
-                                stitch_names = list(map(lambda x: x[1], to_stitch))
-                                stitch_directory.mkdir(exist_ok=True, parents=True)
-                                stitched_file = stitch(stitch_names, orientation, img_directory, stitch_directory)
-                                image_metadata[page_number]['processed'][stitched_file] = {}
-                                image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
+                            # first try to figure out a stitching orientation, if any
+                            if orientation is None:
+                                if round(to_stitch[-1][0].x0 - image[0].width) == round(image[0].x0):
+                                    orientation = 'horizontal'
+                                    to_stitch.append(image)
+                                elif round(to_stitch[-1][0].y0 - image[0].height) == round(image[0].y0):
+                                    orientation = 'vertical'
+                                    to_stitch.append(image)
+                                else:
+                                    to_stitch = [image]
+                                continue
 
-                                # reset
-                                to_stitch = [image]
-                                orientation = None
-                        elif orientation == 'vertical':
-                            if round(to_stitch[-1][0].y0 - image[0].height, 2) == round(image[0].y0, 2):
-                                to_stitch.append(image)
-                            else:
-                                stitch_names = list(map(lambda x: x[1], to_stitch))
-                                stitch_directory.mkdir(exist_ok=True, parents=True)
-                                stitched_file = stitch(stitch_names, orientation, img_directory, stitch_directory)
-                                image_metadata[page_number]['processed'][stitched_file] = {}
-                                image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
+                            # check if an image is still part of a "stitch chain" or
+                            # if it is the start of a new image. If it is part of a new
+                            # image stitch the images that were stored.
+                            if orientation == 'horizontal':
+                                if round(to_stitch[-1][0].x0 - image[0].width, 2) == round(image[0].x0, 2):
+                                    to_stitch.append(image)
+                                else:
+                                    stitch_names = list(map(lambda x: x[1], to_stitch))
+                                    stitch_directory.mkdir(exist_ok=True, parents=True)
+                                    stitched_file = stitch(stitch_names, orientation, img_directory, stitch_directory)
+                                    image_metadata[page_number]['processed'][stitched_file] = {}
+                                    image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
 
-                                # reset
-                                to_stitch = [image]
-                                orientation = None
-                    if len(to_stitch) > 1:
-                        stitch_names = list(map(lambda x: x[1], to_stitch))
-                        stitch_directory.mkdir(exist_ok=True, parents=True)
-                        stitched_file = stitch(stitch_names, orientation, img_directory, stitch_directory)
-                        image_metadata[page_number]['processed'][stitched_file] = {}
-                        image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
+                                    # reset
+                                    to_stitch = [image]
+                                    orientation = None
+                            elif orientation == 'vertical':
+                                if round(to_stitch[-1][0].y0 - image[0].height, 2) == round(image[0].y0, 2):
+                                    to_stitch.append(image)
+                                else:
+                                    stitch_names = list(map(lambda x: x[1], to_stitch))
+                                    stitch_directory.mkdir(exist_ok=True, parents=True)
+                                    stitched_file = stitch(stitch_names, orientation, img_directory, stitch_directory)
+                                    image_metadata[page_number]['processed'][stitched_file] = {}
+                                    image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
+
+                                    # reset
+                                    to_stitch = [image]
+                                    orientation = None
+                        if len(to_stitch) > 1:
+                            stitch_names = list(map(lambda x: x[1], to_stitch))
+                            stitch_directory.mkdir(exist_ok=True, parents=True)
+                            stitched_file = stitch(stitch_names, orientation, img_directory, stitch_directory)
+                            image_metadata[page_number]['processed'][stitched_file] = {}
+                            image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
+
+            except TypeError:
+                # TODO: fix this. It is likely an error in pdfminer
+                # Example: 3869887.pdf in FCC id 2APJB-NE1
+                # Error:
+                # TypeError: 'PDFObjRef' object is not iterable
+                pass
 
             # write various metadata to files for further processing
             with open(output_directory / fccid / pdf['name'] / 'images.json', 'w') as output_file:
