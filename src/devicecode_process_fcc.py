@@ -126,8 +126,8 @@ def stitch(images, orientation, image_directory, stitch_directory):
 @click.argument('fccids', required=True, nargs=-1)
 @click.option('--verbose', is_flag=True, help='be verbose')
 @click.option('--force', is_flag=True, help='always force processing')
-@click.option('--ignore-uninteresting', is_flag=True, help='Ignore uninteresting files')
-def main(fccids, fcc_input_directory, output_directory, verbose, force, ignore_uninteresting):
+@click.option('--process-uninteresting', is_flag=True, default=False, help='process uninteresting files')
+def main(fccids, fcc_input_directory, output_directory, verbose, force, process_uninteresting):
     if not fcc_input_directory.is_dir():
         print(f"{fcc_input_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -163,7 +163,7 @@ def main(fccids, fcc_input_directory, output_directory, verbose, force, ignore_u
                     print(f"{pdf['name']} does not exist, skipping.", file=sys.stderr)
                     continue
 
-                if ignore_uninteresting:
+                if not process_uninteresting:
                     if pdf['type'] in IGNORE_FILES:
                         continue
 
