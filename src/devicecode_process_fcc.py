@@ -364,6 +364,12 @@ def process_fcc(task):
                 pass
             except pdfminer.ccitt.CCITTG4Parser.InvalidData:
                 pass
+            except pdfminer.pdfdocument.PDFEncryptionError:
+                # example: 165344.pdf in FCC id M4Y-000325
+                pass
+            except pdfminer.pdfexceptions.PDFNotImplementedError:
+                # example: 992035.pdf in FCC id PH7MV430A
+                pass
 
             # write various metadata to files for further processing
             with open(output_directory / fccid / pdf['name'] / 'images.json', 'w') as output_file:
