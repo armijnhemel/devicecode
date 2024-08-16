@@ -227,6 +227,14 @@ def process_fcc(task):
                             except pdfminer.pdfexceptions.PDFValueError:
                                 # TODO: fix this
                                 pass
+                            except KeyError:
+                                # TODO: fix this. sometimes images aren't
+                                # correctly exported and a KeyError exception
+                                # is thrown with the message:
+                                # KeyError: 'JBIG2Globals'
+                                # example: FCC ID: HDCWLAN192XF1, file: 2967552.pdf
+                                # https://github.com/pdfminer/pdfminer.six/issues/743
+                                pass
                             except IndexError:
                                 # TODO: fix this. sometimes images aren't
                                 # correctly exported and an IndexError exception
