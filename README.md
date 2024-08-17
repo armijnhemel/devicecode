@@ -38,9 +38,9 @@ The easiest to run the script is to use Nix and then `nix-shell` to set up the
 environment. If this isn't your cup of tea, then the requirements for running
 the scripts are (currently) quite modest (see `requirements.txt`).
 
-To run the script you will need a dump file (see above) and an existing Git
-repository to write to. It is best to create a fresh directory and init a Git
-repository, for example:
+To run the script you will need a dump file (see above). It is recommended that
+the directory you write to is an existing Git repository. One method is to
+create a fresh directory and init a Git repository, for example:
 
 ```
 $ mkdir devicecode
@@ -49,8 +49,8 @@ $ git init
 ```
 
 but of course you could also use an existing Git clone from for example GitHub.
-You might want to change the value of `AUTHOR` in the file `src/devicecode.py`
-(this will be made configurable soon).
+If you are using Git support (see later) You might want to change the value of
+`AUTHOR` in the file `src/devicecode.py` (this will be made configurable soon).
 
 The script will create the following directory structure inside the Git
 repository:
@@ -58,13 +58,16 @@ repository:
 ```
 {WIKI_TYPE}/
 {WIKI_TYPE}/devices/
+{WIKI_TYPE}/original/
 ```
 
 where `WIKI_TYPE` is currently either `TechnInfoDepot` or `WikiDevi`. For each
-device that was processed a single JSON file will be written with (cleaned up)
-data extracted from the Wiki. Extra data (such as concluded data or data that
-wasn't in the original data) will be written as separate JSON files (this is
-future work).
+device that was processed a single JSON file will be written to the
+subdirectory `devices` with (cleaned up) data extracted from the Wiki. The
+original XML data will be written to the directory `original`.
+
+Extra data (such as concluded data or data that wasn't in the original data)
+will be written as separate JSON files (this is future work).
 
 To invoke the script use the following command (change the name of the input,
 wiki type and output directory to your needs):
@@ -73,13 +76,14 @@ wiki type and output directory to your needs):
 $ python devicecode.py -i TechInfoDepot-20231002144356.xml --wiki-type=TechInfoDepot -o ~/devicecode
 ```
 
-If the Git repository is not local (for example, it is a GitHub repository)
-you will have to manually do a `git push` to send the results upstream.
+If you are using Git support and the Git repository is not local (for example,
+it is a GitHub repository) you will have to manually do a `git push` to send
+the results upstream.
 
 Using Git will have a serious performance impact. Running the script with Git:
 
 ```
-$ time python devicecode.py -i TechInfoDepot-20231002144356.xml --wiki-type=TechInfoDepot -o ~/devicecode
+$ time python devicecode.py -i TechInfoDepot-20231002144356.xml --wiki-type=TechInfoDepot -o ~/devicecode --use-git
 
 real	15m26.654s
 user	13m40.428s
@@ -89,27 +93,28 @@ sys	1m42.781s
 and without Git:
 
 ```
-$ time python devicecode.py -i TechInfoDepot-20231002144356.xml --wiki-type=TechInfoDepot -o /tmp/blaat --no-git
+$ time python devicecode.py -i TechInfoDepot-20231002144356.xml --wiki-type=TechInfoDepot -o ~/devicecode
 
 real	0m38.859s
 user	0m38.384s
 sys	0m0.266s
 ```
 
-Because of this performance impact there is also a flag `--no-git` that can be
-used to disable using Git. When processing an initial dump the following
-(example) workflow could be used instead:
+Because of this performance impact Git support is disabled by default. To
+enable it there is a flag `--use-git`.
+
+When processing an initial dump the following (example) workflow is recommended:
 
 ```
 $ mkdir ~/devicecode
-$ python devicecode.py -i TechInfoDepot-20231002144356.xml --wiki-type=TechInfoDepot -o ~/devicecode --no-git
+$ python devicecode.py -i TechInfoDepot-20231002144356.xml --wiki-type=TechInfoDepot -o ~/devicecode
 $ cd ~/devicecode
 $ git init
 $ git add TechInfoDepot
 $ git commit -m "add initial dump"
 ```
 
-When processing updates the `--no-git` flag could then be skipped.
+When processing updates the `--use-git` flag could then be used.
 
 ### Exploring the data using the DeviceCode TUI
 

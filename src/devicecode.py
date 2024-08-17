@@ -664,8 +664,8 @@ def parse_serial_jtag(serial_string):
 @click.option('--wiki-type', required=True,
               type=click.Choice(['TechInfoDepot', 'WikiDevi'], case_sensitive=False))
 @click.option('--debug', is_flag=True, help='enable debug logging')
-@click.option('--no-git', is_flag=True, help='do not use Git')
-def main(input_file, output_directory, wiki_type, debug, no_git):
+@click.option('--use-git', is_flag=True, help='use Git (not recommended, see documentation)')
+def main(input_file, output_directory, wiki_type, debug, use_git):
     # load XML
     with open(input_file) as wiki_dump:
         wiki_info = defusedxml.minidom.parse(wiki_dump)
@@ -676,7 +676,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
         print(f"{output_directory} is not a directory, exiting.")
         sys.exit(1)
 
-    if not no_git:
+    if use_git:
         # verify the output directory is a valid Git repository
         try:
             repo = dulwich.porcelain.open_repo(output_directory)
@@ -738,7 +738,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                     with open(wiki_original_directory / out_name, 'w') as out_file:
                         out_file.write(out_data)
 
-                if data_changed and not no_git:
+                if data_changed and use_git:
                     # add the file and commit
                     dulwich.porcelain.add(repo, orig_xml_file)
                     if new_file:
@@ -1633,7 +1633,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                             json_data = json.dumps(json.loads(device.to_json()), sort_keys=True, indent=4)
                             json_file.write(json_data)
 
-                        if not no_git:
+                        if use_git:
                             # add the file and commit
                             dulwich.porcelain.add(repo, wiki_device_directory / model_name)
                             if new_file:
