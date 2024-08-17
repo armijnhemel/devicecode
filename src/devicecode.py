@@ -718,8 +718,28 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                 # TODO: add support for Git
                 out_name = f"{title}.xml"
                 out_name = out_name.replace('/', '-')
-                with open(wiki_original_directory / out_name, 'w') as out_file:
-                    out_file.write(p.toxml())
+                orig_xml_file = wiki_original_directory / out_name
+                new_file = True
+                data_changed = True
+                out_data = p.toxml()
+                if orig_xml_file.exists():
+                    new_file = False
+                    with open(wiki_original_directory / out_name, 'r') as out_file:
+                        orig_data = out_file.read()
+                        if out_data == orig_data:
+                            data_changed = False
+
+                if data_changed:
+                    with open(wiki_original_directory / out_name, 'w') as out_file:
+                        out_file.write(out_data)
+
+                if data_changed and not no_git:
+                    # add the file and commit
+                    dulwich.porcelain.add(repo, orig_xml_file)
+                    if new_file:
+                        dulwich.porcelain.commit(repo, f"Add {out_name}", committer=AUTHOR, author=AUTHOR)
+                    else:
+                        dulwich.porcelain.commit(repo, f"Update {out_name}", committer=AUTHOR, author=AUTHOR)
 
             elif child.nodeName == 'revision':
                 # further process the device data
