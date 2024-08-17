@@ -372,13 +372,14 @@ def parse_ps(ps_log):
             # extract interesting information here
             ps_line = ps_res.groups()[0]
             res_split = ps_line.split()
-            program = res_split[0]
-            program_name = pathlib.Path(program).name
-            parameters = res_split[1:]
-            program_res = {'type': 'ps', 'name': program_name,
-                           'full_name': program, 'parameters': parameters,
-                           'ps_line': ps_line}
-            results.append(program_res)
+            if res_split:
+                program = res_split[0]
+                program_name = pathlib.Path(program).name
+                parameters = res_split[1:]
+                program_res = {'type': 'ps', 'name': program_name,
+                               'full_name': program, 'parameters': parameters,
+                               'ps_line': ps_line}
+                results.append(program_res)
     return results
 
 def parse_log(boot_log):
