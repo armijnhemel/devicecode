@@ -544,7 +544,11 @@ def parse_os(os_string):
                     continue
                 if 'LSDK' in field:
                     # Atheros/Qualcomm Atheros SDK version
-                    sdk_version = field.split('-', maxsplit=1)[1]
+                    sdk_splits = field.split('-', maxsplit=1)
+                    if len(sdk_splits) == 2:
+                        sdk_version = sdk_splits[1]
+                    else:
+                        sdk_version = ''
                     result['sdk'] = 'LSDK'
                     result['sdk_version'] = sdk_version
                 if 'Android' in field:
