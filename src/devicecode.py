@@ -372,13 +372,14 @@ def parse_ps(ps_log):
             # extract interesting information here
             ps_line = ps_res.groups()[0]
             res_split = ps_line.split()
-            program = res_split[0]
-            program_name = pathlib.Path(program).name
-            parameters = res_split[1:]
-            program_res = {'type': 'ps', 'name': program_name,
-                           'full_name': program, 'parameters': parameters,
-                           'ps_line': ps_line}
-            results.append(program_res)
+            if res_split:
+                program = res_split[0]
+                program_name = pathlib.Path(program).name
+                parameters = res_split[1:]
+                program_res = {'type': 'ps', 'name': program_name,
+                               'full_name': program, 'parameters': parameters,
+                               'ps_line': ps_line}
+                results.append(program_res)
     return results
 
 def parse_log(boot_log):
@@ -543,7 +544,11 @@ def parse_os(os_string):
                     continue
                 if 'LSDK' in field:
                     # Atheros/Qualcomm Atheros SDK version
-                    sdk_version = field.split('-', maxsplit=1)[1]
+                    sdk_splits = field.split('-', maxsplit=1)
+                    if len(sdk_splits) == 2:
+                        sdk_version = sdk_splits[1]
+                    else:
+                        sdk_version = ''
                     result['sdk'] = 'LSDK'
                     result['sdk_version'] = sdk_version
                 if 'Android' in field:
@@ -659,8 +664,8 @@ def parse_serial_jtag(serial_string):
 @click.option('--wiki-type', required=True,
               type=click.Choice(['TechInfoDepot', 'WikiDevi'], case_sensitive=False))
 @click.option('--debug', is_flag=True, help='enable debug logging')
-@click.option('--no-git', is_flag=True, help='do not use Git')
-def main(input_file, output_directory, wiki_type, debug, no_git):
+@click.option('--use-git', is_flag=True, help='use Git (not recommended, see documentation)')
+def main(input_file, output_directory, wiki_type, debug, use_git):
     # load XML
     with open(input_file) as wiki_dump:
         wiki_info = defusedxml.minidom.parse(wiki_dump)
@@ -671,7 +676,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
         print(f"{output_directory} is not a directory, exiting.")
         sys.exit(1)
 
-    if not no_git:
+    if use_git:
         # verify the output directory is a valid Git repository
         try:
             repo = dulwich.porcelain.open_repo(output_directory)
@@ -718,8 +723,28 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                 # TODO: add support for Git
                 out_name = f"{title}.xml"
                 out_name = out_name.replace('/', '-')
-                with open(wiki_original_directory / out_name, 'w') as out_file:
-                    out_file.write(p.toxml())
+                orig_xml_file = wiki_original_directory / out_name
+                new_file = True
+                data_changed = True
+                out_data = p.toxml()
+                if orig_xml_file.exists():
+                    new_file = False
+                    with open(wiki_original_directory / out_name, 'r') as out_file:
+                        orig_data = out_file.read()
+                        if out_data == orig_data:
+                            data_changed = False
+
+                if data_changed:
+                    with open(wiki_original_directory / out_name, 'w') as out_file:
+                        out_file.write(out_data)
+
+                if data_changed and use_git:
+                    # add the file and commit
+                    dulwich.porcelain.add(repo, orig_xml_file)
+                    if new_file:
+                        dulwich.porcelain.commit(repo, f"Add {out_name}", committer=AUTHOR, author=AUTHOR)
+                    else:
+                        dulwich.porcelain.commit(repo, f"Update {out_name}", committer=AUTHOR, author=AUTHOR)
 
             elif child.nodeName == 'revision':
                 # further process the device data
@@ -1608,7 +1633,7 @@ def main(input_file, output_directory, wiki_type, debug, no_git):
                             json_data = json.dumps(json.loads(device.to_json()), sort_keys=True, indent=4)
                             json_file.write(json_data)
 
-                        if not no_git:
+                        if use_git:
                             # add the file and commit
                             dulwich.porcelain.add(repo, wiki_device_directory / model_name)
                             if new_file:
