@@ -27,14 +27,16 @@ Alternatively, look at representing a device as a graph.
 ## Create overlays
 
 The data in these wikis is often incomplete and sometimes incorrect. Creating
-overlays that can be enabled/disabled at will to augment the data could be very
-helpful. A good example is the ODM field, where for many devices it isn't known
-which ODM made the device. This makes making comparisons between devices more
-difficult.
+overlays that can be enabled/disabled at will to augment the data is a very
+helpful mechanism. A good example is the ODM field, where for many devices it
+isn't known which ODM made the device. This makes making comparisons between
+devices more difficult.
 
 If this information becomes available it can be stored in an overlay separate
-from the original data. A possible overlay could be a reconciliation of data
-from the Wikis.
+from the original data. Two existing overlays are:
+
+* FCC dates
+* OUI information (networking)
 
 ### Possible overlays
 
@@ -42,6 +44,14 @@ from the Wikis.
   but not the architecture (ARM/MIPS/etc.). By using some lookup table mapping
   model to architecture it should be fairly simple to create these overlays.
 * CPE mapping: see <https://nvd.nist.gov/products/cpe>
+
+### Overlay squash script
+
+Currently the overlays are loaded "on the fly" by the TUI. This makes it
+fairly easy to switch off any overlays (by removing them) and also keeps a
+clean separation between the data that was extracted from the Wikis and other
+sources (which is useful license wise), but some might prefer to have both
+the wiki data and the overlays squashed into a single file per device.
 
 ## Add software update information/press releases
 
