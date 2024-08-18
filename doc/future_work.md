@@ -38,8 +38,6 @@ from the Wikis.
 
 ### Possible overlays
 
-* FCC dates: there are quite a few devices where an FCC identifier is provided,
-  but no date was specified.
 * CPU type information: for many devices the chip vendor and model are given
   but not the architecture (ARM/MIPS/etc.). By using some lookup table mapping
   model to architecture it should be fairly simple to create these overlays.
