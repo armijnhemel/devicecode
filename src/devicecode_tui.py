@@ -907,7 +907,7 @@ class DevicecodeUI(App):
 
     def on_tree_node_selected(self, event: Tree.NodeSelected[None]) -> None:
         '''Display the reports of a node when it is selected'''
-        if event.node.data is not None:
+        if event.node.data is not None and 'title' in event.node.data:
             self.device_data_area.update(self.build_device_report(event.node.data))
             self.model_data_area.update(self.build_model_report(event.node.data))
             self.network_data_area.update(self.build_network_report(event.node.data['network']))
