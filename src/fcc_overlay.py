@@ -100,7 +100,7 @@ def main(fcc_input_directory, devicecode_directory, output_directory, report_onl
                                 # if there is no date at all create an overlay with
                                 # the earliest date defined as the FCC date.
                                 if fcc_date == '':
-                                    overlay_fcc_ids.append({'fcc_date': dates[0], 'fcc_id': fcc_id, 'fcc_type': 'unknown'})
+                                    overlay_fcc_ids.append({'fcc_date': dates[0], 'fcc_id': fcc_id, 'fcc_type': 'unknown', 'license': 'CC0-1.0'})
                                     write_overlay=True
                                 elif fcc_date not in dates:
                                     # possibly wrong data, create an overlay (TODO)
