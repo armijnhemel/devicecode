@@ -1246,6 +1246,10 @@ def main(devicecode_directory):
             continue
         devicecode_dirs.append(devices_dir)
 
+    if not devicecode_dirs:
+        print(f"No valid directories found in {devicecode_directory}, should contain one of {valid_directory_names}.", file=sys.stderr)
+        sys.exit(1)
+
     app = DevicecodeUI(devicecode_dirs)
     app.run()
 
