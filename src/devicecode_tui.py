@@ -1229,7 +1229,8 @@ def main(devicecode_directory):
         sys.exit(1)
 
     # verify the directory names, they should be one of the following
-    valid_directory_names = ['TechInfoDepot', 'WikiDevi']
+    #valid_directory_names = ['TechInfoDepot', 'WikiDevi']
+    valid_directory_names = ['TechInfoDepot']
 
     # Inside these directories a directory called 'devices' should always
     # be present. Optionally there can be a directory called 'overlays'
