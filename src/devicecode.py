@@ -118,6 +118,14 @@ class Manufacturer:
 
 @dataclass_json
 @dataclass
+class OUI:
+    '''Organizationally unique identifier'''
+    oui: str = ''
+    name_short: str = ''
+    name: str = ''
+
+@dataclass_json
+@dataclass
 class Network:
     '''Networking information'''
     chips: list[Chip] = field(default_factory=list)
@@ -126,8 +134,8 @@ class Network:
     mdix: str = 'unknown'
     docsis_version: str = ''
     # https://en.wikipedia.org/wiki/Organizationally_unique_identifier
-    ethernet_oui: list[str] = field(default_factory=list)
-    wireless_oui: list[str] = field(default_factory=list)
+    ethernet_oui: list[OUI] = field(default_factory=list)
+    wireless_oui: list[OUI] = field(default_factory=list)
 
 @dataclass_json
 @dataclass
@@ -468,7 +476,9 @@ def parse_oui(oui_string):
             if oui_value.strip() == '':
                 continue
             if defaults.REGEX_OUI.match(oui_value.strip()) is not None:
-                ouis.append(oui_value.strip())
+                new_oui = OUI()
+                new_oui.oui = oui_value.strip()
+                ouis.append(new_oui)
     return ouis
 
 def parse_chip(chip_string):

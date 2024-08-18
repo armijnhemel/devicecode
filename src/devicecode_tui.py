@@ -1133,9 +1133,18 @@ class DevicecodeUI(App):
             new_markdown += "| | |\n|--|--|\n"
             new_markdown += f"|**DOCSIS version** | {result['docsis_version']}\n"
             new_markdown += f"|**LAN ports** | {result['lan_ports']}\n"
-            ethernet_ouis = ", ".join(result['ethernet_oui'])
+
+            # OUIs
+            ethernet_oui_values = []
+            for e in result['ethernet_oui']:
+                ethernet_oui_values.append(e['oui'])
+            ethernet_ouis = ", ".join(ethernet_oui_values)
             new_markdown += f"|**Ethernet OUI** | {ethernet_ouis}\n"
-            wireless_ouis = ", ".join(result['wireless_oui'])
+
+            wireless_oui_values = []
+            for e in result['wireless_oui']:
+                wireless_oui_values.append(e['oui'])
+            wireless_ouis = ", ".join(wireless_oui_values)
             new_markdown += f"|**Wireless OUI** | {wireless_ouis}\n"
 
             if result['chips']:
