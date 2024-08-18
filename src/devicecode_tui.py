@@ -357,7 +357,9 @@ class DevicecodeUI(App):
                 for overlay in self.overlays[device['title']]:
                     if overlay['name'] == 'fcc_id':
                         device['regulatory']['fcc_ids'] = overlay['data']
-                    break
+                    if overlay['name'] == 'oui':
+                        device['network']['ethernet_oui'] = overlay['data']['ethernet_oui']
+                        device['network']['wireless_oui'] = overlay['data']['wireless_oui']
 
             if 'brand' not in device:
                 continue
@@ -1137,13 +1139,19 @@ class DevicecodeUI(App):
             # OUIs
             ethernet_oui_values = []
             for e in result['ethernet_oui']:
-                ethernet_oui_values.append(e['oui'])
+                if e['name'] != '':
+                    ethernet_oui_values.append(f"{e['oui']} ({e['name']})")
+                else:
+                    ethernet_oui_values.append(e['oui'])
             ethernet_ouis = ", ".join(ethernet_oui_values)
             new_markdown += f"|**Ethernet OUI** | {ethernet_ouis}\n"
 
             wireless_oui_values = []
             for e in result['wireless_oui']:
-                wireless_oui_values.append(e['oui'])
+                if e['name'] != '':
+                    wireless_oui_values.append(f"{e['oui']} ({e['name']})")
+                else:
+                    wireless_oui_values.append(e['oui'])
             wireless_ouis = ", ".join(wireless_oui_values)
             new_markdown += f"|**Wireless OUI** | {wireless_ouis}\n"
 
