@@ -44,6 +44,8 @@ BRAND_REWRITE = {'FON Wireless': 'Fon Wireless',
 COUNTRY_REWRITE = {'United States': 'USA',
                    'United Kingdom': 'UK'}
 
+DEVICE_REWRITE = {'access pint': 'access point'}
+
 DISTRO_REWRITE = {'AsusWRT-Merlin': 'Asuswrt-Merlin',
                   'LEDE Project': 'LEDE'}
 
