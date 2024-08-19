@@ -12,7 +12,7 @@ Go to <https://techinfodepot.shoutwiki.com/wiki/Special:Export> and add the
 following categories to the download. Do this by pasting the name of each
 category into the field `Add pages from category` and then clicking `Add`.
 Make sure that the boxes `Include only the current revision, not the full
-history` and `Save as file` are ticked.
+history`, `Include templates` and `Save as file` are ticked.
 
 The categories are:
 
@@ -24,7 +24,7 @@ The categories are:
 * Network_Switch
 
 The resulting downloaded XML file will be a bit less than 100 MiB in size
-(observed April 2024).
+(observed August 2024).
 
 Note: there appear to be differences depending on which version of
 TechInfoDepot is used and the different subsites do not seem to be properly
