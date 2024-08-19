@@ -24,8 +24,6 @@ import mwparserfromhell
 
 import devicecode_defaults as defaults
 
-AUTHOR = "DeviceCode <example@example.org>"
-
 @dataclass_json
 @dataclass
 class Amazon_ASIN:

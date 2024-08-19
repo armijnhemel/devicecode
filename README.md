@@ -49,8 +49,8 @@ $ git init
 ```
 
 but of course you could also use an existing Git clone from for example GitHub.
-If you are using Git support (see later) You might want to change the value of
-`AUTHOR` in the file `src/devicecode.py` (this will be made configurable soon).
+If you are using Git support (see later) you should be aware that the settings
+of the Git repository will be used for the author and committer.
 
 The script will create the following directory structure inside the Git
 repository:
