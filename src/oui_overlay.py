@@ -5,7 +5,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import json
+import os
 import pathlib
+import shutil
+import subprocess
 import sys
 
 import click
@@ -22,7 +25,8 @@ import devicecode_defaults as defaults
 @click.option('--output', '-o', 'output_directory', required=True,
               help='top level output directory, overlays will be stored in a subdirectory called \'overlay\'',
               type=click.Path(path_type=pathlib.Path, exists=True))
-def main(manufacturer_file, devicecode_directory, output_directory):
+@click.option('--use-git', is_flag=True, help='use Git (not recommended, see documentation)')
+def main(manufacturer_file, devicecode_directory, output_directory, use_git):
     if not output_directory.is_dir():
         print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -30,6 +34,23 @@ def main(manufacturer_file, devicecode_directory, output_directory):
     if not devicecode_directory.is_dir():
         print(f"{devicecode_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
+
+    if use_git:
+        if shutil.which('git') is None:
+            print("'git' program not installed, exiting.", file=sys.stderr)
+            sys.exit(1)
+
+        cwd = os.getcwd()
+
+        os.chdir(output_directory)
+
+        # verify the output directory is a valid Git repository
+        p = subprocess.Popen(['git', 'status', output_directory],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+        (outputmsg, errormsg) = p.communicate()
+        if p.returncode == 128:
+            print(f"{output_directory} is not a Git repository, exiting.", file=sys.stderr)
+            sys.exit(1)
 
     ouis = {}
     for line in manufacturer_file:
@@ -111,6 +132,21 @@ def main(manufacturer_file, devicecode_directory, output_directory):
                         overlay_file.parent.mkdir(parents=True, exist_ok=True)
                         with open(overlay_file, 'w') as overlay:
                             overlay.write(json.dumps(overlay_data, indent=4))
+                        if use_git:
+                            # add the file
+                            p = subprocess.Popen(['git', 'add', overlay_file],
+                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                            (outputmsg, errormsg) = p.communicate()
+                            if p.returncode != 0:
+                                print(f"{overlay_file} could not be added", file=sys.stderr)
+
+                            commit_message = f'Add OUI overlay for {result_file.stem}'
+
+                            p = subprocess.Popen(['git', 'commit', "-m", commit_message],
+                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                            (outputmsg, errormsg) = p.communicate()
+                            if p.returncode != 0:
+                                print(f"{overlay_file} could not be committed", file=sys.stderr)
 
             except json.decoder.JSONDecodeError:
                 pass
