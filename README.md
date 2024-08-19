@@ -83,21 +83,21 @@ the results upstream.
 Using Git will have a serious performance impact. Running the script with Git:
 
 ```
-$ time python devicecode.py -i TechInfoDepot-20231002144356.xml --wiki-type=TechInfoDepot -o ~/devicecode --use-git
+$ time python devicecode.py -i TechInfoDepot-20240409163428.xml -o /tmp/bla/ --wiki-type=Techinfodepot --use-git
 
-real	15m26.654s
-user	13m40.428s
-sys	1m42.781s
+real	23m37.186s
+user	18m13.881s
+sys	11m40.159s
 ```
 
 and without Git:
 
 ```
-$ time python devicecode.py -i TechInfoDepot-20231002144356.xml --wiki-type=TechInfoDepot -o ~/devicecode
+$ time python devicecode.py -i TechInfoDepot-20240409163428.xml -o /tmp/bla2/ --wiki-type=Techinfodepot
 
-real	0m38.859s
-user	0m38.384s
-sys	0m0.266s
+real	2m14.091s
+user	2m11.968s
+sys	0m1.206s
 ```
 
 Because of this performance impact Git support is disabled by default. To
