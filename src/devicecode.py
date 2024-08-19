@@ -811,6 +811,9 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                         # is in the <text> element
                         wiki_text = c.childNodes[0].data
                         wikicode = mwparserfromhell.parse(wiki_text)
+                        # reset device
+                        device = None
+                        have_valid_data = False
 
                         # walk the elements in the parsed wiki text.
                         # Kind of assume a fixed order here.
@@ -830,17 +833,17 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                     device = Device()
                                     device.title = title
                                     device.wiki_type = wiki_type
-                                    have_valid_data = False
                                 elif f.name in ['Infobox Network Adapter\n']:
                                     device = NetworkAdapter()
                                     device.title = title
                                     device.wiki_type = wiki_type
-                                    have_valid_data = False
                                 elif f.name in ['Infobox USB Hub\n']:
                                     device = USBHub()
                                     device.title = title
                                     device.wiki_type = wiki_type
-                                    have_valid_data = False
+
+                        if not device:
+                            continue
 
                         for f in wikicode.filter(recursive=False):
                             if isinstance(f, mwparserfromhell.nodes.heading.Heading):
