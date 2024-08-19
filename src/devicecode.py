@@ -268,6 +268,29 @@ class Model:
 
 @dataclass_json
 @dataclass
+class NetworkAdapter:
+    '''Top level class holding network adapter information'''
+    brand: str = ''
+    manufacturer: Manufacturer = field(default_factory=Manufacturer)
+    model: Model = field(default_factory=Model)
+    regulatory: Regulatory = field(default_factory=Regulatory)
+    title: str = ''
+    wiki_type: str = ''
+
+@dataclass_json
+@dataclass
+class USBHub:
+    '''Top level class holding USB hub information'''
+    brand: str = ''
+    manufacturer: Manufacturer = field(default_factory=Manufacturer)
+    model: Model = field(default_factory=Model)
+    power_supply: PowerSupply = field(default_factory=PowerSupply)
+    regulatory: Regulatory = field(default_factory=Regulatory)
+    title: str = ''
+    wiki_type: str = ''
+
+@dataclass_json
+@dataclass
 class Device:
     '''Top level class holding device information'''
     additional_chips: list[Chip] = field(default_factory=list)
@@ -708,6 +731,9 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
     wiki_device_directory = output_directory / wiki_type / 'devices'
     wiki_device_directory.mkdir(parents=True, exist_ok=True)
 
+    wiki_network_adapter_directory = output_directory / wiki_type / 'network_adapters'
+    wiki_network_adapter_directory.mkdir(parents=True, exist_ok=True)
+
     wiki_original_directory = output_directory / wiki_type / 'original'
     wiki_original_directory.mkdir(parents=True, exist_ok=True)
 
@@ -781,12 +807,6 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
 
                 for c in child.childNodes:
                     if c.nodeName == 'text':
-                        # create a new Device() for each entry
-                        device = Device()
-                        device.title = title
-                        device.wiki_type = wiki_type
-                        have_valid_data = False
-
                         # grab the wiki text and parse it. This data
                         # is in the <text> element
                         wiki_text = c.childNodes[0].data
@@ -802,6 +822,27 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                         # * tags
                         #
                         # These could all contain interesting information
+
+                        for f in wikicode.filter(recursive=False):
+                            if isinstance(f, mwparserfromhell.nodes.template.Template):
+                                if f.name in ['Wireless embedded system\n', 'Wired embedded system\n', 'Infobox Embedded System\n']:
+                                    # create a new Device() for each entry
+                                    device = Device()
+                                    device.title = title
+                                    device.wiki_type = wiki_type
+                                    have_valid_data = False
+                                elif f.name in ['Infobox Network Adapter\n']:
+                                    device = NetworkAdapter()
+                                    device.title = title
+                                    device.wiki_type = wiki_type
+                                    print(title)
+                                    have_valid_data = False
+                                elif f.name in ['Infobox USB Hub\n']:
+                                    device = USBHub()
+                                    device.title = title
+                                    device.wiki_type = wiki_type
+                                    print(title)
+                                    have_valid_data = False
 
                         for f in wikicode.filter(recursive=False):
                             if isinstance(f, mwparserfromhell.nodes.heading.Heading):
@@ -969,14 +1010,9 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                             except ValueError:
                                                 continue
                                             device.web.product_page.append(value)
-                                '''
-                                    # while TechInfoDepot stores everything in an
-                                    # element called "Infobox", WikiDevi stores it
-                                    # in several different elements.
-                                        pass
-                                '''
+
                                 if f.name in ['Wireless embedded system\n', 'Wired embedded system\n', 'Infobox Embedded System\n']:
-                                    # These elements are the most interesting item
+                                    # These elements are typically the most interesting item
                                     # on a page, containing hardware information.
                                     #
                                     # The information is stored in so called "parameters".
@@ -1641,6 +1677,8 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                                             print(identifier, value, file=sys.stderr)
                                     else:
                                         pass
+                                elif f.name in ['Infobox Network Adapter\n']:
+                                    pass
 
                             elif isinstance(f, mwparserfromhell.nodes.text.Text):
                                 pass
