@@ -9,6 +9,8 @@ import json
 import os
 import pathlib
 import re
+import shutil
+import subprocess
 import sys
 import urllib.parse
 from dataclasses import dataclass, field
@@ -18,8 +20,6 @@ from dataclasses_json import dataclass_json
 import defusedxml.minidom
 
 import click
-import dulwich
-import dulwich.porcelain
 import mwparserfromhell
 
 import devicecode_defaults as defaults
@@ -683,16 +683,26 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
     # first some checks to see if the directory for the wiki type already
     # exists and create it if it doesn't exist.
     if not output_directory.is_dir():
-        print(f"{output_directory} is not a directory, exiting.")
+        print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
 
     if use_git:
-        # verify the output directory is a valid Git repository
-        try:
-            repo = dulwich.porcelain.open_repo(output_directory)
-        except dulwich.errors.NotGitRepository:
-            print(f"{output_directory} is not a valid Git repository, exiting", file=sys.stderr)
+        if shutil.which('git') is None:
+            print("'git' program not installed, exiting.", file=sys.stderr)
             sys.exit(1)
+
+        cwd = os.getcwd()
+
+        os.chdir(output_directory)
+
+        # verify the output directory is a valid Git repository
+        p = subprocess.Popen(['git', 'status', output_directory],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+        (outputmsg, errormsg) = p.communicate()
+        if p.returncode == 128:
+            print(f"{output_directory} is not a Git repository, exiting.", file=sys.stderr)
+            sys.exit(1)
+
 
     wiki_directory = output_directory / wiki_type
     wiki_directory.mkdir(parents=True, exist_ok=True)
@@ -749,12 +759,23 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                         out_file.write(out_data)
 
                 if data_changed and use_git:
-                    # add the file and commit
-                    dulwich.porcelain.add(repo, orig_xml_file)
+                    # add the file
+                    p = subprocess.Popen(['git', 'add', orig_xml_file],
+                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                    (outputmsg, errormsg) = p.communicate()
+                    if p.returncode != 0:
+                        print(f"{orig_xml_file} could not be added", file=sys.stderr)
+
                     if new_file:
-                        dulwich.porcelain.commit(repo, f"Add {out_name}", committer=AUTHOR, author=AUTHOR)
+                        commit_message = f'Add {out_name}'
                     else:
-                        dulwich.porcelain.commit(repo, f"Update {out_name}", committer=AUTHOR, author=AUTHOR)
+                        commit_message = f'Update {out_name}'
+
+                    p = subprocess.Popen(['git', 'commit', "-m", commit_message],
+                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                    (outputmsg, errormsg) = p.communicate()
+                    if p.returncode != 0:
+                        print(f"{orig_xml_file} could not be committed", file=sys.stderr)
 
             elif child.nodeName == 'revision':
                 # further process the device data
@@ -1623,14 +1644,15 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                         new_file = True
 
                         json_data = json.dumps(json.loads(device.to_json()), sort_keys=True)
+                        processed_json_file = wiki_device_directory / model_name
 
                         # first check if the file has changed if it already exists.
                         # If not, then don't add the file. Git has some intelligence
                         # built-in which prevents unchanged files to be committed again,
                         # which Dulwich doesn't seem to implement at the moment.
-                        if (wiki_device_directory / model_name).exists():
+                        if processed_json_file.exists():
                             new_file = False
-                            with open(wiki_device_directory / model_name, 'r') as json_file:
+                            with open(processed_json_file, 'r') as json_file:
                                 try:
                                     existing_json = json.dumps(json.load(json_file))
                                     if existing_json == json_data:
@@ -1639,17 +1661,28 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                     pass
 
                         # write to a file in the correct Git directory
-                        with open(wiki_device_directory / model_name, 'w') as json_file:
+                        with open(processed_json_file, 'w') as json_file:
                             json_data = json.dumps(json.loads(device.to_json()), sort_keys=True, indent=4)
                             json_file.write(json_data)
 
                         if use_git:
-                            # add the file and commit
-                            dulwich.porcelain.add(repo, wiki_device_directory / model_name)
+                            # add the file
+                            p = subprocess.Popen(['git', 'add', processed_json_file],
+                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                            (outputmsg, errormsg) = p.communicate()
+                            if p.returncode != 0:
+                                print(f"{processed_json_file} could not be added", file=sys.stderr)
+
                             if new_file:
-                                dulwich.porcelain.commit(repo, f"Add {model_name}", committer=AUTHOR, author=AUTHOR)
+                                commit_message = f'Add {model_name}'
                             else:
-                                dulwich.porcelain.commit(repo, f"Update {model_name}", committer=AUTHOR, author=AUTHOR)
+                                commit_message = f'Update {model_name}'
+
+                            p = subprocess.Popen(['git', 'commit', "-m", commit_message],
+                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                            (outputmsg, errormsg) = p.communicate()
+                            if p.returncode != 0:
+                                print(f"{processed_json_file} could not be committed", file=sys.stderr)
 
                         # write extra data (extracted from free text) to a separate file
                         model_name = f"{title}.data.json"

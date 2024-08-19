@@ -5,6 +5,5 @@ mwparserfromhell >= 0.6.6
 pdfminer.six
 pillow
 requests
-dulwich
 rich
 textual
