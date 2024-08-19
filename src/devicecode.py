@@ -835,13 +835,11 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                     device = NetworkAdapter()
                                     device.title = title
                                     device.wiki_type = wiki_type
-                                    print(title)
                                     have_valid_data = False
                                 elif f.name in ['Infobox USB Hub\n']:
                                     device = USBHub()
                                     device.title = title
                                     device.wiki_type = wiki_type
-                                    print(title)
                                     have_valid_data = False
 
                         for f in wikicode.filter(recursive=False):
