@@ -836,7 +836,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                         continue
                                     if wiki_section_header.startswith('GPL info'):
                                         # there actually does not seem to be anything related
-                                        # to GP source code releases in this element, but
+                                        # to GPL source code releases in this element, but
                                         # mostly settings like environment variables for
                                         # compiling source code.
                                         pass
@@ -871,6 +871,24 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                         # some of the entries found in the data seem to be
                                         # serial console output, instead of serial port
                                         # information.
+                                        pass
+                                    elif wiki_section_header.lower().startswith('cat /proc/mtd'):
+                                        # possibly interesting
+                                        pass
+                                    elif wiki_section_header.lower().startswith('firmware'):
+                                        # this seems to be largely bogus data, so skip
+                                        pass
+                                    elif wiki_section_header.lower().startswith('cpuinfo, mtd, bootlog'):
+                                        # possibly useful information can be extracted from this section
+                                        pass
+                                    elif wiki_section_header.lower().startswith('oem tty'):
+                                        # possibly useful information can be extracted from this section
+                                        pass
+                                    elif wiki_section_header.lower().startswith('changelog'):
+                                        # unsure if there is anything useful here
+                                        pass
+                                    elif wiki_section_header.lower().startswith('telnet'):
+                                        # possibly useful information can be extracted from this section
                                         pass
                                     else:
                                         pass
