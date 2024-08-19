@@ -1078,7 +1078,8 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                                 elif identifier == 'type':
                                                     value = value.replace('outdppr', 'outdoor')
                                                     device_types = [x.strip() for x in value.split(',') if x.strip() != '']
-                                                    device.device_types = device_types
+                                                    for d in device_types:
+                                                        device.device_types.append(defaults.DEVICE_REWRITE.get(d, d))
                                                 elif identifier == 'flags':
                                                     device.flags = sorted([x.strip() for x in value.split(',') if x.strip() != ''])
                                                 elif identifier in ['boardid', 'pcb_id']:
