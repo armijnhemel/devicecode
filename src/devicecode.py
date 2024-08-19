@@ -1076,7 +1076,6 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                                 elif identifier == 'series':
                                                     device.model.series = value
                                                 elif identifier == 'type':
-                                                    value = value.replace('outdppr', 'outdoor')
                                                     device_types = [x.strip() for x in value.split(',') if x.strip() != '']
                                                     for d in device_types:
                                                         device.device_types.append(defaults.DEVICE_REWRITE.get(d, d))
