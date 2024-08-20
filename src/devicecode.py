@@ -1280,8 +1280,18 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                                     # some devices apparently can have more than one FCC id.
                                                     fcc_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     for f in fcc_values:
+                                                        if '<!' in f:
+                                                            if not f.startswith('<!'):
+                                                                fcc_value = f.split('<!')[0]
+                                                            else:
+                                                                if fcc_value.endswith('-->'):
+                                                                    fcc_value = f.split('<!', maxsplit=1)[0][:-3].strip()
+                                                                else:
+                                                                    fcc_value = f
+                                                        else:
+                                                            fcc_value = f
                                                         new_fcc = FCC()
-                                                        new_fcc.fcc_id = f
+                                                        new_fcc.fcc_id = fcc_value
                                                         device.regulatory.fcc_ids.append(new_fcc)
                                                 elif identifier == 'us_id':
                                                     usid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
