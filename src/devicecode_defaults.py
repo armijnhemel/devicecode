@@ -198,6 +198,7 @@ DEFAULT_VALUE = {
     'exp_sfp_num': ['<!-- Number of sfp ports, Leave blank for none -->'],
     'exp_sim_num': ['<!-- Number of sim Slots, Leave blank for none -->'],
     'exp_usb_num': ['<!-- Number of USB Ports, Leave blank for none -->'],
+    'fandom': ['<!-- infodepot.fandom page, included underscores -->'],
     'fcc_id': ['<!-- Federal Communication Commission Identification Number -->'],
     'fccapprovdate': ['<!-- FCCID approval date -->'],
     'fla1_num': ['<!-- 1,2,3,4 -->'],
