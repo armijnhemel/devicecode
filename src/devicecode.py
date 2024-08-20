@@ -1691,7 +1691,6 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                         if not have_valid_data:
                             continue
 
-                        # Write to a Git repository to keep some history
                         # use the title as part of the file name as it is unique
                         model_name = f"{title}.json"
                         model_name = model_name.replace('/', '-')
@@ -1718,6 +1717,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                             json_data = json.dumps(json.loads(device.to_json()), sort_keys=True, indent=4)
                             json_file.write(json_data)
 
+                        # Write to a Git repository to keep some history
                         if use_git:
                             # add the file
                             p = subprocess.Popen(['git', 'add', processed_json_file],
