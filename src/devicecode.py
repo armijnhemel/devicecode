@@ -1702,9 +1702,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                         processed_json_file = wiki_device_directory / model_name
 
                         # first check if the file has changed if it already exists.
-                        # If not, then don't add the file. Git has some intelligence
-                        # built-in which prevents unchanged files to be committed again,
-                        # which Dulwich doesn't seem to implement at the moment.
+                        # If not, then don't add the file.
                         if processed_json_file.exists():
                             new_file = False
                             with open(processed_json_file, 'r') as json_file:
