@@ -42,12 +42,13 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
         print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
 
-    fcc_grantees = set()
+    fcc_grantees = {}
     if grantees is not None:
         with open(grantees, 'r') as grantee:
-            for g in grantee:
-                fcc_grantees.add(g.strip())
-
+            try:
+                fcc_grantees = json.load(grantee)
+            except json.decoder.JSONDecodeError:
+                pass
     ids = []
 
     for fccid in fccids:
