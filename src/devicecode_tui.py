@@ -283,8 +283,8 @@ class DevicecodeUI(App):
     CSS_PATH = "devicecode_tui.css"
     TOKEN_IDENTIFIERS = ['bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
                          'connector', 'flag', 'ignore_brand', 'ignore_odm', 'ip',
-                         'jtag', 'odm', 'os', 'package', 'password', 'serial',
-                         'type', 'year']
+                         'jtag', 'odm', 'os', 'package', 'password', 'program',
+                         'serial', 'type', 'year']
 
     def __init__(self, devicecode_dirs, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -309,6 +309,7 @@ class DevicecodeUI(App):
         filter_operating_systems = kwargs.get('operating_systems', [])
         filter_packages = kwargs.get('packages', [])
         filter_passwords = kwargs.get('passwords', [])
+        filter_programs = kwargs.get('programs', [])
         filter_serials = kwargs.get('serials', [])
         filter_years = kwargs.get('years', [])
 
@@ -351,6 +352,9 @@ class DevicecodeUI(App):
 
         # known default passwords
         passwords = set()
+
+        # known programs
+        programs = set()
 
         # known device_types
         device_types = set()
@@ -438,6 +442,16 @@ class DevicecodeUI(App):
                 if device['regulatory']['wifi_certified_date']:
                     declared_years.append(int(device['regulatory']['wifi_certified_date'][:4]))
                 if not set(filter_years).intersection(declared_years):
+                    continue
+
+            if filter_programs:
+                show_node = False
+                if 'programs' in device['software']:
+                    for prog in device['software']['programs']:
+                        if prog['name'].lower() in filter_programs:
+                            show_node = True
+                            break
+                if not show_node:
                     continue
 
             if filter_chips:
@@ -571,7 +585,8 @@ class DevicecodeUI(App):
                 'connectors': connectors, 'odms': odms, 'flags': flags, 'ips': ips,
                 'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
                 'odm_connector': odm_connector, 'chip_vendor_connector': chip_vendor_connector,
-                'packages': packages, 'passwords': passwords, 'types': device_types}
+                'packages': packages, 'passwords': passwords, 'programs': programs,
+                'types': device_types}
 
 
     def compose(self) -> ComposeResult:
@@ -802,6 +817,7 @@ class DevicecodeUI(App):
         operating_systems = []
         packages = []
         passwords = []
+        programs = []
         serials = []
         years = []
         is_filtered = False
@@ -846,6 +862,8 @@ class DevicecodeUI(App):
                         packages.append(value)
                     elif identifier == 'password':
                         passwords.append(value)
+                    elif identifier == 'program':
+                        programs.append(value)
                     elif identifier == 'serial':
                         serials.append(value)
                     elif identifier == 'type':
@@ -861,7 +879,8 @@ class DevicecodeUI(App):
                                        connectors=connectors, flags=flags, ignore_brands=ignore_brands,
                                        ignore_odms=ignore_odms, ips=ips, jtags=jtags,
                                        operating_systems=operating_systems, passwords=passwords,
-                                       packages=packages, serials=serials, years=years, types=device_types)
+                                       packages=packages, programs=programs, serials=serials, years=years,
+                                       types=device_types)
 
             self.brand_tree.build_tree(filtered_data['brands_to_devices'], is_filtered)
             self.odm_tree.build_tree(filtered_data['odm_to_devices'], is_filtered)
@@ -1129,14 +1148,15 @@ class DevicecodeUI(App):
                 new_markdown += f"| {p['name']} | {versions} |\n"
 
             # Programs
-            new_markdown += "# Programs\n"
-            new_markdown += "| | |\n|--|--|\n"
-            for p in result['programs']:
-                new_markdown += f"|**Name** |{p['name']}\n"
-                new_markdown += f"|**Full name** |{p['full_name']}\n"
-                new_markdown += f"|**Parameters** |{' '.join( p['parameters'])}\n"
-                new_markdown += f"|**Origin** |{p['origin']}\n"
-                new_markdown += f"||\n"
+            if 'programs' in result:
+                new_markdown += "# Programs\n"
+                new_markdown += "| | |\n|--|--|\n"
+                for p in result['programs']:
+                    new_markdown += f"|**Name** |{p['name']}\n"
+                    new_markdown += f"|**Full name** |{p['full_name']}\n"
+                    new_markdown += f"|**Parameters** |{' '.join( p['parameters'])}\n"
+                    new_markdown += f"|**Origin** |{p['origin']}\n"
+                    new_markdown += f"||\n"
         return new_markdown
 
     def build_model_report(self, result):

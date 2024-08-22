@@ -116,6 +116,7 @@ where identifier can be one of:
 * `os`
 * `package`
 * `password`
+* `program`
 * `serial`
 * `type`
 * `year`
@@ -240,6 +241,11 @@ information is currently extracted from parsing boot logs.
 
 Currently `password` can only be used to show devices with one or more default
 passwords.
+
+##### Program
+
+`program` can be used to show devices containing specific program names as
+extracted from output of the `ps` command.
 
 ##### Year
 
