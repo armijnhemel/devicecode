@@ -19,12 +19,24 @@ The categories are:
 * Wireless_Embedded_System
 * Embedded_System
 * Embedded_system/single-board_computer
+* Embedded_system/access_point
+* Embedded_system/IoT_firewall
+* Embedded_system/wireless_router
+* Embedded_system/development_board
+* Embedded_system/SoM
+* Embedded system/camera
+* Embedded_system/wireless_'cloud'_storage_device
+* Embedded_system/audio_streamer
+* Embedded_system/bridge
 * Network_Adapter
 * Wireless_Adapter
 * USB_device
 * Network_Switch
 
-The resulting downloaded XML file will be a bit less than 100 MiB in size
+(Note: although everything should be in "Embedded_system" including those
+devices doesn't seem to grab the subcategories.)
+
+The resulting downloaded XML file will be a bit less than 110 MiB in size
 (observed August 2024).
 
 Note: there appear to be differences depending on which version of
