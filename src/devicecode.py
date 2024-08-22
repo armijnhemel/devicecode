@@ -227,6 +227,15 @@ class Package:
 
 @dataclass_json
 @dataclass
+class Program:
+    '''Program information as extracted from ps output'''
+    name: str = ''
+    full_name: str = ''
+    origin: str = ''
+    parameters: list[str] = field(default_factory=list)
+
+@dataclass_json
+@dataclass
 class Software:
     '''Software information: stock OS/bootloader, third party support'''
     bootloader: Bootloader = field(default_factory=Bootloader)
@@ -238,6 +247,7 @@ class Software:
     openwrt: str = 'unknown'
     tomato: str = 'unknown'
     third_party: list[str] = field(default_factory=list)
+    programs: list[Program] = field(default_factory=list)
     packages: list[Package] = field(default_factory=list)
 
 @dataclass_json
@@ -906,7 +916,14 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                         # the output of ps can contain the names
                                         # of programs and executables
                                         if 'PID  Uid' in f.params[1].value:
-                                            parse_result = parse_ps(f.params[1].value)
+                                            parse_results = parse_ps(f.params[1].value)
+                                            for parse_result in parse_results:
+                                                prog = Program()
+                                                prog.origin = parse_result['type']
+                                                prog.name = parse_result['name']
+                                                prog.full_name = parse_result['full_name']
+                                                prog.parameters = parse_result['parameters']
+                                                device.software.programs.append(prog)
                                     elif wiki_section_header.startswith('Serial console output'):
                                         pass
                                     elif wiki_section_header.lower().startswith('serial info'):
