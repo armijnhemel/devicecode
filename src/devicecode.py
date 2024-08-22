@@ -1301,7 +1301,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                                     icid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     device.regulatory.industry_canada_ids = icid_values
 
-                                                # serial port. TODO: share with JTAG processing.
+                                                # serial port
                                                 elif identifier == 'serial':
                                                     if value == 'no':
                                                         device.has_serial_port = 'no'
