@@ -48,11 +48,11 @@ $ python devicecode_fetch_fcc.py -o ~/fcc-data 2AGN7-X9 ODMAM5N
 ```
 
 If there is a list of known FCC grantee codes (see above for an explanation)
-and it is stored in the file `known_fcc_grantees_20240618.txt` the following
+and it is stored in the file `known_fcc_grantees_20240618.json` the following
 command can be used:
 
 ```console
-$ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data -g known_fcc_grantees_20240618.txt
+$ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data -g known_fcc_grantees_20240618.json
 ```
 
 To force downloading all the data the `--force` parameter can be used:
