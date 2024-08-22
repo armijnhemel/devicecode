@@ -36,7 +36,7 @@ TIMEOUT = 60
 @click.option('--gentle', is_flag=True, help=f'pause {SLEEP_INTERVAL} seconds between downloads')
 @click.option('--no-pdf', is_flag=True, help='do not download PDFs, just metadata')
 @click.option('--no-download', is_flag=True,
-              help='do not any data, only reprocess already downloaded data')
+              help='do not download any data, only reprocess already downloaded data')
 def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_download):
     if not output_directory.is_dir():
         print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
