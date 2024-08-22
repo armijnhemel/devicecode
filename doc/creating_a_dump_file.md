@@ -119,7 +119,6 @@ The categories are:
 * Embedded_system/wireless_speaker_system
 * Embedded_system/wireless_speakers
 * Embedded_system/wireless_system
-* Embedded_system_firmware/backdoors
 * Network_Adapter
 * Network_Switch
 * USB_device
@@ -130,8 +129,8 @@ The categories are:
 (Note: although almost everything should be in "Embedded_system" including
 those devices doesn't seem to grab the subcategories.)
 
-The resulting downloaded XML file will be a bit less than 110 MiB in size
-(observed August 2024).
+The resulting downloaded XML file will be a around 116 MiB in size (observed
+August 2024).
 
 Note: there appear to be differences depending on which version of
 TechInfoDepot is used and the different subsites do not seem to be properly
