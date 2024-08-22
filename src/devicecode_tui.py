@@ -1127,6 +1127,16 @@ class DevicecodeUI(App):
             for p in result['packages']:
                 versions = ", ".join(p['versions'])
                 new_markdown += f"| {p['name']} | {versions} |\n"
+
+            # Programs
+            new_markdown += "# Programs\n"
+            new_markdown += "| | |\n|--|--|\n"
+            for p in result['programs']:
+                new_markdown += f"|**Name** |{p['name']}\n"
+                new_markdown += f"|**Full name** |{p['full_name']}\n"
+                new_markdown += f"|**Parameters** |{' '.join( p['parameters'])}\n"
+                new_markdown += f"|**Origin** |{p['origin']}\n"
+                new_markdown += f"||\n"
         return new_markdown
 
     def build_model_report(self, result):
