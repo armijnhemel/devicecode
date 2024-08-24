@@ -1286,6 +1286,10 @@ class DevicecodeUI(App):
             # Misc
             #new_markdown += f"|**Data** | {result}\n"
             new_markdown += f"|**Data origin** | {result['wiki_type']}\n"
+            if result['wiki_type'] == 'TechInfoDepot':
+                data_url = result['title'].replace(' ', '_')
+                new_markdown += f"|**Data URL** | <https://techinfodepot.shoutwiki.com/wiki/{data_url}>\n"
+
         return new_markdown
 
 @click.command(short_help='Interactive DeviceCode result browser')
