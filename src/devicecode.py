@@ -870,7 +870,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                     # alternative place for boot log, GPL info, /proc, etc.
                                     is_processed = False
                                     wiki_section_header = f.params[0].strip()
-                                    for b in ['boot log', 'Boot log', 'stock boot messages']:
+                                    for b in ['boot log', 'Boot log', 'Bootlog', 'stock boot messages']:
                                         if wiki_section_header.startswith(b):
                                             is_processed = True
 
@@ -1002,6 +1002,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                                 device.power_supply.output_voltage = value
                                             case 'e_level':
                                                 device.power_supply.e_level = value
+                                    continue
 
                                 # WikiDevi stores some information in different places than
                                 # TechInfoDepot. TechInfoDepot tries to squeeze as much as possible
@@ -1706,6 +1707,8 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                     else:
                                         pass
                                 elif f.name in ['Infobox Network Adapter\n']:
+                                    pass
+                                elif f.name in ['Infobox USB Hub\n']:
                                     pass
 
                             elif isinstance(f, mwparserfromhell.nodes.text.Text):
