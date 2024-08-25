@@ -1077,7 +1077,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                         # parse the product page value
                                         for param in f.params:
                                             value = str(param)
-                                            if not '://' in value:
+                                            if '://' not in value:
                                                 continue
                                             if not value.startswith('http'):
                                                 continue
