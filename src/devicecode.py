@@ -747,6 +747,11 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
     wiki_original_directory = output_directory / wiki_type / 'original'
     wiki_original_directory.mkdir(parents=True, exist_ok=True)
 
+    # store which devices were processed. This is information needed
+    # when processing so called "helper pages" which do not need to be
+    # processed if the original file is not processed.
+    processed_devices = set()
+
     # now walk the XML. It depends on the dialect (WikiDevi, TechInfoDepot)
     # how the contents should be parsed, as the pages are laid out in
     # a slightly different way.
@@ -754,7 +759,6 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
     # Each device is stored in a separate page.
     for p in wiki_info.getElementsByTagName('page'):
         title = ''
-        valid_device = False
         is_helper_page = False
 
         # Walk the child elements of the page
@@ -826,9 +830,11 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                         print(f"{orig_xml_file} could not be committed", file=sys.stderr)
 
             elif child.nodeName == 'revision':
-                # further process the device data
-                valid_device = True
-
+                if is_helper_page:
+                    # see if the device this is a helper page for was processed
+                    parent_title = pathlib.Path(title).parent.name
+                    if parent_title not in processed_devices:
+                        continue
                 for c in child.childNodes:
                     if c.nodeName == 'text':
                         # grab the wiki text and parse it. This data
@@ -1734,6 +1740,8 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
 
                         if not have_valid_data:
                             continue
+
+                        processed_devices.add(title)
 
                         # use the title as part of the file name as it is unique
                         model_name = f"{title}.json"
