@@ -42,6 +42,7 @@ class SuggestDevices(Suggester):
         self.chips = kwargs.get('chips', [])
         self.chip_types = kwargs.get('chip_types', [])
         self.chip_vendors = kwargs.get('chip_vendors', [])
+        self.files = kwargs.get('files', [])
         self.flags = kwargs.get('flags', [])
         self.odms = kwargs.get('odms', [])
         self.packages = kwargs.get('packages', [])
@@ -100,6 +101,10 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(self.chip_vendors):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + self.chip_vendors[idx][len(check_value)-12:]
+        elif check_value.startswith('file='):
+            for idx, chk in enumerate(self.files):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.files[idx][len(check_value)-5:]
         elif check_value.startswith('flag='):
             for idx, chk in enumerate(self.flags):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
@@ -147,6 +152,7 @@ class FilterValidator(Validator):
         self.chip_vendors = kwargs.get('chip_vendors', set())
         self.connectors = kwargs.get('connectors', set())
         self.device_types = kwargs.get('types', set())
+        self.files = kwargs.get('files', set())
         self.ips = kwargs.get('ips', set())
         self.packages = kwargs.get('packages', set())
         self.passwords = kwargs.get('passwords', set())
@@ -190,6 +196,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'ignore_odm':
                     if token_value not in self.odms:
                         return self.failure("Invalid ODM")
+                elif token_identifier == 'file':
+                    if token_value not in self.files:
+                        return self.failure("Invalid file")
                 elif token_identifier == 'ip':
                     if token_value not in self.ips:
                         return self.failure("Invalid IP")
@@ -287,7 +296,7 @@ class DevicecodeUI(App):
 
     CSS_PATH = "devicecode_tui.css"
     TOKEN_IDENTIFIERS = ['bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
-                         'connector', 'flag', 'ignore_brand', 'ignore_odm', 'ip',
+                         'connector', 'file', 'flag', 'ignore_brand', 'ignore_odm', 'ip',
                          'jtag', 'odm', 'os', 'package', 'password', 'program',
                          'serial', 'type', 'year']
 
@@ -305,6 +314,7 @@ class DevicecodeUI(App):
         filter_chip_vendors = kwargs.get('chip_vendors', [])
         filter_connectors = kwargs.get('connectors', set())
         filter_device_types = kwargs.get('types', [])
+        filter_files = kwargs.get('files', [])
         filter_flags = kwargs.get('flags', [])
         filter_ignore_brands = kwargs.get('ignore_brands', [])
         filter_ignore_odms = kwargs.get('ignore_odms', [])
@@ -345,6 +355,9 @@ class DevicecodeUI(App):
 
         # known ODMS
         odms = set()
+
+        # known files
+        files = set()
 
         # known flags
         flags = set()
@@ -454,6 +467,16 @@ class DevicecodeUI(App):
                 if 'programs' in device['software']:
                     for prog in device['software']['programs']:
                         if prog['name'].lower() in filter_programs:
+                            show_node = True
+                            break
+                if not show_node:
+                    continue
+
+            if filter_files:
+                show_node = False
+                if 'files' in device['software']:
+                    for prog in device['software']['files']:
+                        if prog['name'].lower() in filter_files:
                             show_node = True
                             break
                 if not show_node:
@@ -585,6 +608,11 @@ class DevicecodeUI(App):
                     program_name = prog['name'].lower()
                     programs.add(program_name)
 
+            if 'files' in device['software']:
+                for f in device['software']['files']:
+                    file_name = f['name'].lower()
+                    files.add(file_name)
+
             brand_odm.append((brand_name, manufacturer_name))
 
             flags.update([x.casefold() for x in device['flags']])
@@ -592,8 +620,8 @@ class DevicecodeUI(App):
         return {'brands_to_devices': brands_to_devices, 'odm_to_devices': odm_to_devices,
                 'bootloaders': bootloaders, 'brands': brands, 'brand_data': brand_data,
                 'chips': chips, 'chip_types': chip_types, 'chip_vendors': chip_vendors,
-                'connectors': connectors, 'odms': odms, 'flags': flags, 'ips': ips,
-                'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
+                'connectors': connectors, 'odms': odms, 'files': files, 'flags': flags,
+                'ips': ips, 'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
                 'odm_connector': odm_connector, 'chip_vendor_connector': chip_vendor_connector,
                 'packages': packages, 'passwords': passwords, 'programs': programs,
                 'types': device_types}
@@ -649,6 +677,7 @@ class DevicecodeUI(App):
         device_types = data['types']
         odms = data['odms']
         flags = data['flags']
+        files = data['files']
         ips = data['ips']
         brand_odm = data['brand_odm']
         brand_cpu = data['brand_cpu']
@@ -738,15 +767,16 @@ class DevicecodeUI(App):
                                                         odms=odms, chips=chips, chip_types=chip_types,
                                                         chip_vendors=chip_vendors, connectors=connectors,
                                                         ips=ips, packages=packages, passwords=passwords,
-                                                        types=device_types, programs=programs,
+                                                        types=device_types, programs=programs, files=files,
                                                         token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             bootloaders=sorted(bootloaders), brands=sorted(brands),
                             chips=sorted(chips), chip_types=sorted(chip_types),
                             chip_vendors=sorted(chip_vendors), connectors=sorted(connectors),
                             odms=sorted(odms), operating_systems=sorted(operating_systems),
-                            flags=sorted(flags), packages=sorted(packages), types=sorted(device_types),
-                            passwords=sorted(passwords), programs=sorted(programs)), valid_empty=True)
+                            files=sorted(files), flags=sorted(flags), packages=sorted(packages),
+                            types=sorted(device_types), passwords=sorted(passwords),
+                            programs=sorted(programs)), valid_empty=True)
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
@@ -819,6 +849,7 @@ class DevicecodeUI(App):
         chip_vendors = []
         connectors = set()
         device_types = []
+        files = []
         flags = []
         ignore_brands = []
         ignore_odms = []
@@ -863,6 +894,8 @@ class DevicecodeUI(App):
                         ignore_brands.append(value)
                     elif identifier == 'ignore_odm':
                         ignore_odms.append(value)
+                    elif identifier == 'file':
+                        files.append(value)
                     elif identifier == 'ip':
                         ips.append(value)
                     elif identifier == 'odm':
@@ -887,11 +920,11 @@ class DevicecodeUI(App):
         if refresh:
             filtered_data = self.compose_data_sets(bootloaders=bootloaders, brands=brands, odms=odms,
                                        chips=chips, chip_types=chip_types, chip_vendors=chip_vendors,
-                                       connectors=connectors, flags=flags, ignore_brands=ignore_brands,
-                                       ignore_odms=ignore_odms, ips=ips, jtags=jtags,
-                                       operating_systems=operating_systems, passwords=passwords,
-                                       packages=packages, programs=programs, serials=serials, years=years,
-                                       types=device_types)
+                                       connectors=connectors, files=files, flags=flags,
+                                       ignore_brands=ignore_brands, ignore_odms=ignore_odms,
+                                       ips=ips, jtags=jtags, operating_systems=operating_systems,
+                                       passwords=passwords, packages=packages, programs=programs,
+                                       serials=serials, years=years, types=device_types)
 
             self.brand_tree.build_tree(filtered_data['brands_to_devices'], is_filtered)
             self.odm_tree.build_tree(filtered_data['odm_to_devices'], is_filtered)
@@ -1168,6 +1201,12 @@ class DevicecodeUI(App):
                     new_markdown += f"|**Parameters** |{' '.join( p['parameters'])}\n"
                     new_markdown += f"|**Origin** |{p['origin']}\n"
                     new_markdown += f"||\n"
+            # Files
+            if 'files' in result:
+                new_markdown += "# Files\n"
+                new_markdown += "|Name|Type|User|Group|\n|--|--|--|--|\n"
+                for p in result['files']:
+                    new_markdown += f"| {p['name']} | {p['file_type']}| {p['user']} | {p['group']}\n"
         return new_markdown
 
     def build_model_report(self, result):

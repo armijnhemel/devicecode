@@ -108,6 +108,7 @@ where identifier can be one of:
 * `chip_type`
 * `chip_vendor`
 * `connector`
+* `file`
 * `flag`
 * `ignore_brand`
 * `ignore_odm`
@@ -205,6 +206,10 @@ devices.
 
 `connector` can be used to filter connectors (serial port only for now, JTAG
 in the future as well).
+
+##### File
+
+`file` can be used to show one or more more devices with certain files.
 
 ##### Flag
 

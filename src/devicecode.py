@@ -220,6 +220,15 @@ class Serial:
 
 @dataclass_json
 @dataclass
+class File:
+    '''File information: name + type + user + group'''
+    name: str = ''
+    file_type: str = ''
+    user: str = ''
+    group: str = ''
+
+@dataclass_json
+@dataclass
 class Package:
     '''Package information: name + versions'''
     name: str = ''
@@ -248,6 +257,7 @@ class Software:
     openwrt: str = 'unknown'
     tomato: str = 'unknown'
     third_party: list[str] = field(default_factory=list)
+    files: list[File] = field(default_factory=list)
     programs: list[Program] = field(default_factory=list)
     packages: list[Package] = field(default_factory=list)
 
@@ -952,7 +962,14 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                         # very useful information.
                                         pass
                                     elif wiki_section_header.startswith('ls -la'):
-                                        parse_result = parse_ls(f.params[1].value)
+                                        parse_results = parse_ls(f.params[1].value)
+                                        for parse_result in parse_results:
+                                            ls_file = File()
+                                            ls_file.file_type = parse_result['type']
+                                            ls_file.name = parse_result['name']
+                                            ls_file.user = parse_result['user']
+                                            ls_file.group = parse_result['group']
+                                            device.software.files.append(ls_file)
                                     elif wiki_section_header.startswith('ps'):
                                         # the output of ps can contain the names
                                         # of programs and executables
