@@ -223,6 +223,7 @@ class Serial:
 class Package:
     '''Package information: name + versions'''
     name: str = ''
+    package_type: str = ''
     versions: list[str] = field(default_factory=list)
 
 @dataclass_json
@@ -912,6 +913,13 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                                 if p['type'] == 'package':
                                                     found_package = Package()
                                                     found_package.name = p['name']
+                                                    found_package.package_type = p['type']
+                                                    found_package.versions = p['versions']
+                                                    device.software.packages.append(found_package)
+                                                elif p['type'] == 'bootloader':
+                                                    found_package = Package()
+                                                    found_package.name = p['name']
+                                                    found_package.package_type = p['type']
                                                     found_package.versions = p['versions']
                                                     device.software.packages.append(found_package)
                                             break
