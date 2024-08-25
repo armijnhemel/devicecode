@@ -438,6 +438,12 @@ def parse_log(boot_log):
         package_res = {'type': 'package', 'name': 'busybox', 'versions': set(res)}
         results.append(package_res)
 
+    # iptables
+    res = defaults.REGEX_IPTABLES.findall(str(boot_log))
+    if res != []:
+        package_res = {'type': 'package', 'name': 'iptables', 'versions': set(res)}
+        results.append(package_res)
+
     # Linux kernel version
     res = defaults.REGEX_LINUX_VERSION.findall(str(boot_log))
     if res != []:

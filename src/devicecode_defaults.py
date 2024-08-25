@@ -469,6 +469,7 @@ REGEX_SERIAL_RJ45 = re.compile(r'RJ-?45( console)?')
 
 # several regular expressions for software and software versions
 REGEX_BUSYBOX = re.compile(r'BusyBox (v\d\.\d+[\.\w+-]*\d*)')
+REGEX_IPTABLES = re.compile(r'iptables (v1\.\d+[\.\w+-]*\d*)')
 REGEX_LINUX_VERSION = re.compile(r'Linux version (\d\.\d+\.\d+[\.\+\w\d-]*)')
 REGEX_LINUX_KERNEL_COMMANDLINE = re.compile(r'Kernel command line:\s+([\w\d=,:\./ ]*)')
 REGEX_ADTRAN_BOOTLOADER = re.compile(r'Adtran bootloader version (\d+\.\d+\.\d+)')
