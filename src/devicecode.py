@@ -765,6 +765,8 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                 title = child.childNodes[0].data
                 if title.startswith('Category:'):
                     break
+                if title.startswith('List of '):
+                    break
 
             elif child.nodeName == 'ns':
                 # devices can only be found in namespace 0 in both
