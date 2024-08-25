@@ -46,6 +46,7 @@ class SuggestDevices(Suggester):
         self.odms = kwargs.get('odms', [])
         self.packages = kwargs.get('packages', [])
         self.passwords = kwargs.get('passwords', [])
+        self.programs = kwargs.get('programs', [])
         self.device_types = kwargs.get('types', [])
 
     async def get_suggestion(self, value: str) -> str | None:
@@ -119,6 +120,10 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(self.packages):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + self.packages[idx][len(check_value)-8:]
+        elif check_value.startswith('program='):
+            for idx, chk in enumerate(self.programs):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.programs[idx][len(check_value)-8:]
         elif check_value.startswith('type='):
             for idx, chk in enumerate(self.device_types):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
@@ -575,6 +580,11 @@ class DevicecodeUI(App):
                 package_name = package['name'].lower()
                 packages.add(package_name)
 
+            if 'programs' in device['software']:
+                for prog in device['software']['programs']:
+                    program_name = prog['name'].lower()
+                    programs.add(program_name)
+
             brand_odm.append((brand_name, manufacturer_name))
 
             flags.update([x.casefold() for x in device['flags']])
@@ -647,6 +657,7 @@ class DevicecodeUI(App):
         operating_systems = defaults.KNOWN_OS
         packages = data['packages']
         passwords = data['passwords']
+        programs = data['programs']
         chip_vendor_connector = data['chip_vendor_connector']
 
         # build the various datatables.
@@ -727,7 +738,7 @@ class DevicecodeUI(App):
                                                         odms=odms, chips=chips, chip_types=chip_types,
                                                         chip_vendors=chip_vendors, connectors=connectors,
                                                         ips=ips, packages=packages, passwords=passwords,
-                                                        types=device_types,
+                                                        types=device_types, programs=programs,
                                                         token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             bootloaders=sorted(bootloaders), brands=sorted(brands),
@@ -735,7 +746,7 @@ class DevicecodeUI(App):
                             chip_vendors=sorted(chip_vendors), connectors=sorted(connectors),
                             odms=sorted(odms), operating_systems=sorted(operating_systems),
                             flags=sorted(flags), packages=sorted(packages), types=sorted(device_types),
-                            passwords=sorted(passwords)), valid_empty=True)
+                            passwords=sorted(passwords), programs=sorted(programs)), valid_empty=True)
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
