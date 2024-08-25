@@ -364,8 +364,9 @@ def parse_ls(ls_log):
             res = defaults.REGEX_LS_REGULAR_DIRECTORY.match(line)
             if res:
                 _, _, group, user, _, _, _, _, name = res.groups()
-                results.append({'type': 'directory', 'name': name,
-                                'user': user, 'group': group})
+                if name not in ['.', '..']:
+                    results.append({'type': 'directory', 'name': name,
+                                    'user': user, 'group': group})
         elif line.startswith('b'):
             res = defaults.REGEX_LS_DEVICE.match(line)
             if res:
