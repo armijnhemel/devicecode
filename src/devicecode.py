@@ -750,7 +750,8 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
     # store which devices were processed. This is information needed
     # when processing so called "helper pages" which do not need to be
     # processed if the original file is not processed.
-    processed_devices = set()
+    processed_devices = {}
+    updated_devices = set()
 
     # now walk the XML. It depends on the dialect (WikiDevi, TechInfoDepot)
     # how the contents should be parsed, as the pages are laid out in
@@ -835,6 +836,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                     parent_title = pathlib.Path(title).parent.name
                     if parent_title not in processed_devices:
                         continue
+                    updated_devices.add(parent_title)
                 for c in child.childNodes:
                     if c.nodeName == 'text':
                         # grab the wiki text and parse it. This data
@@ -856,21 +858,24 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                         #
                         # These could all contain interesting information
 
-                        for f in wikicode.filter(recursive=False):
-                            if isinstance(f, mwparserfromhell.nodes.template.Template):
-                                if f.name in ['Wireless embedded system\n', 'Wired embedded system\n', 'Infobox Embedded System\n']:
-                                    # create a new Device() for each entry
-                                    device = Device()
-                                    device.title = title
-                                    device.wiki_type = wiki_type
-                                elif f.name in ['Infobox Network Adapter\n']:
-                                    device = NetworkAdapter()
-                                    device.title = title
-                                    device.wiki_type = wiki_type
-                                elif f.name in ['Infobox USB Hub\n']:
-                                    device = USBHub()
-                                    device.title = title
-                                    device.wiki_type = wiki_type
+                        if not is_helper_page:
+                            for f in wikicode.filter(recursive=False):
+                                if isinstance(f, mwparserfromhell.nodes.template.Template):
+                                    if f.name in ['Wireless embedded system\n', 'Wired embedded system\n', 'Infobox Embedded System\n']:
+                                        # create a new Device() for each entry
+                                        device = Device()
+                                        device.title = title
+                                        device.wiki_type = wiki_type
+                                    elif f.name in ['Infobox Network Adapter\n']:
+                                        device = NetworkAdapter()
+                                        device.title = title
+                                        device.wiki_type = wiki_type
+                                    elif f.name in ['Infobox USB Hub\n']:
+                                        device = USBHub()
+                                        device.title = title
+                                        device.wiki_type = wiki_type
+                        else:
+                            device = processed_devices[parent_title]
 
                         if not device:
                             continue
@@ -905,6 +910,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                                     device.software.packages.append(found_package)
                                             break
                                     if is_processed:
+                                        have_valid_data = True
                                         continue
                                     if wiki_section_header.startswith('GPL info'):
                                         # there actually does not seem to be anything related
@@ -1741,10 +1747,13 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                         if not have_valid_data:
                             continue
 
-                        processed_devices.add(title)
+                        processed_devices[title] = device
 
                         # use the title as part of the file name as it is unique
-                        model_name = f"{title}.json"
+                        if is_helper_page:
+                            model_name = f"{parent_title}.json"
+                        else:
+                            model_name = f"{title}.json"
                         model_name = model_name.replace('/', '-')
 
                         new_file = True
@@ -1790,7 +1799,10 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                 print(f"{processed_json_file} could not be committed", file=sys.stderr)
 
                         # write extra data (extracted from free text) to a separate file
-                        model_name = f"{title}.data.json"
+                        if is_helper_page:
+                            model_name = f"{parent_title}.data.json"
+                        else:
+                            model_name = f"{title}.data.json"
 
                         model_name = model_name.replace('/', '-')
                         #output_file = wiki_device_directory / model_name
