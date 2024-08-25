@@ -1153,10 +1153,10 @@ class DevicecodeUI(App):
 
             # packages
             new_markdown += "# Packages\n"
-            new_markdown += "|Name|Version|\n|--|--|\n"
+            new_markdown += "|Name|Version|Type|\n|--|--|--|\n"
             for p in result['packages']:
                 versions = ", ".join(p['versions'])
-                new_markdown += f"| {p['name']} | {versions} |\n"
+                new_markdown += f"| {p['name']} | {versions} | {p['package_type']}\n"
 
             # Programs
             if 'programs' in result:
