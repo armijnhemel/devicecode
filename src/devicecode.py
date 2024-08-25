@@ -755,6 +755,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
     for p in wiki_info.getElementsByTagName('page'):
         title = ''
         valid_device = False
+        is_helper_page = False
 
         # Walk the child elements of the page
         for child in p.childNodes:
@@ -767,6 +768,17 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                     break
                 if title.startswith('List of '):
                     break
+
+                # some pages are actually "helper pages", not full
+                # devices, but they add information to the
+                if title.lower().endswith('serial info'):
+                    is_helper_page = True
+                elif title.lower().endswith('serialinfo'):
+                    is_helper_page = True
+                elif title.lower().endswith('bootlog'):
+                    is_helper_page = True
+                elif title.lower().endswith('boot log'):
+                    is_helper_page = True
 
             elif child.nodeName == 'ns':
                 # devices can only be found in namespace 0 in both
