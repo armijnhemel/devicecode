@@ -938,6 +938,9 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                                     found_package.package_type = p['type']
                                                     found_package.versions = p['versions']
                                                     device.software.packages.append(found_package)
+                                                    if p['name'] == 'Linux':
+                                                        if device.software.os == '':
+                                                            device.software.os = p['name']
                                                 elif p['type'] == 'bootloader':
                                                     found_package = Package()
                                                     found_package.name = p['name']
@@ -1520,7 +1523,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
 
                                                 elif identifier in ['stockos', 'stock_os']:
                                                     if device.software.os == '':
-                                                        # TODO: parse stock OS information
+                                                        # parse stock OS information
                                                         result = parse_os(value)
                                                         if result:
                                                             device.software.os = result['os']
