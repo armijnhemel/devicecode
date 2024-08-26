@@ -221,12 +221,14 @@ class FilterValidator(Validator):
                     if token_value not in ['no', 'unknown', 'yes']:
                         return self.failure("Invalid jtag port information")
                 elif token_identifier == 'year':
-                    try:
-                        year=int(token_value)
-                    except:
-                        return self.failure("Invalid year")
-                    if year < 1990 or year > 2040:
-                        return self.failure("Invalid year")
+                    years = token_value.split(':', maxsplit=1)
+                    for year in years:
+                        try:
+                            valid_year=int(year)
+                        except:
+                            return self.failure("Invalid year")
+                        if valid_year < 1990 or valid_year > 2040:
+                            return self.failure("Invalid year")
             return self.success()
         except ValueError:
             return self.failure('Incomplete')
@@ -915,7 +917,8 @@ class DevicecodeUI(App):
                     elif identifier == 'jtag':
                         jtags.append(value)
                     elif identifier == 'year':
-                        years.append(int(value))
+                        input_years = sorted(value.split(':', maxsplit=1))
+                        years += list(range(int(input_years[0]), int(input_years[1]) + 1))
 
         if refresh:
             filtered_data = self.compose_data_sets(bootloaders=bootloaders, brands=brands, odms=odms,

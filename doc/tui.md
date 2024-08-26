@@ -261,5 +261,23 @@ year is either one of:
 * FCC date
 * WiFi certified date
 
+The year can either be a single year:
+
+```
+year=2018
+```
+
+or it can be a range (inclusive):
+
+```
+year=2018:2020
+```
+
+which is equivalent to:
+
+```
+year=2018 year=2019 year=2020
+```
+
 [rich]:https://github.com/Textualize/rich
 [textual]:https://github.com/Textualize/textual
