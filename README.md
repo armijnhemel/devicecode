@@ -27,7 +27,7 @@ have been forked from (a predecessor of) WikiDevi.
 
 ### Creating a dump file
 
-If you want to get a pregenerated set of data, checkout the
+It is highly recommended to use the pregenerated set of data available in the
 [devicecode-data][devicecode-data] repository.
 
 See [creating a dump file](doc/creating_a_dump_file.md).
@@ -36,7 +36,8 @@ See [creating a dump file](doc/creating_a_dump_file.md).
 
 The easiest to run the script is to use Nix and then `nix-shell` to set up the
 environment. If this isn't your cup of tea, then the requirements for running
-the scripts are (currently) quite modest (see `requirements.txt`).
+the scripts are (currently) quite modest (see `requirements.txt` for the Python
+dependencies and install `git` if you want to use the Git functionality).
 
 To run the script you will need a dump file (see above). It is recommended that
 the directory you write to is an existing Git repository. One method is to
