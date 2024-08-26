@@ -712,6 +712,10 @@ def parse_serial_jtag(serial_string):
         if regex_result is not None:
             continue
 
+        # DE-9 connector
+        if field in ['DB9', 'DB-9', '(DB9)', '(DB-9)', 'DE9', 'DE-9', 'console port (DE-9)']:
+            result['connector'] = 'DE-9'
+
     return result
 
 @click.command(short_help='Process TechInfoDepot or WikiDevi XML dump')
