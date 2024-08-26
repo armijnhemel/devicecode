@@ -16,7 +16,14 @@ The goal of this project is to unlock data from various sources, rework it
 into a format that is easier to reuse, cleanup and makes it available for use
 by other projects, such as [VulnerableCode][vulnerablecode].
 
+For a more thorough motivation see
+[Why DeviceCode?][doc/devicecode_motivation.md]
+
 ## Workflow
+
+It is highly recommended to use the pregenerated set of data available in the
+[devicecode-data][devicecode-data] repository instead of creating a data set
+from scratch.
 
 The tools need a dump file with data exported from TechInfoDepot or WikiDevi.
 This dump file is in XML format and contains content in a mix of HTML and
@@ -26,9 +33,6 @@ The formats of the two websites are fairly similar as TechInfoDepot seems to
 have been forked from (a predecessor of) WikiDevi.
 
 ### Creating a dump file
-
-It is highly recommended to use the pregenerated set of data available in the
-[devicecode-data][devicecode-data] repository.
 
 See [creating a dump file](doc/creating_a_dump_file.md).
 
