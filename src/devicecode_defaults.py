@@ -465,7 +465,6 @@ REGEX_OUI = re.compile(r'^[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}$')
 REGEX_SERIAL_CONNECTOR = re.compile(r'(JP?\d+)')
 
 REGEX_SERIAL_PIN_HEADER = re.compile(r'(?:via )?(\d+)[ -](?:in|pln|pin|pad|pads) ?(?:header|connector)?')
-REGEX_SERIAL_RJ45 = re.compile(r'RJ-?45( console)?')
 
 # several regular expressions for software and software versions
 REGEX_BUSYBOX = re.compile(r'BusyBox (v\d\.\d+[\.\w+-]*\d*)')

@@ -640,6 +640,8 @@ def parse_serial_jtag(serial_string):
     if fields[0].lower() == 'yes':
         result['has_port'] = 'yes'
 
+    result['connector'] = ''
+
     # parse every single field. As there doesn't seem to
     # be a fixed order to store information the only way
     # is to process every single field.
@@ -708,13 +710,15 @@ def parse_serial_jtag(serial_string):
             continue
 
         # console via RJ45? TODO.
-        regex_result = defaults.REGEX_SERIAL_RJ45.match(field)
-        if regex_result is not None:
-            continue
+        if result['connector'] == '':
+            if field in ['RJ45 console', 'RJ-45 console', 'console port (RJ45)',
+                         'console port (RJ-45)', 'console (RJ45)', 'console (RJ-45)']:
+                result['connector'] = 'RJ45'
 
         # DE-9 connector
-        if field in ['DB9', 'DB-9', '(DB9)', '(DB-9)', 'DE9', 'DE-9', 'console port (DE-9)']:
-            result['connector'] = 'DE-9'
+        if result['connector'] == '':
+            if field in ['DB9', 'DB-9', '(DB9)', '(DB-9)', 'DE9', 'DE-9', 'console port (DE-9)']:
+                result['connector'] = 'DE-9'
 
     return result
 
