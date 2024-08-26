@@ -42,11 +42,6 @@ def main(devicecode_directory, input_file, wiki_type):
         print(f"{originals_dir} is not a valid directory, exiting.", file=sys.stderr)
         sys.exit(1)
 
-    helper_page_titles = ['serial info', 'serialinfo', 'bootlog',
-                          'boot log', 'additional info', 'other info', 'specs',
-                          'nvram', 'info dump', 'bridge mode', 'opening this unit',
-                          'pairing']
-
     known_titles = set()
 
     # now walk the XML. It depends on the dialect (WikiDevi, TechInfoDepot)
@@ -69,13 +64,6 @@ def main(devicecode_directory, input_file, wiki_type):
                 if title.startswith('List of '):
                     break
 
-                is_helper_page = False
-                for t in helper_page_titles:
-                    if title.lower().endswith(t):
-                        is_helper_page = True
-                        break
-                if is_helper_page:
-                    break
             elif child.nodeName == 'ns':
                 # devices can only be found in namespace 0 in both
                 # techinfodepot and wikidevi.
