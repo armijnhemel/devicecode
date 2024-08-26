@@ -772,8 +772,9 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
     updated_devices = set()
 
     helper_page_titles = ['serial info', 'serialinfo', 'bootlog',
-                          'boot log', 'additional info', 'other info',
-                          'nvram', 'info dump', 'bridge mode', 'opening this unit']
+                          'boot log', 'additional info', 'other info', 'specs',
+                          'nvram', 'info dump', 'bridge mode', 'opening this unit',
+                          'pairing']
 
     # now walk the XML. It depends on the dialect (WikiDevi, TechInfoDepot)
     # how the contents should be parsed, as the pages are laid out in
