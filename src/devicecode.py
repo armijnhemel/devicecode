@@ -404,9 +404,10 @@ def parse_ps(ps_log):
     results = []
     header_seen = False
     for line in ps_log.splitlines():
-        if 'PID  Uid' in line:
-            header_seen = True
-            continue
+        for p in ['PID  Uid', 'PID Uid', 'PID USER']:
+            if p in line:
+                header_seen = True
+                break
 
         if not header_seen:
             continue
@@ -983,15 +984,17 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                     elif wiki_section_header.startswith('ps'):
                                         # the output of ps can contain the names
                                         # of programs and executables
-                                        if 'PID  Uid' in f.params[1].value:
-                                            parse_results = parse_ps(f.params[1].value)
-                                            for parse_result in parse_results:
-                                                prog = Program()
-                                                prog.origin = parse_result['type']
-                                                prog.name = parse_result['name']
-                                                prog.full_name = parse_result['full_name']
-                                                prog.parameters = parse_result['parameters']
-                                                device.software.programs.append(prog)
+                                        for p in ['PID  Uid', 'PID Uid', 'PID USER']:
+                                            if p in f.params[1].value:
+                                                parse_results = parse_ps(f.params[1].value)
+                                                for parse_result in parse_results:
+                                                    prog = Program()
+                                                    prog.origin = parse_result['type']
+                                                    prog.name = parse_result['name']
+                                                    prog.full_name = parse_result['full_name']
+                                                    prog.parameters = parse_result['parameters']
+                                                    device.software.programs.append(prog)
+                                                break
                                     elif wiki_section_header.startswith('Serial console output'):
                                         pass
                                     elif wiki_section_header.lower().startswith('serial info'):
