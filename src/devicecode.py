@@ -712,7 +712,8 @@ def parse_serial_jtag(serial_string):
         # console via RJ45? TODO.
         if result['connector'] == '':
             if field in ['RJ45 console', 'RJ-45 console', 'console port (RJ45)',
-                         'console port (RJ-45)', 'console (RJ45)', 'console (RJ-45)']:
+                         'console port (RJ-45)', 'console (RJ45)', 'console (RJ-45)',
+                         'RJ-45 Console port']:
                 result['connector'] = 'RJ45'
 
         # DE-9 connector
