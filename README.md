@@ -17,7 +17,7 @@ into a format that is easier to reuse, cleanup and makes it available for use
 by other projects, such as [VulnerableCode][vulnerablecode].
 
 For a more thorough motivation see
-[Why DeviceCode?][doc/devicecode_motivation.md]
+[Why DeviceCode?](doc/devicecode_motivation.md)
 
 ## Workflow
 
