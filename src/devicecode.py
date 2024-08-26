@@ -771,6 +771,10 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
     processed_devices = {}
     updated_devices = set()
 
+    helper_page_titles = ['serial info', 'serialinfo', 'bootlog',
+                          'boot log', 'additional info', 'other info',
+                          'nvram', 'info dump', 'bridge mode', 'opening this unit']
+
     # now walk the XML. It depends on the dialect (WikiDevi, TechInfoDepot)
     # how the contents should be parsed, as the pages are laid out in
     # a slightly different way.
@@ -793,15 +797,11 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                     break
 
                 # some pages are actually "helper pages", not full
-                # devices, but they add information to the
-                if title.lower().endswith('serial info'):
-                    is_helper_page = True
-                elif title.lower().endswith('serialinfo'):
-                    is_helper_page = True
-                elif title.lower().endswith('bootlog'):
-                    is_helper_page = True
-                elif title.lower().endswith('boot log'):
-                    is_helper_page = True
+                # devices, but they can add possibly useful information
+                for t in helper_page_titles:
+                    if title.lower().endswith(t):
+                        is_helper_page = True
+                        break
 
             elif child.nodeName == 'ns':
                 # devices can only be found in namespace 0 in both
