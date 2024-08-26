@@ -4,7 +4,7 @@
 # Licensed under Apache 2.0, see LICENSE file for details
 # SPDX-License-Identifier: Apache-2.0
 
-import os
+import json
 import pathlib
 import sys
 
@@ -87,21 +87,15 @@ def main(devicecode_directory, input_file, wiki_type):
 
     old_devices = []
     for devices_file in devices_dir.glob('**/*'):
-        if not devices_file.stem in known_titles:
-            old_devices.append(devices_file.name)
+        if devices_file.stem not in known_titles:
+            # as an extra sanity check read the JSON and extract the title
+            with open(devices_file, 'r') as json_file:
+                device_data = json.load(json_file)
+                if device_data['title'] not in known_titles:
+                    old_devices.append(devices_file.name)
 
     for old_device in sorted(old_devices):
         print(f"Old device file: {old_device}")
-
-    '''
-    old_xmls = []
-    for xml_file in originals_dir.glob('**/*'):
-        if not xml_file.stem in known_titles:
-            old_xmls.append(xml_file.name)
-
-    for old_xml in sorted(old_xmls):
-        print(f"Old XML file: {old_xml}")
-    '''
 
 
 if __name__ == "__main__":
