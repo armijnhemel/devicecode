@@ -108,6 +108,7 @@ where identifier can be one of:
 * `chip_type`
 * `chip_vendor`
 * `connector`
+* `file`
 * `flag`
 * `ignore_brand`
 * `ignore_odm`
@@ -116,6 +117,7 @@ where identifier can be one of:
 * `os`
 * `package`
 * `password`
+* `program`
 * `serial`
 * `type`
 * `year`
@@ -205,6 +207,10 @@ devices.
 `connector` can be used to filter connectors (serial port only for now, JTAG
 in the future as well).
 
+##### File
+
+`file` can be used to show one or more more devices with certain files.
+
 ##### Flag
 
 `flag` can be used to show one or more more devices with certain flags.
@@ -241,6 +247,11 @@ information is currently extracted from parsing boot logs.
 Currently `password` can only be used to show devices with one or more default
 passwords.
 
+##### Program
+
+`program` can be used to show devices containing specific program names as
+extracted from output of the `ps` command.
+
 ##### Year
 
 `year` can be used to show devices that have a year associated with it. This
@@ -249,6 +260,24 @@ year is either one of:
 * release date
 * FCC date
 * WiFi certified date
+
+The year can either be a single year:
+
+```
+year=2018
+```
+
+or it can be a range (inclusive):
+
+```
+year=2018:2020
+```
+
+which is equivalent to:
+
+```
+year=2018 year=2019 year=2020
+```
 
 [rich]:https://github.com/Textualize/rich
 [textual]:https://github.com/Textualize/textual

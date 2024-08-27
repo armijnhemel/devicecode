@@ -16,16 +16,6 @@ the image.
 OCR/image recognition might work, but for that a test set would first need to
 be built, and for that the same task needs to be done anyway.
 
-## Cross correlate OUI values with Wireshark OUI database
-
-Wireshark maintains an automatically generated database with OUI values:
-
-<https://www.wireshark.org/download/automated/data/manuf>
-
-For many devices the OUI values are known, so can be cross correlated. The data
-is extracted from Wireshark's source code, so assuming it is under the same
-license as Wireshark.
-
 ## Explore using a standard structured data format such as RDF
 
 Data is currently stored as JSON files. It might be good to use a more
@@ -37,23 +27,31 @@ Alternatively, look at representing a device as a graph.
 ## Create overlays
 
 The data in these wikis is often incomplete and sometimes incorrect. Creating
-overlays that can be enabled/disabled at will to augment the data could be very
-helpful. A good example is the ODM field, where for many devices it isn't known
-which ODM made the device. This makes making comparisons between devices more
-difficult.
+overlays that can be enabled/disabled at will to augment the data is a very
+helpful mechanism. A good example is the ODM field, where for many devices it
+isn't known which ODM made the device. This makes making comparisons between
+devices more difficult.
 
 If this information becomes available it can be stored in an overlay separate
-from the original data. A possible overlay could be a reconciliation of data
-from the Wikis.
+from the original data. Two existing overlays are:
+
+* FCC dates
+* OUI information (networking)
 
 ### Possible overlays
 
-* FCC dates: there are quite a few devices where an FCC identifier is provided,
-  but no date was specified.
 * CPU type information: for many devices the chip vendor and model are given
   but not the architecture (ARM/MIPS/etc.). By using some lookup table mapping
   model to architecture it should be fairly simple to create these overlays.
 * CPE mapping: see <https://nvd.nist.gov/products/cpe>
+
+### Overlay squash script
+
+Currently the overlays are loaded "on the fly" by the TUI. This makes it
+fairly easy to switch off any overlays (by removing them) and also keeps a
+clean separation between the data that was extracted from the Wikis and other
+sources (which is useful license wise), but some might prefer to have both
+the wiki data and the overlays squashed into a single file per device.
 
 ## Add software update information/press releases
 

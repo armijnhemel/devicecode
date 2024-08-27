@@ -9,6 +9,8 @@ import json
 import os
 import pathlib
 import re
+import shutil
+import subprocess
 import sys
 import urllib.parse
 from dataclasses import dataclass, field
@@ -18,13 +20,9 @@ from dataclasses_json import dataclass_json
 import defusedxml.minidom
 
 import click
-import dulwich
-import dulwich.porcelain
 import mwparserfromhell
 
 import devicecode_defaults as defaults
-
-AUTHOR = "DeviceCode <example@example.org>"
 
 @dataclass_json
 @dataclass
@@ -118,6 +116,14 @@ class Manufacturer:
 
 @dataclass_json
 @dataclass
+class OUI:
+    '''Organizationally unique identifier'''
+    oui: str = ''
+    name_short: str = ''
+    name: str = ''
+
+@dataclass_json
+@dataclass
 class Network:
     '''Networking information'''
     chips: list[Chip] = field(default_factory=list)
@@ -126,8 +132,8 @@ class Network:
     mdix: str = 'unknown'
     docsis_version: str = ''
     # https://en.wikipedia.org/wiki/Organizationally_unique_identifier
-    ethernet_oui: list[str] = field(default_factory=list)
-    wireless_oui: list[str] = field(default_factory=list)
+    ethernet_oui: list[OUI] = field(default_factory=list)
+    wireless_oui: list[OUI] = field(default_factory=list)
 
 @dataclass_json
 @dataclass
@@ -214,10 +220,29 @@ class Serial:
 
 @dataclass_json
 @dataclass
+class File:
+    '''File information: name + type + user + group'''
+    name: str = ''
+    file_type: str = ''
+    user: str = ''
+    group: str = ''
+
+@dataclass_json
+@dataclass
 class Package:
     '''Package information: name + versions'''
     name: str = ''
+    package_type: str = ''
     versions: list[str] = field(default_factory=list)
+
+@dataclass_json
+@dataclass
+class Program:
+    '''Program information as extracted from ps output'''
+    name: str = ''
+    full_name: str = ''
+    origin: str = ''
+    parameters: list[str] = field(default_factory=list)
 
 @dataclass_json
 @dataclass
@@ -232,6 +257,8 @@ class Software:
     openwrt: str = 'unknown'
     tomato: str = 'unknown'
     third_party: list[str] = field(default_factory=list)
+    files: list[File] = field(default_factory=list)
+    programs: list[Program] = field(default_factory=list)
     packages: list[Package] = field(default_factory=list)
 
 @dataclass_json
@@ -259,6 +286,29 @@ class Model:
     series: str = ''
     submodel: str = ''
     subrevision: str = ''
+
+@dataclass_json
+@dataclass
+class NetworkAdapter:
+    '''Top level class holding network adapter information'''
+    brand: str = ''
+    manufacturer: Manufacturer = field(default_factory=Manufacturer)
+    model: Model = field(default_factory=Model)
+    regulatory: Regulatory = field(default_factory=Regulatory)
+    title: str = ''
+    wiki_type: str = ''
+
+@dataclass_json
+@dataclass
+class USBHub:
+    '''Top level class holding USB hub information'''
+    brand: str = ''
+    manufacturer: Manufacturer = field(default_factory=Manufacturer)
+    model: Model = field(default_factory=Model)
+    power_supply: PowerSupply = field(default_factory=PowerSupply)
+    regulatory: Regulatory = field(default_factory=Regulatory)
+    title: str = ''
+    wiki_type: str = ''
 
 @dataclass_json
 @dataclass
@@ -324,8 +374,9 @@ def parse_ls(ls_log):
             res = defaults.REGEX_LS_REGULAR_DIRECTORY.match(line)
             if res:
                 _, _, group, user, _, _, _, _, name = res.groups()
-                results.append({'type': 'directory', 'name': name,
-                                'user': user, 'group': group})
+                if name not in ['.', '..']:
+                    results.append({'type': 'directory', 'name': name,
+                                    'user': user, 'group': group})
         elif line.startswith('b'):
             res = defaults.REGEX_LS_DEVICE.match(line)
             if res:
@@ -353,9 +404,10 @@ def parse_ps(ps_log):
     results = []
     header_seen = False
     for line in ps_log.splitlines():
-        if 'PID  Uid' in line:
-            header_seen = True
-            continue
+        for p in ['PID  Uid', 'PID Uid', 'PID USER']:
+            if p in line:
+                header_seen = True
+                break
 
         if not header_seen:
             continue
@@ -397,6 +449,12 @@ def parse_log(boot_log):
     res = defaults.REGEX_BUSYBOX.findall(str(boot_log))
     if res != []:
         package_res = {'type': 'package', 'name': 'busybox', 'versions': set(res)}
+        results.append(package_res)
+
+    # iptables
+    res = defaults.REGEX_IPTABLES.findall(str(boot_log))
+    if res != []:
+        package_res = {'type': 'package', 'name': 'iptables', 'versions': set(res)}
         results.append(package_res)
 
     # Linux kernel version
@@ -468,7 +526,9 @@ def parse_oui(oui_string):
             if oui_value.strip() == '':
                 continue
             if defaults.REGEX_OUI.match(oui_value.strip()) is not None:
-                ouis.append(oui_value.strip())
+                new_oui = OUI()
+                new_oui.oui = oui_value.strip()
+                ouis.append(new_oui)
     return ouis
 
 def parse_chip(chip_string):
@@ -581,6 +641,8 @@ def parse_serial_jtag(serial_string):
     if fields[0].lower() == 'yes':
         result['has_port'] = 'yes'
 
+    result['connector'] = ''
+
     # parse every single field. As there doesn't seem to
     # be a fixed order to store information the only way
     # is to process every single field.
@@ -649,9 +711,16 @@ def parse_serial_jtag(serial_string):
             continue
 
         # console via RJ45? TODO.
-        regex_result = defaults.REGEX_SERIAL_RJ45.match(field)
-        if regex_result is not None:
-            continue
+        if result['connector'] == '':
+            if field in ['RJ45 console', 'RJ-45 console', 'console port (RJ45)',
+                         'console port (RJ-45)', 'console (RJ45)', 'console (RJ-45)',
+                         'RJ-45 Console port']:
+                result['connector'] = 'RJ45'
+
+        # DE-9 connector
+        if result['connector'] == '':
+            if field in ['DB9', 'DB-9', '(DB9)', '(DB-9)', 'DE9', 'DE-9', 'console port (DE-9)']:
+                result['connector'] = 'DE-9'
 
     return result
 
@@ -673,16 +742,26 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
     # first some checks to see if the directory for the wiki type already
     # exists and create it if it doesn't exist.
     if not output_directory.is_dir():
-        print(f"{output_directory} is not a directory, exiting.")
+        print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
 
     if use_git:
-        # verify the output directory is a valid Git repository
-        try:
-            repo = dulwich.porcelain.open_repo(output_directory)
-        except dulwich.errors.NotGitRepository:
-            print(f"{output_directory} is not a valid Git repository, exiting", file=sys.stderr)
+        if shutil.which('git') is None:
+            print("'git' program not installed, exiting.", file=sys.stderr)
             sys.exit(1)
+
+        cwd = os.getcwd()
+
+        os.chdir(output_directory)
+
+        # verify the output directory is a valid Git repository
+        p = subprocess.Popen(['git', 'status', output_directory],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+        (outputmsg, errormsg) = p.communicate()
+        if p.returncode == 128:
+            print(f"{output_directory} is not a Git repository, exiting.", file=sys.stderr)
+            sys.exit(1)
+
 
     wiki_directory = output_directory / wiki_type
     wiki_directory.mkdir(parents=True, exist_ok=True)
@@ -690,8 +769,22 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
     wiki_device_directory = output_directory / wiki_type / 'devices'
     wiki_device_directory.mkdir(parents=True, exist_ok=True)
 
+    wiki_network_adapter_directory = output_directory / wiki_type / 'network_adapters'
+    wiki_network_adapter_directory.mkdir(parents=True, exist_ok=True)
+
     wiki_original_directory = output_directory / wiki_type / 'original'
     wiki_original_directory.mkdir(parents=True, exist_ok=True)
+
+    # store which devices were processed. This is information needed
+    # when processing so called "helper pages" which do not need to be
+    # processed if the original file is not processed.
+    processed_devices = {}
+    updated_devices = set()
+
+    helper_page_titles = ['serial info', 'serialinfo', 'bootlog',
+                          'boot log', 'additional info', 'other info', 'specs',
+                          'nvram', 'info dump', 'bridge mode', 'opening this unit',
+                          'pairing']
 
     # now walk the XML. It depends on the dialect (WikiDevi, TechInfoDepot)
     # how the contents should be parsed, as the pages are laid out in
@@ -700,7 +793,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
     # Each device is stored in a separate page.
     for p in wiki_info.getElementsByTagName('page'):
         title = ''
-        valid_device = False
+        is_helper_page = False
 
         # Walk the child elements of the page
         for child in p.childNodes:
@@ -711,6 +804,15 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                 title = child.childNodes[0].data
                 if title.startswith('Category:'):
                     break
+                if title.startswith('List of '):
+                    break
+
+                # some pages are actually "helper pages", not full
+                # devices, but they can add possibly useful information
+                for t in helper_page_titles:
+                    if title.lower().endswith(t):
+                        is_helper_page = True
+                        break
 
             elif child.nodeName == 'ns':
                 # devices can only be found in namespace 0 in both
@@ -739,29 +841,40 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                         out_file.write(out_data)
 
                 if data_changed and use_git:
-                    # add the file and commit
-                    dulwich.porcelain.add(repo, orig_xml_file)
+                    # add the file
+                    p = subprocess.Popen(['git', 'add', orig_xml_file],
+                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                    (outputmsg, errormsg) = p.communicate()
+                    if p.returncode != 0:
+                        print(f"{orig_xml_file} could not be added", file=sys.stderr)
+
                     if new_file:
-                        dulwich.porcelain.commit(repo, f"Add {out_name}", committer=AUTHOR, author=AUTHOR)
+                        commit_message = f'Add {out_name}'
                     else:
-                        dulwich.porcelain.commit(repo, f"Update {out_name}", committer=AUTHOR, author=AUTHOR)
+                        commit_message = f'Update {out_name}'
+
+                    p = subprocess.Popen(['git', 'commit', "-m", commit_message],
+                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                    (outputmsg, errormsg) = p.communicate()
+                    if p.returncode != 0:
+                        print(f"{orig_xml_file} could not be committed", file=sys.stderr)
 
             elif child.nodeName == 'revision':
-                # further process the device data
-                valid_device = True
-
+                if is_helper_page:
+                    # see if the device this is a helper page for was processed
+                    parent_title = pathlib.Path(title).parent.name
+                    if parent_title not in processed_devices:
+                        continue
+                    updated_devices.add(parent_title)
                 for c in child.childNodes:
                     if c.nodeName == 'text':
-                        # create a new Device() for each entry
-                        device = Device()
-                        device.title = title
-                        device.wiki_type = wiki_type
-                        have_valid_data = False
-
                         # grab the wiki text and parse it. This data
                         # is in the <text> element
                         wiki_text = c.childNodes[0].data
                         wikicode = mwparserfromhell.parse(wiki_text)
+                        # reset device
+                        device = None
+                        have_valid_data = False
 
                         # walk the elements in the parsed wiki text.
                         # Kind of assume a fixed order here.
@@ -773,6 +886,28 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                         # * tags
                         #
                         # These could all contain interesting information
+
+                        if not is_helper_page:
+                            for f in wikicode.filter(recursive=False):
+                                if isinstance(f, mwparserfromhell.nodes.template.Template):
+                                    if f.name in ['Wireless embedded system\n', 'Wired embedded system\n', 'Infobox Embedded System\n']:
+                                        # create a new Device() for each entry
+                                        device = Device()
+                                        device.title = title
+                                        device.wiki_type = wiki_type
+                                    elif f.name in ['Infobox Network Adapter\n']:
+                                        device = NetworkAdapter()
+                                        device.title = title
+                                        device.wiki_type = wiki_type
+                                    elif f.name in ['Infobox USB Hub\n']:
+                                        device = USBHub()
+                                        device.title = title
+                                        device.wiki_type = wiki_type
+                        else:
+                            device = processed_devices[parent_title]
+
+                        if not device:
+                            continue
 
                         for f in wikicode.filter(recursive=False):
                             if isinstance(f, mwparserfromhell.nodes.heading.Heading):
@@ -789,7 +924,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                     # alternative place for boot log, GPL info, /proc, etc.
                                     is_processed = False
                                     wiki_section_header = f.params[0].strip()
-                                    for b in ['boot log', 'Boot log', 'stock boot messages']:
+                                    for b in ['boot log', 'Boot log', 'Bootlog', 'stock boot messages']:
                                         if wiki_section_header.startswith(b):
                                             is_processed = True
 
@@ -800,14 +935,25 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                                 if p['type'] == 'package':
                                                     found_package = Package()
                                                     found_package.name = p['name']
+                                                    found_package.package_type = p['type']
+                                                    found_package.versions = p['versions']
+                                                    device.software.packages.append(found_package)
+                                                    if p['name'] == 'Linux':
+                                                        if device.software.os == '':
+                                                            device.software.os = p['name']
+                                                elif p['type'] == 'bootloader':
+                                                    found_package = Package()
+                                                    found_package.name = p['name']
+                                                    found_package.package_type = p['type']
                                                     found_package.versions = p['versions']
                                                     device.software.packages.append(found_package)
                                             break
                                     if is_processed:
+                                        have_valid_data = True
                                         continue
                                     if wiki_section_header.startswith('GPL info'):
                                         # there actually does not seem to be anything related
-                                        # to GP source code releases in this element, but
+                                        # to GPL source code releases in this element, but
                                         # mostly settings like environment variables for
                                         # compiling source code.
                                         pass
@@ -830,18 +976,52 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                         # very useful information.
                                         pass
                                     elif wiki_section_header.startswith('ls -la'):
-                                        parse_result = parse_ls(f.params[1].value)
+                                        parse_results = parse_ls(f.params[1].value)
+                                        for parse_result in parse_results:
+                                            ls_file = File()
+                                            ls_file.file_type = parse_result['type']
+                                            ls_file.name = parse_result['name']
+                                            ls_file.user = parse_result['user']
+                                            ls_file.group = parse_result['group']
+                                            device.software.files.append(ls_file)
                                     elif wiki_section_header.startswith('ps'):
                                         # the output of ps can contain the names
                                         # of programs and executables
-                                        if 'PID  Uid' in f.params[1].value:
-                                            parse_result = parse_ps(f.params[1].value)
+                                        for p in ['PID  Uid', 'PID Uid', 'PID USER']:
+                                            if p in f.params[1].value:
+                                                parse_results = parse_ps(f.params[1].value)
+                                                for parse_result in parse_results:
+                                                    prog = Program()
+                                                    prog.origin = parse_result['type']
+                                                    prog.name = parse_result['name']
+                                                    prog.full_name = parse_result['full_name']
+                                                    prog.parameters = parse_result['parameters']
+                                                    device.software.programs.append(prog)
+                                                break
                                     elif wiki_section_header.startswith('Serial console output'):
                                         pass
                                     elif wiki_section_header.lower().startswith('serial info'):
                                         # some of the entries found in the data seem to be
                                         # serial console output, instead of serial port
                                         # information.
+                                        pass
+                                    elif wiki_section_header.lower().startswith('cat /proc/mtd'):
+                                        # possibly interesting
+                                        pass
+                                    elif wiki_section_header.lower().startswith('firmware'):
+                                        # this seems to be largely bogus data, so skip
+                                        pass
+                                    elif wiki_section_header.lower().startswith('cpuinfo, mtd, bootlog'):
+                                        # possibly useful information can be extracted from this section
+                                        pass
+                                    elif wiki_section_header.lower().startswith('oem tty'):
+                                        # possibly useful information can be extracted from this section
+                                        pass
+                                    elif wiki_section_header.lower().startswith('changelog'):
+                                        # unsure if there is anything useful here
+                                        pass
+                                    elif wiki_section_header.lower().startswith('telnet'):
+                                        # possibly useful information can be extracted from this section
                                         pass
                                     else:
                                         pass
@@ -896,6 +1076,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                                 device.power_supply.output_voltage = value
                                             case 'e_level':
                                                 device.power_supply.e_level = value
+                                    continue
 
                                 # WikiDevi stores some information in different places than
                                 # TechInfoDepot. TechInfoDepot tries to squeeze as much as possible
@@ -912,7 +1093,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                         # parse the product page value
                                         for param in f.params:
                                             value = str(param)
-                                            if not '://' in value:
+                                            if '://' not in value:
                                                 continue
                                             if not value.startswith('http'):
                                                 continue
@@ -922,14 +1103,9 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                             except ValueError:
                                                 continue
                                             device.web.product_page.append(value)
-                                '''
-                                    # while TechInfoDepot stores everything in an
-                                    # element called "Infobox", WikiDevi stores it
-                                    # in several different elements.
-                                        pass
-                                '''
+
                                 if f.name in ['Wireless embedded system\n', 'Wired embedded system\n', 'Infobox Embedded System\n']:
-                                    # These elements are the most interesting item
+                                    # These elements are typically the most interesting item
                                     # on a page, containing hardware information.
                                     #
                                     # The information is stored in so called "parameters".
@@ -1047,9 +1223,9 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                                 elif identifier == 'series':
                                                     device.model.series = value
                                                 elif identifier == 'type':
-                                                    value = value.replace('outdppr', 'outdoor')
                                                     device_types = [x.strip() for x in value.split(',') if x.strip() != '']
-                                                    device.device_types = device_types
+                                                    for d in device_types:
+                                                        device.device_types.append(defaults.DEVICE_REWRITE.get(d, d))
                                                 elif identifier == 'flags':
                                                     device.flags = sorted([x.strip() for x in value.split(',') if x.strip() != ''])
                                                 elif identifier in ['boardid', 'pcb_id']:
@@ -1196,8 +1372,18 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                                     # some devices apparently can have more than one FCC id.
                                                     fcc_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     for f in fcc_values:
+                                                        if '<!' in f:
+                                                            if not f.startswith('<!'):
+                                                                fcc_value = f.split('<!')[0]
+                                                            else:
+                                                                if fcc_value.endswith('-->'):
+                                                                    fcc_value = f.split('<!', maxsplit=1)[0][:-3].strip()
+                                                                else:
+                                                                    fcc_value = f
+                                                        else:
+                                                            fcc_value = f
                                                         new_fcc = FCC()
-                                                        new_fcc.fcc_id = f
+                                                        new_fcc.fcc_id = fcc_value
                                                         device.regulatory.fcc_ids.append(new_fcc)
                                                 elif identifier == 'us_id':
                                                     usid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
@@ -1207,7 +1393,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                                     icid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     device.regulatory.industry_canada_ids = icid_values
 
-                                                # serial port. TODO: share with JTAG processing.
+                                                # serial port
                                                 elif identifier == 'serial':
                                                     if value == 'no':
                                                         device.has_serial_port = 'no'
@@ -1337,7 +1523,7 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
 
                                                 elif identifier in ['stockos', 'stock_os']:
                                                     if device.software.os == '':
-                                                        # TODO: parse stock OS information
+                                                        # parse stock OS information
                                                         result = parse_os(value)
                                                         if result:
                                                             device.software.os = result['os']
@@ -1594,6 +1780,10 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                                             print(identifier, value, file=sys.stderr)
                                     else:
                                         pass
+                                elif f.name in ['Infobox Network Adapter\n']:
+                                    pass
+                                elif f.name in ['Infobox USB Hub\n']:
+                                    pass
 
                             elif isinstance(f, mwparserfromhell.nodes.text.Text):
                                 pass
@@ -1605,22 +1795,25 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                         if not have_valid_data:
                             continue
 
-                        # Write to a Git repository to keep some history
+                        processed_devices[title] = device
+
                         # use the title as part of the file name as it is unique
-                        model_name = f"{title}.json"
+                        if is_helper_page:
+                            model_name = f"{parent_title}.json"
+                        else:
+                            model_name = f"{title}.json"
                         model_name = model_name.replace('/', '-')
 
                         new_file = True
 
                         json_data = json.dumps(json.loads(device.to_json()), sort_keys=True)
+                        processed_json_file = wiki_device_directory / model_name
 
                         # first check if the file has changed if it already exists.
-                        # If not, then don't add the file. Git has some intelligence
-                        # built-in which prevents unchanged files to be committed again,
-                        # which Dulwich doesn't seem to implement at the moment.
-                        if (wiki_device_directory / model_name).exists():
+                        # If not, then don't add the file.
+                        if processed_json_file.exists():
                             new_file = False
-                            with open(wiki_device_directory / model_name, 'r') as json_file:
+                            with open(processed_json_file, 'r') as json_file:
                                 try:
                                     existing_json = json.dumps(json.load(json_file))
                                     if existing_json == json_data:
@@ -1629,20 +1822,35 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                     pass
 
                         # write to a file in the correct Git directory
-                        with open(wiki_device_directory / model_name, 'w') as json_file:
+                        with open(processed_json_file, 'w') as json_file:
                             json_data = json.dumps(json.loads(device.to_json()), sort_keys=True, indent=4)
                             json_file.write(json_data)
 
+                        # Write to a Git repository to keep some history
                         if use_git:
-                            # add the file and commit
-                            dulwich.porcelain.add(repo, wiki_device_directory / model_name)
+                            # add the file
+                            p = subprocess.Popen(['git', 'add', processed_json_file],
+                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                            (outputmsg, errormsg) = p.communicate()
+                            if p.returncode != 0:
+                                print(f"{processed_json_file} could not be added", file=sys.stderr)
+
                             if new_file:
-                                dulwich.porcelain.commit(repo, f"Add {model_name}", committer=AUTHOR, author=AUTHOR)
+                                commit_message = f'Add {model_name}'
                             else:
-                                dulwich.porcelain.commit(repo, f"Update {model_name}", committer=AUTHOR, author=AUTHOR)
+                                commit_message = f'Update {model_name}'
+
+                            p = subprocess.Popen(['git', 'commit', "-m", commit_message],
+                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                            (outputmsg, errormsg) = p.communicate()
+                            if p.returncode != 0:
+                                print(f"{processed_json_file} could not be committed", file=sys.stderr)
 
                         # write extra data (extracted from free text) to a separate file
-                        model_name = f"{title}.data.json"
+                        if is_helper_page:
+                            model_name = f"{parent_title}.data.json"
+                        else:
+                            model_name = f"{title}.data.json"
 
                         model_name = model_name.replace('/', '-')
                         #output_file = wiki_device_directory / model_name

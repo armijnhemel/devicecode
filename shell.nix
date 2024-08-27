@@ -9,7 +9,6 @@ let
     click
     dataclasses-json
     defusedxml
-    dulwich
     mwparserfromhell
     pdfminer
     pillow
@@ -21,6 +20,7 @@ let
 in
 pkgs.mkShell {
   buildInputs = with pkgs; [
+    git
     my-python
   ];
 }

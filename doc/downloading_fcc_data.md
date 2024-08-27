@@ -10,19 +10,12 @@ The XML file that can be downloaded there is not versioned, or time stamped,
 and it isn't listed on the website when it was updated, so the only way to
 verify if it has been changed is to redownload and compare.
 
-A small hackish script to dump the FCC grant ids can be found in the `src`
-directory and is called `devicecode_dump_fcc_grantees.py` which can be
-invoked as follows:
+A small hackish script to dump the FCC grant ids to a JSON file with just the
+grantee code and grantee name can be found in the `src` directory and is called
+`devicecode_dump_fcc_grantees.py` which can be invoked as follows:
 
 ```console
 $ python3 devicecode_dump_fcc_grantees.py -i results.xml
-```
-
-Alternatively you can use a (much faster) shell command (the dump script
-performs some extra XML sanity checks):
-
-```console
-$ grep grantee_code results.xml | cut -f 2 -d '>' | cut -f 1 -d '<'
 ```
 
 The output of these commands can be used as in input to the FCC document
@@ -55,11 +48,11 @@ $ python devicecode_fetch_fcc.py -o ~/fcc-data 2AGN7-X9 ODMAM5N
 ```
 
 If there is a list of known FCC grantee codes (see above for an explanation)
-and it is stored in the file `known_fcc_grantees_20240618.txt` the following
+and it is stored in the file `known_fcc_grantees_20240618.json` the following
 command can be used:
 
 ```console
-$ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data -g known_fcc_grantees_20240618.txt
+$ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data -g known_fcc_grantees_20240618.json
 ```
 
 To force downloading all the data the `--force` parameter can be used:

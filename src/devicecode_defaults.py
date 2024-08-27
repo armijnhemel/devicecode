@@ -13,6 +13,7 @@ BRAND_REWRITE = {'FON Wireless': 'Fon Wireless',
                  'CFeon': 'cFeon',
                  'Brite-view': 'brite-View',
                  'Brite-View': 'brite-View',
+                 'Devolo': 'devolo',
                  'FireTide': 'Firetide',
                  'GCT': 'GCT Semiconductor',
                  'INexQ': 'iNexQ',
@@ -20,6 +21,7 @@ BRAND_REWRITE = {'FON Wireless': 'Fon Wireless',
                  'Invetec': 'Inventec',
                  'Kaonmedia': 'KAONMEDIA',
                  'KeeWiFi': 'Keewifi',
+                 'Leolabs': 'leolabs',
                  'Li-Cor': 'LI-COR',
                  'MoFi Network': 'Mofi Network',
                  'no': '',
@@ -29,6 +31,7 @@ BRAND_REWRITE = {'FON Wireless': 'Fon Wireless',
                  'Piecemakers': 'PieceMakers',
                  'Phicomm': 'PHICOMM',
                  'Proxiim': 'Proxim',
+                 'Radxa Limited': 'Radxa',
                  'Sandisk': 'SanDisk',
                  'STMicro': 'STMicroelectronics',
                  'ST Micro': 'STMicroelectronics',
@@ -43,6 +46,9 @@ BRAND_REWRITE = {'FON Wireless': 'Fon Wireless',
 # sometimes different names are used for the same country
 COUNTRY_REWRITE = {'United States': 'USA',
                    'United Kingdom': 'UK'}
+
+DEVICE_REWRITE = {'access pint': 'access point',
+                  'outdppr access point': 'outdoor access point'}
 
 DISTRO_REWRITE = {'AsusWRT-Merlin': 'Asuswrt-Merlin',
                   'LEDE Project': 'LEDE'}
@@ -194,6 +200,7 @@ DEFAULT_VALUE = {
     'exp_sfp_num': ['<!-- Number of sfp ports, Leave blank for none -->'],
     'exp_sim_num': ['<!-- Number of sim Slots, Leave blank for none -->'],
     'exp_usb_num': ['<!-- Number of USB Ports, Leave blank for none -->'],
+    'fandom': ['<!-- infodepot.fandom page, included underscores -->'],
     'fcc_id': ['<!-- Federal Communication Commission Identification Number -->'],
     'fccapprovdate': ['<!-- FCCID approval date -->'],
     'fla1_num': ['<!-- 1,2,3,4 -->'],
@@ -329,6 +336,7 @@ DEFAULT_VALUE = {
     'rad4chip3': ['<!-- Brand;Model;Extra, info; -->'],
     'rad4_ant_conn': ['<!-- Leave blank for unknown -->'],
     'rad4modif': ['<!-- Radio Module Interface Type, Leave blank for none -->'],
+    'rad4mod': ['<!-- Radio module name, optional link, Leave blank for none -->'],
     'rad4oui': ['<!-- Only if different from above OUI -->'],
     'ram1_num': ['<!-- Number of Ram chips -->'],
     'ram1chip': ['<!-- Brand;Model;Extra, info; -->'],
@@ -457,10 +465,10 @@ REGEX_OUI = re.compile(r'^[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}$')
 REGEX_SERIAL_CONNECTOR = re.compile(r'(JP?\d+)')
 
 REGEX_SERIAL_PIN_HEADER = re.compile(r'(?:via )?(\d+)[ -](?:in|pln|pin|pad|pads) ?(?:header|connector)?')
-REGEX_SERIAL_RJ45 = re.compile(r'RJ-?45( console)?')
 
 # several regular expressions for software and software versions
 REGEX_BUSYBOX = re.compile(r'BusyBox (v\d\.\d+[\.\w+-]*\d*)')
+REGEX_IPTABLES = re.compile(r'iptables (v1\.\d+[\.\w+-]*\d*)')
 REGEX_LINUX_VERSION = re.compile(r'Linux version (\d\.\d+\.\d+[\.\+\w\d-]*)')
 REGEX_LINUX_KERNEL_COMMANDLINE = re.compile(r'Kernel command line:\s+([\w\d=,:\./ ]*)')
 REGEX_ADTRAN_BOOTLOADER = re.compile(r'Adtran bootloader version (\d+\.\d+\.\d+)')

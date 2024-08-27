@@ -42,10 +42,13 @@ class SuggestDevices(Suggester):
         self.chips = kwargs.get('chips', [])
         self.chip_types = kwargs.get('chip_types', [])
         self.chip_vendors = kwargs.get('chip_vendors', [])
+        self.files = kwargs.get('files', [])
         self.flags = kwargs.get('flags', [])
         self.odms = kwargs.get('odms', [])
         self.packages = kwargs.get('packages', [])
         self.passwords = kwargs.get('passwords', [])
+        self.programs = kwargs.get('programs', [])
+        self.device_types = kwargs.get('types', [])
 
     async def get_suggestion(self, value: str) -> str | None:
         """Gets a completion from the given possibilities.
@@ -98,6 +101,10 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(self.chip_vendors):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + self.chip_vendors[idx][len(check_value)-12:]
+        elif check_value.startswith('file='):
+            for idx, chk in enumerate(self.files):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.files[idx][len(check_value)-5:]
         elif check_value.startswith('flag='):
             for idx, chk in enumerate(self.flags):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
@@ -118,6 +125,14 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(self.packages):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + self.packages[idx][len(check_value)-8:]
+        elif check_value.startswith('program='):
+            for idx, chk in enumerate(self.programs):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.programs[idx][len(check_value)-8:]
+        elif check_value.startswith('type='):
+            for idx, chk in enumerate(self.device_types):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.device_types[idx][len(check_value)-5:]
 
         for idx, suggestion in enumerate(self._for_comparison):
             if suggestion.startswith(check_value):
@@ -136,6 +151,8 @@ class FilterValidator(Validator):
         self.chip_types = kwargs.get('chip_types', set())
         self.chip_vendors = kwargs.get('chip_vendors', set())
         self.connectors = kwargs.get('connectors', set())
+        self.device_types = kwargs.get('types', set())
+        self.files = kwargs.get('files', set())
         self.ips = kwargs.get('ips', set())
         self.packages = kwargs.get('packages', set())
         self.passwords = kwargs.get('passwords', set())
@@ -179,6 +196,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'ignore_odm':
                     if token_value not in self.odms:
                         return self.failure("Invalid ODM")
+                elif token_identifier == 'file':
+                    if token_value not in self.files:
+                        return self.failure("Invalid file")
                 elif token_identifier == 'ip':
                     if token_value not in self.ips:
                         return self.failure("Invalid IP")
@@ -191,6 +211,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'package':
                     if token_value not in self.packages:
                         return self.failure("Invalid package")
+                #elif token_identifier == 'type':
+                    #if token_value not in self.device_types:
+                        #return self.failure("Invalid type")
                 elif token_identifier == 'serial':
                     if token_value not in ['no', 'unknown', 'yes']:
                         return self.failure("Invalid serial port information")
@@ -198,12 +221,14 @@ class FilterValidator(Validator):
                     if token_value not in ['no', 'unknown', 'yes']:
                         return self.failure("Invalid jtag port information")
                 elif token_identifier == 'year':
-                    try:
-                        year=int(token_value)
-                    except:
-                        return self.failure("Invalid year")
-                    if year < 1990 or year > 2040:
-                        return self.failure("Invalid year")
+                    years = token_value.split(':', maxsplit=1)
+                    for year in years:
+                        try:
+                            valid_year=int(year)
+                        except:
+                            return self.failure("Invalid year")
+                        if valid_year < 1990 or valid_year > 2040:
+                            return self.failure("Invalid year")
             return self.success()
         except ValueError:
             return self.failure('Incomplete')
@@ -273,9 +298,9 @@ class DevicecodeUI(App):
 
     CSS_PATH = "devicecode_tui.css"
     TOKEN_IDENTIFIERS = ['bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
-                         'connector', 'flag', 'ignore_brand', 'ignore_odm', 'ip',
-                         'jtag', 'odm', 'os', 'package', 'password', 'serial',
-                         'type', 'year']
+                         'connector', 'file', 'flag', 'ignore_brand', 'ignore_odm', 'ip',
+                         'jtag', 'odm', 'os', 'package', 'password', 'program',
+                         'serial', 'type', 'year']
 
     def __init__(self, devicecode_dirs, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -290,6 +315,8 @@ class DevicecodeUI(App):
         filter_chip_types = kwargs.get('chip_types', [])
         filter_chip_vendors = kwargs.get('chip_vendors', [])
         filter_connectors = kwargs.get('connectors', set())
+        filter_device_types = kwargs.get('types', [])
+        filter_files = kwargs.get('files', [])
         filter_flags = kwargs.get('flags', [])
         filter_ignore_brands = kwargs.get('ignore_brands', [])
         filter_ignore_odms = kwargs.get('ignore_odms', [])
@@ -299,6 +326,7 @@ class DevicecodeUI(App):
         filter_operating_systems = kwargs.get('operating_systems', [])
         filter_packages = kwargs.get('packages', [])
         filter_passwords = kwargs.get('passwords', [])
+        filter_programs = kwargs.get('programs', [])
         filter_serials = kwargs.get('serials', [])
         filter_years = kwargs.get('years', [])
 
@@ -330,6 +358,9 @@ class DevicecodeUI(App):
         # known ODMS
         odms = set()
 
+        # known files
+        files = set()
+
         # known flags
         flags = set()
 
@@ -341,6 +372,12 @@ class DevicecodeUI(App):
 
         # known default passwords
         passwords = set()
+
+        # known programs
+        programs = set()
+
+        # known device_types
+        device_types = set()
 
         # Extract useful data from each of the devices for quick
         # access when building the trees and the datatables.
@@ -357,7 +394,9 @@ class DevicecodeUI(App):
                 for overlay in self.overlays[device['title']]:
                     if overlay['name'] == 'fcc_id':
                         device['regulatory']['fcc_ids'] = overlay['data']
-                    break
+                    if overlay['name'] == 'oui':
+                        device['network']['ethernet_oui'] = overlay['data']['ethernet_oui']
+                        device['network']['wireless_oui'] = overlay['data']['wireless_oui']
 
             if 'brand' not in device:
                 continue
@@ -382,6 +421,9 @@ class DevicecodeUI(App):
                 if filter_manufacturer_name in filter_ignore_odms:
                     continue
 
+            if filter_device_types:
+                if not set(map(lambda x: x.lower(), device['device_types'])).intersection(filter_device_types):
+                    continue
             if filter_flags:
                 if not set(map(lambda x: x.lower(), device['flags'])).intersection(filter_flags):
                     continue
@@ -420,6 +462,26 @@ class DevicecodeUI(App):
                 if device['regulatory']['wifi_certified_date']:
                     declared_years.append(int(device['regulatory']['wifi_certified_date'][:4]))
                 if not set(filter_years).intersection(declared_years):
+                    continue
+
+            if filter_programs:
+                show_node = False
+                if 'programs' in device['software']:
+                    for prog in device['software']['programs']:
+                        if prog['name'].lower() in filter_programs:
+                            show_node = True
+                            break
+                if not show_node:
+                    continue
+
+            if filter_files:
+                show_node = False
+                if 'files' in device['software']:
+                    for prog in device['software']['files']:
+                        if prog['name'].lower() in filter_files:
+                            show_node = True
+                            break
+                if not show_node:
                     continue
 
             if filter_chips:
@@ -470,6 +532,8 @@ class DevicecodeUI(App):
             if device['model']['subrevision'] != '':
                 model += " "
                 model += device['model']['subrevision']
+
+            device_types.update(device['device_types'])
 
             # compute the labels used in the leaves
             labels = set()
@@ -541,6 +605,16 @@ class DevicecodeUI(App):
                 package_name = package['name'].lower()
                 packages.add(package_name)
 
+            if 'programs' in device['software']:
+                for prog in device['software']['programs']:
+                    program_name = prog['name'].lower()
+                    programs.add(program_name)
+
+            if 'files' in device['software']:
+                for f in device['software']['files']:
+                    file_name = f['name'].lower()
+                    files.add(file_name)
+
             brand_odm.append((brand_name, manufacturer_name))
 
             flags.update([x.casefold() for x in device['flags']])
@@ -548,10 +622,11 @@ class DevicecodeUI(App):
         return {'brands_to_devices': brands_to_devices, 'odm_to_devices': odm_to_devices,
                 'bootloaders': bootloaders, 'brands': brands, 'brand_data': brand_data,
                 'chips': chips, 'chip_types': chip_types, 'chip_vendors': chip_vendors,
-                'connectors': connectors, 'odms': odms, 'flags': flags, 'ips': ips,
-                'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
+                'connectors': connectors, 'odms': odms, 'files': files, 'flags': flags,
+                'ips': ips, 'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
                 'odm_connector': odm_connector, 'chip_vendor_connector': chip_vendor_connector,
-                'packages': packages, 'passwords': passwords}
+                'packages': packages, 'passwords': passwords, 'programs': programs,
+                'types': device_types}
 
 
     def compose(self) -> ComposeResult:
@@ -601,8 +676,10 @@ class DevicecodeUI(App):
         chip_types = data['chip_types']
         chip_vendors = data['chip_vendors']
         connectors = data['connectors']
+        device_types = data['types']
         odms = data['odms']
         flags = data['flags']
+        files = data['files']
         ips = data['ips']
         brand_odm = data['brand_odm']
         brand_cpu = data['brand_cpu']
@@ -611,6 +688,7 @@ class DevicecodeUI(App):
         operating_systems = defaults.KNOWN_OS
         packages = data['packages']
         passwords = data['passwords']
+        programs = data['programs']
         chip_vendor_connector = data['chip_vendor_connector']
 
         # build the various datatables.
@@ -691,14 +769,16 @@ class DevicecodeUI(App):
                                                         odms=odms, chips=chips, chip_types=chip_types,
                                                         chip_vendors=chip_vendors, connectors=connectors,
                                                         ips=ips, packages=packages, passwords=passwords,
+                                                        types=device_types, programs=programs, files=files,
                                                         token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             bootloaders=sorted(bootloaders), brands=sorted(brands),
                             chips=sorted(chips), chip_types=sorted(chip_types),
                             chip_vendors=sorted(chip_vendors), connectors=sorted(connectors),
                             odms=sorted(odms), operating_systems=sorted(operating_systems),
-                            flags=sorted(flags), packages=sorted(packages),
-                            passwords=sorted(passwords)), valid_empty=True)
+                            files=sorted(files), flags=sorted(flags), packages=sorted(packages),
+                            types=sorted(device_types), passwords=sorted(passwords),
+                            programs=sorted(programs)), valid_empty=True)
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
@@ -770,6 +850,8 @@ class DevicecodeUI(App):
         chip_types = []
         chip_vendors = []
         connectors = set()
+        device_types = []
+        files = []
         flags = []
         ignore_brands = []
         ignore_odms = []
@@ -779,6 +861,7 @@ class DevicecodeUI(App):
         operating_systems = []
         packages = []
         passwords = []
+        programs = []
         serials = []
         years = []
         is_filtered = False
@@ -813,6 +896,8 @@ class DevicecodeUI(App):
                         ignore_brands.append(value)
                     elif identifier == 'ignore_odm':
                         ignore_odms.append(value)
+                    elif identifier == 'file':
+                        files.append(value)
                     elif identifier == 'ip':
                         ips.append(value)
                     elif identifier == 'odm':
@@ -823,20 +908,26 @@ class DevicecodeUI(App):
                         packages.append(value)
                     elif identifier == 'password':
                         passwords.append(value)
+                    elif identifier == 'program':
+                        programs.append(value)
                     elif identifier == 'serial':
                         serials.append(value)
+                    elif identifier == 'type':
+                        device_types.append(value)
                     elif identifier == 'jtag':
                         jtags.append(value)
                     elif identifier == 'year':
-                        years.append(int(value))
+                        input_years = sorted(value.split(':', maxsplit=1))
+                        years += list(range(int(input_years[0]), int(input_years[1]) + 1))
 
         if refresh:
             filtered_data = self.compose_data_sets(bootloaders=bootloaders, brands=brands, odms=odms,
                                        chips=chips, chip_types=chip_types, chip_vendors=chip_vendors,
-                                       connectors=connectors, flags=flags, ignore_brands=ignore_brands,
-                                       ignore_odms=ignore_odms, ips=ips, jtags=jtags,
-                                       operating_systems=operating_systems, passwords=passwords,
-                                       packages=packages, serials=serials, years=years)
+                                       connectors=connectors, files=files, flags=flags,
+                                       ignore_brands=ignore_brands, ignore_odms=ignore_odms,
+                                       ips=ips, jtags=jtags, operating_systems=operating_systems,
+                                       passwords=passwords, packages=packages, programs=programs,
+                                       serials=serials, years=years, types=device_types)
 
             self.brand_tree.build_tree(filtered_data['brands_to_devices'], is_filtered)
             self.odm_tree.build_tree(filtered_data['odm_to_devices'], is_filtered)
@@ -905,7 +996,7 @@ class DevicecodeUI(App):
 
     def on_tree_node_selected(self, event: Tree.NodeSelected[None]) -> None:
         '''Display the reports of a node when it is selected'''
-        if event.node.data is not None:
+        if event.node.data is not None and 'title' in event.node.data:
             self.device_data_area.update(self.build_device_report(event.node.data))
             self.model_data_area.update(self.build_model_report(event.node.data))
             self.network_data_area.update(self.build_network_report(event.node.data['network']))
@@ -1098,10 +1189,27 @@ class DevicecodeUI(App):
 
             # packages
             new_markdown += "# Packages\n"
-            new_markdown += "| | |\n|--|--|\n"
+            new_markdown += "|Name|Version|Type|\n|--|--|--|\n"
             for p in result['packages']:
                 versions = ", ".join(p['versions'])
-                new_markdown += f"| {p['name']} | {versions} |\n"
+                new_markdown += f"| {p['name']} | {versions} | {p['package_type']}\n"
+
+            # Programs
+            if 'programs' in result:
+                new_markdown += "# Programs\n"
+                new_markdown += "| | |\n|--|--|\n"
+                for p in result['programs']:
+                    new_markdown += f"|**Name** |{p['name']}\n"
+                    new_markdown += f"|**Full name** |{p['full_name']}\n"
+                    new_markdown += f"|**Parameters** |{' '.join( p['parameters'])}\n"
+                    new_markdown += f"|**Origin** |{p['origin']}\n"
+                    new_markdown += f"||\n"
+            # Files
+            if 'files' in result:
+                new_markdown += "# Files\n"
+                new_markdown += "|Name|Type|User|Group|\n|--|--|--|--|\n"
+                for p in result['files']:
+                    new_markdown += f"| {p['name']} | {p['file_type']}| {p['user']} | {p['group']}\n"
         return new_markdown
 
     def build_model_report(self, result):
@@ -1133,9 +1241,24 @@ class DevicecodeUI(App):
             new_markdown += "| | |\n|--|--|\n"
             new_markdown += f"|**DOCSIS version** | {result['docsis_version']}\n"
             new_markdown += f"|**LAN ports** | {result['lan_ports']}\n"
-            ethernet_ouis = ", ".join(result['ethernet_oui'])
+
+            # OUIs
+            ethernet_oui_values = []
+            for e in result['ethernet_oui']:
+                if e['name'] != '':
+                    ethernet_oui_values.append(f"{e['oui']} ({e['name']})")
+                else:
+                    ethernet_oui_values.append(e['oui'])
+            ethernet_ouis = ", ".join(ethernet_oui_values)
             new_markdown += f"|**Ethernet OUI** | {ethernet_ouis}\n"
-            wireless_ouis = ", ".join(result['wireless_oui'])
+
+            wireless_oui_values = []
+            for e in result['wireless_oui']:
+                if e['name'] != '':
+                    wireless_oui_values.append(f"{e['oui']} ({e['name']})")
+                else:
+                    wireless_oui_values.append(e['oui'])
+            wireless_ouis = ", ".join(wireless_oui_values)
             new_markdown += f"|**Wireless OUI** | {wireless_ouis}\n"
 
             if result['chips']:
@@ -1216,6 +1339,10 @@ class DevicecodeUI(App):
             # Misc
             #new_markdown += f"|**Data** | {result}\n"
             new_markdown += f"|**Data origin** | {result['wiki_type']}\n"
+            if result['wiki_type'] == 'TechInfoDepot':
+                data_url = result['title'].replace(' ', '_')
+                new_markdown += f"|**Data URL** | <https://techinfodepot.shoutwiki.com/wiki/{data_url}>\n"
+
         return new_markdown
 
 @click.command(short_help='Interactive DeviceCode result browser')
@@ -1229,7 +1356,8 @@ def main(devicecode_directory):
         sys.exit(1)
 
     # verify the directory names, they should be one of the following
-    valid_directory_names = ['TechInfoDepot', 'WikiDevi']
+    #valid_directory_names = ['TechInfoDepot', 'WikiDevi']
+    valid_directory_names = ['TechInfoDepot']
 
     # Inside these directories a directory called 'devices' should always
     # be present. Optionally there can be a directory called 'overlays'
@@ -1245,6 +1373,10 @@ def main(devicecode_directory):
         if not (devices_dir.exists() and devices_dir.is_dir()):
             continue
         devicecode_dirs.append(devices_dir)
+
+    if not devicecode_dirs:
+        print(f"No valid directories found in {devicecode_directory}, should contain one of {valid_directory_names}.", file=sys.stderr)
+        sys.exit(1)
 
     app = DevicecodeUI(devicecode_dirs)
     app.run()

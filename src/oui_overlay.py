@@ -13,24 +13,21 @@ import sys
 
 import click
 
-@click.command(short_help='Create FCC overlay files to provide additional data')
-@click.option('--fcc-directory', '-f', 'fcc_input_directory', required=True,
+import devicecode_defaults as defaults
+
+@click.command(short_help='Create OUI overlay files to provide additional data')
+@click.option('--manufacturer', '-m', 'manufacturer_file', required=True,
               help='top level input directory with one directory per FCC id',
-              type=click.Path(path_type=pathlib.Path, exists=True))
+              type=click.File('r'))
 @click.option('--directory', '-d', 'devicecode_directory',
               help='DeviceCode results directory', required=True,
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--output', '-o', 'output_directory', required=True,
               help='top level output directory, overlays will be stored in a subdirectory called \'overlay\'',
               type=click.Path(path_type=pathlib.Path, exists=True))
-@click.option('--report-only', '-r', is_flag=True, help='report only')
 @click.option('--use-git', is_flag=True, help='use Git (not recommended, see documentation)')
-def main(fcc_input_directory, devicecode_directory, output_directory, report_only, use_git):
-    if not fcc_input_directory.is_dir():
-        print(f"{fcc_input_directory} is not a directory, exiting.", file=sys.stderr)
-        sys.exit(1)
-
-    if not report_only and not output_directory.is_dir():
+def main(manufacturer_file, devicecode_directory, output_directory, use_git):
+    if not output_directory.is_dir():
         print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
 
@@ -55,12 +52,18 @@ def main(fcc_input_directory, devicecode_directory, output_directory, report_onl
             print(f"{output_directory} is not a Git repository, exiting.", file=sys.stderr)
             sys.exit(1)
 
-    if not report_only:
-        overlay_directory = output_directory / 'overlays'
-        overlay_directory.mkdir(exist_ok=True)
+    ouis = {}
+    for line in manufacturer_file:
+        if line.startswith('#'):
+            continue
+        if line.startswith('00:00:00'):
+            continue
+        oui, manufacturer_short, manufacturer_full = line.strip().split(maxsplit=2)
+        ouis[oui] = {'name_short': manufacturer_short, 'name': manufacturer_full}
 
     # verify the directory names, they should be one of the following
-    valid_directory_names = ['TechInfoDepot', 'WikiDevi']
+    #valid_directory_names = ['TechInfoDepot', 'WikiDevi']
+    valid_directory_names = ['TechInfoDepot']
 
     # Inside these directories a directory called 'devices' should always
     # be present. Optionally there can be a directory called 'overlays'
@@ -81,6 +84,10 @@ def main(fcc_input_directory, devicecode_directory, output_directory, report_onl
         print(f"No valid directories found in {devicecode_directory}, should contain one of {valid_directory_names}.", file=sys.stderr)
         sys.exit(1)
 
+    # create the overlays
+    overlay_directory = output_directory / 'overlays'
+    overlay_directory.mkdir(exist_ok=True)
+
     # Then walk all the result files, check the FCC ids and optionally create overlays
     for devicecode_dir in devicecode_dirs:
         for result_file in devicecode_dir.glob('**/*'):
@@ -90,55 +97,38 @@ def main(fcc_input_directory, devicecode_directory, output_directory, report_onl
             try:
                 with open(result_file, 'r') as wiki_file:
                     device = json.load(wiki_file)
-                    if 'regulatory' not in device:
+                    if 'network' not in device:
                         continue
-                    fcc_ids = device['regulatory']['fcc_ids']
-                    overlay_data = {'type': 'overlay', 'name': 'fcc_id', 'source': 'fcc'}
+
+                    overlay_data = {'type': 'overlay', 'name': 'oui', 'source': 'wireshark',
+                                    'license': 'GPL-2.0',
+                                    'url': 'https://www.wireshark.org/download/automated/data/manuf'}
                     write_overlay = False
-                    overlay_fcc_ids = []
+                    ethernet_oui_overlays = []
+                    wireless_oui_overlays = []
 
-                    if len(fcc_ids) != 1:
-                        # TODO: fix for files with multiple FCC ids
-                        continue
-
-                    for f in fcc_ids:
-                        fcc_id = f['fcc_id']
-                        fcc_date = f['fcc_date']
-                        if fcc_date == '':
-                            if report_only:
-                                print(f"No FCC date defined for {fcc_id}")
-                                continue
-
-                        dates = []
-
-                        if (fcc_input_directory / fcc_id).is_dir():
-                            # load the file with approved dates, if it exists
-                            approved_file = fcc_input_directory / fcc_id / 'approved_dates.json'
-                            if approved_file.exists():
-                                with open(approved_file, 'r') as approved:
-                                    dates += json.load(approved)
-
-                                # if there is no date at all create an overlay with
-                                # the earliest date defined as the FCC date.
-                                if fcc_date == '':
-                                    overlay_fcc_ids.append({'fcc_date': dates[0], 'fcc_id': fcc_id, 'fcc_type': 'unknown', 'license': 'CC0-1.0'})
-                                    write_overlay=True
-                                elif fcc_date not in dates:
-                                    # possibly wrong data, create an overlay (TODO)
-                                    # copy the existing data to the overlay data
-                                    overlay_fcc_ids.append(f)
-                                else:
-                                    # copy the existing data to the overlay data
-                                    overlay_fcc_ids.append(f)
-                        else:
-                            if report_only:
-                                print(f"FCC data missing for {fcc_id}")
-                            # copy the existing data to the overlay data
-                            overlay_fcc_ids.append(f)
+                    for e in device['network']['ethernet_oui']:
+                        orig_oui = e['oui']
+                        if orig_oui not in ouis:
+                            ethernet_oui_overlays.append(e)
+                            continue
+                        e['name'] = ouis[orig_oui].get('name', '')
+                        e['name_short'] = ouis[orig_oui].get('name_short', '')
+                        ethernet_oui_overlays.append(e)
+                        write_overlay = True
+                    for e in device['network']['wireless_oui']:
+                        orig_oui = e['oui']
+                        if orig_oui not in ouis:
+                            wireless_oui_overlays.append(e)
+                            continue
+                        e['name'] = ouis[orig_oui].get('name', '')
+                        e['name_short'] = ouis[orig_oui].get('name_short', '')
+                        wireless_oui_overlays.append(e)
+                        write_overlay = True
 
                     if write_overlay:
-                        overlay_data['data'] = overlay_fcc_ids
-                        overlay_file = overlay_directory / result_file.stem / 'fcc_id.json'
+                        overlay_data['data'] = {'ethernet_oui': ethernet_oui_overlays, 'wireless_oui': wireless_oui_overlays}
+                        overlay_file = overlay_directory / result_file.stem / 'network_oui.json'
                         overlay_file.parent.mkdir(parents=True, exist_ok=True)
                         with open(overlay_file, 'w') as overlay:
                             overlay.write(json.dumps(overlay_data, indent=4))
@@ -150,7 +140,7 @@ def main(fcc_input_directory, devicecode_directory, output_directory, report_onl
                             if p.returncode != 0:
                                 print(f"{overlay_file} could not be added", file=sys.stderr)
 
-                            commit_message = f'Add FCC overlay for {result_file.stem}'
+                            commit_message = f'Add OUI overlay for {result_file.stem}'
 
                             p = subprocess.Popen(['git', 'commit', "-m", commit_message],
                                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
@@ -160,8 +150,6 @@ def main(fcc_input_directory, devicecode_directory, output_directory, report_onl
 
             except json.decoder.JSONDecodeError:
                 pass
-
-
 
 if __name__ == "__main__":
     main()

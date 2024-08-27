@@ -16,7 +16,14 @@ The goal of this project is to unlock data from various sources, rework it
 into a format that is easier to reuse, cleanup and makes it available for use
 by other projects, such as [VulnerableCode][vulnerablecode].
 
+For a more thorough motivation see
+[Why DeviceCode?](doc/devicecode_motivation.md)
+
 ## Workflow
+
+It is highly recommended to use the pregenerated set of data available in the
+[devicecode-data][devicecode-data] repository instead of creating a data set
+from scratch.
 
 The tools need a dump file with data exported from TechInfoDepot or WikiDevi.
 This dump file is in XML format and contains content in a mix of HTML and
@@ -27,16 +34,14 @@ have been forked from (a predecessor of) WikiDevi.
 
 ### Creating a dump file
 
-If you want to get a pregenerated set of data, checkout the
-[devicecode-data][devicecode-data] repository.
-
 See [creating a dump file](doc/creating_a_dump_file.md).
 
 ### Running the scripts
 
 The easiest to run the script is to use Nix and then `nix-shell` to set up the
 environment. If this isn't your cup of tea, then the requirements for running
-the scripts are (currently) quite modest (see `requirements.txt`).
+the scripts are (currently) quite modest (see `requirements.txt` for the Python
+dependencies and install `git` if you want to use the Git functionality).
 
 To run the script you will need a dump file (see above). It is recommended that
 the directory you write to is an existing Git repository. One method is to
@@ -49,8 +54,8 @@ $ git init
 ```
 
 but of course you could also use an existing Git clone from for example GitHub.
-If you are using Git support (see later) You might want to change the value of
-`AUTHOR` in the file `src/devicecode.py` (this will be made configurable soon).
+If you are using Git support (see later) you should be aware that the settings
+of the Git repository will be used for the author and committer.
 
 The script will create the following directory structure inside the Git
 repository:
@@ -83,21 +88,21 @@ the results upstream.
 Using Git will have a serious performance impact. Running the script with Git:
 
 ```
-$ time python devicecode.py -i TechInfoDepot-20231002144356.xml --wiki-type=TechInfoDepot -o ~/devicecode --use-git
+$ time python devicecode.py -i TechInfoDepot-20240409163428.xml -o /tmp/devices/ --wiki-type=Techinfodepot --use-git
 
-real	15m26.654s
-user	13m40.428s
-sys	1m42.781s
+real	16m52.155s
+user	13m19.071s
+sys	10m21.442s
 ```
 
 and without Git:
 
 ```
-$ time python devicecode.py -i TechInfoDepot-20231002144356.xml --wiki-type=TechInfoDepot -o ~/devicecode
+$ time python devicecode.py -i TechInfoDepot-20240409163428.xml -o /tmp/devices/ --wiki-type=Techinfodepot
 
-real	0m38.859s
-user	0m38.384s
-sys	0m0.266s
+real	1m35.371s
+user	1m33.887s
+sys	0m0.914s
 ```
 
 Because of this performance impact Git support is disabled by default. To
