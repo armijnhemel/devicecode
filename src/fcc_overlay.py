@@ -23,9 +23,12 @@ import click
 @click.option('--output', '-o', 'output_directory', required=True,
               help='top level output directory, overlays will be stored in a subdirectory called \'overlay\'',
               type=click.Path(path_type=pathlib.Path, exists=True))
+@click.option('--fcc-grantees', '-g', 'grantees', required=True,
+              help='file with known FCC grantee codes',
+              type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--report-only', '-r', is_flag=True, help='report only')
 @click.option('--use-git', is_flag=True, help='use Git (not recommended, see documentation)')
-def main(fcc_input_directory, devicecode_directory, output_directory, report_only, use_git):
+def main(fcc_input_directory, devicecode_directory, output_directory, grantees, report_only, use_git):
     if not fcc_input_directory.is_dir():
         print(f"{fcc_input_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -38,12 +41,17 @@ def main(fcc_input_directory, devicecode_directory, output_directory, report_onl
         print(f"{devicecode_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
 
+    fcc_grantees = {}
+    with open(grantees, 'r') as grantee:
+        try:
+            fcc_grantees = json.load(grantee)
+        except json.decoder.JSONDecodeError:
+            pass
+
     if use_git:
         if shutil.which('git') is None:
             print("'git' program not installed, exiting.", file=sys.stderr)
             sys.exit(1)
-
-        cwd = os.getcwd()
 
         os.chdir(output_directory)
 
@@ -112,6 +120,16 @@ def main(fcc_input_directory, devicecode_directory, output_directory, report_onl
                         dates = []
 
                         if (fcc_input_directory / fcc_id).is_dir():
+                            # check if the FCC id is for the brand (meaning it is the main FCC id)
+                            is_main_fcc = False
+                            if fcc_id.startswith('2'):
+                                grantee_code = fcc_id[:5]
+                            else:
+                                grantee_code = fcc_id[:3]
+                            if grantee_code in fcc_grantees:
+                                if device['brand'].lower() in fcc_grantees[grantee_code].lower():
+                                    is_main_fcc = True
+
                             # load the file with approved dates, if it exists
                             approved_file = fcc_input_directory / fcc_id / 'approved_dates.json'
                             if approved_file.exists():
@@ -121,10 +139,16 @@ def main(fcc_input_directory, devicecode_directory, output_directory, report_onl
                                 # if there is no date at all create an overlay with
                                 # the earliest date defined as the FCC date.
                                 if fcc_date == '':
-                                    overlay_fcc_ids.append({'fcc_date': dates[0], 'fcc_id': fcc_id, 'fcc_type': 'unknown', 'license': 'CC0-1.0'})
+                                    if is_main_fcc:
+                                        overlay = {'fcc_date': dates[0], 'fcc_id': fcc_id,
+                                                   'fcc_type': 'main', 'license': 'CC0-1.0'}
+                                    else:
+                                        overlay = {'fcc_date': dates[0], 'fcc_id': fcc_id,
+                                                   'fcc_type': 'unknown', 'license': 'CC0-1.0'}
+                                    overlay_fcc_ids.append(overlay)
                                     write_overlay=True
                                 elif fcc_date not in dates:
-                                    # possibly wrong data, create an overlay (TODO)
+                                    # possibly wrong date, create an overlay (TODO)
                                     # copy the existing data to the overlay data
                                     overlay_fcc_ids.append(f)
                                 else:
