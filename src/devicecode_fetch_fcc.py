@@ -28,7 +28,7 @@ TIMEOUT = 60
               help='top level output directory, data will be stored in a subdirectory',
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--fcc-grantees', '-g', 'grantees',
-              help='file with known FCC grantee codes (one per line)',
+              help='file with known FCC grantee codes',
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.argument('fccids', required=True, nargs=-1)
 @click.option('--verbose', is_flag=True, help='be verbose')
