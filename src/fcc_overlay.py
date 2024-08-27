@@ -63,12 +63,9 @@ def main(fcc_input_directory, devicecode_directory, output_directory, grantees, 
             print(f"{output_directory} is not a Git repository, exiting.", file=sys.stderr)
             sys.exit(1)
 
-    if not report_only:
-        overlay_directory = output_directory / 'overlays'
-        overlay_directory.mkdir(exist_ok=True)
-
     # verify the directory names, they should be one of the following
-    valid_directory_names = ['TechInfoDepot', 'WikiDevi']
+    #valid_directory_names = ['TechInfoDepot', 'WikiDevi']
+    valid_directory_names = ['TechInfoDepot']
 
     # Inside these directories a directory called 'devices' should always
     # be present. Optionally there can be a directory called 'overlays'
@@ -84,6 +81,10 @@ def main(fcc_input_directory, devicecode_directory, output_directory, grantees, 
         if not (devices_dir.exists() and devices_dir.is_dir()):
             continue
         devicecode_dirs.append(devices_dir)
+
+        if not report_only:
+            overlay_directory = output_directory / p.name / 'overlays'
+            overlay_directory.mkdir(parents=True, exist_ok=True)
 
     if not devicecode_dirs:
         print(f"No valid directories found in {devicecode_directory}, should contain one of {valid_directory_names}.", file=sys.stderr)
@@ -119,17 +120,18 @@ def main(fcc_input_directory, devicecode_directory, output_directory, grantees, 
 
                         dates = []
 
-                        if (fcc_input_directory / fcc_id).is_dir():
-                            # check if the FCC id is for the brand (meaning it is the main FCC id)
-                            is_main_fcc = False
-                            if fcc_id.startswith('2'):
-                                grantee_code = fcc_id[:5]
-                            else:
-                                grantee_code = fcc_id[:3]
-                            if grantee_code in fcc_grantees:
-                                if device['brand'].lower() in fcc_grantees[grantee_code].lower():
-                                    is_main_fcc = True
+                        # check if the FCC id is for the brand (meaning it is the main FCC id)
+                        is_main_fcc = False
+                        if fcc_id.startswith('2'):
+                            grantee_code = fcc_id[:5]
+                        else:
+                            grantee_code = fcc_id[:3]
 
+                        if grantee_code in fcc_grantees:
+                            if device['brand'].lower() in fcc_grantees[grantee_code].lower():
+                                is_main_fcc = True
+
+                        if (fcc_input_directory / fcc_id).is_dir():
                             # load the file with approved dates, if it exists
                             approved_file = fcc_input_directory / fcc_id / 'approved_dates.json'
                             if approved_file.exists():
@@ -150,14 +152,26 @@ def main(fcc_input_directory, devicecode_directory, output_directory, grantees, 
                                 elif fcc_date not in dates:
                                     # possibly wrong date, create an overlay (TODO)
                                     # copy the existing data to the overlay data
+                                    if is_main_fcc:
+                                        f['fcc_type'] = 'main'
+                                        f['license'] = 'CC0-1.0'
+                                        write_overlay=True
                                     overlay_fcc_ids.append(f)
                                 else:
                                     # copy the existing data to the overlay data
+                                    if is_main_fcc:
+                                        f['fcc_type'] = 'main'
+                                        f['license'] = 'CC0-1.0'
+                                        write_overlay=True
                                     overlay_fcc_ids.append(f)
                         else:
                             if report_only:
                                 print(f"FCC data missing for {fcc_id}")
                             # copy the existing data to the overlay data
+                            if is_main_fcc:
+                                f['fcc_type'] = 'main'
+                                f['license'] = 'CC0-1.0'
+                                write_overlay=True
                             overlay_fcc_ids.append(f)
 
                     if write_overlay:
