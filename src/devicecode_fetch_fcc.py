@@ -140,6 +140,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
 
             pdfs_descriptions = []
             in_table = False
+            is_modular = False
             pdf_name = ''
             description = ''
             document_type = ''
@@ -174,9 +175,13 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
                         # extract the file name
                         _, pdf_name, _ = line.split('"', maxsplit=2)
                         pdf_basename = pdf_name.rsplit('/', maxsplit=1)[1]
+                        if 'modular' in description.lower():
+                            is_modular = True
 
                         # store the pdf/description combination
-                        pdfs_descriptions.append({'url': f'{base_url}/{pdf_name}', 'name': pdf_basename, 'type': document_type, 'description': description, 'date': current_date})
+                        pdfs_descriptions.append({'url': f'{base_url}/{pdf_name}',
+                                                  'name': pdf_basename, 'type': document_type,
+                                                  'description': description, 'date': current_date})
 
                         # reset the pdf name
                         pdf_name = ''
@@ -225,10 +230,12 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
                     with open(store_directory/pdf['name'], 'rb') as pdf_file:
                         pdf['sha256'] = hashlib.sha256(pdf_file.read()).hexdigest()
 
+            description_data = {'modular': is_modular, 'data': pdfs_descriptions}
+
             if verbose:
                 print(f"* writing PDF/description mapping for {fcc_id}\n")
             with open(store_directory/'descriptions.json', 'w') as output:
-                output.write(json.dumps(pdfs_descriptions, indent=4))
+                output.write(json.dumps(description_data, indent=4))
             with open(store_directory/'approved_dates.json', 'w') as output:
                 output.write(json.dumps(sorted(set(approved_dates)), indent=4))
             processed_fccids += 1

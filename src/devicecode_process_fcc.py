@@ -153,7 +153,7 @@ def process_fcc(task):
 
         # Results are written to an unpack directory for each PDF
         # as the file names can be the same in different PDFs.
-        for pdf in descriptions:
+        for pdf in descriptions['data']:
             if not (fcc_directory / pdf['name']).exists():
                 print(f"{pdf['name']} does not exist, skipping.", file=sys.stderr)
                 continue
