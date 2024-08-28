@@ -4,6 +4,7 @@
 # Licensed under Apache 2.0, see LICENSE file for details
 # SPDX-License-Identifier: Apache-2.0
 
+import datetime
 import hashlib
 import json
 import pathlib
@@ -58,7 +59,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
             print(f"Invalid FCC id '{fccid}', skipping.", file=sys.stderr)
             continue
 
-        if fcc_grantees != set():
+        if fcc_grantees:
             if fccid.startswith('2'):
                 grantee = fccid[:5].upper()
             else:
@@ -139,10 +140,12 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
 
             pdfs_descriptions = []
             in_table = False
+            is_modular = False
             pdf_name = ''
             description = ''
             document_type = ''
             approved_dates = []
+            current_date = ''
             for line in result.splitlines():
                 # keep a bit of state and only look at the interesting lines.
                 # This is a bit ugly but hey, it works.
@@ -162,16 +165,26 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
                     # get the document_type and description
                     document_type = line.rsplit('<td>', maxsplit=1)[1][:-5]
                     description = line.rsplit('<td>', maxsplit=1)[0][:-9].rsplit('>', maxsplit=1)[1]
-                elif line.startswith('<td>') and '.pdf' in line:
-                    # extract the file name
-                    _, pdf_name, _ = line.split('"', maxsplit=2)
-                    pdf_basename = pdf_name.rsplit('/', maxsplit=1)[1]
+                elif line.startswith('<td>'):
+                    # first extract the date
+                    try:
+                        current_date = datetime.datetime.strptime(line[4:-5], '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+                    except ValueError:
+                        pass
+                    if '.pdf' in line:
+                        # extract the file name
+                        _, pdf_name, _ = line.split('"', maxsplit=2)
+                        pdf_basename = pdf_name.rsplit('/', maxsplit=1)[1]
+                        if 'modular' in description.lower():
+                            is_modular = True
 
-                    # store the pdf/description combination
-                    pdfs_descriptions.append({'url': f'{base_url}/{pdf_name}', 'name': pdf_basename, 'type': document_type, 'description': description})
+                        # store the pdf/description combination
+                        pdfs_descriptions.append({'url': f'{base_url}/{pdf_name}',
+                                                  'name': pdf_basename, 'type': document_type,
+                                                  'description': description, 'date': current_date})
 
-                    # reset the pdf name
-                    pdf_name = ''
+                        # reset the pdf name
+                        pdf_name = ''
 
             if not pdfs_descriptions:
                 fcc_id_invalid.append(fcc_id)
@@ -205,6 +218,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
                             output.write(request.content)
                         downloaded_documents += 1
 
+            pdfs_descriptions = sorted(pdfs_descriptions, key=lambda x: x['date'])
             # compute SHA256 of any PDF files that were downloaded. This
             # is regardless of the --no-pdf option was given (as that
             # might have been used just to update the metadata).
@@ -216,10 +230,12 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
                     with open(store_directory/pdf['name'], 'rb') as pdf_file:
                         pdf['sha256'] = hashlib.sha256(pdf_file.read()).hexdigest()
 
+            description_data = {'modular': is_modular, 'data': pdfs_descriptions}
+
             if verbose:
                 print(f"* writing PDF/description mapping for {fcc_id}\n")
             with open(store_directory/'descriptions.json', 'w') as output:
-                output.write(json.dumps(pdfs_descriptions, indent=4))
+                output.write(json.dumps(description_data, indent=4))
             with open(store_directory/'approved_dates.json', 'w') as output:
                 output.write(json.dumps(sorted(set(approved_dates)), indent=4))
             processed_fccids += 1

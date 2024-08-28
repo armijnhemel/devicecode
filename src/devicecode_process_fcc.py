@@ -4,7 +4,6 @@
 # Licensed under Apache 2.0, see LICENSE file for details
 # SPDX-License-Identifier: Apache-2.0
 
-import hashlib
 import json
 import multiprocessing
 import pathlib
@@ -154,7 +153,7 @@ def process_fcc(task):
 
         # Results are written to an unpack directory for each PDF
         # as the file names can be the same in different PDFs.
-        for pdf in descriptions:
+        for pdf in descriptions['data']:
             if not (fcc_directory / pdf['name']).exists():
                 print(f"{pdf['name']} does not exist, skipping.", file=sys.stderr)
                 continue
@@ -165,10 +164,6 @@ def process_fcc(task):
 
             if verbose:
                 print(f"Processing {fccid} - {pdf['name']}")
-
-            # compute the SHA256 hash of the PDF file
-            with open(fcc_directory / pdf['name'], 'rb') as pdf_file:
-                pdf_hash = hashlib.sha256(pdf_file.read()).hexdigest()
 
             # create two directories for output:
             # one for original output (original images and extracted text)
