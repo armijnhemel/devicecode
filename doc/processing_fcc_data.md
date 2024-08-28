@@ -41,9 +41,10 @@ part of the picture (this has mostly been observed in user manuals). These
 elements are extracted separately and not recombined. In case of doubt you
 should always look at the original PDF file.
 
-
 ## Devices used as modules
 
-There are several devices that are used as modules. This is
+There are several devices that are used as modules. A good example would be a
+wireless networking card in mini-PCI form factor, that is used as a module in
+other devices.
 
 [fcc]:https://en.wikipedia.org/wiki/Federal_Communications_Commission
