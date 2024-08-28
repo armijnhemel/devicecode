@@ -4,6 +4,7 @@
 # Licensed under Apache 2.0, see LICENSE file for details
 # SPDX-License-Identifier: Apache-2.0
 
+import datetime
 import hashlib
 import json
 import pathlib
@@ -143,6 +144,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
             description = ''
             document_type = ''
             approved_dates = []
+            current_date = ''
             for line in result.splitlines():
                 # keep a bit of state and only look at the interesting lines.
                 # This is a bit ugly but hey, it works.
@@ -162,16 +164,22 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
                     # get the document_type and description
                     document_type = line.rsplit('<td>', maxsplit=1)[1][:-5]
                     description = line.rsplit('<td>', maxsplit=1)[0][:-9].rsplit('>', maxsplit=1)[1]
-                elif line.startswith('<td>') and '.pdf' in line:
-                    # extract the file name
-                    _, pdf_name, _ = line.split('"', maxsplit=2)
-                    pdf_basename = pdf_name.rsplit('/', maxsplit=1)[1]
+                elif line.startswith('<td>'):
+                    # first extract the date
+                    try:
+                        current_date = datetime.datetime.strptime(line[4:-5], '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+                    except ValueError:
+                        pass
+                    if '.pdf' in line:
+                        # extract the file name
+                        _, pdf_name, _ = line.split('"', maxsplit=2)
+                        pdf_basename = pdf_name.rsplit('/', maxsplit=1)[1]
 
-                    # store the pdf/description combination
-                    pdfs_descriptions.append({'url': f'{base_url}/{pdf_name}', 'name': pdf_basename, 'type': document_type, 'description': description})
+                        # store the pdf/description combination
+                        pdfs_descriptions.append({'url': f'{base_url}/{pdf_name}', 'name': pdf_basename, 'type': document_type, 'description': description, 'date': current_date})
 
-                    # reset the pdf name
-                    pdf_name = ''
+                        # reset the pdf name
+                        pdf_name = ''
 
             if not pdfs_descriptions:
                 fcc_id_invalid.append(fcc_id)
@@ -205,6 +213,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
                             output.write(request.content)
                         downloaded_documents += 1
 
+            pdfs_descriptions = sorted(pdfs_descriptions, key=lambda x: x['date'])
             # compute SHA256 of any PDF files that were downloaded. This
             # is regardless of the --no-pdf option was given (as that
             # might have been used just to update the metadata).
