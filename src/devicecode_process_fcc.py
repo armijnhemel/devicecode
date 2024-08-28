@@ -130,7 +130,7 @@ def stitch(images, orientation, image_page_directory, img_directory, stitch_dire
             shutil.copy(image_name, img_hash_file)
         image_name.unlink()
         image_name.hardlink_to(img_hash_file)
-    return image_name.name
+    return (image_name.name, img_hash)
 
 def process_fcc(task):
     fccid, meta = task
@@ -219,7 +219,6 @@ def process_fcc(task):
 
                     # keep track of images
                     images = []
-                    image_names = []
                     image_metadata[page_number] = {'original': [], 'processed': {}}
                     img_page_directory = pdf_orig_output_directory / str(page_number) / 'images'
                     image_writer = pdfminer.image.ImageWriter(img_page_directory)
@@ -246,7 +245,7 @@ def process_fcc(task):
                                     full_img_name.unlink()
                                     full_img_name.hardlink_to(img_hash_file)
                                 images.append((element, img_name))
-                                image_names.append(img_name)
+                                image_metadata[page_number]['original'].append({'name': img_name, 'sha256': img_hash})
                             except AttributeError:
                                 # TODO: fix this. sometimes images aren't
                                 # correctly exported and an AttributeError exception
@@ -314,8 +313,6 @@ def process_fcc(task):
                             with open(text_result_directory / 'extracted.json', 'w') as output_file:
                                 output_file.write(json.dumps(search_results, indent=4))
 
-                    image_metadata[page_number]['original'] = image_names
-
                     if len(images) > 1:
                         to_stitch = []
                         orientation = None
@@ -347,9 +344,10 @@ def process_fcc(task):
                                 else:
                                     stitch_names = list(map(lambda x: x[1], to_stitch))
                                     stitch_directory.mkdir(exist_ok=True, parents=True)
-                                    stitched_file = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory)
+                                    stitched_file, img_hash = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory)
                                     image_metadata[page_number]['processed'][stitched_file] = {}
                                     image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
+                                    image_metadata[page_number]['processed'][stitched_file]['sha256'] = img_hash
 
                                     # reset
                                     to_stitch = [image]
@@ -360,9 +358,10 @@ def process_fcc(task):
                                 else:
                                     stitch_names = list(map(lambda x: x[1], to_stitch))
                                     stitch_directory.mkdir(exist_ok=True, parents=True)
-                                    stitched_file = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory)
+                                    stitched_file, img_hash = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory)
                                     image_metadata[page_number]['processed'][stitched_file] = {}
                                     image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
+                                    image_metadata[page_number]['processed'][stitched_file]['sha256'] = img_hash
 
                                     # reset
                                     to_stitch = [image]
@@ -370,9 +369,10 @@ def process_fcc(task):
                         if len(to_stitch) > 1:
                             stitch_names = list(map(lambda x: x[1], to_stitch))
                             stitch_directory.mkdir(exist_ok=True, parents=True)
-                            stitched_file = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory)
+                            stitched_file, img_hash = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory)
                             image_metadata[page_number]['processed'][stitched_file] = {}
                             image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
+                            image_metadata[page_number]['processed'][stitched_file]['sha256'] = img_hash
 
             except TypeError:
                 # TODO: fix this. It is likely an error in pdfminer
