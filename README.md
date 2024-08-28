@@ -66,7 +66,7 @@ repository:
 {WIKI_TYPE}/original/
 ```
 
-where `WIKI_TYPE` is currently either `TechnInfoDepot` or `WikiDevi`. For each
+where `WIKI_TYPE` is currently either `TechInfoDepot` or `WikiDevi`. For each
 device that was processed a single JSON file will be written to the
 subdirectory `devices` with (cleaned up) data extracted from the Wiki. The
 original XML data will be written to the directory `original`.
