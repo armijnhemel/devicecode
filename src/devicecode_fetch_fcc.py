@@ -59,7 +59,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
             print(f"Invalid FCC id '{fccid}', skipping.", file=sys.stderr)
             continue
 
-        if fcc_grantees != set():
+        if fcc_grantees:
             if fccid.startswith('2'):
                 grantee = fccid[:5].upper()
             else:
