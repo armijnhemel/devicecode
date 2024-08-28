@@ -5,7 +5,7 @@ before they are allowed to be sold. The FCC test reports are available online
 and often include pictures of the device (including internal pictures of the
 board), as well as manuals of the devices, and so on.
 
-## Processing FCC data
+## Why process FCC data?
 
 The FCC website (and its clones) make the relevant documents available in
 PDF format. The most interesting documents are probably the external/internal
@@ -22,13 +22,28 @@ are stored in the document as multiple images. When extracted individually
 these images are quite useless, so they first need to be recombined into a
 single image. Extracted images are stored per page.
 
+Many images are duplicated: quite a few PDFs store the same image multiple
+times (sometimes thousands of times) and test companies tend to use the same
+templates for their reports. This is why each unique image is stored in a
+separate directory with the SHA256 hexdigest value as the name of the file and
+the individual files with the same SHA256 value are hardlinks to this file.
+Because hardlinks come with restrictions it is mandatory to keep all the FCC
+data output on the same disk partition.
+
+Deduplication can easily shave off 1/3 of required disk space.
+
+### Text
+
+Text is extracted and stored per page.
+
 Sometimes text on a picture is actually a text overlay in the PDF and it is not
 part of the picture (this has mostly been observed in user manuals). These
 elements are extracted separately and not recombined. In case of doubt you
 should always look at the original PDF file.
 
-### Text
 
-Text is extracted and stored per page.
+## Devices used as modules
+
+There are several devices that are used as modules. This is
 
 [fcc]:https://en.wikipedia.org/wiki/Federal_Communications_Commission

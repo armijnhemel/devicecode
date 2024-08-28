@@ -4,10 +4,12 @@
 # Licensed under Apache 2.0, see LICENSE file for details
 # SPDX-License-Identifier: Apache-2.0
 
+import hashlib
 import json
 import multiprocessing
 import pathlib
 import re
+import shutil
 import struct
 import sys
 
@@ -91,13 +93,13 @@ def search_text(texts):
 # match the dimensons of the images, so rely on the actual image data
 # that was extracted in an earlier step in the process and use that
 # instead.
-def stitch(images, orientation, image_directory, stitch_directory):
+def stitch(images, orientation, image_page_directory, img_directory, stitch_directory):
     '''Stitch a collection of images extracted from a PDF'''
     # first determine the width and height of the new image
     height = 0
     width = 0
     for img_name in images:
-        orig_image = PIL.Image.open(image_directory / img_name)
+        orig_image = PIL.Image.open(image_page_directory / img_name)
         if orientation == 'horizontal':
             width += orig_image.size[0]
             height = orig_image.size[1]
@@ -112,7 +114,7 @@ def stitch(images, orientation, image_directory, stitch_directory):
     x = 0
     y = 0
     for img_name in images:
-        orig_image = PIL.Image.open(image_directory / img_name)
+        orig_image = PIL.Image.open(image_page_directory / img_name)
         if orientation == 'horizontal':
             new_image.paste(orig_image, (x,y))
             x += orig_image.size[0]
@@ -121,6 +123,13 @@ def stitch(images, orientation, image_directory, stitch_directory):
             y += orig_image.size[1]
     image_name = stitch_directory / images[0]
     new_image.save(image_name)
+    with open(image_name, 'rb') as new_img:
+        img_hash = hashlib.sha256(new_img.read()).hexdigest()
+        img_hash_file = img_directory / img_hash[0] / img_hash
+        if not img_hash_file.exists():
+            shutil.copy(image_name, img_hash_file)
+        image_name.unlink()
+        image_name.hardlink_to(img_hash_file)
     return image_name.name
 
 def process_fcc(task):
@@ -145,6 +154,15 @@ def process_fcc(task):
         except:
             print(f"descriptions.json is not valid JSON, skipping {fccid}.", file=sys.stderr)
             return
+
+        # create a directory for images per FCC id. This is where
+        # all images will be stored. The rest will be hardlinked. This is
+        # done because there is a lot of duplication in some PDFs (80-90%)
+        img_directory = output_directory / 'images'
+        img_directory.mkdir(exist_ok=True, parents=True)
+        for i in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']:
+            subdir = img_directory / i
+            subdir.mkdir(exist_ok=True)
 
         # Then process each individual PDF file.
         # * compute SHA256 hash
@@ -203,14 +221,30 @@ def process_fcc(task):
                     images = []
                     image_names = []
                     image_metadata[page_number] = {'original': [], 'processed': {}}
-                    img_directory = pdf_orig_output_directory / str(page_number) / 'images'
-                    image_writer = pdfminer.image.ImageWriter(img_directory)
+                    img_page_directory = pdf_orig_output_directory / str(page_number) / 'images'
+                    image_writer = pdfminer.image.ImageWriter(img_page_directory)
 
                     extracted_texts = []
                     for element in page_layout:
                         if isinstance(element, pdfminer.layout.LTFigure):
                             try:
                                 img_name = image_writer.export_image(element._objs[0])
+                                full_img_name = img_page_directory / img_name
+
+                                # compute the SHA256 of the image file to see if it already
+                                # exists. There is a lot of duplication, taking up unnecessary
+                                # disk space.
+                                # Because pdfminer doesn't allow writing to a user specified
+                                # file or a buffer first write to a file, compute the SHA256,
+                                # copy the file (if necessary) and then hardlinking the original
+                                # file name.
+                                with open(full_img_name, 'rb') as new_img:
+                                    img_hash = hashlib.sha256(new_img.read()).hexdigest()
+                                    img_hash_file = img_directory / img_hash[0] / img_hash
+                                    if not img_hash_file.exists():
+                                        shutil.copy(full_img_name, img_hash_file)
+                                    full_img_name.unlink()
+                                    full_img_name.hardlink_to(img_hash_file)
                                 images.append((element, img_name))
                                 image_names.append(img_name)
                             except AttributeError:
@@ -313,7 +347,7 @@ def process_fcc(task):
                                 else:
                                     stitch_names = list(map(lambda x: x[1], to_stitch))
                                     stitch_directory.mkdir(exist_ok=True, parents=True)
-                                    stitched_file = stitch(stitch_names, orientation, img_directory, stitch_directory)
+                                    stitched_file = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory)
                                     image_metadata[page_number]['processed'][stitched_file] = {}
                                     image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
 
@@ -326,7 +360,7 @@ def process_fcc(task):
                                 else:
                                     stitch_names = list(map(lambda x: x[1], to_stitch))
                                     stitch_directory.mkdir(exist_ok=True, parents=True)
-                                    stitched_file = stitch(stitch_names, orientation, img_directory, stitch_directory)
+                                    stitched_file = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory)
                                     image_metadata[page_number]['processed'][stitched_file] = {}
                                     image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
 
@@ -336,7 +370,7 @@ def process_fcc(task):
                         if len(to_stitch) > 1:
                             stitch_names = list(map(lambda x: x[1], to_stitch))
                             stitch_directory.mkdir(exist_ok=True, parents=True)
-                            stitched_file = stitch(stitch_names, orientation, img_directory, stitch_directory)
+                            stitched_file = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory)
                             image_metadata[page_number]['processed'][stitched_file] = {}
                             image_metadata[page_number]['processed'][stitched_file]['inputs'] = stitch_names
 
