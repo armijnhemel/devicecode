@@ -410,13 +410,16 @@ def process_fcc(task):
               help='top level input directory with one directory per FCC id',
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--output', '-o', 'output_directory', required=True,
-              help='top level output directory, data will be stored in a subdirectory',
+              help='top level output directory for extracted data, \
+                    data will be stored in a subdirectory',
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.argument('fccids', required=True, nargs=-1)
-@click.option('-j', '--jobs', default=1, type=click.IntRange(min=1), help='Number of jobs running simultaneously')
+@click.option('-j', '--jobs', default=1, type=click.IntRange(min=1),
+              help='Number of jobs running simultaneously')
 @click.option('--verbose', is_flag=True, help='be verbose')
 @click.option('--force', is_flag=True, help='always force processing')
-@click.option('--process-uninteresting', is_flag=True, default=False, help='process uninteresting files')
+@click.option('--process-uninteresting', is_flag=True, default=False,
+              help='process uninteresting files')
 def main(fccids, fcc_input_directory, output_directory, jobs, verbose, force, process_uninteresting):
     if not fcc_input_directory.is_dir():
         print(f"{fcc_input_directory} is not a directory, exiting.", file=sys.stderr)
