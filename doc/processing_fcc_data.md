@@ -5,6 +5,12 @@ before they are allowed to be sold. The FCC test reports are available online
 and often include pictures of the device (including internal pictures of the
 board), as well as manuals of the devices, and so on.
 
+Many of the documents are probably not redistributable as they are covered by
+copyright (example: user manuals provided by companies), but it should be
+possible to publish metadata about the documents, such as SHA256 checksums of
+PDFs and SHA256 checksums of extracted images or an indication that a certain
+phrase or keyword is present on some page of the document.
+
 ## Why process FCC data?
 
 The FCC website (and its clones) make the relevant documents available in
@@ -45,6 +51,8 @@ should always look at the original PDF file.
 
 There are several devices that are used as modules. A good example would be a
 wireless networking card in mini-PCI form factor, that is used as a module in
-other devices.
+other devices. The FCC pages of these devices often contain multiple documents
+but some of them are documents relating to devices in which the module is
+integrated, not the module itself.
 
 [fcc]:https://en.wikipedia.org/wiki/Federal_Communications_Commission
