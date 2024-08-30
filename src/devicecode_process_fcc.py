@@ -62,7 +62,7 @@ def search_text(texts):
     text =  "\n".join(texts).lower()
     results = {'functionality': [], 'user_password': [],
                'programs': [], 'license': [], 'copyrights': [],
-               'ip_address': []}
+               'ip_address': [], 'hints': []}
 
     results_found = False
 
@@ -80,6 +80,20 @@ def search_text(texts):
     if 'gnu general public license' in text:
         results['license'].append("GNU GPL")
         results_found = True
+
+    for i in ['default password', 'default user password', 'default admin password',
+              'default username and password', 'by default, the password is',
+              'the password is', 'by default, the username and password']:
+        if i in text:
+            results['hints'].append("default password")
+            results_found = True
+
+    for i in ['default username', 'default user name', 'default user\'s name',
+              'default user id', 'default users', 'default username and password',
+              'by default the user name is', 'by default, the username and password']:
+        if i in text:
+            results['hints'].append("default user")
+            results_found = True
 
     for t in PROGRAMS:
         if t in text:
