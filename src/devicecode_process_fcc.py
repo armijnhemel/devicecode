@@ -125,7 +125,7 @@ def search_text(texts):
 # match the dimensons of the images, so rely on the actual image data
 # that was extracted in an earlier step in the process and use that
 # instead.
-def stitch(images, orientation, image_page_directory, img_directory, stitch_directory):
+def stitch(images, orientation, image_page_directory, img_directory, stitch_directory, clean_output):
     '''Stitch a collection of images extracted from a PDF'''
     # first determine the width and height of the new image
     height = 0
@@ -158,10 +158,15 @@ def stitch(images, orientation, image_page_directory, img_directory, stitch_dire
     with open(image_name, 'rb') as new_img:
         img_hash = hashlib.sha256(new_img.read()).hexdigest()
         img_hash_file = img_directory / img_hash[0] / img_hash
-        if not img_hash_file.exists():
-            shutil.copy(image_name, img_hash_file)
+
+        if not clean_output:
+            if not img_hash_file.exists():
+                shutil.copy(image_name, img_hash_file)
+
         image_name.unlink()
-        image_name.hardlink_to(img_hash_file)
+
+        if not clean_output:
+            image_name.hardlink_to(img_hash_file)
     return (image_name.name, img_hash)
 
 def process_fcc(task):
@@ -172,6 +177,7 @@ def process_fcc(task):
     process_uninteresting = meta['process_uninteresting']
     force = meta['force']
     no_images = meta['no_images']
+    clean_output = meta['clean_output']
 
     if not fcc_directory.is_dir():
         print(f"{fcc_directory} is not a directory, skipping.", file=sys.stderr)
@@ -192,10 +198,6 @@ def process_fcc(task):
         # all images will be stored. The rest will be hardlinked. This is
         # done because there is a lot of duplication in some PDFs (80-90%)
         img_directory = output_directory / 'images'
-        img_directory.mkdir(exist_ok=True, parents=True)
-        for i in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']:
-            subdir = img_directory / i
-            subdir.mkdir(exist_ok=True)
 
         # Then process each individual PDF file.
         # * compute SHA256 hash
@@ -251,10 +253,10 @@ def process_fcc(task):
                     page_number += 1
                     images = []
                     image_metadata = {}
+                    img_page_directory = pdf_orig_output_directory / str(page_number) / 'images'
 
                     if not no_images:
                         # keep track of images
-                        img_page_directory = pdf_orig_output_directory / str(page_number) / 'images'
                         image_writer = pdfminer.image.ImageWriter(img_page_directory)
 
                     extracted_texts = []
@@ -289,10 +291,16 @@ def process_fcc(task):
                                 # AttributeError: 'LTFigure' object has no attribute 'srcsize'
                                 # Is this an error in pdfminer?
                                 # example: FCC ID: 2AD4X-WP25M1200, file: 3788894.pdf
-                                pass
+                                try:
+                                    full_img_name.unlink()
+                                except:
+                                    pass
                             except pdfminer.pdfexceptions.PDFValueError:
                                 # TODO: fix this
-                                pass
+                                try:
+                                    full_img_name.unlink()
+                                except Exception:
+                                    pass
                             except KeyError:
                                 # TODO: fix this. sometimes images aren't
                                 # correctly exported and a KeyError exception
@@ -300,7 +308,10 @@ def process_fcc(task):
                                 # KeyError: 'JBIG2Globals'
                                 # example: FCC ID: HDCWLAN192XF1, file: 2967552.pdf
                                 # https://github.com/pdfminer/pdfminer.six/issues/743
-                                pass
+                                try:
+                                    full_img_name.unlink()
+                                except Exception:
+                                    pass
                             except IndexError:
                                 # TODO: fix this. sometimes images aren't
                                 # correctly exported and an IndexError exception
@@ -308,7 +319,10 @@ def process_fcc(task):
                                 # "IndexError: list index out of range"
                                 # Is this an error in pdfminer?
                                 # example: FCC ID: RAFXWL-11GRAR, file: 769930.pdf
-                                pass
+                                try:
+                                    full_img_name.unlink()
+                                except Exception:
+                                    pass
                             except UnboundLocalError:
                                 # TODO: fix this. sometimes images aren't
                                 # correctly exported and an UnboundLocalError exception
@@ -316,17 +330,26 @@ def process_fcc(task):
                                 # "cannot access local variable 'mode' where it is not associated with a value"
                                 # Is this an error in pdfminer?
                                 # example: FCC ID: ODMAM5N, file: 1876480.pdf
-                                pass
+                                try:
+                                    full_img_name.unlink()
+                                except Exception:
+                                    pass
                             except PIL.UnidentifiedImageError:
                                 # TODO: fix this.
                                 # example: FCC ID: HDCWLAN192XF1, file 1930164.pdf
                                 # could be related to missing JPEG2000 support.
-                                pass
+                                try:
+                                    full_img_name.unlink()
+                                except Exception:
+                                    pass
                             except OSError:
                                 # TODO: fix this.
                                 # example: FCC ID: TE7M4R, file 4041072.pdf
                                 # could be related to missing JPEG2000 support.
-                                pass
+                                try:
+                                    full_img_name.unlink()
+                                except Exception:
+                                    pass
                         else:
                             try:
                                 if element.get_text().strip() != '':
@@ -338,9 +361,10 @@ def process_fcc(task):
 
                     # write the extracted text per page
                     if extracted_texts:
-                        with open(text_directory / 'extracted.txt', 'w') as output_file:
-                            for line in extracted_texts:
-                                output_file.write(line)
+                        if not clean_output:
+                            with open(text_directory / 'extracted.txt', 'w') as output_file:
+                                for line in extracted_texts:
+                                    output_file.write(line)
                         results_found, search_results = search_text(extracted_texts)
                         if results_found:
                             page_results.append({'page': page_number, 'results': search_results})
@@ -376,7 +400,7 @@ def process_fcc(task):
                                 else:
                                     stitch_names = list(map(lambda x: x[1], to_stitch))
                                     stitch_directory.mkdir(exist_ok=True, parents=True)
-                                    stitched_file, img_hash = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory)
+                                    stitched_file, img_hash = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory, clean_output)
                                     image_metadata['processed'].append({'name': stitched_file, 'sha256': img_hash, 'inputs': stitch_names})
 
                                     # reset
@@ -388,7 +412,7 @@ def process_fcc(task):
                                 else:
                                     stitch_names = list(map(lambda x: x[1], to_stitch))
                                     stitch_directory.mkdir(exist_ok=True, parents=True)
-                                    stitched_file, img_hash = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory)
+                                    stitched_file, img_hash = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory, clean_output)
                                     image_metadata['processed'].append({'name': stitched_file, 'sha256': img_hash, 'inputs': stitch_names})
 
                                     # reset
@@ -397,11 +421,15 @@ def process_fcc(task):
                         if len(to_stitch) > 1:
                             stitch_names = list(map(lambda x: x[1], to_stitch))
                             stitch_directory.mkdir(exist_ok=True, parents=True)
-                            stitched_file, img_hash = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory)
+                            stitched_file, img_hash = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory, clean_output)
                             image_metadata['processed'].append({'name': stitched_file, 'sha256': img_hash, 'inputs': stitch_names})
 
                     if image_metadata:
                         image_results.append({'page': page_number, 'results': image_metadata})
+
+                    if clean_output:
+                        for img_name in images:
+                            (img_page_directory / img_name[1]).unlink()
 
             except TypeError:
                 # TODO: fix this. It is likely an error in pdfminer
@@ -429,6 +457,14 @@ def process_fcc(task):
             except pdfminer.pdfexceptions.PDFNotImplementedError:
                 # example: 992035.pdf in FCC id PH7MV430A
                 pass
+            finally:
+                if clean_output:
+                    #print(page_number, img_page_directory, images)
+                    for img_name in images:
+                        try:
+                            (img_page_directory / img_name[1]).unlink()
+                        except FileNotFoundError:
+                            pass
 
             # write various metadata to files for further processing
             if image_results:
@@ -437,6 +473,7 @@ def process_fcc(task):
             if page_results:
                 with open(output_directory / fccid / pdf['name'] / 'text.json', 'w') as output_file:
                     output_file.write(json.dumps(page_results, indent=4))
+        #if clean_output:
 
 @click.command(short_help='Process downloaded FCC documents')
 @click.option('--fcc-directory', '-d', 'fcc_input_directory', required=True,
@@ -454,7 +491,8 @@ def process_fcc(task):
 @click.option('--process-uninteresting', is_flag=True, default=False,
               help='process uninteresting files')
 @click.option('--no-images', is_flag=True, help='do not extract or process images')
-def main(fccids, fcc_input_directory, output_directory, jobs, verbose, force, process_uninteresting, no_images):
+@click.option('--clean-output', is_flag=True, help='only write clean results (no raw results)')
+def main(fccids, fcc_input_directory, output_directory, jobs, verbose, force, process_uninteresting, no_images, clean_output):
     if not fcc_input_directory.is_dir():
         print(f"{fcc_input_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -463,13 +501,26 @@ def main(fccids, fcc_input_directory, output_directory, jobs, verbose, force, pr
         print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
 
+    # create a directory for images per FCC id. This is where
+    # all images will be stored. The rest will be hardlinked. This is
+    # done because there is a lot of duplication in some PDFs (80-90%)
+    img_directory = output_directory / 'images'
+    img_directory.mkdir(exist_ok=True, parents=True)
+    for i in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']:
+        subdir = img_directory / i
+        subdir.mkdir(exist_ok=True)
+
     meta_information = {'fcc_input_directory': fcc_input_directory, 'verbose': verbose,
                         'output_directory': output_directory, 'force': force,
-                        'process_uninteresting': process_uninteresting, 'no_images': no_images}
+                        'process_uninteresting': process_uninteresting, 'no_images': no_images,
+                        'clean_output': clean_output}
 
     tasks = map(lambda x: (x, meta_information), fccids)
     pool = multiprocessing.Pool(jobs)
     pool.map(process_fcc, tasks, chunksize=1)
+
+    if clean_output:
+        shutil.rmtree(img_directory)
 
 
 if __name__ == "__main__":
