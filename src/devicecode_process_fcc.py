@@ -74,21 +74,21 @@ def search_text(texts):
 
     result_ip = defaults.REGEX_IP.search(text)
     if result_ip is not None:
-        possible_ip_address = results_ip.groups()[0]
+        possible_ip_address = result_ip.groups()[0]
         ip_components = [int(x) <= 255 for x in possible_ip_address.split('.')]
         if ip_components == [True, True, True, True]:
             if possible_ip_address.startswith('192.168'):
-                results['ip_address'].append(possible_ip_address)
+                results['ip_address'].append({'address': possible_ip_address, 'type': 'private'})
             elif possible_ip_address.startswith('172.'):
-                results['ip_address'].append(possible_ip_address)
+                results['ip_address'].append({'address': possible_ip_address, 'type': 'private'})
             elif possible_ip_address.startswith('10.'):
-                results['ip_address'].append(possible_ip_address)
+                results['ip_address'].append({'address': possible_ip_address, 'type': 'private'})
             elif possible_ip_address.startswith('224.'):
-                results['multicast'].append(possible_ip_address)
+                results['ip_address'].append({'address': possible_ip_address, 'type': 'multicast'})
             elif possible_ip_address.startswith('255.'):
-                results['netmask'].append(possible_ip_address)
+                results['ip_address'].append({'address': possible_ip_address, 'type': 'netmask'})
             else:
-                results['possible ip_address'].append(possible_ip_address)
+                results['ip_address'].append({'address': possible_ip_address, 'type': 'possible'})
             results_found = True
 
     if 'gnu general public license' in text:
