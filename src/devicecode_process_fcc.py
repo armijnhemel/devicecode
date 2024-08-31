@@ -455,6 +455,9 @@ def process_fcc(task):
                 with open(output_directory / fccid / pdf['name'] / 'text.json', 'w') as output_file:
                     output_file.write(json.dumps(page_results, indent=4))
 
+    shutil.copy(fcc_directory / 'approved_dates.json', output_directory / fccid)
+    shutil.copy(fcc_directory / 'descriptions.json', output_directory / fccid)
+
 @click.command(short_help='Process downloaded FCC documents')
 @click.option('--fcc-directory', '-d', 'fcc_input_directory', required=True,
               help='top level input directory with one directory per FCC id',
