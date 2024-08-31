@@ -186,6 +186,10 @@ def process_fcc(task):
         print("'descriptions.json' does not exist, skipping.", file=sys.stderr)
         return
 
+    (output_directory / fccid).mkdir(exist_ok=True, parents=True)
+    shutil.copy(fcc_directory / 'approved_dates.json', output_directory / fccid)
+    shutil.copy(fcc_directory / 'descriptions.json', output_directory / fccid)
+
     # check if the descriptions.json file can be read and is valid JSON
     with open(fcc_directory / 'descriptions.json', 'r') as input_file:
         try:
@@ -454,9 +458,6 @@ def process_fcc(task):
             if page_results:
                 with open(output_directory / fccid / pdf['name'] / 'text.json', 'w') as output_file:
                     output_file.write(json.dumps(page_results, indent=4))
-
-    shutil.copy(fcc_directory / 'approved_dates.json', output_directory / fccid)
-    shutil.copy(fcc_directory / 'descriptions.json', output_directory / fccid)
 
 @click.command(short_help='Process downloaded FCC documents')
 @click.option('--fcc-directory', '-d', 'fcc_input_directory', required=True,
