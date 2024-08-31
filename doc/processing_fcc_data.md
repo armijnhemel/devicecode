@@ -28,24 +28,30 @@ are stored in the document as multiple images. When extracted individually
 these images are quite useless, so they first need to be recombined into a
 single image. Extracted images are stored per page.
 
+Sometimes text on a picture is actually a text overlay in the PDF and it is not
+part of the picture (this has mostly been observed in user manuals). These
+elements are extracted separately and not recombined. In case of doubt you
+should always look at the original PDF file.
+
 Many images are duplicated: quite a few PDFs store the same image multiple
 times (sometimes thousands of times) and test companies tend to use the same
 templates for their reports. This is why each unique image is stored in a
 separate directory with the SHA256 hexdigest value as the name of the file and
 the individual files with the same SHA256 value are hardlinks to this file.
 Because hardlinks come with restrictions it is mandatory to keep all the FCC
-data output on the same disk partition.
+data output on the same disk partition. Deduplication can easily shave off 1/3
+of required disk space.
 
-Deduplication can easily shave off 1/3 of required disk space.
+Processing images takes the vast majority of time when processing PDF files.
+
+Metadata of images (page number, SHA256, as well as inputs for reconstructed
+images) are stored in a top level file for the entire PDF.
 
 ### Text
 
-Text is extracted and stored per page.
-
-Sometimes text on a picture is actually a text overlay in the PDF and it is not
-part of the picture (this has mostly been observed in user manuals). These
-elements are extracted separately and not recombined. In case of doubt you
-should always look at the original PDF file.
+Text is extracted and stored per page. Results of analysis of text are stored
+in a top level file for the entire PDF and contains data like page number, plus
+what kind of data was (possibly) found.
 
 ## Devices used as modules
 
