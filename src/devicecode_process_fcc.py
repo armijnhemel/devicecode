@@ -8,7 +8,6 @@ import hashlib
 import json
 import multiprocessing
 import pathlib
-import re
 import shutil
 import struct
 import sys
@@ -23,6 +22,7 @@ import devicecode_defaults as defaults
 # mapping of texts to functionality
 TEXT_TO_FUNCTIONALITY = {
     'upnp': 'UPnP',
+    'universal plug and play': 'UPnP',
     'telnet': 'telnet',
     'syslog': 'syslog',
 }
@@ -74,11 +74,29 @@ def search_text(texts):
 
     result_ip = defaults.REGEX_IP.search(text)
     if result_ip is not None:
-        results['ip_address'].append(result_ip.groups()[0])
-        results_found = True
+        possible_ip_address = results_ip.groups()[0]
+        ip_components = [int(x) <= 255 for x in possible_ip_address.split('.')]
+        if ip_components == [True, True, True, True]:
+            if possible_ip_address.startswith('192.168'):
+                results['ip_address'].append(possible_ip_address)
+            elif possible_ip_address.startswith('172.'):
+                results['ip_address'].append(possible_ip_address)
+            elif possible_ip_address.startswith('10.'):
+                results['ip_address'].append(possible_ip_address)
+            elif possible_ip_address.startswith('224.'):
+                results['multicast'].append(possible_ip_address)
+            elif possible_ip_address.startswith('255.'):
+                results['netmask'].append(possible_ip_address)
+            else:
+                results['possible ip_address'].append(possible_ip_address)
+            results_found = True
 
     if 'gnu general public license' in text:
         results['license'].append("GNU GPL")
+        results_found = True
+
+    if 'open source' in text:
+        results['license'].append("open source")
         results_found = True
 
     for i in ['default password', 'default user password', 'default admin password',
@@ -153,6 +171,7 @@ def process_fcc(task):
     verbose = meta['verbose']
     process_uninteresting = meta['process_uninteresting']
     force = meta['force']
+    no_images = meta['no_images']
 
     if not fcc_directory.is_dir():
         print(f"{fcc_directory} is not a directory, skipping.", file=sys.stderr)
@@ -217,6 +236,8 @@ def process_fcc(task):
                     continue
             pdf_output_directory.mkdir(exist_ok=True, parents=True)
 
+            page_results = []
+
             # process the individual items per page. This is done for
             # a few reasons: first, keeping a mapping between elements
             # and page numbers is useful, especially if there are many
@@ -230,16 +251,17 @@ def process_fcc(task):
             try:
                 for page_layout in extract_pages(fcc_directory / pdf['name']):
                     page_number += 1
-
-                    # keep track of images
                     images = []
-                    image_metadata[page_number] = {'original': [], 'processed': {}}
-                    img_page_directory = pdf_orig_output_directory / str(page_number) / 'images'
-                    image_writer = pdfminer.image.ImageWriter(img_page_directory)
+
+                    if not no_images:
+                        # keep track of images
+                        image_metadata[page_number] = {'original': [], 'processed': {}}
+                        img_page_directory = pdf_orig_output_directory / str(page_number) / 'images'
+                        image_writer = pdfminer.image.ImageWriter(img_page_directory)
 
                     extracted_texts = []
                     for element in page_layout:
-                        if isinstance(element, pdfminer.layout.LTFigure):
+                        if not no_images and isinstance(element, pdfminer.layout.LTFigure):
                             try:
                                 img_name = image_writer.export_image(element._objs[0])
                                 full_img_name = img_page_directory / img_name
@@ -295,12 +317,12 @@ def process_fcc(task):
                                 # Is this an error in pdfminer?
                                 # example: FCC ID: ODMAM5N, file: 1876480.pdf
                                 pass
-                            except PIL.UnidentifiedImageError as e:
+                            except PIL.UnidentifiedImageError:
                                 # TODO: fix this.
                                 # example: FCC ID: HDCWLAN192XF1, file 1930164.pdf
                                 # could be related to missing JPEG2000 support.
                                 pass
-                            except OSError as e:
+                            except OSError:
                                 # TODO: fix this.
                                 # example: FCC ID: TE7M4R, file 4041072.pdf
                                 # could be related to missing JPEG2000 support.
@@ -321,11 +343,7 @@ def process_fcc(task):
                                 output_file.write(line)
                         results_found, search_results = search_text(extracted_texts)
                         if results_found:
-                            text_result_directory = pdf_output_directory / str(page_number) / 'text'
-                            text_result_directory.mkdir(exist_ok=True, parents=True)
-
-                            with open(text_result_directory / 'extracted.json', 'w') as output_file:
-                                output_file.write(json.dumps(search_results, indent=4))
+                            page_results.append({'page': page_number, 'results': search_results})
 
                     if len(images) > 1:
                         to_stitch = []
@@ -416,8 +434,12 @@ def process_fcc(task):
                 pass
 
             # write various metadata to files for further processing
-            with open(output_directory / fccid / pdf['name'] / 'images.json', 'w') as output_file:
-                output_file.write(json.dumps(image_metadata, indent=4))
+            if image_metadata:
+                with open(output_directory / fccid / pdf['name'] / 'images.json', 'w') as output_file:
+                    output_file.write(json.dumps(image_metadata, indent=4))
+            if page_results:
+                with open(output_directory / fccid / pdf['name'] / 'text.json', 'w') as output_file:
+                    output_file.write(json.dumps(page_results, indent=4))
 
 @click.command(short_help='Process downloaded FCC documents')
 @click.option('--fcc-directory', '-d', 'fcc_input_directory', required=True,
@@ -434,7 +456,8 @@ def process_fcc(task):
 @click.option('--force', is_flag=True, help='always force processing')
 @click.option('--process-uninteresting', is_flag=True, default=False,
               help='process uninteresting files')
-def main(fccids, fcc_input_directory, output_directory, jobs, verbose, force, process_uninteresting):
+@click.option('--no-images', is_flag=True, help='do not extract or process images')
+def main(fccids, fcc_input_directory, output_directory, jobs, verbose, force, process_uninteresting, no_images):
     if not fcc_input_directory.is_dir():
         print(f"{fcc_input_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -445,7 +468,7 @@ def main(fccids, fcc_input_directory, output_directory, jobs, verbose, force, pr
 
     meta_information = {'fcc_input_directory': fcc_input_directory, 'verbose': verbose,
                         'output_directory': output_directory, 'force': force,
-                        'process_uninteresting': process_uninteresting}
+                        'process_uninteresting': process_uninteresting, 'no_images': no_images}
 
     tasks = map(lambda x: (x, meta_information), fccids)
     pool = multiprocessing.Pool(jobs)
