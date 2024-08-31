@@ -429,7 +429,10 @@ def process_fcc(task):
 
                     if clean_output:
                         for img_name in images:
-                            (img_page_directory / img_name[1]).unlink()
+                            try:
+                                (img_page_directory / img_name[1]).unlink()
+                            except:
+                                pass
 
             except TypeError:
                 # TODO: fix this. It is likely an error in pdfminer
@@ -459,7 +462,6 @@ def process_fcc(task):
                 pass
             finally:
                 if clean_output:
-                    #print(page_number, img_page_directory, images)
                     for img_name in images:
                         try:
                             (img_page_directory / img_name[1]).unlink()
@@ -473,7 +475,6 @@ def process_fcc(task):
             if page_results:
                 with open(output_directory / fccid / pdf['name'] / 'text.json', 'w') as output_file:
                     output_file.write(json.dumps(page_results, indent=4))
-        #if clean_output:
 
 @click.command(short_help='Process downloaded FCC documents')
 @click.option('--fcc-directory', '-d', 'fcc_input_directory', required=True,
