@@ -291,16 +291,10 @@ def process_fcc(task):
                                 # AttributeError: 'LTFigure' object has no attribute 'srcsize'
                                 # Is this an error in pdfminer?
                                 # example: FCC ID: 2AD4X-WP25M1200, file: 3788894.pdf
-                                try:
-                                    full_img_name.unlink()
-                                except:
-                                    pass
+                                pass
                             except pdfminer.pdfexceptions.PDFValueError:
                                 # TODO: fix this
-                                try:
-                                    full_img_name.unlink()
-                                except Exception:
-                                    pass
+                                pass
                             except KeyError:
                                 # TODO: fix this. sometimes images aren't
                                 # correctly exported and a KeyError exception
@@ -308,10 +302,7 @@ def process_fcc(task):
                                 # KeyError: 'JBIG2Globals'
                                 # example: FCC ID: HDCWLAN192XF1, file: 2967552.pdf
                                 # https://github.com/pdfminer/pdfminer.six/issues/743
-                                try:
-                                    full_img_name.unlink()
-                                except Exception:
-                                    pass
+                                pass
                             except IndexError:
                                 # TODO: fix this. sometimes images aren't
                                 # correctly exported and an IndexError exception
@@ -319,10 +310,7 @@ def process_fcc(task):
                                 # "IndexError: list index out of range"
                                 # Is this an error in pdfminer?
                                 # example: FCC ID: RAFXWL-11GRAR, file: 769930.pdf
-                                try:
-                                    full_img_name.unlink()
-                                except Exception:
-                                    pass
+                                pass
                             except UnboundLocalError:
                                 # TODO: fix this. sometimes images aren't
                                 # correctly exported and an UnboundLocalError exception
@@ -330,26 +318,17 @@ def process_fcc(task):
                                 # "cannot access local variable 'mode' where it is not associated with a value"
                                 # Is this an error in pdfminer?
                                 # example: FCC ID: ODMAM5N, file: 1876480.pdf
-                                try:
-                                    full_img_name.unlink()
-                                except Exception:
-                                    pass
+                                pass
                             except PIL.UnidentifiedImageError:
                                 # TODO: fix this.
                                 # example: FCC ID: HDCWLAN192XF1, file 1930164.pdf
                                 # could be related to missing JPEG2000 support.
-                                try:
-                                    full_img_name.unlink()
-                                except Exception:
-                                    pass
+                                pass
                             except OSError:
                                 # TODO: fix this.
                                 # example: FCC ID: TE7M4R, file 4041072.pdf
                                 # could be related to missing JPEG2000 support.
-                                try:
-                                    full_img_name.unlink()
-                                except Exception:
-                                    pass
+                                pass
                         else:
                             try:
                                 if element.get_text().strip() != '':
