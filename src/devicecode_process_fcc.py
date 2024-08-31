@@ -254,7 +254,6 @@ def process_fcc(task):
 
                     if not no_images:
                         # keep track of images
-                        image_metadata = {'original': [], 'processed': []}
                         img_page_directory = pdf_orig_output_directory / str(page_number) / 'images'
                         image_writer = pdfminer.image.ImageWriter(img_page_directory)
 
@@ -280,6 +279,8 @@ def process_fcc(task):
                                     full_img_name.unlink()
                                     full_img_name.hardlink_to(img_hash_file)
                                 images.append((element, img_name))
+                                if not image_metadata:
+                                    image_metadata = {'original': [], 'processed': []}
                                 image_metadata['original'].append({'name': img_name, 'sha256': img_hash})
                             except AttributeError:
                                 # TODO: fix this. sometimes images aren't
@@ -399,7 +400,8 @@ def process_fcc(task):
                             stitched_file, img_hash = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory)
                             image_metadata['processed'].append({'name': stitched_file, 'sha256': img_hash, 'inputs': stitch_names})
 
-                    image_results.append({'page': page_number, 'results': image_metadata})
+                    if image_metadata:
+                        image_results.append({'page': page_number, 'results': image_metadata})
 
             except TypeError:
                 # TODO: fix this. It is likely an error in pdfminer
