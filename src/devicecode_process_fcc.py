@@ -87,6 +87,7 @@ def search_text(texts):
             elif result_ip.startswith('255.'):
                 results['ip_address'].append({'address': result_ip, 'type': 'netmask'})
             else:
+                # TODO: filter paragraph numbers
                 results['ip_address'].append({'address': result_ip, 'type': 'possible'})
             results_found = True
 
