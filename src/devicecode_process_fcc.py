@@ -72,23 +72,22 @@ def search_text(texts):
             results['functionality'].append(TEXT_TO_FUNCTIONALITY[t])
             results_found = True
 
-    result_ip = defaults.REGEX_IP.search(text)
-    if result_ip is not None:
-        possible_ip_address = result_ip.groups()[0]
-        ip_components = [int(x) <= 255 for x in possible_ip_address.split('.')]
+    result_ips = defaults.REGEX_IP.findall(text)
+    for result_ip in result_ips:
+        ip_components = [int(x) <= 255 for x in result_ip.split('.')]
         if ip_components == [True, True, True, True]:
-            if possible_ip_address.startswith('192.168'):
-                results['ip_address'].append({'address': possible_ip_address, 'type': 'private'})
-            elif possible_ip_address.startswith('172.'):
-                results['ip_address'].append({'address': possible_ip_address, 'type': 'private'})
-            elif possible_ip_address.startswith('10.'):
-                results['ip_address'].append({'address': possible_ip_address, 'type': 'private'})
-            elif possible_ip_address.startswith('224.'):
-                results['ip_address'].append({'address': possible_ip_address, 'type': 'multicast'})
-            elif possible_ip_address.startswith('255.'):
-                results['ip_address'].append({'address': possible_ip_address, 'type': 'netmask'})
+            if result_ip.startswith('192.168'):
+                results['ip_address'].append({'address': result_ip, 'type': 'private'})
+            elif result_ip.startswith('172.'):
+                results['ip_address'].append({'address': result_ip, 'type': 'private'})
+            elif result_ip.startswith('10.'):
+                results['ip_address'].append({'address': result_ip, 'type': 'private'})
+            elif result_ip.startswith('224.'):
+                results['ip_address'].append({'address': result_ip, 'type': 'multicast'})
+            elif result_ip.startswith('255.'):
+                results['ip_address'].append({'address': result_ip, 'type': 'netmask'})
             else:
-                results['ip_address'].append({'address': possible_ip_address, 'type': 'possible'})
+                results['ip_address'].append({'address': result_ip, 'type': 'possible'})
             results_found = True
 
     if 'gnu general public license' in text:
