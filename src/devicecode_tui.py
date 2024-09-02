@@ -918,7 +918,10 @@ class DevicecodeUI(App):
                         jtags.append(value)
                     elif identifier == 'year':
                         input_years = sorted(value.split(':', maxsplit=1))
-                        years += list(range(int(input_years[0]), int(input_years[1]) + 1))
+                        if len(input_years) > 1:
+                            years += list(range(int(input_years[0]), int(input_years[1]) + 1))
+                        else:
+                            years += [int(x) for x in input_years]
 
         if refresh:
             filtered_data = self.compose_data_sets(bootloaders=bootloaders, brands=brands, odms=odms,
