@@ -379,6 +379,10 @@ class DevicecodeUI(App):
         # known device_types
         device_types = set()
 
+        # known years
+        years = set()
+        year_data = []
+
         # Extract useful data from each of the devices for quick
         # access when building the trees and the datatables.
         brand_odm = []
@@ -449,18 +453,19 @@ class DevicecodeUI(App):
                 if device['defaults']['ip'] not in filter_ips:
                     continue
 
+            # first collect all the years that have been declared
+            # in the data: FCC, wifi certified, release date
+            declared_years = []
+            if device['commercial']['release_date']:
+                declared_years.append(int(device['commercial']['release_date'][:4]))
+            for f in device['regulatory']['fcc_ids']:
+                if f['fcc_date']:
+                    if f['fcc_type'] in ['main', 'unknown']:
+                        declared_years.append(int(f['fcc_date'][:4]))
+            if device['regulatory']['wifi_certified_date']:
+                declared_years.append(int(device['regulatory']['wifi_certified_date'][:4]))
+
             if filter_years:
-                # first collect all the years that have been declared
-                # in the data: FCC, wifi certified, release date
-                declared_years = []
-                if device['commercial']['release_date']:
-                    declared_years.append(int(device['commercial']['release_date'][:4]))
-                for f in device['regulatory']['fcc_ids']:
-                    if f['fcc_date']:
-                        if f['fcc_type'] in ['main', 'unknown']:
-                            declared_years.append(int(f['fcc_date'][:4]))
-                if device['regulatory']['wifi_certified_date']:
-                    declared_years.append(int(device['regulatory']['wifi_certified_date'][:4]))
                 if not set(filter_years).intersection(declared_years):
                     continue
 
@@ -552,6 +557,9 @@ class DevicecodeUI(App):
             brands.add(brand_name.lower())
             brand_data.append(brand_name)
 
+            years.update(declared_years)
+            year_data += declared_years
+
             manufacturer_name = device['manufacturer']['name']
             if manufacturer_name == '':
                 manufacturer_name = '***UNKNOWN***'
@@ -626,7 +634,7 @@ class DevicecodeUI(App):
                 'ips': ips, 'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
                 'odm_connector': odm_connector, 'chip_vendor_connector': chip_vendor_connector,
                 'packages': packages, 'passwords': passwords, 'programs': programs,
-                'types': device_types}
+                'types': device_types, 'years': years, 'year_data': year_data}
 
 
     def compose(self) -> ComposeResult:
@@ -690,6 +698,8 @@ class DevicecodeUI(App):
         passwords = data['passwords']
         programs = data['programs']
         chip_vendor_connector = data['chip_vendor_connector']
+        years = data['years']
+        year_data = data['year_data']
 
         # build the various datatables.
         brand_datatable_data = collections.Counter(brand_data)
@@ -698,6 +708,7 @@ class DevicecodeUI(App):
         odm_cpu_datatable_data = collections.Counter(odm_cpu)
         odm_connector_data = collections.Counter(odm_connector)
         chip_vendor_connector_data = collections.Counter(chip_vendor_connector)
+        year_datatable_data = collections.Counter(year_data)
 
         self.brand_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.brand_data_table.add_columns("rank", "count", "brand")
@@ -740,6 +751,15 @@ class DevicecodeUI(App):
         for i in chip_vendor_connector_data.most_common():
             self.chip_vendor_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
             rank += 1
+
+        self.year_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
+        self.year_data_table.add_columns("rank", "count", "year")
+        rank = 1
+        for i in year_datatable_data.most_common():
+            self.year_data_table.add_row(rank, i[1], i[0])
+            rank += 1
+
+        #raise self.year_data_table
 
         # build the various trees.
         self.brand_tree: BrandTree[dict] = BrandTree("DeviceCode brand results")
@@ -792,6 +812,9 @@ class DevicecodeUI(App):
                         yield self.brand_tree
                     with TabPane('ODM view'):
                         yield self.odm_tree
+                    with TabPane('Year'):
+                        with VerticalScroll():
+                            yield self.year_data_table
                     with TabPane('Brand'):
                         with VerticalScroll():
                             yield self.brand_data_table
@@ -918,7 +941,10 @@ class DevicecodeUI(App):
                         jtags.append(value)
                     elif identifier == 'year':
                         input_years = sorted(value.split(':', maxsplit=1))
-                        years += list(range(int(input_years[0]), int(input_years[1]) + 1))
+                        if len(input_years) > 1:
+                            years += list(range(int(input_years[0]), int(input_years[1]) + 1))
+                        else:
+                            years += [int(x) for x in input_years]
 
         if refresh:
             filtered_data = self.compose_data_sets(bootloaders=bootloaders, brands=brands, odms=odms,
@@ -939,6 +965,7 @@ class DevicecodeUI(App):
             odm_cpu_datatable_data = collections.Counter(filtered_data['odm_cpu'])
             odm_connector_data = collections.Counter(filtered_data['odm_connector'])
             chip_vendor_connector_data = collections.Counter(filtered_data['chip_vendor_connector'])
+            year_datatable_data = collections.Counter(filtered_data['year_data'])
 
             # clear and rebuild the data tables
             self.brand_data_table.clear()
@@ -975,6 +1002,12 @@ class DevicecodeUI(App):
             rank = 1
             for i in chip_vendor_connector_data.most_common():
                 self.chip_vendor_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+                rank += 1
+
+            self.year_data_table.clear()
+            rank = 1
+            for i in year_datatable_data.most_common():
+                self.year_data_table.add_row(rank, i[1], i[0])
                 rank += 1
 
             # reset the data areas to prevent old data being displayed
