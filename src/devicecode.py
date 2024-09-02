@@ -186,6 +186,7 @@ class FCC:
 
     # main, auxiliary, unknown
     fcc_type: str = 'unknown'
+    grantee: str = ''
 
 @dataclass_json
 @dataclass
@@ -732,9 +733,12 @@ def parse_serial_jtag(serial_string):
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--wiki-type', required=True,
               type=click.Choice(['TechInfoDepot', 'WikiDevi'], case_sensitive=False))
+@click.option('--fcc-grantees', '-g', 'grantees',
+              help='file with known FCC grantee codes',
+              type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--debug', is_flag=True, help='enable debug logging')
 @click.option('--use-git', is_flag=True, help='use Git (not recommended, see documentation)')
-def main(input_file, output_directory, wiki_type, debug, use_git):
+def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
     # load XML
     with open(input_file) as wiki_dump:
         wiki_info = defusedxml.minidom.parse(wiki_dump)
@@ -762,6 +766,13 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
             print(f"{output_directory} is not a Git repository, exiting.", file=sys.stderr)
             sys.exit(1)
 
+    fcc_grantees = {}
+    if grantees:
+        with open(grantees, 'r') as grantee:
+            try:
+                fcc_grantees = json.load(grantee)
+            except json.decoder.JSONDecodeError:
+                pass
 
     wiki_directory = output_directory / wiki_type
     wiki_directory.mkdir(parents=True, exist_ok=True)
@@ -1384,6 +1395,12 @@ def main(input_file, output_directory, wiki_type, debug, use_git):
                                                             fcc_value = f
                                                         new_fcc = FCC()
                                                         new_fcc.fcc_id = fcc_value
+                                                        if fcc_value.startswith('2'):
+                                                            grantee_code = fcc_value[:5]
+                                                        else:
+                                                            grantee_code = fcc_value[:3]
+                                                        new_fcc.grantee = fcc_grantees.get(grantee_code, "")
+
                                                         device.regulatory.fcc_ids.append(new_fcc)
                                                 elif identifier == 'us_id':
                                                     usid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))

@@ -131,6 +131,8 @@ def main(fcc_input_directory, devicecode_directory, output_directory, grantees, 
                             if device['brand'].lower() in fcc_grantees[grantee_code].lower():
                                 is_main_fcc = True
 
+                        grantee_name = fcc_grantees.get(grantee_code, '')
+
                         if (fcc_input_directory / fcc_id).is_dir():
                             # load the file with approved dates, if it exists
                             approved_file = fcc_input_directory / fcc_id / 'approved_dates.json'
@@ -143,10 +145,13 @@ def main(fcc_input_directory, devicecode_directory, output_directory, grantees, 
                                 if fcc_date == '':
                                     if is_main_fcc:
                                         overlay = {'fcc_date': dates[0], 'fcc_id': fcc_id,
-                                                   'fcc_type': 'main', 'license': 'CC0-1.0'}
+                                                   'fcc_type': 'main', 'license': 'CC0-1.0',
+                                                   'grantee': grantee_name}
                                     else:
                                         overlay = {'fcc_date': dates[0], 'fcc_id': fcc_id,
-                                                   'fcc_type': 'unknown', 'license': 'CC0-1.0'}
+                                                   'fcc_type': 'unknown', 'license': 'CC0-1.0',
+                                                   'grantee': grantee_name}
+
                                     overlay_fcc_ids.append(overlay)
                                     write_overlay=True
                                 elif fcc_date not in dates:
@@ -155,6 +160,7 @@ def main(fcc_input_directory, devicecode_directory, output_directory, grantees, 
                                     if is_main_fcc:
                                         f['fcc_type'] = 'main'
                                         f['license'] = 'CC0-1.0'
+                                        f['grantee'] = grantee_name
                                         write_overlay=True
                                     overlay_fcc_ids.append(f)
                                 else:
@@ -162,6 +168,7 @@ def main(fcc_input_directory, devicecode_directory, output_directory, grantees, 
                                     if is_main_fcc:
                                         f['fcc_type'] = 'main'
                                         f['license'] = 'CC0-1.0'
+                                        f['grantee'] = grantee_name
                                         write_overlay=True
                                     overlay_fcc_ids.append(f)
                         else:
@@ -171,6 +178,7 @@ def main(fcc_input_directory, devicecode_directory, output_directory, grantees, 
                             if is_main_fcc:
                                 f['fcc_type'] = 'main'
                                 f['license'] = 'CC0-1.0'
+                                f['grantee'] = grantee_name
                                 write_overlay=True
                             overlay_fcc_ids.append(f)
 
