@@ -1119,27 +1119,22 @@ class DevicecodeUI(App):
         if result:
             new_markdown += "# Regulatory\n"
             new_markdown += "| | |\n|--|--|\n"
-            fcc_ids = ''
-            if result['regulatory']['fcc_ids']:
-                fcc_id = result['regulatory']['fcc_ids'][0]['fcc_id']
-                fcc_date = result['regulatory']['fcc_ids'][0]['fcc_date']
-                if fcc_date != '':
-                    fcc_ids = f"[{fcc_id}](<https://fcc.report/FCC-ID/{fcc_id}>) ({fcc_date})"
-                else:
-                    fcc_ids = f"[{fcc_id}](<https://fcc.report/FCC-ID/{fcc_id}>)"
-
-                for f in result['regulatory']['fcc_ids'][1:]:
-                    fcc_id = f['fcc_id']
-                    fcc_date = f['fcc_date']
-                    if fcc_date != '':
-                        fcc_ids += f, "[{fcc_id}](<https://fcc.report/FCC-ID/{fcc_id}>) ({fcc_date})'"
-                    else:
-                        fcc_ids += f", [{fcc_id}](<https://fcc.report/FCC-ID/{fcc_id}>)"
-            new_markdown += f"|**FCC ids** | {fcc_ids}\n"
             new_markdown += f"|**Industry Canada ids** | {', '.join(result['regulatory']['industry_canada_ids'])}\n"
             new_markdown += f"|**US ids** | {', '.join(result['regulatory']['us_ids'])}\n"
             new_markdown += f"|**WiFi certified** |{ result['regulatory']['wifi_certified']}\n"
             new_markdown += f"|**WiFi date** | {result['regulatory']['wifi_certified_date']}\n"
+
+            # FCC
+            fcc_ids = ''
+            if result['regulatory']['fcc_ids']:
+                new_markdown += "# FCC\n"
+                new_markdown += "|FCC id|date|type|grantee|\n|--|--|--|--|\n"
+                for fcc in result['regulatory']['fcc_ids']:
+                    fcc_id = fcc['fcc_id']
+                    fcc_date = fcc['fcc_date']
+                    fcc_type = fcc['fcc_type']
+                    grantee = fcc.get('grantee', '')
+                    new_markdown += f"|[{fcc_id}](<https://fcc.report/FCC-ID/{fcc_id}>)|{fcc_date}|{fcc_type}|{grantee}|\n"
 
             # Commercial information
             new_markdown += "# Commercial\n"
