@@ -433,6 +433,12 @@ def process_fcc(task):
                 pass
             except pdfminer.psexceptions.PSEOF:
                 pass
+            except pdfminer.psexceptions.PDFSyntaxError:
+                # TODO: fix this.
+                # Example: 2999362.pdf in FCC id ZWJ-0823
+                # Error:
+                # No /Root object! - Is this really a PDF?
+                pass
             except pdfminer.pdfdocument.PDFNoValidXRef:
                 pass
             except pdfminer.ccitt.CCITTG4Parser.InvalidData:
