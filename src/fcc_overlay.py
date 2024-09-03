@@ -102,8 +102,11 @@ def main(fcc_input_directory, devicecode_directory, output_directory, grantees, 
                     if 'regulatory' not in device:
                         continue
                     fcc_ids = device['regulatory']['fcc_ids']
-                    overlay_data = {'type': 'overlay', 'name': 'fcc_id', 'source': 'fcc'}
-                    write_overlay = False
+                    if not fcc_ids:
+                        continue
+
+                    fcc_id_overlay_data = {'type': 'overlay', 'name': 'fcc_id', 'source': 'fcc'}
+                    write_fcc_id_overlay = False
                     overlay_fcc_ids = []
 
                     if len(fcc_ids) != 1:
@@ -153,7 +156,7 @@ def main(fcc_input_directory, devicecode_directory, output_directory, grantees, 
                                                    'grantee': grantee_name}
 
                                     overlay_fcc_ids.append(overlay)
-                                    write_overlay=True
+                                    write_fcc_id_overlay=True
                                 elif fcc_date not in dates:
                                     # possibly wrong date, create an overlay (TODO)
                                     # copy the existing data to the overlay data
@@ -161,7 +164,7 @@ def main(fcc_input_directory, devicecode_directory, output_directory, grantees, 
                                         f['fcc_type'] = 'main'
                                         f['license'] = 'CC0-1.0'
                                         f['grantee'] = grantee_name
-                                        write_overlay=True
+                                        write_fcc_id_overlay=True
                                     overlay_fcc_ids.append(f)
                                 else:
                                     # copy the existing data to the overlay data
@@ -169,7 +172,7 @@ def main(fcc_input_directory, devicecode_directory, output_directory, grantees, 
                                         f['fcc_type'] = 'main'
                                         f['license'] = 'CC0-1.0'
                                         f['grantee'] = grantee_name
-                                        write_overlay=True
+                                        write_fcc_id_overlay=True
                                     overlay_fcc_ids.append(f)
                         else:
                             if report_only:
@@ -179,15 +182,15 @@ def main(fcc_input_directory, devicecode_directory, output_directory, grantees, 
                                 f['fcc_type'] = 'main'
                                 f['license'] = 'CC0-1.0'
                                 f['grantee'] = grantee_name
-                                write_overlay=True
+                                write_fcc_id_overlay=True
                             overlay_fcc_ids.append(f)
 
-                    if write_overlay:
-                        overlay_data['data'] = overlay_fcc_ids
+                    if write_fcc_id_overlay:
+                        fcc_id_overlay_data['data'] = overlay_fcc_ids
                         overlay_file = overlay_directory / result_file.stem / 'fcc_id.json'
                         overlay_file.parent.mkdir(parents=True, exist_ok=True)
                         with open(overlay_file, 'w') as overlay:
-                            overlay.write(json.dumps(overlay_data, indent=4))
+                            overlay.write(json.dumps(fcc_id_overlay_data, indent=4))
                         if use_git:
                             # add the file
                             p = subprocess.Popen(['git', 'add', overlay_file],
