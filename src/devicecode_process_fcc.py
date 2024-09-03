@@ -127,17 +127,24 @@ def search_text(texts):
 # instead.
 def stitch(images, orientation, image_page_directory, img_directory, stitch_directory, clean_output):
     '''Stitch a collection of images extracted from a PDF'''
+    image_name = stitch_directory / images[0]
+    img_hash = ''
+
     # first determine the width and height of the new image
     height = 0
     width = 0
-    for img_name in images:
-        orig_image = PIL.Image.open(image_page_directory / img_name)
-        if orientation == 'horizontal':
-            width += orig_image.size[0]
-            height = orig_image.size[1]
-        else:
-            width = orig_image.size[0]
-            height += orig_image.size[1]
+    try:
+        for img_name in images:
+            orig_image = PIL.Image.open(image_page_directory / img_name)
+            if orientation == 'horizontal':
+                width += orig_image.size[0]
+                height = orig_image.size[1]
+            else:
+                width = orig_image.size[0]
+                height += orig_image.size[1]
+    except PIL.UnidentifiedImageError:
+        status = False
+        return (status, image_name.name, img_hash)
 
     # Create a new image
     new_image = PIL.Image.new('RGB',(width, height), (250,250,250))
@@ -153,7 +160,6 @@ def stitch(images, orientation, image_page_directory, img_directory, stitch_dire
         else:
             new_image.paste(orig_image, (x,y))
             y += orig_image.size[1]
-    image_name = stitch_directory / images[0]
     new_image.save(image_name)
     with open(image_name, 'rb') as new_img:
         img_hash = hashlib.sha256(new_img.read()).hexdigest()
@@ -167,7 +173,8 @@ def stitch(images, orientation, image_page_directory, img_directory, stitch_dire
 
         if not clean_output:
             image_name.hardlink_to(img_hash_file)
-    return (image_name.name, img_hash)
+        status = True
+    return (status, image_name.name, img_hash)
 
 def process_fcc(task):
     fccid, meta = task
@@ -383,8 +390,9 @@ def process_fcc(task):
                                 else:
                                     stitch_names = list(map(lambda x: x[1], to_stitch))
                                     stitch_directory.mkdir(exist_ok=True, parents=True)
-                                    stitched_file, img_hash = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory, clean_output)
-                                    image_metadata['processed'].append({'name': stitched_file, 'sha256': img_hash, 'inputs': stitch_names})
+                                    status, stitched_file, img_hash = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory, clean_output)
+                                    if status:
+                                        image_metadata['processed'].append({'name': stitched_file, 'sha256': img_hash, 'inputs': stitch_names})
 
                                     # reset
                                     to_stitch = [image]
@@ -395,8 +403,9 @@ def process_fcc(task):
                                 else:
                                     stitch_names = list(map(lambda x: x[1], to_stitch))
                                     stitch_directory.mkdir(exist_ok=True, parents=True)
-                                    stitched_file, img_hash = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory, clean_output)
-                                    image_metadata['processed'].append({'name': stitched_file, 'sha256': img_hash, 'inputs': stitch_names})
+                                    status, stitched_file, img_hash = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory, clean_output)
+                                    if status:
+                                        image_metadata['processed'].append({'name': stitched_file, 'sha256': img_hash, 'inputs': stitch_names})
 
                                     # reset
                                     to_stitch = [image]
@@ -404,8 +413,9 @@ def process_fcc(task):
                         if len(to_stitch) > 1:
                             stitch_names = list(map(lambda x: x[1], to_stitch))
                             stitch_directory.mkdir(exist_ok=True, parents=True)
-                            stitched_file, img_hash = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory, clean_output)
-                            image_metadata['processed'].append({'name': stitched_file, 'sha256': img_hash, 'inputs': stitch_names})
+                            status, stitched_file, img_hash = stitch(stitch_names, orientation, img_page_directory, img_directory, stitch_directory, clean_output)
+                            if status:
+                                image_metadata['processed'].append({'name': stitched_file, 'sha256': img_hash, 'inputs': stitch_names})
 
                     if image_metadata:
                         image_results.append({'page': page_number, 'results': image_metadata})
