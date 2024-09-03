@@ -179,6 +179,8 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
                             is_modular = True
                         elif 'module request' in description.lower():
                             is_modular = True
+                        elif 'module approval' in description.lower():
+                            is_modular = True
 
                         # store the pdf/description combination
                         pdfs_descriptions.append({'url': f'{base_url}/{pdf_name}',
