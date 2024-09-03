@@ -462,18 +462,17 @@ def process_fcc(task):
             except pdfminer.pdfexceptions.PDFNotImplementedError:
                 # example: 992035.pdf in FCC id PH7MV430A
                 pass
-            finally:
+
+            # write various metadata to files for further processing
+            if image_results:
+                with open(output_directory / fccid / pdf['name'] / 'images.json', 'w') as output_file:
+                    output_file.write(json.dumps(image_results, indent=4))
                 if clean_output:
                     for img_name in images:
                         try:
                             (img_page_directory / img_name[1]).unlink()
                         except FileNotFoundError:
                             pass
-
-            # write various metadata to files for further processing
-            if image_results:
-                with open(output_directory / fccid / pdf['name'] / 'images.json', 'w') as output_file:
-                    output_file.write(json.dumps(image_results, indent=4))
             if page_results:
                 with open(output_directory / fccid / pdf['name'] / 'text.json', 'w') as output_file:
                     output_file.write(json.dumps(page_results, indent=4))
