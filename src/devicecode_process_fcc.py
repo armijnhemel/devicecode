@@ -433,7 +433,7 @@ def process_fcc(task):
                 pass
             except pdfminer.psexceptions.PSEOF:
                 pass
-            except pdfminer.psexceptions.PDFSyntaxError:
+            except pdfminer.pdfdocument.PDFSyntaxError:
                 # TODO: fix this.
                 # Example: 2999362.pdf in FCC id ZWJ-0823
                 # Error:
