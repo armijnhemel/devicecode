@@ -340,6 +340,9 @@ def process_fcc(task):
                                 # example: FCC ID: TE7M4R, file 4041072.pdf
                                 # could be related to missing JPEG2000 support.
                                 pass
+                            except ValueError:
+                                # TODO: fix this.
+                                pass
                         else:
                             try:
                                 if element.get_text().strip() != '':
