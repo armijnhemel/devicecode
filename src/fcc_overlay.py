@@ -14,9 +14,6 @@ import sys
 import click
 
 @click.command(short_help='Create FCC overlay files to provide additional data')
-@click.option('--fcc-directory', '-f', 'fcc_input_directory', required=True,
-              help='top level input directory with one directory per FCC id',
-              type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--directory', '-d', 'devicecode_directory',
               help='DeviceCode results directory', required=True,
               type=click.Path(path_type=pathlib.Path, exists=True))
@@ -28,11 +25,7 @@ import click
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--report-only', '-r', is_flag=True, help='report only')
 @click.option('--use-git', is_flag=True, help='use Git (not recommended, see documentation)')
-def main(fcc_input_directory, devicecode_directory, output_directory, grantees, report_only, use_git):
-    if not fcc_input_directory.is_dir():
-        print(f"{fcc_input_directory} is not a directory, exiting.", file=sys.stderr)
-        sys.exit(1)
-
+def main(devicecode_directory, output_directory, grantees, report_only, use_git):
     if not report_only and not output_directory.is_dir():
         print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -66,6 +59,7 @@ def main(fcc_input_directory, devicecode_directory, output_directory, grantees, 
     # verify the directory names, they should be one of the following
     #valid_directory_names = ['TechInfoDepot', 'WikiDevi']
     valid_directory_names = ['TechInfoDepot']
+    processed_fcc_directory = devicecode_directory / 'FCC'
 
     # Inside these directories a directory called 'devices' should always
     # be present. Optionally there can be a directory called 'overlays'
@@ -136,9 +130,9 @@ def main(fcc_input_directory, devicecode_directory, output_directory, grantees, 
 
                         grantee_name = fcc_grantees.get(grantee_code, '')
 
-                        if (fcc_input_directory / fcc_id).is_dir():
+                        if (processed_fcc_directory / fcc_id).is_dir():
                             # load the file with approved dates, if it exists
-                            approved_file = fcc_input_directory / fcc_id / 'approved_dates.json'
+                            approved_file = processed_fcc_directory / fcc_id / 'approved_dates.json'
                             if approved_file.exists():
                                 with open(approved_file, 'r') as approved:
                                     dates += json.load(approved)
