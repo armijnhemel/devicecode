@@ -131,7 +131,20 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
                         grantee_name = fcc_grantees.get(grantee_code, '')
 
                         if (processed_fcc_directory / fcc_id).is_dir():
+                            is_modular = False
+
                             # load the file with approved dates, if it exists
+                            descriptions_file = processed_fcc_directory / fcc_id / 'descriptions.json'
+                            if descriptions_file.exists():
+                                with open(descriptions_file, 'r') as desc:
+                                    descriptions = json.load(desc)
+
+                                # check if the device ifself is a module
+                                for d in device['device_types']:
+                                    if 'module' in d.lower():
+                                        is_modular = True
+                                        break
+
                             approved_file = processed_fcc_directory / fcc_id / 'approved_dates.json'
                             if approved_file.exists():
                                 with open(approved_file, 'r') as approved:
@@ -140,14 +153,20 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
                                 # if there is no date at all create an overlay with
                                 # the earliest date defined as the FCC date.
                                 if fcc_date == '':
+                                    fcc_type = 'unknown'
                                     if is_main_fcc:
-                                        overlay = {'fcc_date': dates[0], 'fcc_id': fcc_id,
-                                                   'fcc_type': 'main', 'license': 'CC0-1.0',
-                                                   'grantee': grantee_name}
+                                        if not is_modular and descriptions['modular']:
+                                            # there is an extra module
+                                            fcc_type = 'auxiliary'
+                                        else:
+                                            fcc_type = 'main'
                                     else:
-                                        overlay = {'fcc_date': dates[0], 'fcc_id': fcc_id,
-                                                   'fcc_type': 'unknown', 'license': 'CC0-1.0',
-                                                   'grantee': grantee_name}
+                                        if not is_modular and descriptions['modular']:
+                                            # there is an extra module
+                                            fcc_type = 'auxiliary'
+                                    overlay = {'fcc_date': dates[0], 'fcc_id': fcc_id,
+                                               'fcc_type': fcc_type, 'license': 'CC0-1.0',
+                                               'grantee': grantee_name}
 
                                     overlay_fcc_ids.append(overlay)
                                     write_fcc_id_overlay=True
@@ -155,18 +174,30 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
                                     # possibly wrong date, create an overlay (TODO)
                                     # copy the existing data to the overlay data
                                     if is_main_fcc:
-                                        f['fcc_type'] = 'main'
-                                        f['license'] = 'CC0-1.0'
-                                        f['grantee'] = grantee_name
-                                        write_fcc_id_overlay=True
+                                        if not is_modular and descriptions['modular']:
+                                            # there is an extra module
+                                            f['fcc_type'] = 'auxiliary'
+                                        else:
+                                            f['fcc_type'] = 'main'
+                                    else:
+                                        if not is_modular and descriptions['modular']:
+                                            # there is an extra module
+                                            f['fcc_type'] = 'auxiliary'
+                                    f['license'] = 'CC0-1.0'
+                                    f['grantee'] = grantee_name
+                                    write_fcc_id_overlay=True
                                     overlay_fcc_ids.append(f)
                                 else:
                                     # copy the existing data to the overlay data
                                     if is_main_fcc:
                                         f['fcc_type'] = 'main'
-                                        f['license'] = 'CC0-1.0'
-                                        f['grantee'] = grantee_name
-                                        write_fcc_id_overlay=True
+                                    else:
+                                        if descriptions['modular']:
+                                            # there is an extra module
+                                            f['fcc_type'] = 'auxiliary'
+                                    f['license'] = 'CC0-1.0'
+                                    f['grantee'] = grantee_name
+                                    write_fcc_id_overlay=True
                                     overlay_fcc_ids.append(f)
                         else:
                             if report_only:
