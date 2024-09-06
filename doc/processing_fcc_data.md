@@ -65,4 +65,75 @@ other devices. The FCC pages of these devices often contain multiple documents
 but some of them are documents relating to devices in which the module is
 integrated, not the module itself.
 
+## Workflow
+
+The next step would be to download the FCC data, using the instructions found
+in ["Downloading FCC documents"](downloading_fcc_data.md). It is assumed that
+the data was downloaded in the directory `~/fcc-data/` so if you used a
+different download directory you need to change the instructions below.
+
+After downloading there are two more steps:
+
+1. processing the downloaded FCC files
+2. creating overlay files (used by for example the TUI)
+
+To output the data into for example the directory `~/git/devicecode-data/FCC`
+run the `devicecode_process_fcc.py` script as follows:
+
+```console
+$ python devicecode_process_fcc.py -o ~/git/devicecode-data/FCC -d ~/fcc-data 2AGN7-X9
+```
+
+Use the `--verbose` flag to output more debugging information:
+
+```console
+$ python devicecode_process_fcc.py -o ~/git/devicecode-data/FCC -d ~/fcc-data --verbose 2AGN7-X9
+```
+
+By default not all PDF files are processed. The files that are labeled as
+`Test Report` and `RF Exposure Info` are currently skipped. If these should be
+processed (not recommended) use the `--process-uninteresting` flag:
+
+```console
+$ python devicecode_process_fcc.py -o ~/git/devicecode-data/FCC -d ~/fcc-data --process-uninteresting 2AGN7-X9
+```
+
+PDFs that have already been processed are not reprocessed. To force processing
+of already processed PDFs use the `--force` flag:
+
+```console
+$ python devicecode_process_fcc.py -o ~/git/devicecode-data/FCC -d ~/fcc-data --force 2AGN7-X9
+```
+
+By default images are processed. They are extracted and written to a directory
+after which SHA256 checksums are computed and, if needed, images are stitched.
+Processing images takes quite a long time, plus the images take up a lot of
+space. To skip processing images use the `--no-images` flag:
+
+```console
+$ python devicecode_process_fcc.py -o ~/git/devicecode-data/FCC -d ~/fcc-data --no-images 2AGN7-X9
+```
+
+When supplying multiple FCC ids there is a flag (`-j`) to set the number of
+processes (default: 1) that are started to process the files. To start 8
+processes:
+
+```console
+$ python devicecode_process_fcc.py -o ~/git/devicecode-data/FCC -d ~/fcc-data -j8 2AGN7-X9
+```
+
+This flag only has meaning if more than one FCC id needs to be processed.
+
+Finally there is an option to create a "clean" archive, that does not contain
+the extracted images or the full extracted text, just the metadata (SHA256
+checksums, descriptions of what text can be found where, or non-copyrightable
+information such as IP addresses). This is because some of the FCC documents
+are copyrighted (example: user manuals) and cannot be freely redistributed.
+With the `--clean-output` option the images and extracted texts are removed
+or not written after the PDF files have been processed:
+
+```console
+$ python devicecode_process_fcc.py -o ~/git/devicecode-data/FCC -d ~/fcc-data --clean-output 2AGN7-X9
+```
+
 [fcc]:https://en.wikipedia.org/wiki/Federal_Communications_Commission
