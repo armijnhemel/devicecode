@@ -169,9 +169,8 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
                                                'grantee': grantee_name}
 
                                     overlay_fcc_ids.append(overlay)
-                                    write_fcc_id_overlay=True
                                 elif fcc_date not in dates:
-                                    # possibly wrong date, create an overlay (TODO)
+                                    # possibly wrong date, fix in the overlay (TODO)
                                     # copy the existing data to the overlay data
                                     if is_main_fcc:
                                         if not is_modular and descriptions['modular']:
@@ -183,9 +182,10 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
                                         if not is_modular and descriptions['modular']:
                                             # there is an extra module
                                             f['fcc_type'] = 'auxiliary'
+                                    if len(dates) == 1:
+                                        f['fcc_date'] = dates[0]
                                     f['license'] = 'CC0-1.0'
                                     f['grantee'] = grantee_name
-                                    write_fcc_id_overlay=True
                                     overlay_fcc_ids.append(f)
                                 else:
                                     # copy the existing data to the overlay data
@@ -197,8 +197,8 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
                                             f['fcc_type'] = 'auxiliary'
                                     f['license'] = 'CC0-1.0'
                                     f['grantee'] = grantee_name
-                                    write_fcc_id_overlay=True
                                     overlay_fcc_ids.append(f)
+                                write_fcc_id_overlay=True
                         else:
                             if report_only:
                                 print(f"FCC data missing for {fcc_id}")
