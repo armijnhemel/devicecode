@@ -65,7 +65,7 @@ other devices. The FCC pages of these devices often contain multiple documents
 but some of them are documents relating to devices in which the module is
 integrated, not the module itself.
 
-## Workflow
+## Workflow for processing FCC data
 
 The next step would be to download the FCC data, using the instructions found
 in ["Downloading FCC documents"](downloading_fcc_data.md). It is assumed that
@@ -134,6 +134,24 @@ or not written after the PDF files have been processed:
 
 ```console
 $ python devicecode_process_fcc.py -o ~/git/devicecode-data/FCC -d ~/fcc-data --clean-output 2AGN7-X9
+```
+
+## Workflow for creating overlays from FCC data
+
+The next step is creating overlays (currently only used in the TUI, but will
+be used more). This is done using the `fcc_overlay.py` script. The script takes
+the device data and matches it with extracted FCC data, for example to see
+which of the associated FCC ids are for the main device, and which ones are
+auxiliary (for example: WiFi modules).
+
+The `fcc_overlay.py` script expects three parameters:
+
+1. input directory with the FCC data and device data
+2. output directory for writing overlays
+3. file with a mapping of FCC grantees to names
+
+```console
+$ python fcc_overlay.py -d ~/git/devicecode-data/ -o ~/git/devicecode-data/ -g known_fcc_grantees_20240828.json
 ```
 
 [fcc]:https://en.wikipedia.org/wiki/Federal_Communications_Commission
