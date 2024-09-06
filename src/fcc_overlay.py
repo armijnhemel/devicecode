@@ -171,6 +171,7 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
                         else:
                             if report_only:
                                 print(f"FCC data missing for {fcc_id}")
+                                continue
                             # copy the existing data to the overlay data
                             if is_main_fcc:
                                 f['fcc_type'] = 'main'
@@ -178,6 +179,9 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
                                 f['grantee'] = grantee_name
                                 write_fcc_id_overlay=True
                             overlay_fcc_ids.append(f)
+
+                    if report_only:
+                        write_fcc_id_overlay = False
 
                     if write_fcc_id_overlay:
                         fcc_id_overlay_data['data'] = overlay_fcc_ids
