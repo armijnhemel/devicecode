@@ -206,7 +206,7 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
                                     if text_data_file.exists():
                                         with open(text_data_file, 'r') as text_data:
                                             text_hints = json.load(text_data)
-                                            overlay_fcc_extracted_text.append({'pdf': d['name'], 'type': d['type'], 'description': d['description'], 'hints': text_hints})
+                                            overlay_fcc_extracted_text.append({'fcc_id': fcc_id, 'pdf': d['name'], 'type': d['type'], 'description': d['description'], 'hints': text_hints})
                                             write_fcc_extracted_text = True
                         else:
                             if report_only:
