@@ -55,10 +55,11 @@ command can be used:
 $ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data -g known_fcc_grantees_20240618.json
 ```
 
-To force downloading all the data the `--force` parameter can be used:
+By default any already downloaded data will be skipped. To force
+(re)downloading all the data the `--force` parameter can be used:
 
 ```console
-$ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data --force
+$ python devicecode_fetch_fcc.py -o ~/fcc-data --force 2AGN7-X9
 ```
 
 To not overload the [FCC.report][fcc.report] site with download requests there
@@ -66,15 +67,32 @@ is an option to pause a few seconds between each download (currently hardcoded
 to 2 seconds) called `--gentle`:
 
 ```console
-$ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data --gentle
+$ python devicecode_fetch_fcc.py -o ~/fcc-data --gentle 2AGN7-X9
 ```
 
 Using the `--gentle` option is highly recommended.
 
+To only download the metadata, but not the PDFs themselves, use the `--no-pdf`
+flag:
+
+```console
+$ python devicecode_fetch_fcc.py -o ~/fcc-data --no-pdf 2AGN7-X9
+```
+
+To not download anything, use the `--no-download` flag:
+
+```console
+$ python devicecode_fetch_fcc.py -o ~/fcc-data --no-download 2AGN7-X9
+```
+
+Please note: the `--no-download` flag is only useful when metadata (such as
+the file `descriptions.json`) needs to be regenerated for data that had already
+been downloaded.
+
 To print more details about what is downloaded use the `--verbose` flag:
 
 ```console
-$ python devicecode_fetch_fcc.py 2AGN7-X9 -o ~/fcc-data --verbose
+$ python devicecode_fetch_fcc.py -o ~/fcc-data --verbose 2AGN7-X9
 ```
 
 [fcc.report]:https://fcc.report/

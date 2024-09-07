@@ -60,16 +60,14 @@ IGNORE_FILES = ['Test Report', 'RF Exposure Info']
 # extract interesting information and patterns from extracted text
 def search_text(texts):
     text =  "\n".join(texts).lower()
-    results = {'functionality': [], 'user_password': [],
-               'programs': [], 'license': [], 'copyrights': [],
-               'ip_address': [], 'hints': []}
 
+    results = []
     results_found = False
 
     # then search for a bunch of things
     for t in TEXT_TO_FUNCTIONALITY:
         if t in text:
-            results['functionality'].append(TEXT_TO_FUNCTIONALITY[t])
+            results.append({'type': 'functionality', 'value': TEXT_TO_FUNCTIONALITY[t]})
             results_found = True
 
     result_ips = defaults.REGEX_IP.findall(text)
@@ -77,45 +75,45 @@ def search_text(texts):
         ip_components = [int(x) <= 255 for x in result_ip.split('.')]
         if ip_components == [True, True, True, True]:
             if result_ip.startswith('192.168'):
-                results['ip_address'].append({'address': result_ip, 'type': 'private'})
+                results.append({'type': 'IP address', 'value': result_ip, 'extra_data': 'private'})
             elif result_ip.startswith('172.'):
-                results['ip_address'].append({'address': result_ip, 'type': 'private'})
+                results.append({'type': 'IP address', 'value': result_ip, 'extra_data': 'private'})
             elif result_ip.startswith('10.'):
-                results['ip_address'].append({'address': result_ip, 'type': 'private'})
+                results.append({'type': 'IP address', 'value': result_ip, 'extra_data': 'private'})
             elif result_ip.startswith('224.'):
-                results['ip_address'].append({'address': result_ip, 'type': 'multicast'})
+                results.append({'type': 'IP address', 'value': result_ip, 'extra_data': 'multicast'})
             elif result_ip.startswith('255.'):
-                results['ip_address'].append({'address': result_ip, 'type': 'netmask'})
+                results.append({'type': 'IP address', 'value': result_ip, 'extra_data': 'netmask'})
             else:
                 # TODO: filter paragraph numbers
-                results['ip_address'].append({'address': result_ip, 'type': 'possible'})
+                results.append({'type': 'IP address', 'value': result_ip, 'extra_data': 'possible'})
             results_found = True
 
     if 'gnu general public license' in text:
-        results['license'].append("GNU GPL")
+        results.append({'type': 'license', 'value': 'GNU GPL'})
         results_found = True
 
     if 'open source' in text:
-        results['license'].append("open source")
+        results.append({'type': 'reference', 'value': 'open source'})
         results_found = True
 
     for i in ['default password', 'default user password', 'default admin password',
               'default username and password', 'by default, the password is',
               'the password is', 'by default, the username and password']:
         if i in text:
-            results['hints'].append("default password")
+            results.append({'type': 'reference', 'value': 'default password'})
             results_found = True
 
     for i in ['default username', 'default user name', 'default user\'s name',
               'default user id', 'default users', 'default username and password',
               'by default the user name is', 'by default, the username and password']:
         if i in text:
-            results['hints'].append("default user")
+            results.append({'type': 'reference', 'value': 'default user'})
             results_found = True
 
     for t in PROGRAMS:
         if t in text:
-            results['programs'].append(t)
+            results.append({'type': 'program', 'value': t})
             results_found = True
 
     return (results_found, results)
