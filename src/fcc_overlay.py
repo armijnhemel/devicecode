@@ -103,6 +103,10 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
                     write_fcc_id_overlay = False
                     overlay_fcc_ids = []
 
+                    fcc_extract_text_overlay_data = {'type': 'overlay', 'name': 'fcc_extracted_text', 'source': 'fcc'}
+                    write_fcc_extracted_text = False
+                    overlay_fcc_extracted_text = []
+
                     for f in fcc_ids:
                         fcc_id = f['fcc_id']
                         fcc_date = f['fcc_date']
@@ -195,6 +199,15 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
                                     f['grantee'] = grantee_name
                                     overlay_fcc_ids.append(f)
                                 write_fcc_id_overlay=True
+
+                            for d in descriptions['data']:
+                                text_data_file = processed_fcc_directory / fcc_id / d['name'] / 'text.json'
+                                if is_main_fcc:
+                                    if text_data_file.exists():
+                                        with open(text_data_file, 'r') as text_data:
+                                            text_hints = json.load(text_data)
+                                            overlay_fcc_extracted_text.append({'pdf': d['name'], 'type': d['type'], 'description': d['description'], 'hints': text_hints})
+                                            write_fcc_extracted_text = True
                         else:
                             if report_only:
                                 print(f"FCC data missing for {fcc_id}")
@@ -209,6 +222,7 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
 
                     if report_only:
                         write_fcc_id_overlay = False
+                        write_fcc_extracted_text = False
 
                     if write_fcc_id_overlay:
                         fcc_id_overlay_data['data'] = overlay_fcc_ids
@@ -216,6 +230,28 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
                         overlay_file.parent.mkdir(parents=True, exist_ok=True)
                         with open(overlay_file, 'w') as overlay:
                             overlay.write(json.dumps(fcc_id_overlay_data, indent=4))
+                        if use_git:
+                            # add the file
+                            p = subprocess.Popen(['git', 'add', overlay_file],
+                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                            (outputmsg, errormsg) = p.communicate()
+                            if p.returncode != 0:
+                                print(f"{overlay_file} could not be added", file=sys.stderr)
+
+                            commit_message = f'Add FCC overlay for {result_file.stem}'
+
+                            p = subprocess.Popen(['git', 'commit', "-m", commit_message],
+                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                            (outputmsg, errormsg) = p.communicate()
+                            if p.returncode != 0:
+                                print(f"{overlay_file} could not be committed", file=sys.stderr)
+
+                    if write_fcc_extracted_text:
+                        fcc_extract_text_overlay_data['data'] = overlay_fcc_extracted_text
+                        overlay_file = overlay_directory / result_file.stem / 'fcc_extracted.json'
+                        overlay_file.parent.mkdir(parents=True, exist_ok=True)
+                        with open(overlay_file, 'w') as overlay:
+                            overlay.write(json.dumps(fcc_extract_text_overlay_data, indent=4))
                         if use_git:
                             # add the file
                             p = subprocess.Popen(['git', 'add', overlay_file],
