@@ -398,9 +398,11 @@ class DevicecodeUI(App):
                 for overlay in self.overlays[device['title']]:
                     if overlay['name'] == 'fcc_id':
                         device['regulatory']['fcc_ids'] = overlay['data']
-                    if overlay['name'] == 'oui':
+                    elif overlay['name'] == 'oui':
                         device['network']['ethernet_oui'] = overlay['data']['ethernet_oui']
                         device['network']['wireless_oui'] = overlay['data']['wireless_oui']
+                    elif overlay['name'] == 'fcc_extracted_text':
+                        device['fcc_data'] = overlay['data']
 
             if 'brand' not in device:
                 continue
@@ -782,6 +784,7 @@ class DevicecodeUI(App):
         self.software_area = Markdown()
         self.chips_area = Markdown()
         self.power_area = Markdown()
+        self.fcc_area = Markdown()
 
         # input field
         input_filter = Input(placeholder='Filter',
@@ -860,6 +863,9 @@ class DevicecodeUI(App):
                 with TabPane('Power'):
                     with VerticalScroll():
                         yield self.power_area
+                with TabPane('FCC documents'):
+                    with VerticalScroll():
+                        yield self.fcc_area
 
         # show the footer with controls
         footer = Footer()
@@ -1040,6 +1046,7 @@ class DevicecodeUI(App):
             self.software_area.update(self.build_software_report(event.node.data['software']))
             self.chips_area.update(self.build_chips_report(event.node.data))
             self.power_area.update(self.build_power_report(event.node.data))
+            self.fcc_area.update(self.build_fcc_document_report(event.node.data.get('fcc_data', {})))
         else:
             self.device_data_area.update('')
             self.regulatory_data_area.update('')
@@ -1049,6 +1056,7 @@ class DevicecodeUI(App):
             self.software_area.update('')
             self.chips_area.update('')
             self.power_area.update('')
+            self.fcc_area.update('')
 
     def on_tree_node_collapsed(self, event: Tree.NodeCollapsed[None]) -> None:
         pass
@@ -1192,6 +1200,21 @@ class DevicecodeUI(App):
                     new_markdown += "|**Voltage** |\n"
             return new_markdown
         return "No serial information"
+
+    def build_fcc_document_report(self, result):
+        new_markdown = ""
+        if result:
+            for pdf in result:
+                fcc_id = pdf['fcc_id']
+                pdf_name = pdf['pdf']
+                new_markdown += f"# [{pdf_name}](<https://fcc.report/FCC-ID/{fcc_id}/{pdf_name}>): {pdf['type']} - {pdf['description']}\n"
+                new_markdown += "| Page | Type | Hint | Extra data|\n|--|--|--|--|\n"
+                for hint in pdf['hints']:
+                    page = hint['page']
+                    for hint_result in hint['results']:
+                        extra_data = hint_result.get('extra_data', '')
+                        new_markdown += f"|{page} | {hint_result['type']} | {hint_result['value']} | {extra_data} |\n"
+        return new_markdown
 
     def build_software_report(self, result):
         new_markdown = ""
