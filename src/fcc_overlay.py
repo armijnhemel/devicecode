@@ -103,10 +103,6 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
                     write_fcc_id_overlay = False
                     overlay_fcc_ids = []
 
-                    if len(fcc_ids) != 1:
-                        # TODO: fix for files with multiple FCC ids
-                        continue
-
                     for f in fcc_ids:
                         fcc_id = f['fcc_id']
                         fcc_date = f['fcc_date']
