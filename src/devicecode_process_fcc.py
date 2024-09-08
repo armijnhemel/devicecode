@@ -8,6 +8,7 @@ import hashlib
 import json
 import multiprocessing
 import pathlib
+import re
 import shutil
 import struct
 import sys
@@ -59,7 +60,8 @@ IGNORE_FILES = ['Test Report', 'RF Exposure Info']
 
 # extract interesting information and patterns from extracted text
 def search_text(texts):
-    text =  "\n".join(texts).lower()
+    text =  "\n ".join(texts).lower()
+    text = re.sub(r'\s+', ' ', text)
 
     results = []
     results_found = False
