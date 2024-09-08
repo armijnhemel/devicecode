@@ -134,6 +134,7 @@ class Network:
     # https://en.wikipedia.org/wiki/Organizationally_unique_identifier
     ethernet_oui: list[OUI] = field(default_factory=list)
     wireless_oui: list[OUI] = field(default_factory=list)
+    modules: list[str] = field(default_factory=list)
 
 @dataclass_json
 @dataclass
