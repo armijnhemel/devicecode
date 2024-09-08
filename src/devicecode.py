@@ -711,7 +711,7 @@ def parse_serial_jtag(serial_string):
             result['number_of_pins'] = int(regex_result.groups()[0])
             continue
 
-        # console via RJ45? TODO.
+        # console via RJ45?
         if result['connector'] == '':
             if field in ['RJ45 console', 'RJ-45 console', 'console port (RJ45)',
                          'console port (RJ-45)', 'console (RJ45)', 'console (RJ-45)',
@@ -883,12 +883,15 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                         # is in the <text> element
                         wiki_text = c.childNodes[0].data
                         wikicode = mwparserfromhell.parse(wiki_text)
-                        # reset device
+
+                        # reset device information
                         device = None
                         have_valid_data = False
 
                         # walk the elements in the parsed wiki text.
-                        # Kind of assume a fixed order here.
+                        # Kind of assume a fixed order here. This is maybe a
+                        # bit risky, but so far it seems to work (no exceptions
+                        # have been observed).
                         # There are different elements in the Wiki text:
                         #
                         # * headings
@@ -1594,6 +1597,20 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                     except ValueError:
                                                         pass
 
+                                                elif identifier in ['exp_if_types', 'expansion_if_types']:
+                                                    if value == 'none':
+                                                        continue
+                                                    if '<!' in value:
+                                                        # TODO: process this correctly
+                                                        continue
+
+                                                    expansions = value.split(',')
+                                                    for expansion in expansions:
+                                                        if expansion.strip() == '':
+                                                            continue
+                                                        ex = defaults.EXPANSION_REWRITE.get(expansion.strip().lower(), expansion.strip())
+                                                        device.expansions.append(ex)
+
                                                 # process TechInfoDepot specific information
                                                 if wiki_type == 'TechInfoDepot':
                                                     if identifier == 'model_part_num':
@@ -1607,19 +1624,6 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                         device.model.submodel = value
                                                     elif identifier in ['caption', 'caption2']:
                                                         device.taglines.append(value)
-                                                    elif identifier == 'exp_if_types':
-                                                        if value == 'none':
-                                                            continue
-                                                        if '<!' in value:
-                                                            # TODO: process this correctly
-                                                            continue
-
-                                                        expansions = value.split(',')
-                                                        for expansion in expansions:
-                                                            if expansion.strip() == '':
-                                                                continue
-                                                            ex = defaults.EXPANSION_REWRITE.get(expansion.strip().lower(), expansion.strip())
-                                                            device.expansions.append(ex)
 
                                                     # commercial information (continued)
                                                     elif identifier == 'eoldate':
@@ -1795,6 +1799,18 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             # default values and variants.
                                                             # TODO: also print values that weren't correctly processed
                                                             print(identifier, value, file=sys.stderr)
+                                                # process WikiDevi specific information
+                                                elif wiki_type == 'WikiDevi':
+                                                    if identifier == 'wikipedia':
+                                                        pass
+                                                    else:
+                                                        if debug:
+                                                            # print values, but only if they aren't already
+                                                            # skipped or processed. This is useful for discovering
+                                                            # default values and variants.
+                                                            # TODO: also print values that weren't correctly processed
+                                                            print(identifier, value, file=sys.stderr)
+                                                    #pass
                                     else:
                                         pass
                                 elif f.name in ['Infobox Network Adapter\n']:
