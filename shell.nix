@@ -12,6 +12,7 @@ let
     mwparserfromhell
     pdfminer
     pillow
+    pyyaml
     requests
     rich
     textual
