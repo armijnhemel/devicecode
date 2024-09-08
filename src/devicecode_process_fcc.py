@@ -72,6 +72,8 @@ def search_text(texts):
 
     result_ips = defaults.REGEX_IP.findall(text)
     for result_ip in result_ips:
+        if len(result_ip.split('.')[0]) > 3:
+            continue
         ip_components = [int(x) <= 255 for x in result_ip.split('.')]
         if ip_components == [True, True, True, True]:
             if result_ip.startswith('192.168'):
@@ -99,17 +101,21 @@ def search_text(texts):
 
     for i in ['default password', 'default user password', 'default admin password',
               'default username and password', 'by default, the password is',
-              'the password is', 'by default, the username and password']:
+              'the password is', 'by default, the username and password',
+              'default user name and password']:
         if i in text:
             results.append({'type': 'reference', 'value': 'default password'})
             results_found = True
+            break
 
     for i in ['default username', 'default user name', 'default user\'s name',
               'default user id', 'default users', 'default username and password',
-              'by default the user name is', 'by default, the username and password']:
+              'default user name and password', 'by default the user name is',
+              'by default, the username and password']:
         if i in text:
             results.append({'type': 'reference', 'value': 'default user'})
             results_found = True
+            break
 
     for t in PROGRAMS:
         if t in text:
