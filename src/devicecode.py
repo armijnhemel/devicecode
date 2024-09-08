@@ -1130,19 +1130,19 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                     # the same identifier.
                                     have_valid_data = True
 
+                                    num_radios = 0
+
                                     if wiki_type == 'TechInfoDepot':
                                         # First walk the params to see how many ASINs,
-                                        # radios and CPUs are used. In the TechInfoDepot data
-                                        # there can be multiple versions of the same data
-                                        # but instead of a list the identifiers contain
-                                        # a number. Example: there are multiple Amazon ASINs
+                                        # radios and CPUs are used. there can be multiple
+                                        # versions of the same data but instead of a list the
+                                        # identifiers contain a number. Example: in the
+                                        # TechnInfoDepot data there are multiple Amazon ASINs
                                         # associated with devices. These are called asin, asin1,
                                         # asin2, asin3, etc.
-                                        # This is not the case for the WikiDevi data
 
                                         num_cpus = 0
                                         num_asins = 0
-                                        num_radios = 0
                                         for param in f.params:
                                             if '=' in param:
 
@@ -1164,16 +1164,23 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
 
                                                 if identifier in defaults.KNOWN_ASIN_IDENTIFIERS:
                                                     num_asins = max(num_asins, defaults.KNOWN_ASIN_IDENTIFIERS.index(identifier) + 1)
-                                                elif identifier in defaults.KNOWN_RADIO_IDENTIFIERS:
+                                                elif identifier in defaults.KNOWN_RADIO_IDENTIFIERS_TID:
                                                     num_radios = max(num_radios, int(identifier[3:4]))
-
-                                        # create the right amount of radio elements
-                                        for i in range(num_radios):
-                                            device.radios.append(Radio())
 
                                         # create the right amount of ASINs
                                         for i in range(num_asins):
                                             device.commercial.amazon_asin.append(Amazon_ASIN())
+                                    elif wiki_type == 'WikiDevi':
+                                        for param in f.params:
+                                            if not '=' in param:
+                                                continue
+                                            identifier = param.strip().split('=')[0]
+                                            if identifier in defaults.KNOWN_RADIO_IDENTIFIERS_WD:
+                                                num_radios = max(num_radios, int(identifier[2:3]))
+
+                                    # create the right amount of radio elements
+                                    for i in range(num_radios):
+                                        device.radios.append(Radio())
 
                                     for param in f.params:
                                         if '=' in param:
