@@ -170,7 +170,7 @@ class PowerSupply:
 class Radio:
     capabilities: list[str] = field(default_factory=list)
     chips: list[Chip] = field(default_factory=list)
-    model: str = ''
+    module: str = ''
     interface: str = ''
 
     # https://en.wikipedia.org/wiki/Organizationally_unique_identifier
@@ -1733,7 +1733,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                     elif identifier in ['rad1mod', 'rad2mod', 'rad3mod', 'rad4mod']:
                                                         # TODO: filter entries with <!--
                                                         radio_num = int(identifier[3:4])
-                                                        device.radios[radio_num - 1].model = value
+                                                        device.radios[radio_num - 1].module = value
                                                     elif identifier in ['rad1modif', 'rad2modif', 'rad3modif', 'rad4modif']:
                                                         # TODO: filter entries with <!--
                                                         radio_num = int(identifier[3:4])
@@ -1851,6 +1851,14 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                                 new_asin = Amazon_ASIN()
                                                                 new_asin.asin = value
                                                                 device.commercial.amazon_asin.append(new_asin)
+                                                    elif identifier in ['wi1_module', 'wi2_module', 'wi3_module', 'wi4_module']:
+                                                        # first grab the number of the radio element from the identifier
+                                                        radio_num = int(identifier[2:3])
+                                                        device.radios[radio_num - 1].module = value
+                                                    elif identifier in ['wi1_module_if', 'wi2_module_if', 'wi3_module_if', 'wi4_module_if']:
+                                                        # first grab the number of the radio element from the identifier
+                                                        radio_num = int(identifier[2:3])
+                                                        device.radios[radio_num - 1].interface = value
                                                     else:
                                                         if debug:
                                                             # print values, but only if they aren't already
