@@ -402,6 +402,8 @@ DEFAULT_VALUE = {
 KNOWN_ASIN_IDENTIFIERS = ['asin', 'asin2', 'asin3', 'asin4', 'asin5', 'asin6']
 KNOWN_ASIN_COUNTRY_IDENTIFIERS = ['asin_country', 'asin_country2', 'asin_country3',
                                   'asin_country4', 'asin_country5', 'asin_country6']
+KNOWN_ASIN_COUNTRIES = ['AE', 'AU', 'CA', 'CN', 'DE', 'ES', 'FR',
+                        'GB', 'IN', 'IT', 'JP', 'UK', 'US']
 
 KNOWN_RADIO_IDENTIFIERS_TID = set(["rad1a", "rad1ac", "rad1ad", "rad1_ant_conn", "rad1ax", "rad1ay",
     "rad1b", "rad1be", "rad1cap", "rad1chip1", "rad1chip2", "rad1chip3", "rad1chip1cpu",
