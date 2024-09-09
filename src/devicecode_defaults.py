@@ -418,7 +418,9 @@ KNOWN_RADIO_IDENTIFIERS_TID = set(["rad1a", "rad1ac", "rad1ad", "rad1_ant_conn",
     "rad3txchains", "rad4b", "rad4chip1', 'rad4chip2', 'rad4chip3", "rad4freq", "rad4g", "rad4mod",
     "rad4n", "rad4rxchains", "rad4sstreams", "rad4stand", "rad4txchains",])
 
-KNOWN_RADIO_IDENTIFIERS_WD = set(["wi1_module", "wi2_module", "wi3_module", "wi4_module"])
+KNOWN_RADIO_IDENTIFIERS_WD = set(["wi1_module", "wi2_module", "wi3_module", "wi4_module",
+                                  "wi1_module_if", "wi2_module_if", "wi3_module_if",
+                                  "wi4_module_if"])
 
 KNOWN_OS = set(['airOS', 'Android', 'Android TV', 'ArubaOS', 'Bananian', 'CBOS v2.0',
                 'CompexWRT', 'Debian', 'delos', 'DrayOS', 'eCos', 'eeroOS', 'FreeRTOS', 'ISOS',
