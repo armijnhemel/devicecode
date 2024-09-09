@@ -1812,17 +1812,39 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                         if '<!--' in value:
                                                             continue
                                                         if ',' in value:
-                                                            continue
-                                                        if ';' in value:
+                                                            asin_split = [x for x in value.split(',') if x != '']
+                                                            for a in asin_split:
+                                                                if ';' in a:
+                                                                    new_asin_split = [x for x in a.split(';') if x != '']
+                                                                    if len(new_asin_split) == 2:
+                                                                        new_asin = Amazon_ASIN()
+                                                                        if defaults.REGEX_ASIN.match(new_asin_split[0]) is not None:
+                                                                            new_asin.asin = new_asin_split[0].strip()
+                                                                        else:
+                                                                            continue
+                                                                        if new_asin_split[1].strip() in defaults.KNOWN_ASIN_COUNTRIES:
+                                                                            new_asin.country = new_asin_split[1].strip()
+                                                                        device.commercial.amazon_asin.append(new_asin)
+                                                                    elif len(new_asin_split) == 1:
+                                                                        if defaults.REGEX_ASIN.match(new_asin_split[0].strip()) is not None:
+                                                                            new_asin = Amazon_ASIN()
+                                                                            new_asin.asin = new_asin_split[0].strip()
+                                                                            device.commercial.amazon_asin.append(new_asin)
+                                                                else:
+                                                                    if defaults.REGEX_ASIN.match(a.strip()) is not None:
+                                                                        new_asin = Amazon_ASIN()
+                                                                        new_asin.asin = a.strip()
+                                                                        device.commercial.amazon_asin.append(new_asin)
+                                                        elif ';' in value:
                                                             asin_split = [x for x in value.split(';') if x != '']
                                                             if len(asin_split) == 2:
                                                                 new_asin = Amazon_ASIN()
                                                                 if defaults.REGEX_ASIN.match(asin_split[0]) is not None:
-                                                                    new_asin.asin = asin_split[0]
+                                                                    new_asin.asin = asin_split[0].strip()
                                                                 else:
                                                                     continue
-                                                                if asin_split[1] in defaults.KNOWN_ASIN_COUNTRIES:
-                                                                    new_asin.country = asin_split[1]
+                                                                if asin_split[1].strip() in defaults.KNOWN_ASIN_COUNTRIES:
+                                                                    new_asin.country = asin_split[1].strip()
                                                                 device.commercial.amazon_asin.append(new_asin)
                                                         else:
                                                             if defaults.REGEX_ASIN.match(value) is not None:
