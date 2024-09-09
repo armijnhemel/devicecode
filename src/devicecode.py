@@ -1809,11 +1809,26 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                 # process WikiDevi specific information
                                                 elif wiki_type == 'WikiDevi':
                                                     if identifier == 'asin':
-                                                        if ',' in value or ';' in value or '<!--' in value:
+                                                        if '<!--' in value:
                                                             continue
-                                                        new_asin = Amazon_ASIN()
-                                                        new_asin.asin = value
-                                                        device.commercial.amazon_asin.append(new_asin)
+                                                        if ',' in value:
+                                                            continue
+                                                        if ';' in value:
+                                                            asin_split = [x for x in value.split(';') if x != '']
+                                                            if len(asin_split) == 2:
+                                                                new_asin = Amazon_ASIN()
+                                                                if defaults.REGEX_ASIN.match(asin_split[0]) is not None:
+                                                                    new_asin.asin = asin_split[0]
+                                                                else:
+                                                                    continue
+                                                                if asin_split[1] in defaults.KNOWN_ASIN_COUNTRIES:
+                                                                    new_asin.country = asin_split[1]
+                                                                device.commercial.amazon_asin.append(new_asin)
+                                                        else:
+                                                            if defaults.REGEX_ASIN.match(value) is not None:
+                                                                new_asin = Amazon_ASIN()
+                                                                new_asin.asin = value
+                                                                device.commercial.amazon_asin.append(new_asin)
                                                     else:
                                                         if debug:
                                                             # print values, but only if they aren't already
