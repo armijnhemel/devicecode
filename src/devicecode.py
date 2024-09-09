@@ -1808,8 +1808,12 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             print(identifier, value, file=sys.stderr)
                                                 # process WikiDevi specific information
                                                 elif wiki_type == 'WikiDevi':
-                                                    if identifier == 'wikipedia':
-                                                        pass
+                                                    if identifier == 'asin':
+                                                        if ',' in value or ';' in value or '<!--' in value:
+                                                            continue
+                                                        new_asin = Amazon_ASIN()
+                                                        new_asin.asin = value
+                                                        device.commercial.amazon_asin.append(new_asin)
                                                     else:
                                                         if debug:
                                                             # print values, but only if they aren't already
