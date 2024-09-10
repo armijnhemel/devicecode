@@ -170,7 +170,7 @@ class PowerSupply:
 class Radio:
     capabilities: list[str] = field(default_factory=list)
     chips: list[Chip] = field(default_factory=list)
-    model: str = ''
+    module: str = ''
     interface: str = ''
 
     # https://en.wikipedia.org/wiki/Organizationally_unique_identifier
@@ -711,7 +711,7 @@ def parse_serial_jtag(serial_string):
             result['number_of_pins'] = int(regex_result.groups()[0])
             continue
 
-        # console via RJ45? TODO.
+        # console via RJ45?
         if result['connector'] == '':
             if field in ['RJ45 console', 'RJ-45 console', 'console port (RJ45)',
                          'console port (RJ-45)', 'console (RJ45)', 'console (RJ-45)',
@@ -883,12 +883,15 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                         # is in the <text> element
                         wiki_text = c.childNodes[0].data
                         wikicode = mwparserfromhell.parse(wiki_text)
-                        # reset device
+
+                        # reset device information
                         device = None
                         have_valid_data = False
 
                         # walk the elements in the parsed wiki text.
-                        # Kind of assume a fixed order here.
+                        # Kind of assume a fixed order here. This is maybe a
+                        # bit risky, but so far it seems to work (no exceptions
+                        # have been observed).
                         # There are different elements in the Wiki text:
                         #
                         # * headings
@@ -1127,19 +1130,19 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                     # the same identifier.
                                     have_valid_data = True
 
+                                    num_radios = 0
+                                    num_cpus = 0
+
                                     if wiki_type == 'TechInfoDepot':
                                         # First walk the params to see how many ASINs,
-                                        # radios and CPUs are used. In the TechInfoDepot data
-                                        # there can be multiple versions of the same data
-                                        # but instead of a list the identifiers contain
-                                        # a number. Example: there are multiple Amazon ASINs
+                                        # radios and CPUs are used. there can be multiple
+                                        # versions of the same data but instead of a list the
+                                        # identifiers contain a number. Example: in the
+                                        # TechnInfoDepot data there are multiple Amazon ASINs
                                         # associated with devices. These are called asin, asin1,
                                         # asin2, asin3, etc.
-                                        # This is not the case for the WikiDevi data
 
-                                        num_cpus = 0
                                         num_asins = 0
-                                        num_radios = 0
                                         for param in f.params:
                                             if '=' in param:
 
@@ -1161,16 +1164,27 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
 
                                                 if identifier in defaults.KNOWN_ASIN_IDENTIFIERS:
                                                     num_asins = max(num_asins, defaults.KNOWN_ASIN_IDENTIFIERS.index(identifier) + 1)
-                                                elif identifier in defaults.KNOWN_RADIO_IDENTIFIERS:
+                                                elif identifier in defaults.KNOWN_RADIO_IDENTIFIERS_TID:
                                                     num_radios = max(num_radios, int(identifier[3:4]))
-
-                                        # create the right amount of radio elements
-                                        for i in range(num_radios):
-                                            device.radios.append(Radio())
+                                                elif identifier in defaults.KNOWN_CPU_IDENTIFIERS_TID:
+                                                    num_cpus = max(num_cpus, int(identifier[3:4]))
 
                                         # create the right amount of ASINs
                                         for i in range(num_asins):
                                             device.commercial.amazon_asin.append(Amazon_ASIN())
+                                    elif wiki_type == 'WikiDevi':
+                                        for param in f.params:
+                                            if not '=' in param:
+                                                continue
+                                            identifier = param.strip().split('=')[0]
+                                            if identifier in defaults.KNOWN_RADIO_IDENTIFIERS_WD:
+                                                num_radios = max(num_radios, int(identifier[2:3]))
+                                            if identifier in defaults.KNOWN_CPU_IDENTIFIERS_WD:
+                                                num_cpus = max(num_cpus, int(identifier[3:4]))
+
+                                    # create the right amount of radio elements
+                                    for i in range(num_radios):
+                                        device.radios.append(Radio())
 
                                     for param in f.params:
                                         if '=' in param:
@@ -1594,6 +1608,20 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                     except ValueError:
                                                         pass
 
+                                                elif identifier in ['exp_if_types', 'expansion_if_types']:
+                                                    if value == 'none':
+                                                        continue
+                                                    if '<!' in value:
+                                                        # TODO: process this correctly
+                                                        continue
+
+                                                    expansions = value.split(',')
+                                                    for expansion in expansions:
+                                                        if expansion.strip() == '':
+                                                            continue
+                                                        ex = defaults.EXPANSION_REWRITE.get(expansion.strip().lower(), expansion.strip())
+                                                        device.expansions.append(ex)
+
                                                 # process TechInfoDepot specific information
                                                 if wiki_type == 'TechInfoDepot':
                                                     if identifier == 'model_part_num':
@@ -1607,19 +1635,6 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                         device.model.submodel = value
                                                     elif identifier in ['caption', 'caption2']:
                                                         device.taglines.append(value)
-                                                    elif identifier == 'exp_if_types':
-                                                        if value == 'none':
-                                                            continue
-                                                        if '<!' in value:
-                                                            # TODO: process this correctly
-                                                            continue
-
-                                                        expansions = value.split(',')
-                                                        for expansion in expansions:
-                                                            if expansion.strip() == '':
-                                                                continue
-                                                            ex = defaults.EXPANSION_REWRITE.get(expansion.strip().lower(), expansion.strip())
-                                                            device.expansions.append(ex)
 
                                                     # commercial information (continued)
                                                     elif identifier == 'eoldate':
@@ -1636,6 +1651,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
 
                                                     # cpu
                                                     elif identifier in ['cpu1chip1', 'cpu2chip1']:
+                                                        chip_index = int(identifier[3]) - 1
                                                         chip_result = parse_chip(value)
                                                         if chip_result is not None:
                                                             device.cpus.append(chip_result)
@@ -1722,7 +1738,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                     elif identifier in ['rad1mod', 'rad2mod', 'rad3mod', 'rad4mod']:
                                                         # TODO: filter entries with <!--
                                                         radio_num = int(identifier[3:4])
-                                                        device.radios[radio_num - 1].model = value
+                                                        device.radios[radio_num - 1].module = value
                                                     elif identifier in ['rad1modif', 'rad2modif', 'rad3modif', 'rad4modif']:
                                                         # TODO: filter entries with <!--
                                                         radio_num = int(identifier[3:4])
@@ -1788,6 +1804,66 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                         #device.web.wikipedia = value
                                                         pass
 
+                                                    else:
+                                                        if debug:
+                                                            # print values, but only if they aren't already
+                                                            # skipped or processed. This is useful for discovering
+                                                            # default values and variants.
+                                                            # TODO: also print values that weren't correctly processed
+                                                            print(identifier, value, file=sys.stderr)
+                                                # process WikiDevi specific information
+                                                elif wiki_type == 'WikiDevi':
+                                                    if identifier == 'asin':
+                                                        if '<!--' in value:
+                                                            continue
+                                                        if ',' in value:
+                                                            asin_split = [x for x in value.split(',') if x != '']
+                                                            for a in asin_split:
+                                                                if ';' in a:
+                                                                    new_asin_split = [x for x in a.split(';') if x != '']
+                                                                    if len(new_asin_split) == 2:
+                                                                        new_asin = Amazon_ASIN()
+                                                                        if defaults.REGEX_ASIN.match(new_asin_split[0]) is not None:
+                                                                            new_asin.asin = new_asin_split[0].strip()
+                                                                        else:
+                                                                            continue
+                                                                        if new_asin_split[1].strip() in defaults.KNOWN_ASIN_COUNTRIES:
+                                                                            new_asin.country = new_asin_split[1].strip()
+                                                                        device.commercial.amazon_asin.append(new_asin)
+                                                                    elif len(new_asin_split) == 1:
+                                                                        if defaults.REGEX_ASIN.match(new_asin_split[0].strip()) is not None:
+                                                                            new_asin = Amazon_ASIN()
+                                                                            new_asin.asin = new_asin_split[0].strip()
+                                                                            device.commercial.amazon_asin.append(new_asin)
+                                                                else:
+                                                                    if defaults.REGEX_ASIN.match(a.strip()) is not None:
+                                                                        new_asin = Amazon_ASIN()
+                                                                        new_asin.asin = a.strip()
+                                                                        device.commercial.amazon_asin.append(new_asin)
+                                                        elif ';' in value:
+                                                            asin_split = [x for x in value.split(';') if x != '']
+                                                            if len(asin_split) == 2:
+                                                                new_asin = Amazon_ASIN()
+                                                                if defaults.REGEX_ASIN.match(asin_split[0]) is not None:
+                                                                    new_asin.asin = asin_split[0].strip()
+                                                                else:
+                                                                    continue
+                                                                if asin_split[1].strip() in defaults.KNOWN_ASIN_COUNTRIES:
+                                                                    new_asin.country = asin_split[1].strip()
+                                                                device.commercial.amazon_asin.append(new_asin)
+                                                        else:
+                                                            if defaults.REGEX_ASIN.match(value) is not None:
+                                                                new_asin = Amazon_ASIN()
+                                                                new_asin.asin = value
+                                                                device.commercial.amazon_asin.append(new_asin)
+                                                    elif identifier in ['wi1_module', 'wi2_module', 'wi3_module', 'wi4_module']:
+                                                        # first grab the number of the radio element from the identifier
+                                                        radio_num = int(identifier[2:3])
+                                                        device.radios[radio_num - 1].module = value
+                                                    elif identifier in ['wi1_module_if', 'wi2_module_if', 'wi3_module_if', 'wi4_module_if']:
+                                                        # first grab the number of the radio element from the identifier
+                                                        radio_num = int(identifier[2:3])
+                                                        device.radios[radio_num - 1].interface = value
                                                     else:
                                                         if debug:
                                                             # print values, but only if they aren't already

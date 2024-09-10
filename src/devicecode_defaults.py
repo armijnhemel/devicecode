@@ -402,8 +402,24 @@ DEFAULT_VALUE = {
 KNOWN_ASIN_IDENTIFIERS = ['asin', 'asin2', 'asin3', 'asin4', 'asin5', 'asin6']
 KNOWN_ASIN_COUNTRY_IDENTIFIERS = ['asin_country', 'asin_country2', 'asin_country3',
                                   'asin_country4', 'asin_country5', 'asin_country6']
+KNOWN_ASIN_COUNTRIES = ['AE', 'AU', 'CA', 'CN', 'DE', 'ES', 'FR',
+                        'GB', 'IN', 'IT', 'JP', 'UK', 'US']
 
-KNOWN_RADIO_IDENTIFIERS = set(["rad1a", "rad1ac", "rad1ad", "rad1_ant_conn", "rad1ax", "rad1ay",
+KNOWN_CPU_IDENTIFIERS_TID = ['cpu1_brand', 'cpu1brand', 'cpu1chip', 'cpu1chip1',
+                             'cpu1_cores', 'cpu1_cores', 'cpu1_cores2', 'cpu1_cspeed',
+                             'cpu1_model', 'cpu1model', 'cpu1modelfull', 'cpu1spd', 'cpu1spd2',
+                             'cpu1threads', 'cpu1_total_cores', 'cpu1_type', 'cpu1_type2',
+                             'cpu1_type2_rev', 'cpu1_type_rev', 'cpu2brand', 'cpu2chip1',
+                             'cpu2_cores', 'cpu2model', 'cpu2modelfull', 'cpu2spd', 'cpu2_type',
+                             'cpu2_type_rev', 'cpu3brand', 'cpu3model', 'cpu4brand', 'cpu4model']
+
+KNOWN_CPU_IDENTIFIERS_WD = ['cpu1_brand', 'cpu1_cores', 'cpu1_cspeed', 'cpu1_model',
+                            'cpu1_num', 'cpu1_speed', 'cpu2_brand', 'cpu2_cores',
+                            'cpu2_cspeed', 'cpu2_model' 'cpu3_brand', 'cpu3_cores',
+                            'cpu3_cspeed', 'cpu3_model', 'cpu4_brand', 'cpu4_cores',
+                            'cpu4_cspeed', 'cpu4_model']
+
+KNOWN_RADIO_IDENTIFIERS_TID = set(["rad1a", "rad1ac", "rad1ad", "rad1_ant_conn", "rad1ax", "rad1ay",
     "rad1b", "rad1be", "rad1cap", "rad1chip1", "rad1chip2", "rad1chip3", "rad1chip1cpu",
     "rad1correv", "rad1freq", "rad1g", "rad1mod", "rad1modif", "rad1n", "rad1oui", "rad1rxchains",
     "rad1sstreams", "rad1stand", "rad1txchains", "rad2a", "rad2ac", "rad2ad", "rad2_ant_conn",
@@ -415,6 +431,10 @@ KNOWN_RADIO_IDENTIFIERS = set(["rad1a", "rad1ac", "rad1ad", "rad1_ant_conn", "ra
     "rad3mod", "rad3modif", "rad3n", "rad3oui", "rad3rxchains", "rad3sstreams", "rad3stand",
     "rad3txchains", "rad4b", "rad4chip1', 'rad4chip2', 'rad4chip3", "rad4freq", "rad4g", "rad4mod",
     "rad4n", "rad4rxchains", "rad4sstreams", "rad4stand", "rad4txchains",])
+
+KNOWN_RADIO_IDENTIFIERS_WD = set(["wi1_module", "wi2_module", "wi3_module", "wi4_module",
+                                  "wi1_module_if", "wi2_module_if", "wi3_module_if",
+                                  "wi4_module_if"])
 
 KNOWN_OS = set(['airOS', 'Android', 'Android TV', 'ArubaOS', 'Bananian', 'CBOS v2.0',
                 'CompexWRT', 'Debian', 'delos', 'DrayOS', 'eCos', 'eeroOS', 'FreeRTOS', 'ISOS',

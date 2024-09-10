@@ -23,25 +23,29 @@ For a more thorough motivation see
 
 It is highly recommended to use the pregenerated set of data available in the
 [devicecode-data][devicecode-data] repository instead of creating a data set
-from scratch.
+from scratch. A lot of the heavy lifting has already been done for this data
+set: processing, consolidating data, creating overlays, and so on.
 
 The tools need a dump file with data exported from TechInfoDepot or WikiDevi.
 This dump file is in XML format and contains content in a mix of HTML and
 MediaWiki format.
 
-The formats of the two websites are fairly similar as TechInfoDepot seems to
-have been forked from (a predecessor of) WikiDevi.
+The formats of the two wikis are fairly similar as TechInfoDepot seems to
+have been forked from (a predecessor of) WikiDevi, although many things were
+changed or added.
 
 ### Creating a dump file
 
-See [creating a dump file](doc/creating_a_dump_file.md).
+See [creating a dump file](doc/creating_a_dump_file.md) for a description on
+how to create a dump file.
 
 ### Running the scripts
 
 The easiest to run the script is to use Nix and then `nix-shell` to set up the
 environment. If this isn't your cup of tea, then the requirements for running
 the scripts are (currently) quite modest (see `requirements.txt` for the Python
-dependencies and install `git` if you want to use the Git functionality).
+dependencies). You should also install `git` if you want to use the Git
+functionality.
 
 To run the script you will need a dump file (see above). It is recommended that
 the directory you write to is an existing Git repository. One method is to
