@@ -1651,6 +1651,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
 
                                                     # cpu
                                                     elif identifier in ['cpu1chip1', 'cpu2chip1']:
+                                                        chip_index = int(identifier[3]) - 1
                                                         chip_result = parse_chip(value)
                                                         if chip_result is not None:
                                                             device.cpus.append(chip_result)
