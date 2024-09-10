@@ -78,6 +78,8 @@ def search_text(texts):
             continue
         ip_components = [int(x) <= 255 for x in result_ip.split('.')]
         if ip_components == [True, True, True, True]:
+            if result_ip.split('.')[3] == '000':
+                continue
             if result_ip.startswith('192.168'):
                 results.append({'type': 'IP address', 'value': result_ip, 'extra_data': 'private'})
             elif result_ip.startswith('172.'):
