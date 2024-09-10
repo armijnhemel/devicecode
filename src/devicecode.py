@@ -1397,22 +1397,25 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                     # some devices apparently can have more than one FCC id.
                                                     fcc_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     for f in fcc_values:
-                                                        if '<!' in f:
-                                                            if not f.startswith('<!'):
-                                                                fcc_value = f.split('<!')[0]
+                                                        if '<!--' in f:
+                                                            if not f.startswith('<!--'):
+                                                                fcc_value = f.split('<!--')[0]
                                                             else:
-                                                                if fcc_value.endswith('-->'):
-                                                                    fcc_value = f.split('<!', maxsplit=1)[0][:-3].strip()
+                                                                if f.endswith('-->'):
+                                                                    fcc_value = f.split('<!--', maxsplit=1)[1][:-3].strip()
                                                                 else:
                                                                     fcc_value = f
                                                         else:
                                                             fcc_value = f
-                                                        new_fcc = FCC()
-                                                        new_fcc.fcc_id = fcc_value
                                                         if fcc_value.startswith('2'):
                                                             grantee_code = fcc_value[:5]
                                                         else:
                                                             grantee_code = fcc_value[:3]
+                                                            if not grantee_code[0].isalpha():
+                                                                continue
+
+                                                        new_fcc = FCC()
+                                                        new_fcc.fcc_id = fcc_value.strip()
                                                         new_fcc.grantee = fcc_grantees.get(grantee_code, "")
 
                                                         device.regulatory.fcc_ids.append(new_fcc)
