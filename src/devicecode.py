@@ -1131,6 +1131,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                     have_valid_data = True
 
                                     num_radios = 0
+                                    num_cpus = 0
 
                                     if wiki_type == 'TechInfoDepot':
                                         # First walk the params to see how many ASINs,
@@ -1141,7 +1142,6 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                         # associated with devices. These are called asin, asin1,
                                         # asin2, asin3, etc.
 
-                                        num_cpus = 0
                                         num_asins = 0
                                         for param in f.params:
                                             if '=' in param:
@@ -1166,6 +1166,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                     num_asins = max(num_asins, defaults.KNOWN_ASIN_IDENTIFIERS.index(identifier) + 1)
                                                 elif identifier in defaults.KNOWN_RADIO_IDENTIFIERS_TID:
                                                     num_radios = max(num_radios, int(identifier[3:4]))
+                                                elif identifier in defaults.KNOWN_CPU_IDENTIFIERS_TID:
+                                                    num_cpus = max(num_cpus, int(identifier[3:4]))
 
                                         # create the right amount of ASINs
                                         for i in range(num_asins):
@@ -1177,6 +1179,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                             identifier = param.strip().split('=')[0]
                                             if identifier in defaults.KNOWN_RADIO_IDENTIFIERS_WD:
                                                 num_radios = max(num_radios, int(identifier[2:3]))
+                                            if identifier in defaults.KNOWN_CPU_IDENTIFIERS_WD:
+                                                num_cpus = max(num_cpus, int(identifier[3:4]))
 
                                     # create the right amount of radio elements
                                     for i in range(num_radios):
@@ -1866,7 +1870,6 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             # default values and variants.
                                                             # TODO: also print values that weren't correctly processed
                                                             print(identifier, value, file=sys.stderr)
-                                                    #pass
                                     else:
                                         pass
                                 elif f.name in ['Infobox Network Adapter\n']:
