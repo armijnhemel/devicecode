@@ -411,7 +411,7 @@ KNOWN_CPU_IDENTIFIERS_TID = ['cpu1_brand', 'cpu1brand', 'cpu1chip', 'cpu1chip1',
                              'cpu1threads', 'cpu1_total_cores', 'cpu1_type', 'cpu1_type2',
                              'cpu1_type2_rev', 'cpu1_type_rev', 'cpu2brand', 'cpu2chip1',
                              'cpu2_cores', 'cpu2model', 'cpu2modelfull', 'cpu2spd', 'cpu2_type',
-                             'cpu2_type_rev']
+                             'cpu2_type_rev', 'cpu3brand', 'cpu3model', 'cpu4brand', 'cpu4model']
 
 KNOWN_CPU_IDENTIFIERS_WD = ['cpu1_brand', 'cpu1_cores', 'cpu1_cspeed', 'cpu1_model',
                             'cpu1_num', 'cpu1_speed', 'cpu2_brand', 'cpu2_cores',
