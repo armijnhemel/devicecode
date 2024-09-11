@@ -704,6 +704,9 @@ def parse_serial_jtag(serial_string):
         if field.upper() in '3.3V TTL':
             result['voltage'] = 3.3
             continue
+        if field.upper() in '1.8V TTL':
+            result['voltage'] = 1.8
+            continue
 
         # pin header
         regex_result = defaults.REGEX_SERIAL_PIN_HEADER.match(field)
