@@ -636,13 +636,8 @@ def parse_serial_jtag(serial_string):
 
     fields = serial_string.split(',')
 
-    # TODO: there are some devices where the first field
-    # is not explicitly 'yes' but there is clear serial port
-    # information. These should also be processed.
     if fields[0].lower() == 'yes':
         result['has_port'] = 'yes'
-
-    result['connector'] = ''
 
     # parse every single field. As there doesn't seem to
     # be a fixed order to store information the only way
@@ -701,8 +696,11 @@ def parse_serial_jtag(serial_string):
             continue
 
         # voltage
-        if field.upper() in '3.3V TTL':
+        if field.upper() in ['3.3', '3.3V', '3.3V TTL']:
             result['voltage'] = 3.3
+            continue
+        if field.upper() in ['1.8', '1.8V', '1.8V TTL']:
+            result['voltage'] = 1.8
             continue
 
         # pin header
@@ -712,17 +710,22 @@ def parse_serial_jtag(serial_string):
             continue
 
         # console via RJ45?
-        if result['connector'] == '':
+        if not 'connector' in result:
             if field in ['RJ45 console', 'RJ-45 console', 'console port (RJ45)',
                          'console port (RJ-45)', 'console (RJ45)', 'console (RJ-45)',
                          'RJ-45 Console port']:
                 result['connector'] = 'RJ45'
 
         # DE-9 connector
-        if result['connector'] == '':
+        if not 'connector' in result:
             if field in ['DB9', 'DB-9', '(DB9)', '(DB-9)', 'DE9', 'DE-9', 'console port (DE-9)']:
                 result['connector'] = 'DE-9'
 
+    if not result:
+        # there are some devices where the first field
+        # is not explicitly 'yes' but there is clear serial port
+        # information.
+        result['has_port'] = 'yes'
     return result
 
 @click.command(short_help='Process TechInfoDepot or WikiDevi XML dump')
@@ -1394,25 +1397,28 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                         # fcc date without an FCC id. Sigh.
                                                         continue
                                                 elif identifier == 'fcc_id':
-                                                    # some devices apparently can have more than one FCC id.
+                                                    # some devices have more than one FCC id.
                                                     fcc_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     for f in fcc_values:
-                                                        if '<!' in f:
-                                                            if not f.startswith('<!'):
-                                                                fcc_value = f.split('<!')[0]
+                                                        if '<!--' in f:
+                                                            if not f.startswith('<!--'):
+                                                                fcc_value = f.split('<!--')[0]
                                                             else:
-                                                                if fcc_value.endswith('-->'):
-                                                                    fcc_value = f.split('<!', maxsplit=1)[0][:-3].strip()
+                                                                if f.endswith('-->'):
+                                                                    fcc_value = f.split('<!--', maxsplit=1)[1][:-3].strip()
                                                                 else:
                                                                     fcc_value = f
                                                         else:
                                                             fcc_value = f
-                                                        new_fcc = FCC()
-                                                        new_fcc.fcc_id = fcc_value
                                                         if fcc_value.startswith('2'):
                                                             grantee_code = fcc_value[:5]
                                                         else:
                                                             grantee_code = fcc_value[:3]
+                                                            if not grantee_code[0].isalpha():
+                                                                continue
+
+                                                        new_fcc = FCC()
+                                                        new_fcc.fcc_id = fcc_value.strip()
                                                         new_fcc.grantee = fcc_grantees.get(grantee_code, "")
 
                                                         device.regulatory.fcc_ids.append(new_fcc)
@@ -1420,7 +1426,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                     usid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     device.regulatory.us_ids = usid_values
                                                 elif identifier in ['icid', 'ic_id']:
-                                                    # some devices apparently can have more than one IC id.
+                                                    # some devices have more than one IC id.
                                                     icid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     device.regulatory.industry_canada_ids = icid_values
 
@@ -1768,7 +1774,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             continue
                                                         device.web.download_page = value
                                                     elif identifier in ['pp', 'pp2', 'pp3']:
-                                                        # parse the support page value
+                                                        # parse the product page value
                                                         if not '://' in value:
                                                             continue
                                                         if not value.startswith('http'):
@@ -1796,7 +1802,15 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             urllib.parse.urlparse(value)
                                                         except ValueError:
                                                             continue
-                                                        device.web.support_page.append(value)
+                                                        if '<!--' in value:
+                                                            # some people only adapted the default value
+                                                            # and didn't remove the comment parts.
+                                                            if value.startswith('<!-- ') and value.endswith(' -->'):
+                                                                device.web.support_page.append(value[5:-4].strip())
+                                                            else:
+                                                                device.web.support_page.append(value.split('<!-- ')[0].strip())
+                                                        else:
+                                                            device.web.support_page.append(value)
                                                     elif identifier == 'wikidevi':
                                                         device.web.wikidevi = value
                                                     # Low quality data, ignore for now

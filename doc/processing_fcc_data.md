@@ -136,6 +136,14 @@ or not written after the PDF files have been processed:
 $ python devicecode_process_fcc.py -o ~/git/devicecode-data/FCC -d ~/fcc-data --clean-output 2AGN7-X9
 ```
 
+When running this script the following warning will be displayed many times:
+
+```
+The PDF <_io.BufferedReader name='[...]'> contains a metadata field indicating that it should not allow text extraction. Ignoring this field and proceeding. Use the check_extractable if you want to raise an error in this case
+```
+
+This warning can be safely ignored.
+
 ## Workflow for creating overlays from FCC data
 
 The next step is creating overlays (currently only used in the TUI, but will
