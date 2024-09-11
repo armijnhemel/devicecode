@@ -554,6 +554,8 @@ class DevicecodeUI(App):
                 labels.add(":penguin:")
             if 'android' in device['software']['os'].lower():
                 labels.add(":robot:")
+            if 'fcc_data' in device:
+                labels.add("\U000024BB")
 
             brands_to_devices[brand_name].append({'model': model, 'data': device, 'labels': sorted(labels)})
             brands.add(brand_name.lower())
