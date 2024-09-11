@@ -1394,7 +1394,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                         # fcc date without an FCC id. Sigh.
                                                         continue
                                                 elif identifier == 'fcc_id':
-                                                    # some devices apparently can have more than one FCC id.
+                                                    # some devices have more than one FCC id.
                                                     fcc_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     for f in fcc_values:
                                                         if '<!--' in f:
@@ -1423,7 +1423,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                     usid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     device.regulatory.us_ids = usid_values
                                                 elif identifier in ['icid', 'ic_id']:
-                                                    # some devices apparently can have more than one IC id.
+                                                    # some devices have more than one IC id.
                                                     icid_values = list(filter(lambda x: x!='', map(lambda x: x.strip(), value.split(','))))
                                                     device.regulatory.industry_canada_ids = icid_values
 
