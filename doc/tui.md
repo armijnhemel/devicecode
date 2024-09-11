@@ -65,6 +65,8 @@ following extra icons are used:
 * robot - the device runs Android by default
 * telephone - the device is either a (VoIP) phone, (analog) phone gateway or
   has VoIP functionality
+* circled F - the device has information extracted from documents downloaded
+  from FCC
 
 ## Filtering
 
