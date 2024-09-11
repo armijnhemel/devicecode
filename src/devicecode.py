@@ -636,13 +636,8 @@ def parse_serial_jtag(serial_string):
 
     fields = serial_string.split(',')
 
-    # TODO: there are some devices where the first field
-    # is not explicitly 'yes' but there is clear serial port
-    # information. These should also be processed.
     if fields[0].lower() == 'yes':
         result['has_port'] = 'yes'
-
-    result['connector'] = ''
 
     # parse every single field. As there doesn't seem to
     # be a fixed order to store information the only way
@@ -701,12 +696,14 @@ def parse_serial_jtag(serial_string):
             continue
 
         # voltage
-        if field.upper() in '3.3V TTL':
-            result['voltage'] = 3.3
-            continue
-        if field.upper() in '1.8V TTL':
-            result['voltage'] = 1.8
-            continue
+        if '3.3' in field:
+            if field.upper() in '3.3V TTL':
+                result['voltage'] = 3.3
+                continue
+        if '1.8' in field:
+            if field.upper() in '1.8V TTL':
+                result['voltage'] = 1.8
+                continue
 
         # pin header
         regex_result = defaults.REGEX_SERIAL_PIN_HEADER.match(field)
@@ -715,17 +712,22 @@ def parse_serial_jtag(serial_string):
             continue
 
         # console via RJ45?
-        if result['connector'] == '':
+        if not 'connector' in result:
             if field in ['RJ45 console', 'RJ-45 console', 'console port (RJ45)',
                          'console port (RJ-45)', 'console (RJ45)', 'console (RJ-45)',
                          'RJ-45 Console port']:
                 result['connector'] = 'RJ45'
 
         # DE-9 connector
-        if result['connector'] == '':
+        if not 'connector' in result:
             if field in ['DB9', 'DB-9', '(DB9)', '(DB-9)', 'DE9', 'DE-9', 'console port (DE-9)']:
                 result['connector'] = 'DE-9'
 
+    if not result:
+        # there are some devices where the first field
+        # is not explicitly 'yes' but there is clear serial port
+        # information.
+        result['has_port'] = 'yes'
     return result
 
 @click.command(short_help='Process TechInfoDepot or WikiDevi XML dump')
