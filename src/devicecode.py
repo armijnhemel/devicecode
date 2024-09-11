@@ -1774,7 +1774,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             continue
                                                         device.web.download_page = value
                                                     elif identifier in ['pp', 'pp2', 'pp3']:
-                                                        # parse the support page value
+                                                        # parse the product page value
                                                         if not '://' in value:
                                                             continue
                                                         if not value.startswith('http'):
@@ -1802,7 +1802,15 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             urllib.parse.urlparse(value)
                                                         except ValueError:
                                                             continue
-                                                        device.web.support_page.append(value)
+                                                        if '<!--' in value:
+                                                            # some people only adapted the default value
+                                                            # and didn't remove the comment parts.
+                                                            if value.startswith('<!-- ') and value.endswith(' -->'):
+                                                                device.web.support_page.append(value[5:-4].strip())
+                                                            else:
+                                                                device.web.support_page.append(value.split('<!-- ')[0].strip())
+                                                        else:
+                                                            device.web.support_page.append(value)
                                                     elif identifier == 'wikidevi':
                                                         device.web.wikidevi = value
                                                     # Low quality data, ignore for now
