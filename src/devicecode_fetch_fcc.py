@@ -17,7 +17,7 @@ import requests
 
 # FCC ids can only consist of letters, numbers and hyphens
 RE_FCC_ID = re.compile(r'[\w\d\-]+$')
-RE_APPROVED_DATE = re.compile(r'(\d{4}-\d{2}-\d{2})')
+RE_DATE = re.compile(r'(\d{4}-\d{2}-\d{2})')
 
 # time in seconds to sleep in "gentle mode"
 SLEEP_INTERVAL = 2
@@ -150,7 +150,11 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
                 # keep a bit of state and only look at the interesting lines.
                 # This is a bit ugly but hey, it works.
                 if '<span class="label label-success">APPROVED</span>' in line:
-                    res = RE_APPROVED_DATE.search(line)
+                    res = RE_DATE.search(line)
+                    if res:
+                        approved_dates.append(res.groups()[0])
+                if '<span class="label label-danger">FAILED</span>' in line:
+                    res = RE_DATE.search(line)
                     if res:
                         approved_dates.append(res.groups()[0])
                 if '<th>File Name</th><th>Document Type</th>' in line:
