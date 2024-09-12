@@ -164,9 +164,14 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
                                         if not is_modular and descriptions['modular']:
                                             # there is an extra module
                                             fcc_type = 'auxiliary'
-                                    overlay = {'fcc_date': dates[0], 'fcc_id': fcc_id,
-                                               'fcc_type': fcc_type, 'license': 'CC0-1.0',
-                                               'grantee': grantee_name}
+                                    if dates:
+                                        overlay = {'fcc_date': dates[0], 'fcc_id': fcc_id,
+                                                   'fcc_type': fcc_type, 'license': 'CC0-1.0',
+                                                   'grantee': grantee_name}
+                                    else:
+                                        overlay = {'fcc_date': '', 'fcc_id': fcc_id,
+                                                   'fcc_type': fcc_type, 'license': 'CC0-1.0',
+                                                   'grantee': grantee_name}
 
                                     overlay_fcc_ids.append(overlay)
                                 elif fcc_date not in dates:
