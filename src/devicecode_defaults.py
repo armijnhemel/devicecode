@@ -482,7 +482,7 @@ REGEX_OUI = re.compile(r'^[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}$')
 
 # regular expression for finding connectors in
 # serial port information sections
-REGEX_SERIAL_CONNECTOR = re.compile(r'(JP?\d+)')
+REGEX_SERIAL_CONNECTOR = re.compile(r'([DS]?J[CP]?\d+)')
 
 REGEX_SERIAL_PIN_HEADER = re.compile(r'(?:via )?(\d+)[ -](?:in|pln|pin|pad|pads) ?(?:header|connector)?')
 
