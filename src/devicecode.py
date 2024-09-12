@@ -669,11 +669,19 @@ def parse_serial_jtag(serial_string):
 
     for field in fields_to_process:
         # try to find where the connector can be found
-        # (typically which solder pads)
+        # (typically which solder pads). TODO: some devices
+        # have multiple connectors listed, example:
+        # Arndale Board
         regex_result = defaults.REGEX_SERIAL_CONNECTOR.match(field.upper())
         if regex_result is not None:
-            result['connector'] = regex_result.groups()[0]
-            continue
+            if 'connector' not in result:
+                result['connector'] = regex_result.groups()[0]
+                continue
+        regex_result = defaults.REGEX_SERIAL_CONNECTOR2.match(field.upper())
+        if regex_result is not None:
+            if 'connector' not in result:
+                result['connector'] = regex_result.groups()[0]
+                continue
 
         # baud rates
         baud_rate = None
