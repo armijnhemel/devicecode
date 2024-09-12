@@ -56,9 +56,8 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
             print(f"{output_directory} is not a Git repository, exiting.", file=sys.stderr)
             sys.exit(1)
 
-    # verify the directory names, they should be one of the following
-    #valid_directory_names = ['TechInfoDepot', 'WikiDevi']
-    valid_directory_names = ['TechInfoDepot']
+    # verify the directory names, they should be one of the following:
+    valid_directory_names = ['TechInfoDepot', 'WikiDevi']
     processed_fcc_directory = devicecode_directory / 'FCC'
 
     # Inside these directories a directory called 'devices' should always
