@@ -73,7 +73,7 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
         devices_dir = p / 'devices'
         if not (devices_dir.exists() and devices_dir.is_dir()):
             continue
-        devicecode_dirs.append(devices_dir)
+        devicecode_dirs.append(p)
 
         if not report_only:
             overlay_directory = output_directory / p.name / 'overlays'
@@ -84,7 +84,9 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
         sys.exit(1)
 
     # Then walk all the result files, check the FCC ids and optionally create overlays
-    for devicecode_dir in devicecode_dirs:
+    for p in devicecode_dirs:
+        devicecode_dir = p / 'devices'
+        overlay_directory = output_directory / p.name / 'overlays'
         for result_file in devicecode_dir.glob('**/*'):
             if not result_file.is_file():
                 continue
