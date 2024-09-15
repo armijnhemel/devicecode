@@ -56,9 +56,8 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
             print(f"{output_directory} is not a Git repository, exiting.", file=sys.stderr)
             sys.exit(1)
 
-    # verify the directory names, they should be one of the following
-    #valid_directory_names = ['TechInfoDepot', 'WikiDevi']
-    valid_directory_names = ['TechInfoDepot']
+    # verify the directory names, they should be one of the following:
+    valid_directory_names = ['TechInfoDepot', 'WikiDevi']
     processed_fcc_directory = devicecode_directory / 'FCC'
 
     # Inside these directories a directory called 'devices' should always
@@ -74,7 +73,7 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
         devices_dir = p / 'devices'
         if not (devices_dir.exists() and devices_dir.is_dir()):
             continue
-        devicecode_dirs.append(devices_dir)
+        devicecode_dirs.append(p)
 
         if not report_only:
             overlay_directory = output_directory / p.name / 'overlays'
@@ -85,7 +84,9 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
         sys.exit(1)
 
     # Then walk all the result files, check the FCC ids and optionally create overlays
-    for devicecode_dir in devicecode_dirs:
+    for p in devicecode_dirs:
+        devicecode_dir = p / 'devices'
+        overlay_directory = output_directory / p.name / 'overlays'
         for result_file in devicecode_dir.glob('**/*'):
             if not result_file.is_file():
                 continue
@@ -164,9 +165,14 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
                                         if not is_modular and descriptions['modular']:
                                             # there is an extra module
                                             fcc_type = 'auxiliary'
-                                    overlay = {'fcc_date': dates[0], 'fcc_id': fcc_id,
-                                               'fcc_type': fcc_type, 'license': 'CC0-1.0',
-                                               'grantee': grantee_name}
+                                    if dates:
+                                        overlay = {'fcc_date': dates[0], 'fcc_id': fcc_id,
+                                                   'fcc_type': fcc_type, 'license': 'CC0-1.0',
+                                                   'grantee': grantee_name}
+                                    else:
+                                        overlay = {'fcc_date': '', 'fcc_id': fcc_id,
+                                                   'fcc_type': fcc_type, 'license': 'CC0-1.0',
+                                                   'grantee': grantee_name}
 
                                     overlay_fcc_ids.append(overlay)
                                 elif fcc_date not in dates:

@@ -272,6 +272,7 @@ class Web:
 
     # references to techinfodepot and wikidevi
     techinfodepot: str = ''
+    data_url: str = ''
     wikidevi: str = ''
     wikipedia: str = ''
 
@@ -297,6 +298,7 @@ class NetworkAdapter:
     model: Model = field(default_factory=Model)
     regulatory: Regulatory = field(default_factory=Regulatory)
     title: str = ''
+    web: Web = field(default_factory=Web)
     wiki_type: str = ''
 
 @dataclass_json
@@ -309,6 +311,7 @@ class USBHub:
     power_supply: PowerSupply = field(default_factory=PowerSupply)
     regulatory: Regulatory = field(default_factory=Regulatory)
     title: str = ''
+    web: Web = field(default_factory=Web)
     wiki_type: str = ''
 
 @dataclass_json
@@ -669,11 +672,19 @@ def parse_serial_jtag(serial_string):
 
     for field in fields_to_process:
         # try to find where the connector can be found
-        # (typically which solder pads)
+        # (typically which solder pads). TODO: some devices
+        # have multiple connectors listed, example:
+        # Arndale Board
         regex_result = defaults.REGEX_SERIAL_CONNECTOR.match(field.upper())
         if regex_result is not None:
-            result['connector'] = regex_result.groups()[0]
-            continue
+            if 'connector' not in result:
+                result['connector'] = regex_result.groups()[0]
+                continue
+        regex_result = defaults.REGEX_SERIAL_CONNECTOR2.match(field.upper())
+        if regex_result is not None:
+            if 'connector' not in result:
+                result['connector'] = regex_result.groups()[0]
+                continue
 
         # baud rates
         baud_rate = None
@@ -925,6 +936,9 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
 
                         if not device:
                             continue
+
+                        data_url = title.replace(' ', '_')
+                        device.web.data_url = data_url
 
                         for f in wikicode.filter(recursive=False):
                             if isinstance(f, mwparserfromhell.nodes.heading.Heading):

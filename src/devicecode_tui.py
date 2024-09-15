@@ -1397,6 +1397,9 @@ class DevicecodeUI(App):
             if result['wiki_type'] == 'TechInfoDepot':
                 data_url = result['title'].replace(' ', '_')
                 new_markdown += f"|**Data URL** | <https://techinfodepot.shoutwiki.com/wiki/{data_url}>\n"
+            elif result['wiki_type'] == 'WikiDevi':
+                data_url = result['title'].replace(' ', '_')
+                new_markdown += f"|**Data URL** | <https://wikidevi.wi-cat.ru/{data_url}>\n"
 
         return new_markdown
 

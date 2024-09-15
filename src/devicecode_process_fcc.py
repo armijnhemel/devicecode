@@ -162,12 +162,16 @@ def stitch(images, orientation, image_page_directory, img_directory, stitch_dire
     y = 0
     for img_name in images:
         orig_image = PIL.Image.open(image_page_directory / img_name)
-        if orientation == 'horizontal':
-            new_image.paste(orig_image, (x,y))
-            x += orig_image.size[0]
-        else:
-            new_image.paste(orig_image, (x,y))
-            y += orig_image.size[1]
+        try:
+            if orientation == 'horizontal':
+                new_image.paste(orig_image, (x,y))
+                x += orig_image.size[0]
+            else:
+                new_image.paste(orig_image, (x,y))
+                y += orig_image.size[1]
+        except OSError:
+            status = False
+            return (status, image_name.name, img_hash)
     new_image.save(image_name)
     with open(image_name, 'rb') as new_img:
         img_hash = hashlib.sha256(new_img.read()).hexdigest()
