@@ -659,7 +659,7 @@ class DevicecodeUI(App):
                 except json.decoder.JSONDecodeError:
                     pass
             overlays_directory = devicecode_directory.parent / 'overlays'
-            if overlays_directory.exists and overlays_directory.is_dir():
+            if overlays_directory.exists() and overlays_directory.is_dir():
                 for result_file in overlays_directory.glob('**/*'):
                     if not result_file.is_file():
                         continue
