@@ -298,6 +298,7 @@ class NetworkAdapter:
     model: Model = field(default_factory=Model)
     regulatory: Regulatory = field(default_factory=Regulatory)
     title: str = ''
+    web: Web = field(default_factory=Web)
     wiki_type: str = ''
 
 @dataclass_json
@@ -310,6 +311,7 @@ class USBHub:
     power_supply: PowerSupply = field(default_factory=PowerSupply)
     regulatory: Regulatory = field(default_factory=Regulatory)
     title: str = ''
+    web: Web = field(default_factory=Web)
     wiki_type: str = ''
 
 @dataclass_json
