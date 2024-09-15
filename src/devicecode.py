@@ -272,6 +272,7 @@ class Web:
 
     # references to techinfodepot and wikidevi
     techinfodepot: str = ''
+    data_url: str = ''
     wikidevi: str = ''
     wikipedia: str = ''
 
@@ -933,6 +934,9 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
 
                         if not device:
                             continue
+
+                        data_url = title.replace(' ', '_')
+                        device.web.data_url = data_url
 
                         for f in wikicode.filter(recursive=False):
                             if isinstance(f, mwparserfromhell.nodes.heading.Heading):
