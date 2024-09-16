@@ -13,6 +13,57 @@ import sys
 
 import click
 
+def squash(device_one, device_two, debug=False):
+    '''Squash two devices. Device 1 is "leading".'''
+    # additional chips
+    if device_one['additional_chips'] != device_two['additional_chips']:
+        pass
+
+    # brand
+    if device_one['brand'] != device_two['brand']:
+        if debug:
+            print(f"Brand inconsistency for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['brand']}")
+            print(f"  Device 2: {device_two['brand']}")
+
+    # commercial
+    if device_one['commercial'] != device_two['commercial']:
+        pass
+
+    # cpus
+    if device_one['cpus'] != device_two['cpus']:
+        pass
+
+    # defaults
+    if device_one['defaults'] != device_two['defaults']:
+        pass
+
+    # device types
+    if device_one['device_types'] != device_two['device_types']:
+        device_types = set(device_one['device_types'])
+        device_types.update(device_two['device_types'])
+        if debug:
+            print(f"Device type inconsistency for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['device_types']}")
+            print(f"  Device 2: {device_two['device_types']}")
+        device_one['device_types'] = sorted(device_types)
+
+    # expansions
+    if device_one['expansions'] != device_two['expansions']:
+        pass
+
+    # flags
+    if device_one['flags'] != device_two['flags']:
+        flags = set(device_one['flags'])
+        flags.update(device_two['flags'])
+        if debug:
+            print(f"Flags inconsistency for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['flags']}")
+            print(f"  Device 2: {device_two['flags']}")
+        device_one['flags'] = sorted(flags)
+
+    return device_one
+
 @click.command(short_help='Squash TechInfoDepot, WikiDevi and overlay information into a single file per device')
 @click.option('--directory', '-d', 'devicecode_directory',
               help='DeviceCode results directory', required=True,
@@ -21,7 +72,8 @@ import click
               help='top level output directory, overlays will be stored in a subdirectory called \'squash\'',
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--use-git', is_flag=True, help='use Git (not recommended, see documentation)')
-def main(devicecode_directory, output_directory, use_git):
+@click.option('--debug', is_flag=True, help='print debug output')
+def main(devicecode_directory, output_directory, use_git, debug):
     if not output_directory.is_dir():
         print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -118,6 +170,8 @@ def main(devicecode_directory, output_directory, use_git):
                                     device['network']['wireless_oui'] = overlay['data']['wireless_oui']
                                 elif overlay['name'] == 'fcc_extracted_text':
                                     device['fcc_data'] = overlay['data']
+                                elif overlay['name'] == 'brand':
+                                    device['brand'] = overlay['data']['brand']
                         except json.decoder.JSONDecodeError:
                             pass
 
@@ -145,25 +199,40 @@ def main(devicecode_directory, output_directory, use_git):
     # 5. there is no link to wikidevi and a link from wikidevi to techinfodepot   A <-- B
 
     squashed_devices = []
+    processed_wikidevi = set()
     for name_techinfodepot in techinfodepot_items:
         data_url = techinfodepot_items[name_techinfodepot]['web']['data_url']
         device_name = techinfodepot_items[name_techinfodepot]['title']
         if name_techinfodepot in techinfodepot_to_wikidevi:
             # scenario 2, 3, 4
-            pass
+            target_name = data_url_to_name.get(data_url, None)
+            if target_name:
+                if target_name == device_name:
+                    processed_wikidevi.add(target_name)
         else:
             # scenario 1, 5
             if data_url in wikidevi_to_techinfodepot.values():
-                target_data_url = data_url_to_name.get(data_url, None)
-                if target_data_url:
-                    if target_data_url == device_name:
+                target_name = data_url_to_name.get(data_url, None)
+                if target_name:
+                    if target_name == device_name:
                         pass
                 else:
                     pass
             else:
                 # scenario 1: A   B
                 # store the device data
-                squashed_devices.append(techinfodepot_items[name_techinfodepot])
+                # TODO: do a more extensive search to find similar devices
+                if name_techinfodepot in wikidevi_items:
+                    squash_result = squash(techinfodepot_items[name_techinfodepot], wikidevi_items[name_techinfodepot], debug)
+                    processed_wikidevi.add(name_techinfodepot)
+                    squashed_devices.append(squash_result)
+                else:
+                    squashed_devices.append(techinfodepot_items[name_techinfodepot])
+
+    for name_wikidevi in wikidevi_items:
+        if name_wikidevi in processed_wikidevi:
+            continue
+        squashed_devices.append(wikidevi_items[name_wikidevi])
 
     for squashed_device in squashed_devices:
         squashed_file_name = squashed_directory / f"{squashed_device['title'].replace('/', '_')}.json"
