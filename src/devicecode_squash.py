@@ -4,6 +4,7 @@
 # Licensed under Apache 2.0, see LICENSE file for details
 # SPDX-License-Identifier: Apache-2.0
 
+import copy
 import json
 import os
 import pathlib
@@ -100,17 +101,101 @@ def squash(device_one, device_two, debug=False):
 
     # jtag
     if device_one['jtag'] != device_two['jtag']:
-        if debug:
-            print(f"JTAG inconsistency for '{device_one['title']}'")
+        conflict = False
+        jtag = copy.deepcopy(device_one['jtag'])
+
+        # baud rate
+        if device_one['jtag']['baud_rate'] == 0 or device_two['jtag']['baud_rate'] == 0:
+            jtag['baud_rate'] = max(device_one['jtag']['baud_rate'], device_two['jtag']['baud_rate'])
+        else:
+            if device_one['jtag']['baud_rate'] != device_two['jtag']['baud_rate']:
+                conflict = True
+
+        # connector
+        if device_one['jtag']['connector'] == '' or device_two['jtag']['connector'] == '':
+            if device_one['jtag']['connector'] == '':
+                jtag['connector'] = device_two['jtag']['connector']
+        else:
+            if device_one['jtag']['connector'] != device_two['jtag']['connector']:
+                conflict = True
+
+        # number of pins
+        if device_one['jtag']['number_of_pins'] == 0 or device_two['jtag']['number_of_pins'] == 0:
+            jtag['number_of_pins'] = max(device_one['jtag']['number_of_pins'], device_two['jtag']['number_of_pins'])
+        else:
+            if device_one['jtag']['number_of_pins'] != device_two['jtag']['number_of_pins']:
+                conflict = True
+
+        # populated
+        if device_one['jtag']['populated'] != device_two['jtag']['populated']:
+            if device_one['jtag']['populated'] == 'unknown':
+                jtag['populated'] = device_two['jtag']['populated']
+            elif device_two['jtag']['populated'] != 'unknown':
+                conflict = True
+
+        # voltage
+        if device_one['jtag']['voltage'] != device_two['jtag']['voltage']:
+            if not device_one['jtag']['voltage']:
+                jtag['voltage'] = device_two['jtag']['voltage']
+            elif not device_two['jtag']['populated']:
+                conflict = True
+
+        if conflict and debug:
+            print(f"JTAG CONFLICT for '{device_one['title']}'")
             print(f"  Device 1: {device_one['jtag']}")
             print(f"  Device 2: {device_two['jtag']}")
 
+        if not conflict:
+            device_one['jtag'] = jtag
+
     # serial
     if device_one['serial'] != device_two['serial']:
-        if debug:
-            print(f"Serial port inconsistency for '{device_one['title']}'")
+        conflict = False
+        serial = copy.deepcopy(device_one['serial'])
+
+        # baud rate
+        if device_one['serial']['baud_rate'] == 0 or device_two['serial']['baud_rate'] == 0:
+            serial['serial'] = max(device_one['serial']['baud_rate'], device_two['serial']['baud_rate'])
+        else:
+            if device_one['serial']['baud_rate'] != device_two['serial']['baud_rate']:
+                conflict = True
+
+        # connector
+        if device_one['serial']['connector'] == '' or device_two['serial']['connector'] == '':
+            if device_one['serial']['connector'] == '':
+                serial['connector'] = device_two['serial']['connector']
+        else:
+            if device_one['serial']['connector'] != device_two['serial']['connector']:
+                conflict = True
+
+        # number of pins
+        if device_one['serial']['number_of_pins'] == 0 or device_two['serial']['number_of_pins'] == 0:
+            serial['number_of_pins'] = max(device_one['serial']['number_of_pins'], device_two['serial']['number_of_pins'])
+        else:
+            if device_one['serial']['number_of_pins'] != device_two['serial']['number_of_pins']:
+                conflict = True
+
+        # populated
+        if device_one['serial']['populated'] != device_two['serial']['populated']:
+            if device_one['serial']['populated'] == 'unknown':
+                serial['populated'] = device_two['serial']['populated']
+            elif device_two['serial']['populated'] != 'unknown':
+                conflict = True
+
+        # voltage
+        if device_one['serial']['voltage'] != device_two['serial']['voltage']:
+            if not device_one['serial']['voltage']:
+                serial['voltage'] = device_two['serial']['voltage']
+            elif not device_two['serial']['populated']:
+                conflict = True
+
+        if conflict and debug:
+            print(f"Serial CONFLICT for '{device_one['title']}'")
             print(f"  Device 1: {device_one['serial']}")
             print(f"  Device 2: {device_two['serial']}")
+
+        if not conflict:
+            device_one['serial'] = serial
 
     # switch
     if device_one['switch'] != device_two['switch']:
