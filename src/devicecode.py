@@ -1263,6 +1263,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                     device_types = [x.strip() for x in value.split(',') if x.strip() != '']
                                                     for d in device_types:
                                                         device.device_types.append(defaults.DEVICE_REWRITE.get(d, d))
+                                                    device.device_types.sort()
                                                 elif identifier == 'flags':
                                                     device.flags = sorted([x.strip() for x in value.split(',') if x.strip() != ''])
                                                 elif identifier in ['boardid', 'pcb_id']:
