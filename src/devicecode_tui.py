@@ -1414,23 +1414,26 @@ def main(devicecode_directory):
         sys.exit(1)
 
     # verify the directory names, they should be one of the following
-    #valid_directory_names = ['TechInfoDepot', 'WikiDevi']
-    valid_directory_names = ['TechInfoDepot']
+    valid_directory_names = ['TechInfoDepot', 'WikiDevi']
 
     # Inside these directories a directory called 'devices' should always
     # be present. Optionally there can be a directory called 'overlays'
     # with overlay files.
 
-    devicecode_dirs = []
-    for p in devicecode_directory.iterdir():
-        if not p.is_dir():
-            continue
-        if not p.name in valid_directory_names:
-            continue
-        devices_dir = p / 'devices'
-        if not (devices_dir.exists() and devices_dir.is_dir()):
-            continue
-        devicecode_dirs.append(devices_dir)
+    squashed_directory = devicecode_directory / 'squashed'
+    if squashed_directory.exists():
+        devicecode_dirs = [squashed_directory]
+    else:
+        devicecode_dirs = []
+        for p in devicecode_directory.iterdir():
+            if not p.is_dir():
+                continue
+            if not p.name in valid_directory_names:
+                continue
+            devices_dir = p / 'devices'
+            if not (devices_dir.exists() and devices_dir.is_dir()):
+                continue
+            devicecode_dirs.append(devices_dir)
 
     if not devicecode_dirs:
         print(f"No valid directories found in {devicecode_directory}, should contain one of {valid_directory_names}.", file=sys.stderr)
