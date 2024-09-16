@@ -1110,7 +1110,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                 if wiki_type == 'WikiDevi':
                                     if f.name == 'TagLine':
                                         for param in f.params:
-                                            device.taglines.append(str(param.value))
+                                            device.taglines.append(str(param.value.strip()))
                                     elif f.name == 'TechInfoDepot':
                                         value = str(f.params[0])
                                         if value != '':
