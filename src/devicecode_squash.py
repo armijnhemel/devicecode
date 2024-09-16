@@ -148,6 +148,38 @@ def squash(device_one, device_two, debug=False):
         if not conflict:
             device_one['jtag'] = jtag
 
+    # manufacturer
+    if device_one['manufacturer'] != device_two['manufacturer']:
+        pass
+
+    # model
+    if device_one['model'] != device_two['model']:
+        pass
+
+    # network
+    if device_one['network'] != device_two['network']:
+        pass
+
+    # power
+    if device_one['power'] != device_two['power']:
+        pass
+
+    # power_supply
+    if device_one['power_supply'] != device_two['power_supply']:
+        pass
+
+    # radios
+    if device_one['radios'] != device_two['radios']:
+        pass
+
+    # ram
+    if device_one['ram'] != device_two['ram']:
+        pass
+
+    # regulatory
+    if device_one['regulatory'] != device_two['regulatory']:
+        pass
+
     # serial
     if device_one['serial'] != device_two['serial']:
         conflict = False
@@ -197,6 +229,10 @@ def squash(device_one, device_two, debug=False):
         if not conflict:
             device_one['serial'] = serial
 
+    # software
+    if device_one['software'] != device_two['software']:
+        pass
+
     # switch
     if device_one['switch'] != device_two['switch']:
         pass
@@ -211,6 +247,14 @@ def squash(device_one, device_two, debug=False):
             print(f"  Device 2: {device_two['taglines']}")
         device_one['taglines'] = sorted(taglines)
         changed = True
+
+    # title, always use the first device, pass
+    if device_one['title'] != device_two['title']:
+        pass
+
+    # web
+    if device_one['web'] != device_two['web']:
+        pass
 
     return device_one
 
