@@ -403,6 +403,8 @@ class DevicecodeUI(App):
                         device['network']['wireless_oui'] = overlay['data']['wireless_oui']
                     elif overlay['name'] == 'fcc_extracted_text':
                         device['fcc_data'] = overlay['data']
+                    elif overlay['name'] == 'brand':
+                        device['brand'] = overlay['data']['brand']
 
             if 'brand' not in device:
                 continue
