@@ -101,6 +101,9 @@ EXPANSION_REWRITE = {'usb': 'USB',
 STYLE_REWRITE = {'medium, horiz.': 'medium, horizontal',
                  'small, horiz.': 'small, horizontal'}
 
+# tag lines rewrites
+TAGLINES_REWRITE = {'Wirepess Repeater': 'Wireless Repeater'}
+
 
 # a lookup table for default values for each of the
 # identifiers in the TechInfoDepot data which should be ignored.

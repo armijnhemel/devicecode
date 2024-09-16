@@ -1110,7 +1110,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                 if wiki_type == 'WikiDevi':
                                     if f.name == 'TagLine':
                                         for param in f.params:
-                                            device.taglines.append(str(param.value.strip()))
+                                            tagline = str(param.value.strip())
+                                            device.taglines.append(defaults.TAGLINES_REWRITE.get(tagline, tagline))
                                     elif f.name == 'TechInfoDepot':
                                         value = str(f.params[0])
                                         if value != '':
@@ -1650,7 +1651,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                     elif identifier == 'submodel':
                                                         device.model.submodel = value
                                                     elif identifier in ['caption', 'caption2']:
-                                                        device.taglines.append(value)
+                                                        device.taglines.append(defaults.TAGLINES_REWRITE.get(value, value))
 
                                                     # commercial information (continued)
                                                     elif identifier == 'eoldate':
