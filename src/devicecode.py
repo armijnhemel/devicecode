@@ -806,11 +806,6 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
     processed_devices = {}
     updated_devices = set()
 
-    helper_page_titles = ['serial info', 'serialinfo', 'bootlog',
-                          'boot log', 'additional info', 'other info', 'specs',
-                          'nvram', 'info dump', 'bridge mode', 'opening this unit',
-                          'pairing']
-
     # now walk the XML. It depends on the dialect (WikiDevi, TechInfoDepot)
     # how the contents should be parsed, as the pages are laid out in
     # a slightly different way.
@@ -834,7 +829,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
 
                 # some pages are actually "helper pages", not full
                 # devices, but they can add possibly useful information
-                for t in helper_page_titles:
+                for t in defaults.HELPER_PAGE_TITLES:
                     if title.lower().endswith(t):
                         is_helper_page = True
                         break
@@ -1115,7 +1110,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                 if wiki_type == 'WikiDevi':
                                     if f.name == 'TagLine':
                                         for param in f.params:
-                                            device.taglines.append(str(param.value))
+                                            tagline = str(param.value.strip())
+                                            device.taglines.append(defaults.TAGLINES_REWRITE.get(tagline, tagline))
                                     elif f.name == 'TechInfoDepot':
                                         value = str(f.params[0])
                                         if value != '':
@@ -1268,6 +1264,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                     device_types = [x.strip() for x in value.split(',') if x.strip() != '']
                                                     for d in device_types:
                                                         device.device_types.append(defaults.DEVICE_REWRITE.get(d, d))
+                                                    device.device_types.sort()
                                                 elif identifier == 'flags':
                                                     device.flags = sorted([x.strip() for x in value.split(',') if x.strip() != ''])
                                                 elif identifier in ['boardid', 'pcb_id']:
@@ -1654,7 +1651,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                     elif identifier == 'submodel':
                                                         device.model.submodel = value
                                                     elif identifier in ['caption', 'caption2']:
-                                                        device.taglines.append(value)
+                                                        device.taglines.append(defaults.TAGLINES_REWRITE.get(value, value))
 
                                                     # commercial information (continued)
                                                     elif identifier == 'eoldate':

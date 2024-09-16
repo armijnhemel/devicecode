@@ -28,6 +28,7 @@ BRAND_REWRITE = {'FON Wireless': 'Fon Wireless',
                  'No': '',
                  'Open-Mesh': 'Open Mesh',
                  'PC-Engines': 'PC Engines',
+                 'phorus': 'Phorus',
                  'Piecemakers': 'PieceMakers',
                  'Phicomm': 'PHICOMM',
                  'Proxiim': 'Proxim',
@@ -99,6 +100,9 @@ EXPANSION_REWRITE = {'usb': 'USB',
 # power supply style rewrites
 STYLE_REWRITE = {'medium, horiz.': 'medium, horizontal',
                  'small, horiz.': 'small, horizontal'}
+
+# tag lines rewrites
+TAGLINES_REWRITE = {'Wirepess Repeater': 'Wireless Repeater'}
 
 
 # a lookup table for default values for each of the
@@ -398,6 +402,10 @@ DEFAULT_VALUE = {
     'wikipedia': ['<!-- [[wikipedia:Main Page|Wikipedia]] Leave blank for none -->'],
     'x86-64rev2': ['<!-- x86-64 Revision, Leave blank for unknown -->'],
 }
+
+HELPER_PAGE_TITLES = ['serial info', 'serialinfo', 'bootlog', 'boot log',
+                      'additional info', 'other info', 'specs', 'nvram', 'info dump',
+                      'bridge mode', 'opening this unit', 'pairing']
 
 KNOWN_ASIN_IDENTIFIERS = ['asin', 'asin2', 'asin3', 'asin4', 'asin5', 'asin6']
 KNOWN_ASIN_COUNTRY_IDENTIFIERS = ['asin_country', 'asin_country2', 'asin_country3',
