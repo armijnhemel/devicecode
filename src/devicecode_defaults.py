@@ -399,6 +399,10 @@ DEFAULT_VALUE = {
     'x86-64rev2': ['<!-- x86-64 Revision, Leave blank for unknown -->'],
 }
 
+HELPER_PAGE_TITLES = ['serial info', 'serialinfo', 'bootlog', 'boot log',
+                      'additional info', 'other info', 'specs', 'nvram', 'info dump',
+                      'bridge mode', 'opening this unit', 'pairing']
+
 KNOWN_ASIN_IDENTIFIERS = ['asin', 'asin2', 'asin3', 'asin4', 'asin5', 'asin6']
 KNOWN_ASIN_COUNTRY_IDENTIFIERS = ['asin_country', 'asin_country2', 'asin_country3',
                                   'asin_country4', 'asin_country5', 'asin_country6']
