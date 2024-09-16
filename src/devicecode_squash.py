@@ -155,7 +155,7 @@ def squash(device_one, device_two, debug=False):
 
         # baud rate
         if device_one['serial']['baud_rate'] == 0 or device_two['serial']['baud_rate'] == 0:
-            serial['serial'] = max(device_one['serial']['baud_rate'], device_two['serial']['baud_rate'])
+            serial['baud_rate'] = max(device_one['serial']['baud_rate'], device_two['serial']['baud_rate'])
         else:
             if device_one['serial']['baud_rate'] != device_two['serial']['baud_rate']:
                 conflict = True
