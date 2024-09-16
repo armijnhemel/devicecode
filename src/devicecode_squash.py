@@ -15,6 +15,8 @@ import click
 
 def squash(device_one, device_two, debug=False):
     '''Squash two devices. Device 1 is "leading".'''
+
+    changed = False
     # additional chips
     if device_one['additional_chips'] != device_two['additional_chips']:
         pass
@@ -42,11 +44,12 @@ def squash(device_one, device_two, debug=False):
     if device_one['device_types'] != device_two['device_types']:
         device_types = set(device_one['device_types'])
         device_types.update(device_two['device_types'])
-        if debug:
+        if debug and device_one['device_types'] and device_two['device_types']:
             print(f"Device type inconsistency for '{device_one['title']}'")
             print(f"  Device 1: {device_one['device_types']}")
             print(f"  Device 2: {device_two['device_types']}")
         device_one['device_types'] = sorted(device_types)
+        changed = True
 
     # expansions
     if device_one['expansions'] != device_two['expansions']:
@@ -56,11 +59,73 @@ def squash(device_one, device_two, debug=False):
     if device_one['flags'] != device_two['flags']:
         flags = set(device_one['flags'])
         flags.update(device_two['flags'])
-        if debug:
+        if debug and device_one['flags'] and device_two['flags']:
             print(f"Flags inconsistency for '{device_one['title']}'")
             print(f"  Device 1: {device_one['flags']}")
             print(f"  Device 2: {device_two['flags']}")
         device_one['flags'] = sorted(flags)
+        changed = True
+
+    # flash
+    if device_one['flash'] != device_two['flash']:
+        pass
+
+    # has_jtag
+    if device_one['has_jtag'] != device_two['has_jtag']:
+        if device_one['has_jtag'] == 'unknown':
+            device_one['has_jtag'] = device_two['has_jtag']
+            changed = True
+        else:
+            if device_two['has_jtag'] != 'unknown':
+                if debug:
+                    print(f"JTAG CONFLICT for '{device_one['title']}'")
+                    print(f"  Device 1: {device_one['has_jtag']}")
+                    print(f"  Device 2: {device_two['has_jtag']}")
+
+    # has_serial_port
+    if device_one['has_serial_port'] != device_two['has_serial_port']:
+        if device_one['has_serial_port'] == 'unknown':
+            device_one['has_serial_port'] = device_two['has_serial_port']
+            changed = True
+        else:
+            if device_two['has_serial_port'] != 'unknown':
+                if debug:
+                    print(f"Serial port CONFLICT for '{device_one['title']}'")
+                    print(f"  Device 1: {device_one['has_serial_port']}")
+                    print(f"  Device 2: {device_two['has_serial_port']}")
+
+    # images, not used, pass
+    if device_one['images'] != device_two['images']:
+        pass
+
+    # jtag
+    if device_one['jtag'] != device_two['jtag']:
+        if debug:
+            print(f"JTAG inconsistency for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['jtag']}")
+            print(f"  Device 2: {device_two['jtag']}")
+
+    # serial
+    if device_one['serial'] != device_two['serial']:
+        if debug:
+            print(f"Serial port inconsistency for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['serial']}")
+            print(f"  Device 2: {device_two['serial']}")
+
+    # switch
+    if device_one['switch'] != device_two['switch']:
+        pass
+
+    # tag lines
+    if device_one['taglines'] != device_two['taglines']:
+        taglines = set(device_one['taglines'])
+        taglines.update(device_two['taglines'])
+        if debug and device_one['taglines'] and device_two['taglines']:
+            print(f"Taglines inconsistency for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['taglines']}")
+            print(f"  Device 2: {device_two['taglines']}")
+        device_one['taglines'] = sorted(taglines)
+        changed = True
 
     return device_one
 
