@@ -196,7 +196,11 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git)
                                 else:
                                     # copy the existing data to the overlay data
                                     if is_main_fcc:
-                                        f['fcc_type'] = 'main'
+                                        if not is_modular and descriptions['modular']:
+                                            # there is an extra module
+                                            f['fcc_type'] = 'auxiliary'
+                                        else:
+                                            f['fcc_type'] = 'main'
                                     else:
                                         if descriptions['modular']:
                                             # there is an extra module
