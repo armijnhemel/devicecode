@@ -14,7 +14,7 @@ import sys
 
 import click
 
-def squash(device_one, device_two, debug=False):
+def squash(device_one, device_two, debug=False, verbose=False):
     '''Squash two devices. Device 1 is "leading".'''
 
     changed = False
@@ -24,7 +24,7 @@ def squash(device_one, device_two, debug=False):
 
     # brand
     if device_one['brand'] != device_two['brand']:
-        if debug:
+        if debug and verbose:
             print(f"Brand inconsistency for '{device_one['title']}'")
             print(f"  Device 1: {device_one['brand']}")
             print(f"  Device 2: {device_two['brand']}")
@@ -45,7 +45,7 @@ def squash(device_one, device_two, debug=False):
     if device_one['device_types'] != device_two['device_types']:
         device_types = set(device_one['device_types'])
         device_types.update(device_two['device_types'])
-        if debug and device_one['device_types'] and device_two['device_types']:
+        if debug and device_one['device_types'] and device_two['device_types'] and verbose:
             print(f"Device type inconsistency for '{device_one['title']}'")
             print(f"  Device 1: {device_one['device_types']}")
             print(f"  Device 2: {device_two['device_types']}")
@@ -60,7 +60,7 @@ def squash(device_one, device_two, debug=False):
     if device_one['flags'] != device_two['flags']:
         flags = set(device_one['flags'])
         flags.update(device_two['flags'])
-        if debug and device_one['flags'] and device_two['flags']:
+        if debug and device_one['flags'] and device_two['flags'] and verbose:
             print(f"Flags inconsistency for '{device_one['title']}'")
             print(f"  Device 1: {device_one['flags']}")
             print(f"  Device 2: {device_two['flags']}")
@@ -178,7 +178,10 @@ def squash(device_one, device_two, debug=False):
 
     # regulatory
     if device_one['regulatory'] != device_two['regulatory']:
-        pass
+        if debug:
+            print(f"Regulatory inconsistency for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['regulatory']}")
+            print(f"  Device 2: {device_two['regulatory']}")
 
     # serial
     if device_one['serial'] != device_two['serial']:
@@ -241,7 +244,7 @@ def squash(device_one, device_two, debug=False):
     if device_one['taglines'] != device_two['taglines']:
         taglines = set(device_one['taglines'])
         taglines.update(device_two['taglines'])
-        if debug and device_one['taglines'] and device_two['taglines']:
+        if debug and device_one['taglines'] and device_two['taglines'] and verbose:
             print(f"Taglines inconsistency for '{device_one['title']}'")
             print(f"  Device 1: {device_one['taglines']}")
             print(f"  Device 2: {device_two['taglines']}")
@@ -267,7 +270,8 @@ def squash(device_one, device_two, debug=False):
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--use-git', is_flag=True, help='use Git (not recommended, see documentation)')
 @click.option('--debug', is_flag=True, help='print debug output')
-def main(devicecode_directory, output_directory, use_git, debug):
+@click.option('--verbose', is_flag=True, help='be verbose (for debuging)')
+def main(devicecode_directory, output_directory, use_git, debug, verbose):
     if not output_directory.is_dir():
         print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -417,7 +421,7 @@ def main(devicecode_directory, output_directory, use_git, debug):
                 # store the device data
                 # TODO: do a more extensive search to find similar devices
                 if name_techinfodepot in wikidevi_items:
-                    squash_result = squash(techinfodepot_items[name_techinfodepot], wikidevi_items[name_techinfodepot], debug)
+                    squash_result = squash(techinfodepot_items[name_techinfodepot], wikidevi_items[name_techinfodepot], debug=debug, verbose=verbose)
                     processed_wikidevi.add(name_techinfodepot)
                     squashed_devices.append(squash_result)
                 else:
