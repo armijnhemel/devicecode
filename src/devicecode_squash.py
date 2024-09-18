@@ -162,11 +162,106 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
     # power
     if device_one['power'] != device_two['power']:
-        pass
+        conflict = False
+        power = copy.deepcopy(device_one['power'])
+
+        # barrel_length
+        if device_one['power']['barrel_length'] == 0.0 or device_two['power']['barrel_length'] == 0.0:
+            power['barrel_length'] = max(device_one['power']['barrel_length'], device_two['power']['barrel_length'])
+        else:
+            if device_one['power']['barrel_length'] != device_two['power']['barrel_length']:
+                conflict = True
+
+        # connector
+        if device_one['power']['connector'] == '' or device_two['power']['connector'] == '':
+            if device_one['power']['connector'] == '':
+                power['connector'] = device_two['power']['connector']
+        else:
+            if device_one['power']['connector'] != device_two['power']['connector']:
+                conflict = True
+
+        # inner_barrel_size
+        if device_one['power']['inner_barrel_size'] == 0.0 or device_two['power']['inner_barrel_size'] == 0.0:
+            power['inner_barrel_size'] = max(device_one['power']['inner_barrel_size'], device_two['power']['inner_barrel_size'])
+        else:
+            if device_one['power']['inner_barrel_size'] != device_two['power']['inner_barrel_size']:
+                conflict = True
+
+        # outer_barrel_size
+        if device_one['power']['outer_barrel_size'] == 0.0 or device_two['power']['outer_barrel_size'] == 0.0:
+            power['outer_barrel_size'] = max(device_one['power']['outer_barrel_size'], device_two['power']['outer_barrel_size'])
+        else:
+            if device_one['power']['outer_barrel_size'] != device_two['power']['outer_barrel_size']:
+                conflict = True
+
+        # polarity, skip for now
+        # voltage
+        if not device_one['power']['voltage']:
+            if device_two['power']['voltage']:
+                power['voltage'] = device_two['power']['voltage']
+        else:
+            if device_two['power']['voltage']:
+                if device_one['power']['voltage'] != device_two['power']['voltage']:
+                    conflict = True
+
+        # voltage type skip for now
+
+        if debug and conflict:
+            print(f"Power CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['power']}")
+            print(f"  Device 2: {device_two['power']}")
+
+        if not conflict:
+            device_one['power'] = power
 
     # power_supply
     if device_one['power_supply'] != device_two['power_supply']:
-        pass
+        conflict = False
+        power_supply = copy.deepcopy(device_one['power_supply'])
+
+        # brand
+        if device_one['power_supply']['brand'] == '' or device_two['power_supply']['brand'] == '':
+            if device_one['power_supply']['brand'] == '':
+                power_supply['brand'] = device_two['power_supply']['brand']
+        else:
+            if device_one['power_supply']['brand'] != device_two['power_supply']['brand']:
+                conflict = True
+
+        # country
+        if device_one['power_supply']['country'] == '' or device_two['power_supply']['country'] == '':
+            if device_one['power_supply']['country'] == '':
+                power_supply['country'] = device_two['power_supply']['country']
+        else:
+            if device_one['power_supply']['country'] != device_two['power_supply']['country']:
+                conflict = True
+
+        # e_level, skip
+        # input_amperage, skip
+        # other things, skip
+
+        # model
+        if device_one['power_supply']['model'] == '' or device_two['power_supply']['model'] == '':
+            if device_one['power_supply']['model'] == '':
+                power_supply['model'] = device_two['power_supply']['model']
+        else:
+            if device_one['power_supply']['model'] != device_two['power_supply']['model']:
+                conflict = True
+
+        # style
+        if device_one['power_supply']['style'] == '' or device_two['power_supply']['style'] == '':
+            if device_one['power_supply']['style'] == '':
+                power_supply['style'] = device_two['power_supply']['style']
+        else:
+            if device_one['power_supply']['style'] != device_two['power_supply']['style']:
+                conflict = True
+
+        if debug and conflict:
+            print(f"Power supply CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['power_supply']}")
+            print(f"  Device 2: {device_two['power_supply']}")
+
+        if not conflict:
+            device_one['power_supply'] = power_supply
 
     # radios
     if device_one['radios'] != device_two['radios']:
@@ -178,10 +273,36 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
     # regulatory
     if device_one['regulatory'] != device_two['regulatory']:
-        if debug:
-            print(f"Regulatory inconsistency for '{device_one['title']}'")
+        conflict = False
+        regulatory = copy.deepcopy(device_one['regulatory'])
+
+        # fcc_ids
+        # industry_canada_ids
+        # us_ids
+
+        # wifi certified
+        if device_one['regulatory']['wifi_certified'] == '' or device_two['regulatory']['wifi_certified'] == '':
+            if device_one['regulatory']['wifi_certified'] == '':
+                regulatory['wifi_certified'] = device_two['regulatory']['wifi_certified']
+        else:
+            if device_one['regulatory']['wifi_certified'] != device_two['regulatory']['wifi_certified']:
+                conflict = True
+
+        # wifi certified date
+        if device_one['regulatory']['wifi_certified_date'] == '' or device_two['regulatory']['wifi_certified_date'] == '':
+            if device_one['regulatory']['wifi_certified_date'] == '':
+                regulatory['wifi_certified_date'] = device_two['regulatory']['wifi_certified_date']
+        else:
+            if device_one['regulatory']['wifi_certified_date'] != device_two['regulatory']['wifi_certified_date']:
+                conflict = True
+
+        if debug and conflict:
+            print(f"Regulatory CONFLICT for '{device_one['title']}'")
             print(f"  Device 1: {device_one['regulatory']}")
             print(f"  Device 2: {device_two['regulatory']}")
+
+        if not conflict:
+            device_one['regulatory'] = regulatory
 
     # serial
     if device_one['serial'] != device_two['serial']:
