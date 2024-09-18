@@ -150,7 +150,24 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
     # manufacturer
     if device_one['manufacturer'] != device_two['manufacturer']:
-        pass
+        conflict = False
+        manufacturer = copy.deepcopy(device_one['manufacturer'])
+
+        for i in ['country', 'name', 'model', 'revision']:
+            if device_one['manufacturer'][i] == '' or device_two['manufacturer'][i] == '':
+                if device_one['manufacturer'][i] == '':
+                    manufacturer[i] = device_two['manufacturer'][i]
+            else:
+                if device_one['manufacturer'][i] != device_two['manufacturer'][i]:
+                    conflict = True
+
+        if conflict and debug:
+            print(f"Manufacturer CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['manufacturer']}")
+            print(f"  Device 2: {device_two['manufacturer']}")
+
+        if not conflict:
+            device_one['manufacturer'] = manufacturer
 
     # model
     if device_one['model'] != device_two['model']:
