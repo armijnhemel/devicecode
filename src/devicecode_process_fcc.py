@@ -448,6 +448,8 @@ def process_fcc(task):
                 # Error:
                 # TypeError: 'PDFObjRef' object is not iterable
                 pass
+            except KeyError:
+                pass
             except struct.error:
                 # TODO: fix this. It is likely an error in pdfminer
                 # Example: 1509933.pdf in FCC id PPD-AR5B95
