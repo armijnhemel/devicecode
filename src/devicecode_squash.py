@@ -236,41 +236,17 @@ def squash(device_one, device_two, debug=False, verbose=False):
         conflict = False
         power_supply = copy.deepcopy(device_one['power_supply'])
 
-        # brand
-        if device_one['power_supply']['brand'] == '' or device_two['power_supply']['brand'] == '':
-            if device_one['power_supply']['brand'] == '':
-                power_supply['brand'] = device_two['power_supply']['brand']
-        else:
-            if device_one['power_supply']['brand'] != device_two['power_supply']['brand']:
-                conflict = True
-
-        # country
-        if device_one['power_supply']['country'] == '' or device_two['power_supply']['country'] == '':
-            if device_one['power_supply']['country'] == '':
-                power_supply['country'] = device_two['power_supply']['country']
-        else:
-            if device_one['power_supply']['country'] != device_two['power_supply']['country']:
-                conflict = True
+        for i in ['brand', 'country', 'model', 'style']:
+            if device_one['power_supply'][i] == '' or device_two['power_supply'][i] == '':
+                if device_one['power_supply'][i] == '':
+                    power_supply[i] = device_two['power_supply'][i]
+            else:
+                if device_one['power_supply'][i] != device_two['power_supply'][i]:
+                    conflict = True
 
         # e_level, skip
         # input_amperage, skip
         # other things, skip
-
-        # model
-        if device_one['power_supply']['model'] == '' or device_two['power_supply']['model'] == '':
-            if device_one['power_supply']['model'] == '':
-                power_supply['model'] = device_two['power_supply']['model']
-        else:
-            if device_one['power_supply']['model'] != device_two['power_supply']['model']:
-                conflict = True
-
-        # style
-        if device_one['power_supply']['style'] == '' or device_two['power_supply']['style'] == '':
-            if device_one['power_supply']['style'] == '':
-                power_supply['style'] = device_two['power_supply']['style']
-        else:
-            if device_one['power_supply']['style'] != device_two['power_supply']['style']:
-                conflict = True
 
         if debug and conflict:
             print(f"Power supply CONFLICT for '{device_one['title']}'")
@@ -297,21 +273,13 @@ def squash(device_one, device_two, debug=False, verbose=False):
         # industry_canada_ids
         # us_ids
 
-        # wifi certified
-        if device_one['regulatory']['wifi_certified'] == '' or device_two['regulatory']['wifi_certified'] == '':
-            if device_one['regulatory']['wifi_certified'] == '':
-                regulatory['wifi_certified'] = device_two['regulatory']['wifi_certified']
-        else:
-            if device_one['regulatory']['wifi_certified'] != device_two['regulatory']['wifi_certified']:
-                conflict = True
-
-        # wifi certified date
-        if device_one['regulatory']['wifi_certified_date'] == '' or device_two['regulatory']['wifi_certified_date'] == '':
-            if device_one['regulatory']['wifi_certified_date'] == '':
-                regulatory['wifi_certified_date'] = device_two['regulatory']['wifi_certified_date']
-        else:
-            if device_one['regulatory']['wifi_certified_date'] != device_two['regulatory']['wifi_certified_date']:
-                conflict = True
+        for i in ['wifi_certified', 'wifi_certified_date']:
+            if device_one['regulatory'][i] == '' or device_two['regulatory'][i] == '':
+                if device_one['regulatory'][i] == '':
+                    regulatory[i] = device_two['regulatory'][i]
+            else:
+                if device_one['regulatory'][i] != device_two['regulatory'][i]:
+                    conflict = True
 
         if debug and conflict:
             print(f"Regulatory CONFLICT for '{device_one['title']}'")
