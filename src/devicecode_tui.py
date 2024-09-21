@@ -1413,15 +1413,15 @@ class DevicecodeUI(App):
             new_markdown += f"|**Password** | {result['defaults']['password']}\n"
             new_markdown += f"|**Password comment** | {result['defaults']['password_comment']}\n"
 
-            # Misc
-            #new_markdown += f"|**Data** | {result}\n"
-            new_markdown += f"|**Data origin** | {result['wiki_type']}\n"
-            if result['wiki_type'] == 'TechInfoDepot':
-                data_url = result['title'].replace(' ', '_')
-                new_markdown += f"|**Data URL** | <https://techinfodepot.shoutwiki.com/wiki/{data_url}>\n"
-            elif result['wiki_type'] == 'WikiDevi':
-                data_url = result['title'].replace(' ', '_')
-                new_markdown += f"|**Data URL** | <https://wikidevi.wi-cat.ru/{data_url}>\n"
+            new_markdown += "# Data origin\n"
+            new_markdown += "|Origin|URL|\n|--|--|\n"
+
+            for origin in result['origins']:
+                if origin['origin'] == 'TechInfoDepot':
+                    origin_data_url = f" <https://techinfodepot.shoutwiki.com/wiki/{origin['data_url']}>"
+                if origin['origin'] == 'WikiDevi':
+                    origin_data_url = f" <https://wikidevi.wi-cat.ru/{origin['data_url']}>"
+                new_markdown += f"{origin['origin']}|{origin_data_url}\n"
 
         return new_markdown
 
