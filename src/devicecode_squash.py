@@ -50,7 +50,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
         if not conflict:
             device_one['commercial'] = commercial
 
-
     # cpus
     if device_one['cpus'] != device_two['cpus']:
         pass
@@ -500,7 +499,7 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                     title = device['title']
 
                     try:
-                        data_url = device['web']['data_url']
+                        data_url = device['origins'][0]['data_url']
                     except Exception as e:
                         data_url = title.replace(' ', '_')
                         device['web']['data_url'] = data_url
@@ -545,7 +544,9 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                 pass
 
     # now compare the "patched" TechInfoDepot and WikiDevi files.
-    # The TechInfoDepot data will be seen as "leading".
+    # The TechInfoDepot data will be treated as "leading" and in
+    # case of a conflict the TechInfoDepot data will be preferred.
+    #
     # There are a few situations for the TechInfoDepot data:
     #
     # 1. there is no link to wikidevi and no link from wikidevi to techinfodepot A      B
@@ -554,11 +555,21 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
     # 4. there is a link to wikidevi and a non-matching link from wikidevi to techinfodepot A --> B --> C
     # 5. there is no link to wikidevi and a link from wikidevi to techinfodepot   A <-- B
 
+    # store all the squashed devices.
     squashed_devices = []
+
+    # store which wikidevi devices have already been processed.
     processed_wikidevi = set()
+
+    # start with devices in TechInfoDepot
     for name_techinfodepot in techinfodepot_items:
-        data_url = techinfodepot_items[name_techinfodepot]['web']['data_url']
-        device_name = techinfodepot_items[name_techinfodepot]['title']
+        device = techinfodepot_items[name_techinfodepot]
+        if 'origins' in device:
+            data_url = device['origins'][0]['data_url']
+        else:
+            data_url = device['title'].replace(' ', '_')
+
+        device_name = device['title']
         if name_techinfodepot in techinfodepot_to_wikidevi:
             # scenario 2, 3, 4
             target_name = data_url_to_name.get(data_url, None)
@@ -579,11 +590,11 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                 # store the device data
                 # TODO: do a more extensive search to find similar devices
                 if name_techinfodepot in wikidevi_items:
-                    squash_result = squash(techinfodepot_items[name_techinfodepot], wikidevi_items[name_techinfodepot], debug=debug, verbose=verbose)
+                    squash_result = squash(device, wikidevi_items[name_techinfodepot], debug=debug, verbose=verbose)
                     processed_wikidevi.add(name_techinfodepot)
                     squashed_devices.append(squash_result)
                 else:
-                    squashed_devices.append(techinfodepot_items[name_techinfodepot])
+                    squashed_devices.append(device)
 
     for name_wikidevi in wikidevi_items:
         if name_wikidevi in processed_wikidevi:
