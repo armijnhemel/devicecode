@@ -307,7 +307,7 @@ class NetworkAdapter:
     regulatory: Regulatory = field(default_factory=Regulatory)
     title: str = ''
     web: Web = field(default_factory=Web)
-    wiki_type: str = ''
+    origins: list[Origin] = field(default_factory=list)
 
 @dataclass_json
 @dataclass
@@ -320,7 +320,7 @@ class USBHub:
     regulatory: Regulatory = field(default_factory=Regulatory)
     title: str = ''
     web: Web = field(default_factory=Web)
-    wiki_type: str = ''
+    origins: list[Origin] = field(default_factory=list)
 
 @dataclass_json
 @dataclass
