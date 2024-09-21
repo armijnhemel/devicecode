@@ -4,6 +4,7 @@
 # Licensed under Apache 2.0, see LICENSE file for details
 # SPDX-License-Identifier: Apache-2.0
 
+import gzip
 import hashlib
 import json
 import multiprocessing
@@ -479,8 +480,8 @@ def process_fcc(task):
 
             # write various metadata to files for further processing
             if image_results:
-                with open(output_directory / fccid / pdf['name'] / 'images.json', 'w') as output_file:
-                    output_file.write(json.dumps(image_results, indent=4))
+                with gzip.open(output_directory / fccid / pdf['name'] / 'images.json.gz', 'w') as output_file:
+                    output_file.write(json.dumps(image_results, indent=4).encode('utf-8'))
                 if clean_output:
                     for img_name in images:
                         try:
