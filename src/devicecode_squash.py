@@ -593,7 +593,9 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
 
         device_name = device['title']
         if name_techinfodepot in techinfodepot_to_wikidevi:
-            # scenario 2, 3, 4
+            # There is a link to something in WikiDevi, so this means
+            # scenario 2, 3, 4, but of course only if it is actually
+            # in our data.
             target_name = data_url_to_name.get(data_url, None)
             if target_name:
                 if target_name == device_name:
