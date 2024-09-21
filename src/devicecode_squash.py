@@ -31,7 +31,25 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
     # commercial
     if device_one['commercial'] != device_two['commercial']:
-        pass
+        conflict = False
+        commercial = copy.deepcopy(device_one['commercial'])
+
+        for i in ['deal_extreme', 'end_of_life_date', 'release_date']:
+            if device_one['commercial'][i] == '' or device_two['commercial'][i] == '':
+                if device_one['commercial'][i] == '':
+                    commercial[i] = device_two['commercial'][i]
+            else:
+                if device_one['commercial'][i] != device_two['commercial'][i]:
+                    conflict = True
+
+        if conflict and debug:
+            print(f"Commercial CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['commercial']}")
+            print(f"  Device 2: {device_two['commercial']}")
+
+        if not conflict:
+            device_one['commercial'] = commercial
+
 
     # cpus
     if device_one['cpus'] != device_two['cpus']:
@@ -380,7 +398,24 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
     # web
     if device_one['web'] != device_two['web']:
-        pass
+        conflict = False
+        web = copy.deepcopy(device_one['web'])
+
+        for i in ['download_page', 'techinfodepot', 'wikidevi']:
+            if device_one['web'][i] == '' or device_two['web'][i] == '':
+                if device_one['web'][i] == '':
+                    web[i] = device_two['web'][i]
+            else:
+                if device_one['web'][i] != device_two['web'][i]:
+                    conflict = True
+
+        if conflict and debug:
+            print(f"Web CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['web']}")
+            print(f"  Device 2: {device_two['web']}")
+
+        if not conflict:
+            web['manufacturer'] = web
 
     return device_one
 
