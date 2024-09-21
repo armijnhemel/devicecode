@@ -27,7 +27,8 @@ actual devices).
 
 The cleanest and easiest website to download the data from is
 [FCC.report][fcc.report] because it is fast and it serves fairly clean HTML
-that is easy to process.
+that is easy to process. It should be noted that this website does not seem to
+have indexed all FCC documents.
 
 Downloading is fairly trivial: given one or more valid FCC ids grab the HTML
 of the overview page, parse the HTML to extract PDF paths and descriptions,
