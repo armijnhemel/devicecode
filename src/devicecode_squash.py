@@ -39,7 +39,24 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
     # defaults
     if device_one['defaults'] != device_two['defaults']:
-        pass
+        conflict = False
+        defaults = copy.deepcopy(device_one['defaults'])
+
+        for i in ['ip', 'ip_comment', 'password', 'password_comment', 'uses_dhcp']:
+            if device_one['defaults'][i] == '' or device_two['defaults'][i] == '':
+                if device_one['defaults'][i] == '':
+                    defaults[i] = device_two['defaults'][i]
+            else:
+                if device_one['defaults'][i] != device_two['defaults'][i]:
+                    conflict = True
+
+        if conflict and debug:
+            print(f"Default values CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['defaults']}")
+            print(f"  Device 2: {device_two['defaults']}")
+
+        if not conflict:
+            device_one['defaults'] = defaults
 
     # device types
     if device_one['device_types'] != device_two['device_types']:
