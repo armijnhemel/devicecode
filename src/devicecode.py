@@ -272,7 +272,6 @@ class Web:
 
     # references to techinfodepot and wikidevi
     techinfodepot: str = ''
-    data_url: str = ''
     wikidevi: str = ''
     wikipedia: str = ''
 
@@ -288,6 +287,15 @@ class Model:
     series: str = ''
     submodel: str = ''
     subrevision: str = ''
+
+@dataclass_json
+@dataclass
+class Origin:
+    '''Origin information'''
+    data_url: str = ''
+
+    # techinfodepot or wikidevi
+    origin: str = ''
 
 @dataclass_json
 @dataclass
@@ -345,7 +353,7 @@ class Device:
     switch: list[Chip] = field(default_factory=list)
     title: str = ''
     web: Web = field(default_factory=Web)
-    wiki_type: str = ''
+    origins: list[Origin] = field(default_factory=list)
 
 def parse_ls(ls_log):
     '''Parse output from ls -l'''
@@ -910,6 +918,11 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                         #
                         # These could all contain interesting information
 
+                        data_url = title.replace(' ', '_')
+                        device_origin = Origin()
+                        device_origin.data_url = data_url
+                        device_origin.origin = wiki_type
+
                         if not is_helper_page:
                             for f in wikicode.filter(recursive=False):
                                 if isinstance(f, mwparserfromhell.nodes.template.Template):
@@ -917,23 +930,20 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                         # create a new Device() for each entry
                                         device = Device()
                                         device.title = title
-                                        device.wiki_type = wiki_type
+                                        device.origins.append(device_origin)
                                     elif f.name in ['Infobox Network Adapter\n']:
                                         device = NetworkAdapter()
                                         device.title = title
-                                        device.wiki_type = wiki_type
+                                        device.origins.append(device_origin)
                                     elif f.name in ['Infobox USB Hub\n']:
                                         device = USBHub()
                                         device.title = title
-                                        device.wiki_type = wiki_type
+                                        device.origins.append(device_origin)
                         else:
                             device = processed_devices[parent_title]
 
                         if not device:
                             continue
-
-                        data_url = title.replace(' ', '_')
-                        device.web.data_url = data_url
 
                         for f in wikicode.filter(recursive=False):
                             if isinstance(f, mwparserfromhell.nodes.heading.Heading):
