@@ -392,7 +392,26 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
     # software
     if device_one['software'] != device_two['software']:
-        pass
+        conflict = False
+        software = copy.deepcopy(device_one['software'])
+
+        for i in ['ddwrt', 'gargoyle', 'openwrt', 'os', 'os_version', 'sdk', 'tomato']:
+            if device_one['software'][i] == '' or device_two['software'][i] == '':
+                if device_one['software'][i] == '':
+                    software[i] = device_two['software'][i]
+                    changed = True
+            else:
+                if device_one['software'][i] != device_two['software'][i]:
+                    conflict = True
+
+        if debug and conflict:
+            print(f"Software CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['software']}")
+            print(f"  Device 2: {device_two['software']}")
+
+        if not conflict:
+            device_one['software'] = software
+
 
     # switch
     if device_one['switch'] != device_two['switch']:
