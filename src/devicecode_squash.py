@@ -211,7 +211,25 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
     # model
     if device_one['model'] != device_two['model']:
-        pass
+        conflict = False
+        model = copy.deepcopy(device_one['model'])
+
+        for i in ['model', 'part_number', 'pcb_id', 'revision', 'serial_number', 'series', 'submodel', 'subrevision']:
+            if device_one['model'][i] == '' or device_two['model'][i] == '':
+                if device_one['model'][i] == '':
+                    model[i] = device_two['model'][i]
+                    changed = True
+            else:
+                if device_one['model'][i] != device_two['model'][i]:
+                    conflict = True
+
+        if conflict and debug:
+            print(f"Model CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['model']}")
+            print(f"  Device 2: {device_two['model']}")
+
+        if not conflict:
+            device_one['model'] = model
 
     # network
     if device_one['network'] != device_two['network']:
