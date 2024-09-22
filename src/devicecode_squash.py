@@ -36,7 +36,7 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
         for i in ['deal_extreme', 'end_of_life_date', 'release_date']:
             if device_one['commercial'][i] == '' or device_two['commercial'][i] == '':
-                if device_one['commercial'][i] == '':
+                if device_one['commercial'][i] == '' and device_two['commercial'][i]:
                     commercial[i] = device_two['commercial'][i]
             else:
                 if device_one['commercial'][i] != device_two['commercial'][i]:
@@ -61,7 +61,7 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
         for i in ['ip', 'ip_comment', 'password', 'password_comment', 'uses_dhcp']:
             if device_one['defaults'][i] == '' or device_two['defaults'][i] == '':
-                if device_one['defaults'][i] == '':
+                if device_one['defaults'][i] == '' and device_two['defaults'][i]:
                     defaults[i] = device_two['defaults'][i]
             else:
                 if device_one['defaults'][i] != device_two['defaults'][i]:
@@ -201,7 +201,7 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
         for i in ['country', 'name', 'model', 'revision']:
             if device_one['manufacturer'][i] == '' or device_two['manufacturer'][i] == '':
-                if device_one['manufacturer'][i] == '':
+                if device_one['manufacturer'][i] == '' and device_two['manufacturer'][i]:
                     manufacturer[i] = device_two['manufacturer'][i]
                     changed = True
             else:
@@ -223,7 +223,7 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
         for i in ['model', 'part_number', 'pcb_id', 'revision', 'serial_number', 'series', 'submodel', 'subrevision']:
             if device_one['model'][i] == '' or device_two['model'][i] == '':
-                if device_one['model'][i] == '':
+                if device_one['model'][i] == '' and device_two['model'][i]:
                     model[i] = device_two['model'][i]
                     changed = True
             else:
@@ -257,7 +257,7 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
         # connector
         if device_one['power']['connector'] == '' or device_two['power']['connector'] == '':
-            if device_one['power']['connector'] == '':
+            if device_one['power']['connector'] == '' and device_two['power']['connector']:
                 power['connector'] = device_two['power']['connector']
                 changed = True
         else:
@@ -308,7 +308,7 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
         for i in ['brand', 'country', 'model', 'style']:
             if device_one['power_supply'][i] == '' or device_two['power_supply'][i] == '':
-                if device_one['power_supply'][i] == '':
+                if device_one['power_supply'][i] == '' and device_two['power_supply'][i]:
                     power_supply[i] = device_two['power_supply'][i]
                     changed = True
             else:
@@ -346,7 +346,7 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
         for i in ['wifi_certified', 'wifi_certified_date']:
             if device_one['regulatory'][i] == '' or device_two['regulatory'][i] == '':
-                if device_one['regulatory'][i] == '':
+                if device_one['regulatory'][i] == '' and device_two['regulatory'][i]:
                     regulatory[i] = device_two['regulatory'][i]
                     changed = True
             else:
@@ -376,7 +376,7 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
         # connector
         if device_one['serial']['connector'] == '' or device_two['serial']['connector'] == '':
-            if device_one['serial']['connector'] == '':
+            if device_one['serial']['connector'] == '' and device_two['serial']['connector']:
                 serial['connector'] = device_two['serial']['connector']
                 changed = True
         else:
@@ -401,7 +401,7 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
         # voltage
         if device_one['serial']['voltage'] != device_two['serial']['voltage']:
-            if not device_one['serial']['voltage']:
+            if not device_one['serial']['voltage'] and device_two['serial']['voltage']:
                 serial['voltage'] = device_two['serial']['voltage']
                 changed = True
             elif not device_two['serial']['populated']:
@@ -422,7 +422,7 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
         for i in ['ddwrt', 'gargoyle', 'openwrt', 'os', 'os_version', 'sdk', 'tomato']:
             if device_one['software'][i] == '' or device_two['software'][i] == '':
-                if device_one['software'][i] == '':
+                if device_one['software'][i] == '' and device_two['software'][i]:
                     software[i] = device_two['software'][i]
                     changed = True
             else:
@@ -436,7 +436,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
         if not conflict:
             device_one['software'] = software
-
 
     # switch
     if device_one['switch'] != device_two['switch']:
@@ -464,7 +463,7 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
         for i in ['download_page', 'techinfodepot', 'wikidevi']:
             if device_one['web'][i] == '' or device_two['web'][i] == '':
-                if device_one['web'][i] == '':
+                if device_one['web'][i] == '' and device_two['web'][i]:
                     web[i] = device_two['web'][i]
                     changed = True
             else:
@@ -479,6 +478,7 @@ def squash(device_one, device_two, debug=False, verbose=False):
         if not conflict:
             web['manufacturer'] = web
 
+    # record all origins in case the file is a result of multiple inputs
     if changed:
         if 'origins' in device_one and 'origins' in device_two:
             device_one['origins']+= device_two['origins']
