@@ -1648,6 +1648,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             continue
                                                         ex = defaults.EXPANSION_REWRITE.get(expansion.strip().lower(), expansion.strip())
                                                         device.expansions.append(ex)
+                                                    device.expansions.sort()
 
                                                 # process TechInfoDepot specific information
                                                 if wiki_type == 'TechInfoDepot':
