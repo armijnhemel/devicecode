@@ -88,7 +88,14 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
     # expansions
     if device_one['expansions'] != device_two['expansions']:
-        pass
+        expansions = set(device_one['expansions'])
+        expansions.update(device_two['expansions'])
+        if debug and device_one['expansions'] and device_two['expansions'] and verbose:
+            print(f"Flags inconsistency for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['expansions']}")
+            print(f"  Device 2: {device_two['expansions']}")
+        device_one['expansions'] = sorted(expansions)
+        changed = True
 
     # flags
     if device_one['flags'] != device_two['flags']:
