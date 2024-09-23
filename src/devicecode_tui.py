@@ -791,8 +791,6 @@ class DevicecodeUI(App):
             self.year_data_table.add_row(rank, i[1], i[0])
             rank += 1
 
-        #raise self.year_data_table
-
         # build the various trees.
         self.brand_tree: BrandTree[dict] = BrandTree("DeviceCode brand results")
         self.brand_tree.show_root = False
