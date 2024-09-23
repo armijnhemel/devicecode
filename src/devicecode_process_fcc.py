@@ -508,8 +508,9 @@ def process_fcc(task):
 @click.option('--process-uninteresting', is_flag=True, default=False,
               help='process uninteresting files')
 @click.option('--no-images', is_flag=True, help='do not extract or process images')
+@click.option('--no-text', is_flag=True, help='do not extract or process text')
 @click.option('--clean-output', is_flag=True, help='only write clean results (no raw results)')
-def main(fccids, fcc_input_directory, output_directory, jobs, verbose, force, process_uninteresting, no_images, clean_output):
+def main(fccids, fcc_input_directory, output_directory, jobs, verbose, force, process_uninteresting, no_images, no_text, clean_output):
     if not fcc_input_directory.is_dir():
         print(f"{fcc_input_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -530,7 +531,7 @@ def main(fccids, fcc_input_directory, output_directory, jobs, verbose, force, pr
     meta_information = {'fcc_input_directory': fcc_input_directory, 'verbose': verbose,
                         'output_directory': output_directory, 'force': force,
                         'process_uninteresting': process_uninteresting, 'no_images': no_images,
-                        'clean_output': clean_output}
+                        'no_text': no_text, 'clean_output': clean_output}
 
     tasks = map(lambda x: (x, meta_information), fccids)
     pool = multiprocessing.Pool(jobs)
