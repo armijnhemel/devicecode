@@ -42,6 +42,7 @@ class SuggestDevices(Suggester):
         self.chips = kwargs.get('chips', [])
         self.chip_types = kwargs.get('chip_types', [])
         self.chip_vendors = kwargs.get('chip_vendors', [])
+        self.fcc = kwargs.get('fcc', [])
         self.files = kwargs.get('files', [])
         self.flags = kwargs.get('flags', [])
         self.odms = kwargs.get('odms', [])
@@ -101,6 +102,10 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(self.chip_vendors):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + self.chip_vendors[idx][len(check_value)-12:]
+        elif check_value.startswith('fcc='):
+            for idx, chk in enumerate(self.fcc):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.fcc[idx][len(check_value)-4:]
         elif check_value.startswith('file='):
             for idx, chk in enumerate(self.files):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
@@ -152,6 +157,7 @@ class FilterValidator(Validator):
         self.chip_vendors = kwargs.get('chip_vendors', set())
         self.connectors = kwargs.get('connectors', set())
         self.device_types = kwargs.get('types', set())
+        self.fcc = kwargs.get('fcc', set())
         self.files = kwargs.get('files', set())
         self.ips = kwargs.get('ips', set())
         self.packages = kwargs.get('packages', set())
@@ -196,6 +202,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'ignore_odm':
                     if token_value not in self.odms:
                         return self.failure("Invalid ODM")
+                elif token_identifier == 'fcc':
+                    if token_value not in self.fcc:
+                        return self.failure("Invalid FCC")
                 elif token_identifier == 'file':
                     if token_value not in self.files:
                         return self.failure("Invalid file")
@@ -629,7 +638,7 @@ class DevicecodeUI(App):
                     chips.add(chip['model'].lower())
 
             for fcc_id in device['regulatory']['fcc_ids']:
-                fcc.add(fcc_id['fcc_id'])
+                fcc.add(fcc_id['fcc_id'].lower())
 
             for package in device['software']['packages']:
                 package_name = package['name'].lower()
@@ -812,17 +821,18 @@ class DevicecodeUI(App):
                             validators=[FilterValidator(bootloaders=bootloaders, brands=brands,
                                                         odms=odms, chips=chips, chip_types=chip_types,
                                                         chip_vendors=chip_vendors, connectors=connectors,
-                                                        ips=ips, packages=packages, passwords=passwords,
-                                                        types=device_types, programs=programs, files=files,
+                                                        fcc=fcc, files=files, ips=ips, packages=packages,
+                                                        passwords=passwords, programs=programs, types=device_types,
                                                         token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             bootloaders=sorted(bootloaders), brands=sorted(brands),
                             chips=sorted(chips), chip_types=sorted(chip_types),
                             chip_vendors=sorted(chip_vendors), connectors=sorted(connectors),
                             odms=sorted(odms), operating_systems=sorted(operating_systems),
-                            files=sorted(files), flags=sorted(flags), packages=sorted(packages),
-                            types=sorted(device_types), passwords=sorted(passwords),
-                            programs=sorted(programs)), valid_empty=True)
+                            fcc=sorted(fcc), files=sorted(files), flags=sorted(flags),
+                            packages=sorted(packages), types=sorted(device_types),
+                            passwords=sorted(passwords), programs=sorted(programs)),
+                            valid_empty=True)
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
