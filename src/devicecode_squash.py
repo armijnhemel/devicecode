@@ -421,8 +421,8 @@ def squash(device_one, device_two, debug=False, verbose=False):
         third_party.update(device_two['software']['third_party'])
         if debug and device_one['software']['third_party'] and device_two['software']['third_party'] and verbose:
             print(f"Third party software inconsistency for '{device_one['title']}'")
-            print(f"  Device 1: {device_one['third_party']}")
-            print(f"  Device 2: {device_two['third_party']}")
+            print(f"  Device 1: {device_one['software']['third_party']}")
+            print(f"  Device 2: {device_two['software']['third_party']}")
         software['third_party'] = sorted(third_party)
 
         if not conflict:
