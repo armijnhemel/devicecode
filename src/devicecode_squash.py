@@ -476,7 +476,7 @@ def squash(device_one, device_two, debug=False, verbose=False):
             print(f"  Device 2: {device_two['web']}")
 
         if not conflict:
-            web['manufacturer'] = web
+            device_one['web'] = web
 
     # record all origins in case the file is a result of multiple inputs
     if changed:
