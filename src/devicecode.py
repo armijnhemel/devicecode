@@ -1835,7 +1835,16 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                         else:
                                                             device.web.support_page.append(value)
                                                     elif identifier == 'wikidevi':
-                                                        device.web.wikidevi = value
+                                                        if '<!--' in value:
+                                                            # some people only adapted the default value
+                                                            # and didn't remove the comment parts.
+                                                            if value.startswith('<!-- ') and value.endswith(' -->'):
+                                                                device.web.support_page.append(value[5:-4].strip())
+                                                                device.web.wikidevi = value[5:-4].strip()
+                                                            else:
+                                                                device.web.wikidevi = value.split('<!-- ')[0].strip()
+                                                        else:
+                                                            device.web.wikidevi = value
                                                     # Low quality data, ignore for now
                                                     elif identifier == 'wikipedia':
                                                         #device.web.wikipedia = value
