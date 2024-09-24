@@ -647,12 +647,17 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
         else:
             # scenario 1, 5
             if data_url in wikidevi_to_techinfodepot.values():
-                target_name = data_url_to_name.get(data_url, None)
-                if target_name:
-                    if target_name == device_name:
-                        pass
-                else:
-                    pass
+                # scenario 5: there is no link to wikidevi,
+                # but there is a backlink from a wikidevi entry
+                # to a *valid* TechInfoDepot entry.
+                # first find the corresponding WikiDevi item
+                # and see if it matches the device's name
+                for wikidevi_name, techinfodepot_target in wikidevi_to_techinfodepot.items():
+                    if data_url == techinfodepot_target:
+                        squash_result = squash(device, wikidevi_items[wikidevi_name], debug=debug, verbose=verbose)
+                        processed_wikidevi.add(name_techinfodepot)
+                        squashed_devices.append(squash_result)
+                        break
             else:
                 # scenario 1: A   B
                 # store the device data
@@ -662,8 +667,10 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                     processed_wikidevi.add(name_techinfodepot)
                     squashed_devices.append(squash_result)
                 else:
+                    # there is nothing to be squashed, so just copy the original data
                     squashed_devices.append(device)
 
+    # now for everything that was in WikiDevi, but which hadn't been processed yet
     for name_wikidevi in wikidevi_items:
         if name_wikidevi in processed_wikidevi:
             continue
