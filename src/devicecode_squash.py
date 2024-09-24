@@ -620,6 +620,24 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
             # There is a link to something in WikiDevi, so this means
             # scenario 2, 3, 4, but of course only if it is actually
             # in our data.
+
+            # first extract the target name
+            target_name = techinfodepot_to_wikidevi[name_techinfodepot]
+
+            # then see if the device is known in the current Wikidevi data set
+            wikidevi_name = data_url_to_name.get(target_name, None)
+            if not wikidevi_name:
+                # the device is not known in WikiDevi, so just copy
+                # the original data and continue.
+                squashed_devices.append(device)
+                continue
+
+            if name_techinfodepot == wikidevi_name:
+                # The name is the same in both data sets.
+                pass
+            else:
+                pass
+
             target_name = data_url_to_name.get(data_url, None)
             if target_name:
                 if target_name == device_name:
