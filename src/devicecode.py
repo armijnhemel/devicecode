@@ -1544,6 +1544,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                                 device.software.third_party.append('NetBSD')
                                                             case 'openbsd':
                                                                 device.software.third_party.append('OpenBSD')
+                                                    device.software.third_party.sort()
 
                                                 # additional chip
                                                 elif identifier in ['addchip', 'addl_chips']:
