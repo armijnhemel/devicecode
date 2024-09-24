@@ -595,8 +595,8 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
     #
     # There are a few situations for the TechInfoDepot data:
     #
-    # 1. there is no link to wikidevi and no link from wikidevi to techinfodepot A      B
-    # 2. there is a link to wikidevi and no link from wikidevi to techinfodepot  A -->  B
+    # 1. there is no link to wikidevi and no link from wikidevi to techinfodepot A     B
+    # 2. there is a link to wikidevi and no link from wikidevi to techinfodepot  A --> B
     # 3. there is a link to wikidevi and a matching link from wikidevi to techinfodepot A <--> B
     # 4. there is a link to wikidevi and a non-matching link from wikidevi to techinfodepot A --> B --> C
     # 5. there is no link to wikidevi and a link from wikidevi to techinfodepot   A <-- B
@@ -627,10 +627,11 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
         else:
             # scenario 1, 5
             if data_url in wikidevi_to_techinfodepot.values():
-                # scenario 5: there is no link to wikidevi,
-                # but there is a backlink from a wikidevi entry
-                # to a *valid* TechInfoDepot entry.
-                # first find the corresponding WikiDevi item
+                # scenario 5: A <-- B
+                # there is no link to wikidevi, but there is a
+                # backlink from a wikidevi entry to a *valid*
+                # TechInfoDepot entry.
+                # First find the corresponding WikiDevi item
                 # and see if it matches the device's name
                 for wikidevi_name, techinfodepot_target in wikidevi_to_techinfodepot.items():
                     if data_url == techinfodepot_target:
