@@ -221,7 +221,7 @@ def squash(device_one, device_two, debug=False, verbose=False):
         conflict = False
         model = copy.deepcopy(device_one['model'])
 
-        for i in ['model', 'part_number', 'pcb_id', 'revision', 'serial_number', 'series', 'submodel', 'subrevision']:
+        for i in ['model', 'part_number', 'pcb_id', 'serial_number', 'series']:
             if device_one['model'][i] == '' or device_two['model'][i] == '':
                 if device_one['model'][i] == '' and device_two['model'][i]:
                     model[i] = device_two['model'][i]
