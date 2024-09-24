@@ -17,7 +17,6 @@ import click
 def squash(device_one, device_two, debug=False, verbose=False):
     '''Squash two devices. Device 1 is "leading".'''
 
-    changed = False
     # additional chips
     if device_one['additional_chips'] != device_two['additional_chips']:
         pass
@@ -84,7 +83,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
             print(f"  Device 1: {device_one['device_types']}")
             print(f"  Device 2: {device_two['device_types']}")
         device_one['device_types'] = sorted(device_types)
-        changed = True
 
     # expansions
     if device_one['expansions'] != device_two['expansions']:
@@ -95,7 +93,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
             print(f"  Device 1: {device_one['expansions']}")
             print(f"  Device 2: {device_two['expansions']}")
         device_one['expansions'] = sorted(expansions)
-        changed = True
 
     # flags
     if device_one['flags'] != device_two['flags']:
@@ -106,7 +103,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
             print(f"  Device 1: {device_one['flags']}")
             print(f"  Device 2: {device_two['flags']}")
         device_one['flags'] = sorted(flags)
-        changed = True
 
     # flash
     if device_one['flash'] != device_two['flash']:
@@ -116,7 +112,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
     if device_one['has_jtag'] != device_two['has_jtag']:
         if device_one['has_jtag'] == 'unknown':
             device_one['has_jtag'] = device_two['has_jtag']
-            changed = True
         else:
             if device_two['has_jtag'] != 'unknown':
                 if debug:
@@ -128,7 +123,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
     if device_one['has_serial_port'] != device_two['has_serial_port']:
         if device_one['has_serial_port'] == 'unknown':
             device_one['has_serial_port'] = device_two['has_serial_port']
-            changed = True
         else:
             if device_two['has_serial_port'] != 'unknown':
                 if debug:
@@ -148,7 +142,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
         # baud rate
         if device_one['jtag']['baud_rate'] == 0 or device_two['jtag']['baud_rate'] == 0:
             jtag['baud_rate'] = max(device_one['jtag']['baud_rate'], device_two['jtag']['baud_rate'])
-            changed = True
         else:
             if device_one['jtag']['baud_rate'] != device_two['jtag']['baud_rate']:
                 conflict = True
@@ -157,15 +150,14 @@ def squash(device_one, device_two, debug=False, verbose=False):
         if device_one['jtag']['connector'] == '' or device_two['jtag']['connector'] == '':
             if device_one['jtag']['connector'] == '':
                 jtag['connector'] = device_two['jtag']['connector']
-                changed = True
         else:
             if device_one['jtag']['connector'] != device_two['jtag']['connector']:
                 conflict = True
 
         # number of pins
-        if device_one['jtag']['number_of_pins'] == 0 or device_two['jtag']['number_of_pins'] == 0:
-            jtag['number_of_pins'] = max(device_one['jtag']['number_of_pins'], device_two['jtag']['number_of_pins'])
-            changed = True
+        if device_one['jtag']['number_of_pins'] == 0:
+            if device_two['jtag']['number_of_pins'] != 0:
+                jtag['number_of_pins'] = device_two['jtag']['number_of_pins']
         else:
             if device_one['jtag']['number_of_pins'] != device_two['jtag']['number_of_pins']:
                 conflict = True
@@ -174,7 +166,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
         if device_one['jtag']['populated'] != device_two['jtag']['populated']:
             if device_one['jtag']['populated'] == 'unknown':
                 jtag['populated'] = device_two['jtag']['populated']
-                changed = True
             elif device_two['jtag']['populated'] != 'unknown':
                 conflict = True
 
@@ -182,7 +173,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
         if device_one['jtag']['voltage'] != device_two['jtag']['voltage']:
             if not device_one['jtag']['voltage']:
                 jtag['voltage'] = device_two['jtag']['voltage']
-                changed = True
             elif not device_two['jtag']['populated']:
                 conflict = True
 
@@ -203,7 +193,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
             if device_one['manufacturer'][i] == '' or device_two['manufacturer'][i] == '':
                 if device_one['manufacturer'][i] == '' and device_two['manufacturer'][i]:
                     manufacturer[i] = device_two['manufacturer'][i]
-                    changed = True
             else:
                 if device_one['manufacturer'][i] != device_two['manufacturer'][i]:
                     conflict = True
@@ -225,7 +214,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
             if device_one['model'][i] == '' or device_two['model'][i] == '':
                 if device_one['model'][i] == '' and device_two['model'][i]:
                     model[i] = device_two['model'][i]
-                    changed = True
             else:
                 if device_one['model'][i] != device_two['model'][i]:
                     conflict = True
@@ -250,7 +238,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
         # barrel_length
         if device_one['power']['barrel_length'] == 0.0 or device_two['power']['barrel_length'] == 0.0:
             power['barrel_length'] = max(device_one['power']['barrel_length'], device_two['power']['barrel_length'])
-            changed = True
         else:
             if device_one['power']['barrel_length'] != device_two['power']['barrel_length']:
                 conflict = True
@@ -259,7 +246,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
         if device_one['power']['connector'] == '' or device_two['power']['connector'] == '':
             if device_one['power']['connector'] == '' and device_two['power']['connector']:
                 power['connector'] = device_two['power']['connector']
-                changed = True
         else:
             if device_one['power']['connector'] != device_two['power']['connector']:
                 conflict = True
@@ -267,7 +253,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
         # inner_barrel_size
         if device_one['power']['inner_barrel_size'] == 0.0 or device_two['power']['inner_barrel_size'] == 0.0:
             power['inner_barrel_size'] = max(device_one['power']['inner_barrel_size'], device_two['power']['inner_barrel_size'])
-            changed = True
         else:
             if device_one['power']['inner_barrel_size'] != device_two['power']['inner_barrel_size']:
                 conflict = True
@@ -275,7 +260,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
         # outer_barrel_size
         if device_one['power']['outer_barrel_size'] == 0.0 or device_two['power']['outer_barrel_size'] == 0.0:
             power['outer_barrel_size'] = max(device_one['power']['outer_barrel_size'], device_two['power']['outer_barrel_size'])
-            changed = True
         else:
             if device_one['power']['outer_barrel_size'] != device_two['power']['outer_barrel_size']:
                 conflict = True
@@ -285,7 +269,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
         if not device_one['power']['voltage']:
             if device_two['power']['voltage']:
                 power['voltage'] = device_two['power']['voltage']
-                changed = True
         else:
             if device_two['power']['voltage']:
                 if device_one['power']['voltage'] != device_two['power']['voltage']:
@@ -310,7 +293,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
             if device_one['power_supply'][i] == '' or device_two['power_supply'][i] == '':
                 if device_one['power_supply'][i] == '' and device_two['power_supply'][i]:
                     power_supply[i] = device_two['power_supply'][i]
-                    changed = True
             else:
                 if device_one['power_supply'][i] != device_two['power_supply'][i]:
                     conflict = True
@@ -348,7 +330,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
             if device_one['regulatory'][i] == '' or device_two['regulatory'][i] == '':
                 if device_one['regulatory'][i] == '' and device_two['regulatory'][i]:
                     regulatory[i] = device_two['regulatory'][i]
-                    changed = True
             else:
                 if device_one['regulatory'][i] != device_two['regulatory'][i]:
                     conflict = True
@@ -369,7 +350,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
         # baud rate
         if device_one['serial']['baud_rate'] == 0 or device_two['serial']['baud_rate'] == 0:
             serial['baud_rate'] = max(device_one['serial']['baud_rate'], device_two['serial']['baud_rate'])
-            changed = True
         else:
             if device_one['serial']['baud_rate'] != device_two['serial']['baud_rate']:
                 conflict = True
@@ -378,7 +358,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
         if device_one['serial']['connector'] == '' or device_two['serial']['connector'] == '':
             if device_one['serial']['connector'] == '' and device_two['serial']['connector']:
                 serial['connector'] = device_two['serial']['connector']
-                changed = True
         else:
             if device_one['serial']['connector'] != device_two['serial']['connector']:
                 conflict = True
@@ -386,7 +365,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
         # number of pins
         if device_one['serial']['number_of_pins'] == 0 or device_two['serial']['number_of_pins'] == 0:
             serial['number_of_pins'] = max(device_one['serial']['number_of_pins'], device_two['serial']['number_of_pins'])
-            changed = True
         else:
             if device_one['serial']['number_of_pins'] != device_two['serial']['number_of_pins']:
                 conflict = True
@@ -395,7 +373,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
         if device_one['serial']['populated'] != device_two['serial']['populated']:
             if device_one['serial']['populated'] == 'unknown':
                 serial['populated'] = device_two['serial']['populated']
-                changed = True
             elif device_two['serial']['populated'] != 'unknown':
                 conflict = True
 
@@ -403,7 +380,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
         if device_one['serial']['voltage'] != device_two['serial']['voltage']:
             if not device_one['serial']['voltage'] and device_two['serial']['voltage']:
                 serial['voltage'] = device_two['serial']['voltage']
-                changed = True
             elif not device_two['serial']['populated']:
                 conflict = True
 
@@ -424,7 +400,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
             if device_one['software'][i] == '' or device_two['software'][i] == '':
                 if device_one['software'][i] == '' and device_two['software'][i]:
                     software[i] = device_two['software'][i]
-                    changed = True
             else:
                 if device_one['software'][i] != device_two['software'][i]:
                     conflict = True
@@ -441,7 +416,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
             print(f"  Device 1: {device_one['third_party']}")
             print(f"  Device 2: {device_two['third_party']}")
         software['third_party'] = sorted(third_party)
-        changed = True
 
         if not conflict:
             device_one['software'] = software
@@ -459,7 +433,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
             print(f"  Device 1: {device_one['taglines']}")
             print(f"  Device 2: {device_two['taglines']}")
         device_one['taglines'] = sorted(taglines)
-        changed = True
 
     # title, always use the first device, pass
     if device_one['title'] != device_two['title']:
@@ -474,7 +447,6 @@ def squash(device_one, device_two, debug=False, verbose=False):
             if device_one['web'][i] == '' or device_two['web'][i] == '':
                 if device_one['web'][i] == '' and device_two['web'][i]:
                     web[i] = device_two['web'][i]
-                    changed = True
             else:
                 if device_one['web'][i] != device_two['web'][i]:
                     conflict = True
@@ -488,9 +460,8 @@ def squash(device_one, device_two, debug=False, verbose=False):
             device_one['web'] = web
 
     # record all origins in case the file is a result of multiple inputs
-    if changed:
-        if 'origins' in device_one and 'origins' in device_two:
-            device_one['origins']+= device_two['origins']
+    if 'origins' in device_one and 'origins' in device_two:
+        device_one['origins']+= device_two['origins']
     return device_one
 
 @click.command(short_help='Squash TechInfoDepot, WikiDevi and overlay information into a single file per device')
