@@ -631,9 +631,13 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                 # the original data and continue.
                 squashed_devices.append(device)
                 continue
+            if wikidevi_name not in wikidevi_items:
+                # the device is not known in WikiDevi, so just copy
+                # the original data and continue.
+                squashed_devices.append(device)
+                continue
 
             if name_techinfodepot == wikidevi_name:
-                # The name is the same in both data sets.
                 pass
             else:
                 pass
