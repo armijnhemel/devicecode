@@ -400,7 +400,8 @@ DEFAULT_VALUE = {
     'wan_speed': ['<!-- 10MbE,100MbE,1GbE, -->'],
     'wan2_speed': ['<!-- 10MbE,100MbE,1GbE, -->'],
     'weight': ['<!-- Weight of device {{convert|weight|oz|g}} -->'],
-    'wikidevi': ['<!-- wikidevi.wi-cat.ru page, included underscores -->'],
+    'wikidevi': ['<!-- wikidevi.wi-cat.ru page, included underscores -->',
+                 '<!-- Page name only, Must include underscore Leave blank for none -->'],
     'wikipedia': ['<!-- [[wikipedia:Main Page|Wikipedia]] Leave blank for none -->'],
     'x86-64rev2': ['<!-- x86-64 Revision, Leave blank for unknown -->'],
 }
