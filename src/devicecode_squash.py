@@ -527,6 +527,10 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
     # keep mappings between TechInfoDepot and WikiDevi devices names/URLs
     techinfodepot_to_wikidevi = {}
     wikidevi_to_techinfodepot = {}
+
+    # keep a mapping between data URLs to name. This is basically just a
+    # cache as it would always yield the same result for a title.
+    # This cache is shared between all entries.
     data_url_to_name = {}
 
     techinfodepot_items = {}
@@ -637,10 +641,15 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                 squashed_devices.append(device)
                 continue
 
-            if name_techinfodepot == wikidevi_name:
-                pass
-            else:
-                pass
+            # there is a known WikiDevi device
+            # verify if this is scenario 2, 3 or 4
+            if not wikidevi_items[wikidevi_name]['web']['techinfodepot']:
+                # scenario 2: A --> B
+                # As a sanity check only squash if the names are the same
+                if name_techinfodepot == wikidevi_name:
+                    squash_result = squash(device, wikidevi_items[wikidevi_name], debug=debug, verbose=verbose)
+                    processed_wikidevi.add(name_techinfodepot)
+                    squashed_devices.append(squash_result)
 
             target_name = data_url_to_name.get(data_url, None)
             if target_name:
