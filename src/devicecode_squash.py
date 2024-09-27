@@ -658,6 +658,13 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                         squash_result = squash(device, wikidevi_items[wikidevi_name], debug=debug, verbose=verbose)
                         processed_wikidevi.add(name_techinfodepot)
                         squashed_devices.append(squash_result)
+                    else:
+                        # TODO: find out what to do here
+                        pass
+                else:
+                    # scenario 4: A --> B --> C
+                    # TODO: find out what to do here
+                    pass
 
             target_name = data_url_to_name.get(data_url, None)
             if target_name:
