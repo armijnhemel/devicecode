@@ -650,6 +650,14 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                     squash_result = squash(device, wikidevi_items[wikidevi_name], debug=debug, verbose=verbose)
                     processed_wikidevi.add(name_techinfodepot)
                     squashed_devices.append(squash_result)
+            else:
+                if data_url == wikidevi_items[wikidevi_name]['web']['techinfodepot']:
+                    # scenario 3: A <--> B
+                    # As a sanity check only squash if the names are the same
+                    if name_techinfodepot == wikidevi_name:
+                        squash_result = squash(device, wikidevi_items[wikidevi_name], debug=debug, verbose=verbose)
+                        processed_wikidevi.add(name_techinfodepot)
+                        squashed_devices.append(squash_result)
 
             target_name = data_url_to_name.get(data_url, None)
             if target_name:
