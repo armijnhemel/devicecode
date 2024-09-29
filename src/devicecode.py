@@ -272,7 +272,6 @@ class Web:
 
     # references to techinfodepot and wikidevi
     techinfodepot: str = ''
-    data_url: str = ''
     wikidevi: str = ''
     wikipedia: str = ''
 
@@ -291,6 +290,15 @@ class Model:
 
 @dataclass_json
 @dataclass
+class Origin:
+    '''Origin information'''
+    data_url: str = ''
+
+    # techinfodepot or wikidevi
+    origin: str = ''
+
+@dataclass_json
+@dataclass
 class NetworkAdapter:
     '''Top level class holding network adapter information'''
     brand: str = ''
@@ -299,7 +307,7 @@ class NetworkAdapter:
     regulatory: Regulatory = field(default_factory=Regulatory)
     title: str = ''
     web: Web = field(default_factory=Web)
-    wiki_type: str = ''
+    origins: list[Origin] = field(default_factory=list)
 
 @dataclass_json
 @dataclass
@@ -312,7 +320,7 @@ class USBHub:
     regulatory: Regulatory = field(default_factory=Regulatory)
     title: str = ''
     web: Web = field(default_factory=Web)
-    wiki_type: str = ''
+    origins: list[Origin] = field(default_factory=list)
 
 @dataclass_json
 @dataclass
@@ -345,7 +353,7 @@ class Device:
     switch: list[Chip] = field(default_factory=list)
     title: str = ''
     web: Web = field(default_factory=Web)
-    wiki_type: str = ''
+    origins: list[Origin] = field(default_factory=list)
 
 def parse_ls(ls_log):
     '''Parse output from ls -l'''
@@ -910,6 +918,11 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                         #
                         # These could all contain interesting information
 
+                        data_url = title.replace(' ', '_')
+                        device_origin = Origin()
+                        device_origin.data_url = data_url
+                        device_origin.origin = wiki_type
+
                         if not is_helper_page:
                             for f in wikicode.filter(recursive=False):
                                 if isinstance(f, mwparserfromhell.nodes.template.Template):
@@ -917,23 +930,20 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                         # create a new Device() for each entry
                                         device = Device()
                                         device.title = title
-                                        device.wiki_type = wiki_type
+                                        device.origins.append(device_origin)
                                     elif f.name in ['Infobox Network Adapter\n']:
                                         device = NetworkAdapter()
                                         device.title = title
-                                        device.wiki_type = wiki_type
+                                        device.origins.append(device_origin)
                                     elif f.name in ['Infobox USB Hub\n']:
                                         device = USBHub()
                                         device.title = title
-                                        device.wiki_type = wiki_type
+                                        device.origins.append(device_origin)
                         else:
                             device = processed_devices[parent_title]
 
                         if not device:
                             continue
-
-                        data_url = title.replace(' ', '_')
-                        device.web.data_url = data_url
 
                         for f in wikicode.filter(recursive=False):
                             if isinstance(f, mwparserfromhell.nodes.heading.Heading):
@@ -1534,6 +1544,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                                 device.software.third_party.append('NetBSD')
                                                             case 'openbsd':
                                                                 device.software.third_party.append('OpenBSD')
+                                                    device.software.third_party.sort()
 
                                                 # additional chip
                                                 elif identifier in ['addchip', 'addl_chips']:
@@ -1638,6 +1649,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             continue
                                                         ex = defaults.EXPANSION_REWRITE.get(expansion.strip().lower(), expansion.strip())
                                                         device.expansions.append(ex)
+                                                    device.expansions.sort()
 
                                                 # process TechInfoDepot specific information
                                                 if wiki_type == 'TechInfoDepot':
@@ -1823,7 +1835,16 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                         else:
                                                             device.web.support_page.append(value)
                                                     elif identifier == 'wikidevi':
-                                                        device.web.wikidevi = value
+                                                        if '<!--' in value:
+                                                            # some people only adapted the default value
+                                                            # and didn't remove the comment parts.
+                                                            if value.startswith('<!-- ') and value.endswith(' -->'):
+                                                                device.web.support_page.append(value[5:-4].strip())
+                                                                device.web.wikidevi = value[5:-4].strip()
+                                                            else:
+                                                                device.web.wikidevi = value.split('<!-- ')[0].strip()
+                                                        else:
+                                                            device.web.wikidevi = value
                                                     # Low quality data, ignore for now
                                                     elif identifier == 'wikipedia':
                                                         #device.web.wikipedia = value

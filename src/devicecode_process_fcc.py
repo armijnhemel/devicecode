@@ -4,6 +4,7 @@
 # Licensed under Apache 2.0, see LICENSE file for details
 # SPDX-License-Identifier: Apache-2.0
 
+import gzip
 import hashlib
 import json
 import multiprocessing
@@ -448,6 +449,8 @@ def process_fcc(task):
                 # Error:
                 # TypeError: 'PDFObjRef' object is not iterable
                 pass
+            except KeyError:
+                pass
             except struct.error:
                 # TODO: fix this. It is likely an error in pdfminer
                 # Example: 1509933.pdf in FCC id PPD-AR5B95
@@ -477,8 +480,8 @@ def process_fcc(task):
 
             # write various metadata to files for further processing
             if image_results:
-                with open(output_directory / fccid / pdf['name'] / 'images.json', 'w') as output_file:
-                    output_file.write(json.dumps(image_results, indent=4))
+                with gzip.open(output_directory / fccid / pdf['name'] / 'images.json.gz', 'w') as output_file:
+                    output_file.write(json.dumps(image_results, indent=4).encode('utf-8'))
                 if clean_output:
                     for img_name in images:
                         try:
@@ -505,8 +508,9 @@ def process_fcc(task):
 @click.option('--process-uninteresting', is_flag=True, default=False,
               help='process uninteresting files')
 @click.option('--no-images', is_flag=True, help='do not extract or process images')
+@click.option('--no-text', is_flag=True, help='do not extract or process text')
 @click.option('--clean-output', is_flag=True, help='only write clean results (no raw results)')
-def main(fccids, fcc_input_directory, output_directory, jobs, verbose, force, process_uninteresting, no_images, clean_output):
+def main(fccids, fcc_input_directory, output_directory, jobs, verbose, force, process_uninteresting, no_images, no_text, clean_output):
     if not fcc_input_directory.is_dir():
         print(f"{fcc_input_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -527,7 +531,7 @@ def main(fccids, fcc_input_directory, output_directory, jobs, verbose, force, pr
     meta_information = {'fcc_input_directory': fcc_input_directory, 'verbose': verbose,
                         'output_directory': output_directory, 'force': force,
                         'process_uninteresting': process_uninteresting, 'no_images': no_images,
-                        'clean_output': clean_output}
+                        'no_text': no_text, 'clean_output': clean_output}
 
     tasks = map(lambda x: (x, meta_information), fccids)
     pool = multiprocessing.Pool(jobs)

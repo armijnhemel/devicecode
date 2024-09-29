@@ -145,6 +145,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
             description = ''
             document_type = ''
             approved_dates = []
+            failed_dates = []
             current_date = ''
             for line in result.splitlines():
                 # keep a bit of state and only look at the interesting lines.
@@ -156,7 +157,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
                 if '<span class="label label-danger">FAILED</span>' in line:
                     res = RE_DATE.search(line)
                     if res:
-                        approved_dates.append(res.groups()[0])
+                        failed_dates.append(res.groups()[0])
                 if '<th>File Name</th><th>Document Type</th>' in line:
                     in_table = True
                     document_type = line.rsplit('<td>', maxsplit=1)[1][:-5]
@@ -239,6 +240,9 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
                         pdf['sha256'] = hashlib.sha256(pdf_file.read()).hexdigest()
 
             description_data = {'modular': is_modular, 'data': pdfs_descriptions}
+
+            if not approved_dates and failed_dates:
+                approved_dates = failed_dates
 
             if verbose:
                 print(f"* writing PDF/description mapping for {fcc_id}\n")

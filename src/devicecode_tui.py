@@ -42,6 +42,7 @@ class SuggestDevices(Suggester):
         self.chips = kwargs.get('chips', [])
         self.chip_types = kwargs.get('chip_types', [])
         self.chip_vendors = kwargs.get('chip_vendors', [])
+        self.fcc = kwargs.get('fcc', [])
         self.files = kwargs.get('files', [])
         self.flags = kwargs.get('flags', [])
         self.odms = kwargs.get('odms', [])
@@ -101,6 +102,10 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(self.chip_vendors):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + self.chip_vendors[idx][len(check_value)-12:]
+        elif check_value.startswith('fcc='):
+            for idx, chk in enumerate(self.fcc):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.fcc[idx][len(check_value)-4:]
         elif check_value.startswith('file='):
             for idx, chk in enumerate(self.files):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
@@ -152,6 +157,7 @@ class FilterValidator(Validator):
         self.chip_vendors = kwargs.get('chip_vendors', set())
         self.connectors = kwargs.get('connectors', set())
         self.device_types = kwargs.get('types', set())
+        self.fcc = kwargs.get('fcc', set())
         self.files = kwargs.get('files', set())
         self.ips = kwargs.get('ips', set())
         self.packages = kwargs.get('packages', set())
@@ -196,6 +202,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'ignore_odm':
                     if token_value not in self.odms:
                         return self.failure("Invalid ODM")
+                elif token_identifier == 'fcc':
+                    if token_value not in self.fcc:
+                        return self.failure("Invalid FCC")
                 elif token_identifier == 'file':
                     if token_value not in self.files:
                         return self.failure("Invalid file")
@@ -298,8 +307,8 @@ class DevicecodeUI(App):
 
     CSS_PATH = "devicecode_tui.css"
     TOKEN_IDENTIFIERS = ['bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
-                         'connector', 'file', 'flag', 'ignore_brand', 'ignore_odm', 'ip',
-                         'jtag', 'odm', 'os', 'package', 'password', 'program',
+                         'connector', 'fcc', 'file', 'flag', 'ignore_brand', 'ignore_odm',
+                         'ip', 'jtag', 'odm', 'os', 'package', 'password', 'program',
                          'serial', 'type', 'year']
 
     def __init__(self, devicecode_dirs, *args: Any, **kwargs: Any) -> None:
@@ -316,6 +325,7 @@ class DevicecodeUI(App):
         filter_chip_vendors = kwargs.get('chip_vendors', [])
         filter_connectors = kwargs.get('connectors', set())
         filter_device_types = kwargs.get('types', [])
+        filter_fccs = kwargs.get('fccs', [])
         filter_files = kwargs.get('files', [])
         filter_flags = kwargs.get('flags', [])
         filter_ignore_brands = kwargs.get('ignore_brands', [])
@@ -357,6 +367,9 @@ class DevicecodeUI(App):
 
         # known ODMS
         odms = set()
+
+        # known FCC ids
+        fcc = set()
 
         # known files
         files = set()
@@ -529,6 +542,15 @@ class DevicecodeUI(App):
                 if not show_node:
                     continue
 
+            if filter_fccs:
+                show_node = False
+                for fcc_id in device['regulatory']['fcc_ids']:
+                    if fcc_id['fcc_id'].lower() in filter_fccs:
+                        show_node = True
+                        break
+                if not show_node:
+                    continue
+
             if brand_name not in brands_to_devices:
                 brands_to_devices[brand_name] = []
             model = device['model']['model']
@@ -615,6 +637,9 @@ class DevicecodeUI(App):
                 if chip['model'] != '':
                     chips.add(chip['model'].lower())
 
+            for fcc_id in device['regulatory']['fcc_ids']:
+                fcc.add(fcc_id['fcc_id'].lower())
+
             for package in device['software']['packages']:
                 package_name = package['name'].lower()
                 packages.add(package_name)
@@ -636,7 +661,7 @@ class DevicecodeUI(App):
         return {'brands_to_devices': brands_to_devices, 'odm_to_devices': odm_to_devices,
                 'bootloaders': bootloaders, 'brands': brands, 'brand_data': brand_data,
                 'chips': chips, 'chip_types': chip_types, 'chip_vendors': chip_vendors,
-                'connectors': connectors, 'odms': odms, 'files': files, 'flags': flags,
+                'connectors': connectors, 'odms': odms, 'fcc': fcc, 'files': files, 'flags': flags,
                 'ips': ips, 'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
                 'odm_connector': odm_connector, 'chip_vendor_connector': chip_vendor_connector,
                 'packages': packages, 'passwords': passwords, 'programs': programs,
@@ -692,6 +717,7 @@ class DevicecodeUI(App):
         connectors = data['connectors']
         device_types = data['types']
         odms = data['odms']
+        fcc = data['fcc']
         flags = data['flags']
         files = data['files']
         ips = data['ips']
@@ -765,8 +791,6 @@ class DevicecodeUI(App):
             self.year_data_table.add_row(rank, i[1], i[0])
             rank += 1
 
-        #raise self.year_data_table
-
         # build the various trees.
         self.brand_tree: BrandTree[dict] = BrandTree("DeviceCode brand results")
         self.brand_tree.show_root = False
@@ -795,17 +819,18 @@ class DevicecodeUI(App):
                             validators=[FilterValidator(bootloaders=bootloaders, brands=brands,
                                                         odms=odms, chips=chips, chip_types=chip_types,
                                                         chip_vendors=chip_vendors, connectors=connectors,
-                                                        ips=ips, packages=packages, passwords=passwords,
-                                                        types=device_types, programs=programs, files=files,
+                                                        fcc=fcc, files=files, ips=ips, packages=packages,
+                                                        passwords=passwords, programs=programs, types=device_types,
                                                         token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             bootloaders=sorted(bootloaders), brands=sorted(brands),
                             chips=sorted(chips), chip_types=sorted(chip_types),
                             chip_vendors=sorted(chip_vendors), connectors=sorted(connectors),
                             odms=sorted(odms), operating_systems=sorted(operating_systems),
-                            files=sorted(files), flags=sorted(flags), packages=sorted(packages),
-                            types=sorted(device_types), passwords=sorted(passwords),
-                            programs=sorted(programs)), valid_empty=True)
+                            fcc=sorted(fcc), files=sorted(files), flags=sorted(flags),
+                            packages=sorted(packages), types=sorted(device_types),
+                            passwords=sorted(passwords), programs=sorted(programs)),
+                            valid_empty=True)
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
@@ -886,6 +911,7 @@ class DevicecodeUI(App):
         chip_vendors = []
         connectors = set()
         device_types = []
+        fccs = []
         files = []
         flags = []
         ignore_brands = []
@@ -925,6 +951,8 @@ class DevicecodeUI(App):
                         chip_vendors.append(value)
                     elif identifier == 'connector':
                         connectors.add(value)
+                    elif identifier == 'fcc':
+                        fccs.append(value)
                     elif identifier == 'flag':
                         flags.append(value)
                     elif identifier == 'ignore_brand':
@@ -961,7 +989,7 @@ class DevicecodeUI(App):
         if refresh:
             filtered_data = self.compose_data_sets(bootloaders=bootloaders, brands=brands, odms=odms,
                                        chips=chips, chip_types=chip_types, chip_vendors=chip_vendors,
-                                       connectors=connectors, files=files, flags=flags,
+                                       connectors=connectors, fccs=fccs, files=files, flags=flags,
                                        ignore_brands=ignore_brands, ignore_odms=ignore_odms,
                                        ips=ips, jtags=jtags, operating_systems=operating_systems,
                                        passwords=passwords, packages=packages, programs=programs,
@@ -1393,15 +1421,15 @@ class DevicecodeUI(App):
             new_markdown += f"|**Password** | {result['defaults']['password']}\n"
             new_markdown += f"|**Password comment** | {result['defaults']['password_comment']}\n"
 
-            # Misc
-            #new_markdown += f"|**Data** | {result}\n"
-            new_markdown += f"|**Data origin** | {result['wiki_type']}\n"
-            if result['wiki_type'] == 'TechInfoDepot':
-                data_url = result['title'].replace(' ', '_')
-                new_markdown += f"|**Data URL** | <https://techinfodepot.shoutwiki.com/wiki/{data_url}>\n"
-            elif result['wiki_type'] == 'WikiDevi':
-                data_url = result['title'].replace(' ', '_')
-                new_markdown += f"|**Data URL** | <https://wikidevi.wi-cat.ru/{data_url}>\n"
+            new_markdown += "# Data origin\n"
+            new_markdown += "|Origin|URL|\n|--|--|\n"
+
+            for origin in result['origins']:
+                if origin['origin'] == 'TechInfoDepot':
+                    origin_data_url = f" <https://techinfodepot.shoutwiki.com/wiki/{origin['data_url']}>"
+                if origin['origin'] == 'WikiDevi':
+                    origin_data_url = f" <https://wikidevi.wi-cat.ru/{origin['data_url']}>"
+                new_markdown += f"{origin['origin']}|{origin_data_url}\n"
 
         return new_markdown
 

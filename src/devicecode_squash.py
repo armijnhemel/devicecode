@@ -14,24 +14,40 @@ import sys
 
 import click
 
-def squash(device_one, device_two, debug=False):
+def squash(device_one, device_two, debug=False, verbose=False):
     '''Squash two devices. Device 1 is "leading".'''
 
-    changed = False
     # additional chips
     if device_one['additional_chips'] != device_two['additional_chips']:
         pass
 
     # brand
     if device_one['brand'] != device_two['brand']:
-        if debug:
+        if debug and verbose:
             print(f"Brand inconsistency for '{device_one['title']}'")
             print(f"  Device 1: {device_one['brand']}")
             print(f"  Device 2: {device_two['brand']}")
 
     # commercial
     if device_one['commercial'] != device_two['commercial']:
-        pass
+        conflict = False
+        commercial = copy.deepcopy(device_one['commercial'])
+
+        for i in ['deal_extreme', 'end_of_life_date', 'release_date']:
+            if device_one['commercial'][i] == '' or device_two['commercial'][i] == '':
+                if device_one['commercial'][i] == '' and device_two['commercial'][i]:
+                    commercial[i] = device_two['commercial'][i]
+            else:
+                if device_one['commercial'][i] != device_two['commercial'][i]:
+                    conflict = True
+
+        if conflict and debug:
+            print(f"Commercial CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['commercial']}")
+            print(f"  Device 2: {device_two['commercial']}")
+
+        if not conflict:
+            device_one['commercial'] = commercial
 
     # cpus
     if device_one['cpus'] != device_two['cpus']:
@@ -39,33 +55,54 @@ def squash(device_one, device_two, debug=False):
 
     # defaults
     if device_one['defaults'] != device_two['defaults']:
-        pass
+        conflict = False
+        defaults = copy.deepcopy(device_one['defaults'])
+
+        for i in ['ip', 'ip_comment', 'password', 'password_comment', 'uses_dhcp']:
+            if device_one['defaults'][i] == '' or device_two['defaults'][i] == '':
+                if device_one['defaults'][i] == '' and device_two['defaults'][i]:
+                    defaults[i] = device_two['defaults'][i]
+            else:
+                if device_one['defaults'][i] != device_two['defaults'][i]:
+                    conflict = True
+
+        if conflict and debug:
+            print(f"Default values CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['defaults']}")
+            print(f"  Device 2: {device_two['defaults']}")
+
+        if not conflict:
+            device_one['defaults'] = defaults
 
     # device types
     if device_one['device_types'] != device_two['device_types']:
         device_types = set(device_one['device_types'])
         device_types.update(device_two['device_types'])
-        if debug and device_one['device_types'] and device_two['device_types']:
+        if debug and device_one['device_types'] and device_two['device_types'] and verbose:
             print(f"Device type inconsistency for '{device_one['title']}'")
             print(f"  Device 1: {device_one['device_types']}")
             print(f"  Device 2: {device_two['device_types']}")
         device_one['device_types'] = sorted(device_types)
-        changed = True
 
     # expansions
     if device_one['expansions'] != device_two['expansions']:
-        pass
+        expansions = set(device_one['expansions'])
+        expansions.update(device_two['expansions'])
+        if debug and device_one['expansions'] and device_two['expansions'] and verbose:
+            print(f"Flags inconsistency for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['expansions']}")
+            print(f"  Device 2: {device_two['expansions']}")
+        device_one['expansions'] = sorted(expansions)
 
     # flags
     if device_one['flags'] != device_two['flags']:
         flags = set(device_one['flags'])
         flags.update(device_two['flags'])
-        if debug and device_one['flags'] and device_two['flags']:
+        if debug and device_one['flags'] and device_two['flags'] and verbose:
             print(f"Flags inconsistency for '{device_one['title']}'")
             print(f"  Device 1: {device_one['flags']}")
             print(f"  Device 2: {device_two['flags']}")
         device_one['flags'] = sorted(flags)
-        changed = True
 
     # flash
     if device_one['flash'] != device_two['flash']:
@@ -75,7 +112,6 @@ def squash(device_one, device_two, debug=False):
     if device_one['has_jtag'] != device_two['has_jtag']:
         if device_one['has_jtag'] == 'unknown':
             device_one['has_jtag'] = device_two['has_jtag']
-            changed = True
         else:
             if device_two['has_jtag'] != 'unknown':
                 if debug:
@@ -87,7 +123,6 @@ def squash(device_one, device_two, debug=False):
     if device_one['has_serial_port'] != device_two['has_serial_port']:
         if device_one['has_serial_port'] == 'unknown':
             device_one['has_serial_port'] = device_two['has_serial_port']
-            changed = True
         else:
             if device_two['has_serial_port'] != 'unknown':
                 if debug:
@@ -120,8 +155,9 @@ def squash(device_one, device_two, debug=False):
                 conflict = True
 
         # number of pins
-        if device_one['jtag']['number_of_pins'] == 0 or device_two['jtag']['number_of_pins'] == 0:
-            jtag['number_of_pins'] = max(device_one['jtag']['number_of_pins'], device_two['jtag']['number_of_pins'])
+        if device_one['jtag']['number_of_pins'] == 0:
+            if device_two['jtag']['number_of_pins'] != 0:
+                jtag['number_of_pins'] = device_two['jtag']['number_of_pins']
         else:
             if device_one['jtag']['number_of_pins'] != device_two['jtag']['number_of_pins']:
                 conflict = True
@@ -150,11 +186,45 @@ def squash(device_one, device_two, debug=False):
 
     # manufacturer
     if device_one['manufacturer'] != device_two['manufacturer']:
-        pass
+        conflict = False
+        manufacturer = copy.deepcopy(device_one['manufacturer'])
+
+        for i in ['country', 'name', 'model', 'revision']:
+            if device_one['manufacturer'][i] == '' or device_two['manufacturer'][i] == '':
+                if device_one['manufacturer'][i] == '' and device_two['manufacturer'][i]:
+                    manufacturer[i] = device_two['manufacturer'][i]
+            else:
+                if device_one['manufacturer'][i] != device_two['manufacturer'][i]:
+                    conflict = True
+
+        if conflict and debug:
+            print(f"Manufacturer CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['manufacturer']}")
+            print(f"  Device 2: {device_two['manufacturer']}")
+
+        if not conflict:
+            device_one['manufacturer'] = manufacturer
 
     # model
     if device_one['model'] != device_two['model']:
-        pass
+        conflict = False
+        model = copy.deepcopy(device_one['model'])
+
+        for i in ['model', 'part_number', 'pcb_id', 'serial_number', 'series']:
+            if device_one['model'][i] == '' or device_two['model'][i] == '':
+                if device_one['model'][i] == '' and device_two['model'][i]:
+                    model[i] = device_two['model'][i]
+            else:
+                if device_one['model'][i] != device_two['model'][i]:
+                    conflict = True
+
+        if conflict and debug:
+            print(f"Model CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['model']}")
+            print(f"  Device 2: {device_two['model']}")
+
+        if not conflict:
+            device_one['model'] = model
 
     # network
     if device_one['network'] != device_two['network']:
@@ -162,11 +232,82 @@ def squash(device_one, device_two, debug=False):
 
     # power
     if device_one['power'] != device_two['power']:
-        pass
+        conflict = False
+        power = copy.deepcopy(device_one['power'])
+
+        # barrel_length
+        if device_one['power']['barrel_length'] == 0.0 or device_two['power']['barrel_length'] == 0.0:
+            power['barrel_length'] = max(device_one['power']['barrel_length'], device_two['power']['barrel_length'])
+        else:
+            if device_one['power']['barrel_length'] != device_two['power']['barrel_length']:
+                conflict = True
+
+        # connector
+        if device_one['power']['connector'] == '' or device_two['power']['connector'] == '':
+            if device_one['power']['connector'] == '' and device_two['power']['connector']:
+                power['connector'] = device_two['power']['connector']
+        else:
+            if device_one['power']['connector'] != device_two['power']['connector']:
+                conflict = True
+
+        # inner_barrel_size
+        if device_one['power']['inner_barrel_size'] == 0.0 or device_two['power']['inner_barrel_size'] == 0.0:
+            power['inner_barrel_size'] = max(device_one['power']['inner_barrel_size'], device_two['power']['inner_barrel_size'])
+        else:
+            if device_one['power']['inner_barrel_size'] != device_two['power']['inner_barrel_size']:
+                conflict = True
+
+        # outer_barrel_size
+        if device_one['power']['outer_barrel_size'] == 0.0 or device_two['power']['outer_barrel_size'] == 0.0:
+            power['outer_barrel_size'] = max(device_one['power']['outer_barrel_size'], device_two['power']['outer_barrel_size'])
+        else:
+            if device_one['power']['outer_barrel_size'] != device_two['power']['outer_barrel_size']:
+                conflict = True
+
+        # polarity, skip for now
+        # voltage
+        if not device_one['power']['voltage']:
+            if device_two['power']['voltage']:
+                power['voltage'] = device_two['power']['voltage']
+        else:
+            if device_two['power']['voltage']:
+                if device_one['power']['voltage'] != device_two['power']['voltage']:
+                    conflict = True
+
+        # voltage type skip for now
+
+        if debug and conflict:
+            print(f"Power CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['power']}")
+            print(f"  Device 2: {device_two['power']}")
+
+        if not conflict:
+            device_one['power'] = power
 
     # power_supply
     if device_one['power_supply'] != device_two['power_supply']:
-        pass
+        conflict = False
+        power_supply = copy.deepcopy(device_one['power_supply'])
+
+        for i in ['brand', 'country', 'model', 'style']:
+            if device_one['power_supply'][i] == '' or device_two['power_supply'][i] == '':
+                if device_one['power_supply'][i] == '' and device_two['power_supply'][i]:
+                    power_supply[i] = device_two['power_supply'][i]
+            else:
+                if device_one['power_supply'][i] != device_two['power_supply'][i]:
+                    conflict = True
+
+        # e_level, skip
+        # input_amperage, skip
+        # other things, skip
+
+        if debug and conflict:
+            print(f"Power supply CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['power_supply']}")
+            print(f"  Device 2: {device_two['power_supply']}")
+
+        if not conflict:
+            device_one['power_supply'] = power_supply
 
     # radios
     if device_one['radios'] != device_two['radios']:
@@ -178,7 +319,28 @@ def squash(device_one, device_two, debug=False):
 
     # regulatory
     if device_one['regulatory'] != device_two['regulatory']:
-        pass
+        conflict = False
+        regulatory = copy.deepcopy(device_one['regulatory'])
+
+        # fcc_ids
+        # industry_canada_ids
+        # us_ids
+
+        for i in ['wifi_certified', 'wifi_certified_date']:
+            if device_one['regulatory'][i] == '' or device_two['regulatory'][i] == '':
+                if device_one['regulatory'][i] == '' and device_two['regulatory'][i]:
+                    regulatory[i] = device_two['regulatory'][i]
+            else:
+                if device_one['regulatory'][i] != device_two['regulatory'][i]:
+                    conflict = True
+
+        if debug and conflict:
+            print(f"Regulatory CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['regulatory']}")
+            print(f"  Device 2: {device_two['regulatory']}")
+
+        if not conflict:
+            device_one['regulatory'] = regulatory
 
     # serial
     if device_one['serial'] != device_two['serial']:
@@ -194,7 +356,7 @@ def squash(device_one, device_two, debug=False):
 
         # connector
         if device_one['serial']['connector'] == '' or device_two['serial']['connector'] == '':
-            if device_one['serial']['connector'] == '':
+            if device_one['serial']['connector'] == '' and device_two['serial']['connector']:
                 serial['connector'] = device_two['serial']['connector']
         else:
             if device_one['serial']['connector'] != device_two['serial']['connector']:
@@ -216,7 +378,7 @@ def squash(device_one, device_two, debug=False):
 
         # voltage
         if device_one['serial']['voltage'] != device_two['serial']['voltage']:
-            if not device_one['serial']['voltage']:
+            if not device_one['serial']['voltage'] and device_two['serial']['voltage']:
                 serial['voltage'] = device_two['serial']['voltage']
             elif not device_two['serial']['populated']:
                 conflict = True
@@ -231,7 +393,32 @@ def squash(device_one, device_two, debug=False):
 
     # software
     if device_one['software'] != device_two['software']:
-        pass
+        conflict = False
+        software = copy.deepcopy(device_one['software'])
+
+        for i in ['ddwrt', 'gargoyle', 'openwrt', 'os', 'os_version', 'sdk', 'tomato']:
+            if device_one['software'][i] == '' or device_two['software'][i] == '':
+                if device_one['software'][i] == '' and device_two['software'][i]:
+                    software[i] = device_two['software'][i]
+            else:
+                if device_one['software'][i] != device_two['software'][i]:
+                    conflict = True
+
+        if debug and conflict:
+            print(f"Software CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['software']}")
+            print(f"  Device 2: {device_two['software']}")
+
+        third_party = set(device_one['software']['third_party'])
+        third_party.update(device_two['software']['third_party'])
+        if debug and device_one['software']['third_party'] and device_two['software']['third_party'] and verbose:
+            print(f"Third party software inconsistency for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['software']['third_party']}")
+            print(f"  Device 2: {device_two['software']['third_party']}")
+        software['third_party'] = sorted(third_party)
+
+        if not conflict:
+            device_one['software'] = software
 
     # switch
     if device_one['switch'] != device_two['switch']:
@@ -241,12 +428,11 @@ def squash(device_one, device_two, debug=False):
     if device_one['taglines'] != device_two['taglines']:
         taglines = set(device_one['taglines'])
         taglines.update(device_two['taglines'])
-        if debug and device_one['taglines'] and device_two['taglines']:
+        if debug and device_one['taglines'] and device_two['taglines'] and verbose:
             print(f"Taglines inconsistency for '{device_one['title']}'")
             print(f"  Device 1: {device_one['taglines']}")
             print(f"  Device 2: {device_two['taglines']}")
         device_one['taglines'] = sorted(taglines)
-        changed = True
 
     # title, always use the first device, pass
     if device_one['title'] != device_two['title']:
@@ -254,8 +440,28 @@ def squash(device_one, device_two, debug=False):
 
     # web
     if device_one['web'] != device_two['web']:
-        pass
+        conflict = False
+        web = copy.deepcopy(device_one['web'])
 
+        for i in ['download_page', 'techinfodepot', 'wikidevi']:
+            if device_one['web'][i] == '' or device_two['web'][i] == '':
+                if device_one['web'][i] == '' and device_two['web'][i]:
+                    web[i] = device_two['web'][i]
+            else:
+                if device_one['web'][i] != device_two['web'][i]:
+                    conflict = True
+
+        if conflict and debug:
+            print(f"Web CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['web']}")
+            print(f"  Device 2: {device_two['web']}")
+
+        if not conflict:
+            device_one['web'] = web
+
+    # record all origins in case the file is a result of multiple inputs
+    if 'origins' in device_one and 'origins' in device_two:
+        device_one['origins']+= device_two['origins']
     return device_one
 
 @click.command(short_help='Squash TechInfoDepot, WikiDevi and overlay information into a single file per device')
@@ -267,7 +473,8 @@ def squash(device_one, device_two, debug=False):
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--use-git', is_flag=True, help='use Git (not recommended, see documentation)')
 @click.option('--debug', is_flag=True, help='print debug output')
-def main(devicecode_directory, output_directory, use_git, debug):
+@click.option('--verbose', is_flag=True, help='be verbose (for debuging)')
+def main(devicecode_directory, output_directory, use_git, debug, verbose):
     if not output_directory.is_dir():
         print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -320,6 +527,10 @@ def main(devicecode_directory, output_directory, use_git, debug):
     # keep mappings between TechInfoDepot and WikiDevi devices names/URLs
     techinfodepot_to_wikidevi = {}
     wikidevi_to_techinfodepot = {}
+
+    # keep a mapping between data URLs to name. This is basically just a
+    # cache as it would always yield the same result for a title.
+    # This cache is shared between all entries.
     data_url_to_name = {}
 
     techinfodepot_items = {}
@@ -338,7 +549,7 @@ def main(devicecode_directory, output_directory, use_git, debug):
                     title = device['title']
 
                     try:
-                        data_url = device['web']['data_url']
+                        data_url = device['origins'][0]['data_url']
                     except Exception as e:
                         data_url = title.replace(' ', '_')
                         device['web']['data_url'] = data_url
@@ -383,22 +594,78 @@ def main(devicecode_directory, output_directory, use_git, debug):
                 pass
 
     # now compare the "patched" TechInfoDepot and WikiDevi files.
-    # The TechInfoDepot data will be seen as "leading".
+    # The TechInfoDepot data will be treated as "leading" and in
+    # case of a conflict the TechInfoDepot data will be preferred.
+    #
     # There are a few situations for the TechInfoDepot data:
     #
-    # 1. there is no link to wikidevi and no link from wikidevi to techinfodepot A      B
-    # 2. there is a link to wikidevi and no link from wikidevi to techinfodepot  A -->  B
+    # 1. there is no link to wikidevi and no link from wikidevi to techinfodepot A     B
+    # 2. there is a link to wikidevi and no link from wikidevi to techinfodepot  A --> B
     # 3. there is a link to wikidevi and a matching link from wikidevi to techinfodepot A <--> B
     # 4. there is a link to wikidevi and a non-matching link from wikidevi to techinfodepot A --> B --> C
     # 5. there is no link to wikidevi and a link from wikidevi to techinfodepot   A <-- B
 
+    # store all the squashed devices.
     squashed_devices = []
+
+    # store which wikidevi devices have already been processed.
     processed_wikidevi = set()
+
+    # start with devices in TechInfoDepot
     for name_techinfodepot in techinfodepot_items:
-        data_url = techinfodepot_items[name_techinfodepot]['web']['data_url']
-        device_name = techinfodepot_items[name_techinfodepot]['title']
+        device = techinfodepot_items[name_techinfodepot]
+        if 'origins' in device:
+            data_url = device['origins'][0]['data_url']
+        else:
+            data_url = device['title'].replace(' ', '_')
+
+        device_name = device['title']
         if name_techinfodepot in techinfodepot_to_wikidevi:
-            # scenario 2, 3, 4
+            # There is a link to something in WikiDevi, so this means
+            # scenario 2, 3, 4, but of course only if it is actually
+            # in our data.
+
+            # first extract the target name
+            target_name = techinfodepot_to_wikidevi[name_techinfodepot]
+
+            # then see if the device is known in the current Wikidevi data set
+            wikidevi_name = data_url_to_name.get(target_name, None)
+            if not wikidevi_name:
+                # the device is not known in WikiDevi, so just copy
+                # the original data and continue.
+                squashed_devices.append(device)
+                continue
+            if wikidevi_name not in wikidevi_items:
+                # the device is not known in WikiDevi, so just copy
+                # the original data and continue.
+                squashed_devices.append(device)
+                continue
+
+            # there is a known WikiDevi device
+            # verify if this is scenario 2, 3 or 4
+            if not wikidevi_items[wikidevi_name]['web']['techinfodepot']:
+                # scenario 2: A --> B
+                # As a sanity check only squash if the names are the same
+                if name_techinfodepot == wikidevi_name:
+                    squash_result = squash(device, wikidevi_items[wikidevi_name], debug=debug, verbose=verbose)
+                    processed_wikidevi.add(name_techinfodepot)
+                    squashed_devices.append(squash_result)
+            else:
+                if data_url == wikidevi_items[wikidevi_name]['web']['techinfodepot']:
+                    # scenario 3: A <--> B
+                    # As a sanity check only squash if the names are the same
+                    if name_techinfodepot == wikidevi_name:
+                        squash_result = squash(device, wikidevi_items[wikidevi_name], debug=debug, verbose=verbose)
+                        processed_wikidevi.add(name_techinfodepot)
+                        squashed_devices.append(squash_result)
+                    else:
+                        # TODO: find out what to do here
+                        pass
+                else:
+                    # scenario 4: A --> B --> C
+                    # TODO: find out what to do here
+                    pass
+
             target_name = data_url_to_name.get(data_url, None)
             if target_name:
                 if target_name == device_name:
@@ -406,23 +673,31 @@ def main(devicecode_directory, output_directory, use_git, debug):
         else:
             # scenario 1, 5
             if data_url in wikidevi_to_techinfodepot.values():
-                target_name = data_url_to_name.get(data_url, None)
-                if target_name:
-                    if target_name == device_name:
-                        pass
-                else:
-                    pass
+                # scenario 5: A <-- B
+                # there is no link to wikidevi, but there is a
+                # backlink from a wikidevi entry to a *valid*
+                # TechInfoDepot entry.
+                # First find the corresponding WikiDevi item
+                # and see if it matches the device's name
+                for wikidevi_name, techinfodepot_target in wikidevi_to_techinfodepot.items():
+                    if data_url == techinfodepot_target:
+                        squash_result = squash(device, wikidevi_items[wikidevi_name], debug=debug, verbose=verbose)
+                        processed_wikidevi.add(name_techinfodepot)
+                        squashed_devices.append(squash_result)
+                        break
             else:
                 # scenario 1: A   B
                 # store the device data
                 # TODO: do a more extensive search to find similar devices
                 if name_techinfodepot in wikidevi_items:
-                    squash_result = squash(techinfodepot_items[name_techinfodepot], wikidevi_items[name_techinfodepot], debug)
+                    squash_result = squash(device, wikidevi_items[name_techinfodepot], debug=debug, verbose=verbose)
                     processed_wikidevi.add(name_techinfodepot)
                     squashed_devices.append(squash_result)
                 else:
-                    squashed_devices.append(techinfodepot_items[name_techinfodepot])
+                    # there is nothing to be squashed, so just copy the original data
+                    squashed_devices.append(device)
 
+    # now for everything that was in WikiDevi, but which hadn't been processed yet
     for name_wikidevi in wikidevi_items:
         if name_wikidevi in processed_wikidevi:
             continue

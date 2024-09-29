@@ -62,8 +62,7 @@ def main(manufacturer_file, devicecode_directory, output_directory, use_git):
         ouis[oui] = {'name_short': manufacturer_short, 'name': manufacturer_full}
 
     # verify the directory names, they should be one of the following
-    #valid_directory_names = ['TechInfoDepot', 'WikiDevi']
-    valid_directory_names = ['TechInfoDepot']
+    valid_directory_names = ['TechInfoDepot', 'WikiDevi']
 
     # Inside these directories a directory called 'devices' should always
     # be present. Optionally there can be a directory called 'overlays'
@@ -78,18 +77,21 @@ def main(manufacturer_file, devicecode_directory, output_directory, use_git):
         devices_dir = p / 'devices'
         if not (devices_dir.exists() and devices_dir.is_dir()):
             continue
-        devicecode_dirs.append(devices_dir)
+        devicecode_dirs.append(p)
+
+        # create the overlay directories
+        overlay_directory = output_directory / p.name / 'overlays'
+        overlay_directory.mkdir(exist_ok=True)
 
     if not devicecode_dirs:
         print(f"No valid directories found in {devicecode_directory}, should contain one of {valid_directory_names}.", file=sys.stderr)
         sys.exit(1)
 
-    # create the overlays
-    overlay_directory = output_directory / 'overlays'
-    overlay_directory.mkdir(exist_ok=True)
-
     # Then walk all the result files, check the FCC ids and optionally create overlays
-    for devicecode_dir in devicecode_dirs:
+    for p in devicecode_dirs:
+        devicecode_dir = p / 'devices'
+        overlay_directory = output_directory / p.name / 'overlays'
+
         for result_file in devicecode_dir.glob('**/*'):
             if not result_file.is_file():
                 continue
