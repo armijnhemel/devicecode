@@ -45,14 +45,6 @@ from the original data. Two existing overlays are:
   model to architecture it should be fairly simple to create these overlays.
 * CPE mapping: see <https://nvd.nist.gov/products/cpe>
 
-### Overlay squash script
-
-Currently the overlays are loaded "on the fly" by the TUI. This makes it
-fairly easy to switch off any overlays (by removing them) and also keeps a
-clean separation between the data that was extracted from the Wikis and other
-sources (which is useful license wise), but some might prefer to have both
-the wiki data and the overlays squashed into a single file per device.
-
 ## Add software update information/press releases
 
 Crawl firmware update information, such as ChangeLogs or firmware update pages
