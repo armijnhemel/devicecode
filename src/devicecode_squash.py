@@ -663,6 +663,10 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                         pass
                 else:
                     # scenario 4: A --> B --> C
+                    # Often the difference between the name is just
+                    # case, so perhaps checking case insensitive might
+                    # be enough. It depends on whether or not the wikis
+                    # are case sensitive.
                     # TODO: find out what to do here
                     pass
 
