@@ -633,6 +633,8 @@ def parse_os(os_string):
                     result['distribution'] = 'Fedora'
                 elif 'OpenWrt' in field:
                     result['distribution'] = 'OpenWrt'
+                elif 'OpenIPC' in field:
+                    result['distribution'] = 'OpenIPC'
                 elif 'Yocto' in field:
                     result['distribution'] = 'Yocto'
                 else:
@@ -1544,6 +1546,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                                 device.software.third_party.append('NetBSD')
                                                             case 'openbsd':
                                                                 device.software.third_party.append('OpenBSD')
+                                                            case 'openipc':
+                                                                device.software.third_party.append('OpenIPC')
                                                     device.software.third_party.sort()
 
                                                 # additional chip
