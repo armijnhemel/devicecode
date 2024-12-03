@@ -1054,7 +1054,7 @@ class DevicecodeUI(App):
             self.device_data_area.update('')
             self.regulatory_data_area.update('')
             self.model_data_area.update('')
-            self.network_data_area.update("")
+            self.network_data_area.update('')
             self.serial_jtag_area.update('')
             self.software_area.update('')
             self.chips_area.update('')
