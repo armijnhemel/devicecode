@@ -897,9 +897,7 @@ class DevicecodeUI(App):
                         yield self.fcc_area
 
         # show the footer with controls
-        footer = Footer()
-        footer.ctrl_to_caret = False
-        yield footer
+        yield Footer()
 
     @on(Input.Submitted)
     def process_filter(self, event: Input.Submitted) -> None:
