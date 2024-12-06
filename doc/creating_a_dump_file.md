@@ -1,6 +1,6 @@
-# Creating dump files for TechInfoDepot Wiki and WikiDevi
+# Creating/downloading dump files
 
-## Creating a dump file
+## Creating a dump file for TechInfodepot Wiki and WikiDevi
 
 As both TechInfoDepot and WikiDevi are based on MediaWiki it is possible to
 create an export of the data. This can be done in two ways: manually and
@@ -243,3 +243,7 @@ The categories are:
 * Embedded_system/crypto_currency_miner
 
 Then click "Export" and store the XML result somewhere.
+
+## Downloading a dump file for the OpenWrt table of hardware
+
+Get the CSV dump at: <https://openwrt.org/toh/views/start>
