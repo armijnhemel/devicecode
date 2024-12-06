@@ -17,8 +17,7 @@ import devicecode_defaults as defaults
 
 @click.command(short_help='Create OUI overlay files to provide additional data')
 @click.option('--manufacturer', '-m', 'manufacturer_file', required=True,
-              help='top level input directory with one directory per FCC id',
-              type=click.File('r'))
+              help='Wireshark manufacturer file with OUI ids', type=click.File('r'))
 @click.option('--directory', '-d', 'devicecode_directory',
               help='DeviceCode results directory', required=True,
               type=click.Path(path_type=pathlib.Path, exists=True))
@@ -87,7 +86,8 @@ def main(manufacturer_file, devicecode_directory, output_directory, use_git):
         print(f"No valid directories found in {devicecode_directory}, should contain one of {valid_directory_names}.", file=sys.stderr)
         sys.exit(1)
 
-    # Then walk all the result files, check the FCC ids and optionally create overlays
+    # Then walk all the result files, check the Wireshark OUI ids
+    # and optionally create overlays
     for p in devicecode_dirs:
         devicecode_dir = p / 'devices'
         overlay_directory = output_directory / p.name / 'overlays'
