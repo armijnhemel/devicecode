@@ -2,12 +2,12 @@
 
 The OpenWrt CSV data has the following fields (names extracted from the OpenWrt CSV dump):
 
-0. pid
-1. devicetype
+0. pid - internal to OpenWrt, not interesting
+1. devicetype - type of device, comparable to `type` in TechInfoDepot
 2. brand
 3. model
 4. version
-5. fccid
+5. fccid - FCC identifier
 6. availability
 7. whereavailable
 8. supportedsincecommit
@@ -15,7 +15,7 @@ The OpenWrt CSV data has the following fields (names extracted from the OpenWrt 
 10. supportedcurrentrel
 11. unsupported_functions
 12. target
-13. 'subtarget
+13. subtarget
 14. packagearchitecture
 15. bootloader
 16. cpu
