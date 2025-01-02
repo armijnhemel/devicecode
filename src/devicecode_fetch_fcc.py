@@ -166,11 +166,11 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
                 if not in_table:
                     continue
 
-                if fcc_id in line and line.startswith('</tr>') and pdf_name == '':
+                if fcc_id in line and line.strip().startswith('</tr>') and pdf_name == '':
                     # get the document_type and description
                     document_type = line.rsplit('<td>', maxsplit=1)[1][:-5]
                     description = line.rsplit('<td>', maxsplit=1)[0][:-9].rsplit('>', maxsplit=1)[1]
-                elif line.startswith('<td>'):
+                elif line.strip().startswith('<td>'):
                     # first extract the date
                     try:
                         current_date = datetime.datetime.strptime(line[4:-5], '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
