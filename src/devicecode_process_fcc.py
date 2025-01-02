@@ -203,7 +203,7 @@ def process_fcc(task):
         print(f"{fcc_directory} is not a directory, skipping.", file=sys.stderr)
         return
     if not (fcc_directory / 'descriptions.json').exists():
-        print("'descriptions.json' does not exist, skipping.", file=sys.stderr)
+        print(f"'descriptions.json' does not exist for {fccid}, skipping.", file=sys.stderr)
         return
 
     (output_directory / fccid).mkdir(exist_ok=True, parents=True)
