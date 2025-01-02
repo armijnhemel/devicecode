@@ -2018,9 +2018,13 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                     continue
 
                 owrt = OpenWrtDevice._make(line)
+                if not owrt.page.startswith('toh:hwdata:'):
+                    continue
 
                 # first create a Device()
                 device = Device()
+                device.brand = defaults.BRAND_REWRITE.get(owrt.brand, owrt.brand)
+                device.title = owrt.page.split(':')[-1]
 
                 if owrt.fccid != 'NULL':
                     fccids = owrt.fccid.split(',')
@@ -2055,6 +2059,63 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                             new_fcc.fcc_id = fcc_id.strip()
                             new_fcc.grantee = fcc_grantees.get(grantee_code, "")
                             device.regulatory.fcc_ids.append(new_fcc)
+
+                if owrt.wikideviurl != 'NULL':
+                    wikidevi_split = owrt.wikideviurl.split('://')[1]
+                    if '/' not in wikidevi_split:
+                        continue
+                    if not 'wikidevi.wi-cat.ru' in wikidevi_split:
+                        continue
+                    wikidevi_split = wikidevi_split.replace('index.php/', '')
+                    wikidevi_name = wikidevi_split.split('/', maxsplit=1)[1]
+                    device.web.wikidevi = wikidevi_name
+
+                # use the title as part of the file name as it is unique
+                model_name = f"{device.title}.json"
+                model_name = model_name.replace('/', '-')
+
+                new_file = True
+
+                json_data = json.dumps(json.loads(device.to_json()), sort_keys=True)
+                processed_json_file = wiki_device_directory / model_name
+
+                # first check if the file has changed if it already exists.
+                # If not, then don't add the file.
+                if processed_json_file.exists():
+                    new_file = False
+                    with open(processed_json_file, 'r') as json_file:
+                        try:
+                            existing_json = json.dumps(json.load(json_file))
+                            if existing_json == json_data:
+                                continue
+                        except json.decoder.JSONDecodeError:
+                            pass
+
+                # write to a file in the correct Git directory
+                with open(processed_json_file, 'w') as json_file:
+                    json_data = json.dumps(json.loads(device.to_json()), sort_keys=True, indent=4)
+                    json_file.write(json_data)
+
+                # Write to a Git repository to keep some history
+                if use_git:
+                    # add the file
+                    p = subprocess.Popen(['git', 'add', processed_json_file],
+                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                    (outputmsg, errormsg) = p.communicate()
+                    if p.returncode != 0:
+                        print(f"{processed_json_file} could not be added", file=sys.stderr)
+
+                    if new_file:
+                        commit_message = f'Add {model_name}'
+                    else:
+                        commit_message = f'Update {model_name}'
+
+                    p = subprocess.Popen(['git', 'commit', "-m", commit_message],
+                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                    (outputmsg, errormsg) = p.communicate()
+                    if p.returncode != 0:
+                        print(f"{processed_json_file} could not be committed", file=sys.stderr)
+
 
 
 if __name__ == "__main__":
