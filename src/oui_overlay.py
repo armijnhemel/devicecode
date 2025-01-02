@@ -61,7 +61,7 @@ def main(manufacturer_file, devicecode_directory, output_directory, use_git):
         ouis[oui] = {'name_short': manufacturer_short, 'name': manufacturer_full}
 
     # verify the directory names, they should be one of the following
-    valid_directory_names = ['TechInfoDepot', 'WikiDevi']
+    valid_directory_names = ['TechInfoDepot', 'WikiDevi', 'OpenWrt']
 
     # Inside these directories a directory called 'devices' should always
     # be present. Optionally there can be a directory called 'overlays'
