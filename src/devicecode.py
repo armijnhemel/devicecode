@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 import urllib.parse
+from collections import namedtuple
 from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json
 
@@ -2005,8 +2006,55 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                             #    out.write('\n')
 
     elif wiki_type == 'OpenWrt':
+        # the OpenWrt CSV dump has 74 fields, but only a few
+        # are (currently) interesting (see documentation in doc/ )
+        OpenWrtDevice = namedtuple('OpenWrtDevice', 'pid, devicetype, brand, model, version, fccid, availability, whereavailable, supportedsincecommit, supportedsincerel, supportedcurrentrel, unsupported_functions, target, subtarget, packagearchitecture, bootloader, cpu, cpucores, cpumhz, flashmb, rammb, ethernet100mports, ethernetgbitports, ethernet1gports, ethernet2_5gports, ethernet5gports, ethernet10gports, sfp_ports, sfp_plus_ports, switch, vlan, modem, commentsnetworkports, wlanhardware, wlan24ghz, wlan50ghz, wlancomments, wlandriver, detachableantennas, bluetooth, usbports, sataports, commentsusbsataports, videoports, audioports, phoneports, commentsavports, serial, serialconnectionparameters, jtag, ledcount, buttoncount, gpios, powersupply, devicepage, device_techdata owrt_forum_topic_url, lede_forum_topic_url, forumsearch, gitsearch, wikideviurl, oemdevicehomepageurl, firmwareoemstockurl, firmwareopenwrtinstallurl, firmwareopenwrtupgradeurl, firmwareopenwrtsnapshotinstallurl, firmwareopenwrtsnapshotupgradeurl, installationmethods, commentinstallation, recoverymethods, commentrecovery, picture, comments, page')
         with open(input_file) as toh:
             csv_reader = csv.reader(toh, dialect='excel-tab')
+            is_first_line = True
+            for line in csv_reader:
+                if is_first_line:
+                    is_first_line = False
+                    continue
+
+                owrt = OpenWrtDevice._make(line)
+
+                # first create a Device()
+                device = Device()
+
+                if owrt.fccid != 'NULL':
+                    fccids = owrt.fccid.split(',')
+                    for fccid in fccids:
+                        valid_fcc = False
+                        fcc_split = fccid.split('://')[1]
+                        if '/' not in fcc_split:
+                            continue
+
+                        site, fcc_id = fcc_split.split('/', maxsplit=1)
+                        if site == 'fcc.report':
+                            fcc_id = fcc_id.split('/', maxsplit=1)[1]
+
+                        fcc_id = fcc_id.upper()
+
+                        if fcc_id.startswith('ANATEL'):
+                            # Brazilian FCC equivalent
+                            continue
+
+                        fcc_id = fcc_id.replace('/', '')
+
+                        if fcc_split.startswith('2'):
+                            grantee_code = fcc_id[:5]
+                            valid_fcc = True
+                        else:
+                            grantee_code = fcc_id[:3]
+                            if grantee_code[0].isalpha():
+                                valid_fcc = True
+
+                        if valid_fcc:
+                            new_fcc = FCC()
+                            new_fcc.fcc_id = fcc_id.strip()
+                            new_fcc.grantee = fcc_grantees.get(grantee_code, "")
+                            device.regulatory.fcc_ids.append(new_fcc)
 
 
 if __name__ == "__main__":
