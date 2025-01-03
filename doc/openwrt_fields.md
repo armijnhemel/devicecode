@@ -8,15 +8,15 @@ The OpenWrt CSV data has the following fields (names extracted from the OpenWrt 
 3. model
 4. version
 5. fccid - FCC identifier
-6. availability
-7. whereavailable
+6. availability - not interesting
+7. whereavailable - not interesting
 8. supportedsincecommit
 9. supportedsincerel
 10. supportedcurrentrel
 11. unsupported_functions
-12. target
-13. subtarget
-14. packagearchitecture
+12. target - OpenWrt target, not interesting
+13. subtarget - OpenWrt subtarget, not interesting
+14. packagearchitecture - OpenWrt architecture, not interesting
 15. bootloader
 16. cpu
 17. cpucores
@@ -77,10 +77,17 @@ The OpenWrt CSV data has the following fields (names extracted from the OpenWrt 
 72. comments
 73. page
 
-Not all of these are interesting. Not all of the information can be extracted
-from the data in the CSV. For example, serial port information is incomplete
-and doesn't include information regarding which solder pads should be used.
+Not all of these fields are interesting. Not all of the information can be
+extracted from the data in the CSV. For example, serial port information is
+incomplete and doesn't include information regarding which solder pads should
+be used.
+
 This is not entirely surprising as this information sometimes cannot be
 squeezed into a single field but needs more characters or a full description,
 but in most cases it could be. This information should be extracted from the
 individual device pages.
+
+What is puzzling is that when accessing the individual pages of devices more
+information is availabe in a structured format than in the CSV dump. An example
+is the field "Serial connection voltage" that is not available in the CSV
+dump.
