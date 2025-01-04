@@ -2093,6 +2093,12 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                         except:
                             pass
 
+                # JTAG
+                if owrt.jtag.lower() == 'no':
+                    device.has_jtag = 'no'
+                elif owrt.jtag.lower() == 'yes':
+                    device.has_jtag = 'yes'
+
                 if owrt.wikideviurl != 'NULL':
                     wikidevi_split = owrt.wikideviurl.split('://')[1]
                     if '/' not in wikidevi_split:
