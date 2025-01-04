@@ -220,6 +220,7 @@ class Serial:
     voltage: float = None
     baud_rate: int = 0
     number_of_pins: int = 0
+    data_parity_stop: str = 'unknown'
 
 @dataclass_json
 @dataclass
@@ -2021,9 +2022,17 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                 if not owrt.page.startswith('toh:hwdata:'):
                     continue
 
-                # first create a Device()
+                # first create a Device() and fill in some of the details
                 device = Device()
                 device.brand = defaults.BRAND_REWRITE.get(owrt.brand, owrt.brand)
+                device.model.model = owrt.model
+                if owrt.version != 'NULL':
+                    device.model.version = owrt.version
+                #                                    elif identifier == 'revision':
+                #                                        device.model.revision = value
+                #                                    elif identifier == 'series':
+                #                                        device.model.series = value
+
                 device.title = owrt.page.split(':')[-1]
 
                 if owrt.fccid != 'NULL':
@@ -2060,15 +2069,40 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                             new_fcc.grantee = fcc_grantees.get(grantee_code, "")
                             device.regulatory.fcc_ids.append(new_fcc)
 
+                # serial port
+                if owrt.serial.lower() == 'no':
+                    device.has_serial_port = 'no'
+                elif owrt.serial.lower() == 'yes':
+                    device.has_serial_port = 'yes'
+                else:
+                    if owrt.serialconnectionparameters.strip() not in ['¿', '']:
+                        # TODO: what to do here? It seems that the OpenWrt
+                        # data isn't consistent here.
+                        pass
+
+                if device.has_serial_port == 'yes':
+                    if owrt.serialconnectionparameters.strip() not in ['¿', '']:
+                        # this doesn't include the connector on the board or the voltage
+                        baud_rate, data_parity_stop = owrt.serialconnectionparameters.strip().replace('/', ' ').split()
+                        try:
+                            baud_rate = int(baud_rate)
+                            if baud_rate in defaults.BAUD_RATES:
+                                device.serial.baud_rate = baud_rate
+                            if data_parity_stop in defaults.DATA_PARITY_STOP:
+                                device.serial.data_parity_stop = data_parity_stop
+                        except:
+                            pass
+
                 if owrt.wikideviurl != 'NULL':
                     wikidevi_split = owrt.wikideviurl.split('://')[1]
                     if '/' not in wikidevi_split:
-                        continue
-                    if not 'wikidevi.wi-cat.ru' in wikidevi_split:
-                        continue
-                    wikidevi_split = wikidevi_split.replace('index.php/', '')
-                    wikidevi_name = wikidevi_split.split('/', maxsplit=1)[1]
-                    device.web.wikidevi = wikidevi_name
+                        pass
+                    elif not 'wikidevi.wi-cat.ru' in wikidevi_split:
+                        pass
+                    else:
+                        wikidevi_split = wikidevi_split.replace('index.php/', '')
+                        wikidevi_name = wikidevi_split.split('/', maxsplit=1)[1]
+                        device.web.wikidevi = wikidevi_name
 
                 # use the title as part of the file name as it is unique
                 model_name = f"{device.title}.json"
