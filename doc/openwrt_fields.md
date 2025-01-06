@@ -56,8 +56,8 @@ The OpenWrt CSV data has the following fields (names extracted from the OpenWrt 
 51. buttoncount
 52. gpios
 53. powersupply
-54. devicepage
-55. device_techdata
+54. devicepage - overlaps with 73?
+55. device_techdata - not interesting
 56. owrt_forum_topic_url
 57. lede_forum_topic_url
 58. forumsearch
@@ -75,7 +75,7 @@ The OpenWrt CSV data has the following fields (names extracted from the OpenWrt 
 70. commentrecovery
 71. picture
 72. comments
-73. page
+73. page - TOH page, used as a unique identifier
 
 Not all of these fields are interesting. Not all of the information can be
 extracted from the data in the CSV. For example, serial port information is
