@@ -2028,10 +2028,6 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                 device.model.model = owrt.model
                 if owrt.version != 'NULL':
                     device.model.version = owrt.version
-                #                                    elif identifier == 'revision':
-                #                                        device.model.revision = value
-                #                                    elif identifier == 'series':
-                #                                        device.model.series = value
 
                 device.title = owrt.page.split(':')[-1]
 
