@@ -2106,6 +2106,9 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                         wikidevi_name = wikidevi_split.split('/', maxsplit=1)[1]
                         device.web.wikidevi = wikidevi_name
 
+                if owrt.bootloader not in ['¿', 'other']:
+                    device.software.bootloader.manufacturer = defaults.BRAND_REWRITE.get(owrt.bootloader, owrt.bootloader)
+
                 # use the title as part of the file name as it is unique
                 model_name = f"{device.title}.json"
                 model_name = model_name.replace('/', '-')
