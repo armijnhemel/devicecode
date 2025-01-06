@@ -1603,9 +1603,9 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             # there are a few entries in the database where the data is
                                                             # actually in the comment. Sigh.
                                                             bootloader_manufacturer = bootloader_split[0].split('<')[0].strip()
-                                                            device.software.bootloader.manufacturer = bootloader_manufacturer
                                                         else:
-                                                            device.software.bootloader.manufacturer = bootloader_split[0].strip()
+                                                            bootloader_manufacturer = bootloader_split[0].strip()
+                                                        device.software.bootloader.manufacturer = defaults.BRAND_REWRITE.get(bootloader_manufacturer, bootloader_manufacturer)
 
                                                         if len(bootloader_split) >= 2:
                                                             bootloader_version = bootloader_split[1].strip()
