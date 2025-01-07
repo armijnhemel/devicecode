@@ -61,7 +61,9 @@ COUNTRY_REWRITE = {'United States': 'USA',
                    'United Kingdom': 'UK'}
 
 DEVICE_REWRITE = {'access pint': 'access point',
-                  'outdppr access point': 'outdoor access point'}
+                  'outdppr access point': 'outdoor access point',
+                  'wifi ap': 'wireless access point',
+                  'wifi router', 'wireless router'}
 
 DISTRO_REWRITE = {'AsusWRT-Merlin': 'Asuswrt-Merlin',
                   'LEDE Project': 'LEDE'}
