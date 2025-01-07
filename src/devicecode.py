@@ -707,6 +707,12 @@ def parse_serial_jtag(serial_string):
                 result['baud_rate'] = baud_rate
                 break
 
+        # data/parity/stop
+        for dps in defaults.DATA_PARITY_STOP:
+            if dps in field.upper():
+                result['data_parity_stop'] = dps
+                break
+
         if baud_rate is not None:
             # verified to be a baud rate
             continue
@@ -1478,6 +1484,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             device.serial.voltage = serial_result['voltage']
                                                         if 'number_of_pins' in serial_result:
                                                             device.serial.number_of_pins = serial_result['number_of_pins']
+                                                        if 'data_parity_stop' in serial_result:
+                                                            device.serial.data_parity_stop = serial_result['data_parity_stop']
 
                                                     # JTAG
                                                     elif identifier == 'jtag':
