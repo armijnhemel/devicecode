@@ -2031,6 +2031,10 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
 
                 device.title = owrt.page.split(':')[-1]
 
+                if owrt.devicetype.strip() != '':
+                    device_type = owrt.devicetype.strip().lower()
+                    device.device_types.append(defaults.DEVICE_REWRITE.get(device_type, device_type))
+
                 if owrt.fccid != 'NULL':
                     fccids = owrt.fccid.split(',')
                     for fccid in fccids:
