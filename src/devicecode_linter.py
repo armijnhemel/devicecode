@@ -20,9 +20,10 @@ import defusedxml.minidom
 @click.option('--input', '-i', 'input_file', required=True,
               help='Wiki top level dump file',
               type=click.Path('r', path_type=pathlib.Path))
+@click.option('--remove', is_flag=True, help='remove old files (WARNING! BE CAREFUL!)')
 @click.option('--wiki-type', required=True,
               type=click.Choice(['TechInfoDepot', 'WikiDevi'], case_sensitive=False))
-def main(devicecode_directory, input_file, wiki_type):
+def main(devicecode_directory, input_file, wiki_type, remove):
     if not devicecode_directory.is_dir():
         print(f"{devicecode_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -84,6 +85,12 @@ def main(devicecode_directory, input_file, wiki_type):
 
     for old_device in sorted(old_devices):
         print(f"Old device file: {old_device}")
+        if remove:
+            originals_file = (originals_dir/old_device).with_suffix('.xml')
+            print(f"removing {devices_dir/old_device}")
+            print(f"removing {originals_file}\n")
+            (devices_dir/old_device).unlink()
+            originals_file.unlink()
 
 
 if __name__ == "__main__":
