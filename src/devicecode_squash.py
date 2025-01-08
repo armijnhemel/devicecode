@@ -362,6 +362,14 @@ def squash(device_one, device_two, debug=False, verbose=False):
             if device_one['serial']['connector'] != device_two['serial']['connector']:
                 conflict = True
 
+        # data/parity/stop
+        if device_one['serial']['data_parity_stop'] == '' or device_two['serial']['data_parity_stop'] == '':
+            if device_one['serial']['data_parity_stop'] == '' and device_two['serial']['data_parity_stop']:
+                serial['data_parity_stop'] = device_two['serial']['data_parity_stop']
+        else:
+            if device_one['serial']['data_parity_stop'] != device_two['serial']['data_parity_stop']:
+                conflict = True
+
         # number of pins
         if device_one['serial']['number_of_pins'] == 0 or device_two['serial']['number_of_pins'] == 0:
             serial['number_of_pins'] = max(device_one['serial']['number_of_pins'], device_two['serial']['number_of_pins'])
@@ -464,7 +472,7 @@ def squash(device_one, device_two, debug=False, verbose=False):
         device_one['origins']+= device_two['origins']
     return device_one
 
-@click.command(short_help='Squash TechInfoDepot, WikiDevi and overlay information into a single file per device')
+@click.command(short_help='Squash TechInfoDepot, WikiDevi, OpenWrt and overlay information into a single file per device')
 @click.option('--directory', '-d', 'devicecode_directory',
               help='DeviceCode results directory', required=True,
               type=click.Path(path_type=pathlib.Path, exists=True))
@@ -499,7 +507,7 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
             sys.exit(1)
 
     # verify the directory names, they should be one of the following
-    valid_directory_names = ['TechInfoDepot', 'WikiDevi']
+    valid_directory_names = ['TechInfoDepot', 'WikiDevi', 'OpenWrt']
 
     # Inside these directories a directory called 'devices' should always
     # be present.
@@ -525,8 +533,10 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
     # and WikiDevi and apply the overlays to the data.
 
     # keep mappings between TechInfoDepot and WikiDevi devices names/URLs
+    # and OpenWrt and WikiDevi devices names/URLs
     techinfodepot_to_wikidevi = {}
     wikidevi_to_techinfodepot = {}
+    openwrt_to_wikidevi = {}
 
     # keep a mapping between data URLs to name. This is basically just a
     # cache as it would always yield the same result for a title.
@@ -535,6 +545,7 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
 
     techinfodepot_items = {}
     wikidevi_items = {}
+    openwrt_items = {}
 
     for p in devicecode_dirs:
         devicecode_dir = p / 'devices'
@@ -589,6 +600,10 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                         if device['web']['techinfodepot']:
                             wikidevi_to_techinfodepot[device['title']] = device['web']['techinfodepot']
                         wikidevi_items[device['title']] = device
+                    elif p.name == 'OpenWrt':
+                        if device['web']['wikidevi']:
+                            openwrt_to_wikidevi[device['title']] = device['web']['wikidevi']
+                        openwrt_to_wikidevi[device['title']] = device
 
             except json.decoder.JSONDecodeError:
                 pass
