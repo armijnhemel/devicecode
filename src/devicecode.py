@@ -297,7 +297,7 @@ class Origin:
     '''Origin information'''
     data_url: str = ''
 
-    # techinfodepot or wikidevi
+    # techinfodepot, wikidevi or openwrt
     origin: str = ''
 
 @dataclass_json
@@ -2038,6 +2038,11 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                     device.model.version = owrt.version
 
                 device.title = owrt.page.split(':')[-1]
+
+                device_origin = Origin()
+                device_origin.data_url = f"https://openwrt.org/{owrt.page}"
+                device_origin.origin = 'openwrt'
+                device.origins.append(device_origin)
 
                 if owrt.devicetype.strip() != '':
                     device_type = owrt.devicetype.strip().lower()
