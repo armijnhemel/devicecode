@@ -34,6 +34,7 @@ def main(devicecode_directory, input_file, wiki_type, remove):
 
     devices_dir = devicecode_directory / wiki_type / 'devices'
     originals_dir = devicecode_directory / wiki_type / 'original'
+    overlays_dir = devicecode_directory / wiki_type / 'overlays'
 
     if not devices_dir.exists() and not devices_dir.is_dir():
         print(f"{devices_dir} is not a valid directory, exiting.", file=sys.stderr)
