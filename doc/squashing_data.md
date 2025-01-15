@@ -28,6 +28,11 @@ or, when visualising as a graph:
 No matter how links were recorded, these should only be treated as (strong)
 hints, as the data should be leading.
 
+There is also data from OpenWrt, which seems to be of higher quality, but
+because the data available from the OpenWrt CSV dump is less complete than
+the TechInfoDepot or WikiDevi data it is merely used to refine the other
+data.
+
 ## Scenario 1: no link recorded
 
 In this scenario no link between the wikis has been explicitly recorded for a
