@@ -552,10 +552,29 @@ REGEX_MINIUPNPD_ALT = re.compile(r'miniupnpd\[\d+\]:\s*(\w*)? listening on port 
 # example:   723 root       6404 S   /usr/sbin/smbd -D
 REGEX_PS = re.compile(r'\s*\d+\s+\w+\s+\d+\s+\w+\s+([/\w\d\s\-_\.\+\*&]*)')
 
+# a list of verified Atheros and Qualcomm Atheros chips (meaning model numbers exist)
+ATHEROS_CHIPS = set([
+    'AR9344', 'AR9331',
+    'AR7240', 'AR7161',
+    'AR9342', 'AR9341',
+    'AR7241', 'AR7242',
+    'AR9132', 'AR2315',
+    'AR9130', 'AR7130',
+    'QCA9558', 'QCA9563',
+    'QCA9531', 'QCA9533',
+    'QCA9557',
+])
+
 # a list of verified Broadcom chips (meaning model numbers exist)
 BROADCOM_CHIPS = set([
     'B50212E',
+    'BCM4718',
+    'BCM5357',
+    'BCM6328',
+    'BCM6348',
+    'BCM6358',
     'BCM6361',
+    'BCM6368',
     'BCM6710',
     'BCM6715',
     'BCM6750',
@@ -615,7 +634,7 @@ CHIP_MANUFACTURERS = {
     'Applied Micro': set(),
     'Aquantia': set(),
     'ASIX': set(),
-    'Atheros': set(),
+    'Atheros': ATHEROS_CHIPS,
     'Atmel': set(),
     'Attansic': set(),
     'Axis': set(),
@@ -692,7 +711,7 @@ CHIP_MANUFACTURERS = {
     'ProMOS': set(),
     'Qorvo': set(),
     'Qualcomm': set(),
-    'Qualcomm Atheros': set(),
+    'Qualcomm Atheros': ATHEROS_CHIPS,
     'Quantenna': set(),
     'Ralink': set(),
     'RDA': set(),
