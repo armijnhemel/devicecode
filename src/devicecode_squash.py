@@ -51,7 +51,13 @@ def squash(device_one, device_two, debug=False, verbose=False):
 
     # cpus
     if device_one['cpus'] != device_two['cpus']:
-        pass
+        conflict = False
+        cpu = copy.deepcopy(device_one['cpu'])
+
+        if conflict and debug:
+            print(f"CPU CONFLICT for '{device_one['title']}'")
+            print(f"  Device 1: {device_one['cpu']}")
+            print(f"  Device 2: {device_two['cpu']}")
 
     # defaults
     if device_one['defaults'] != device_two['defaults']:
