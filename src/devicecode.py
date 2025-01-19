@@ -1954,6 +1954,13 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                                     new_asin = Amazon_ASIN()
                                                                     new_asin.asin = value
                                                                     device.commercial.amazon_asin.append(new_asin)
+                                                        # cpu
+                                                        elif identifier in ['cpu1_brand']:
+                                                            chip_index = int(identifier[3]) - 1
+                                                            chip_result = parse_chip(value)
+                                                            if chip_result is not None:
+                                                                device.cpus.append(chip_result)
+
                                                         elif identifier in ['wi1_module', 'wi2_module', 'wi3_module', 'wi4_module']:
                                                             # first grab the number of the radio element from the identifier
                                                             radio_num = int(identifier[2:3])
