@@ -553,19 +553,32 @@ def parse_chip_openwrt(chip_string):
     # checking if the result is a known manufacturer,
     # and splitting one position further if not, etc.
     chip_result = Chip()
-    chip_split = chip_string.rsplit(maxsplit=1)
-    chip_manufacturer = defaults.BRAND_REWRITE.get(chip_split[0].strip(), chip_split[0].strip())
-    if chip_manufacturer in defaults.CHIP_MANUFACTURERS:
+    manufacturer_found = False
+    maxsplit = 1
+    num_spaces = chip_string.strip().count(' ')
+
+    while True:
+        chip_split = chip_string.strip().rsplit(maxsplit=maxsplit)
+        chip_manufacturer = defaults.BRAND_REWRITE.get(chip_split[0].strip(), chip_split[0].strip())
+        if chip_manufacturer in defaults.CHIP_MANUFACTURERS:
+            manufacturer_found = True
+            break
+        elif len(chip_split) == 1:
+            # this is either just a model number without a manufacturer,
+            # or bogus data
+            break
+        else:
+            if maxsplit == num_spaces:
+                break
+            maxsplit += 1
+
+    if manufacturer_found:
         chip_result.manufacturer_verified = True
         chip_result.manufacturer = chip_manufacturer
         chip_model = chip_split[1].strip()
         if chip_model in defaults.CHIP_MANUFACTURERS[chip_manufacturer]:
             chip_result.model_verified = True
             chip_result.model = chip_model
-    elif len(chip_split) == 1:
-        pass
-    else:
-        pass
     return chip_result
 
 def parse_chip(chip_string):
