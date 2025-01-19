@@ -580,6 +580,14 @@ BROADCOM_CHIPS = set([
     'BCM89610',
 ])
 
+# a list of verified MediaTek chips (meaning model numbers exist)
+MEDIATEK_CHIPS = set([
+  'MT7688AN', 'MT7628N',
+  'MT7621A', 'MT7628AN',
+  'MT7628NN', 'MT7620N',
+  'MT7620A', 'MT7621AT',
+])
+
 # a list of verified Realtek chips (meaning model numbers exist)
 REALTEK_CHIPS = set([
   'RTL8712', 'RTL9607',
@@ -657,7 +665,7 @@ CHIP_MANUFACTURERS = {
     'Mali': set(),
     'Marvell': set(),
     'MaxLinear': set(),
-    'MediaTek': set(),
+    'MediaTek': MEDIATEK_CHIPS,
     'Micrel': set(),
     'Microchip': set(),
     'Mindspeed': set(),
