@@ -546,6 +546,28 @@ def parse_oui(oui_string):
                 ouis.append(new_oui)
     return ouis
 
+def parse_chip_openwrt(chip_string):
+    '''Parse chips and return a parsed data structure for entries from OpenWrt'''
+    # first try to find a known manufacturer
+    # Do this by first splitting from the right side,
+    # checking if the result is a known manufacturer,
+    # and splitting one position further if not, etc.
+    chip_result = Chip()
+    chip_split = chip_string.rsplit(maxsplit=1)
+    chip_manufacturer = defaults.BRAND_REWRITE.get(chip_split[0].strip(), chip_split[0].strip())
+    if chip_manufacturer in defaults.CHIP_MANUFACTURERS:
+        chip_result.manufacturer_verified = True
+        chip_result.manufacturer = chip_manufacturer
+        chip_model = chip_split[1].strip()
+        if chip_model in defaults.CHIP_MANUFACTURERS[chip_manufacturer]:
+            chip_result.model_verified = True
+            chip_result.model = chip_model
+    elif len(chip_split) == 1:
+        pass
+    else:
+        pass
+    return chip_result
+
 def parse_chip(chip_string):
     '''Parse chips and return a parsed data structure'''
     chip_result = Chip()
@@ -2048,6 +2070,16 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                     device_type = owrt.devicetype.strip().lower()
                     device.device_types.append(defaults.DEVICE_REWRITE.get(device_type, device_type))
 
+                # Chips. Should be taken with a grain of salt (ha. ha.)
+                # because it seems that this doesn't only cover the main
+                # CPU, but also additional chips. Without adding a lot of
+                # extra knowledge it is hard to make this distinction.
+                if owrt.cpu not in ['¿']:
+                    for cpu in owrt.cpu.split(','):
+                        chip_result = parse_chip_openwrt(cpu.strip())
+                        device.cpus.append(chip_result)
+
+                # FCC information
                 if owrt.fccid != 'NULL':
                     fccids = owrt.fccid.split(',')
                     for fccid in fccids:
