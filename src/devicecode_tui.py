@@ -1425,8 +1425,12 @@ class DevicecodeUI(App):
             for origin in result['origins']:
                 if origin['origin'] == 'TechInfoDepot':
                     origin_data_url = f" <https://techinfodepot.shoutwiki.com/wiki/{origin['data_url']}>"
-                if origin['origin'] == 'WikiDevi':
+                elif origin['origin'] == 'WikiDevi':
                     origin_data_url = f" <https://wikidevi.wi-cat.ru/{origin['data_url']}>"
+                elif origin['origin'] == 'OpenWrt':
+                    origin_data_url = f" <https://openwrt.org/{origin['data_url']}>"
+                else:
+                    continue
                 new_markdown += f"{origin['origin']}|{origin_data_url}\n"
 
         return new_markdown
