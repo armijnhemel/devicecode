@@ -15,8 +15,8 @@ import sys
 import click
 
 def squash(device_one, device_two, device_three, debug=False, verbose=False):
-    '''Squash two devices. Device 1 is "leading".
-       Device 3 is merely for extra verification'''
+    '''Squash two devices. Device 1 (TechInfoDepot) is "leading".
+       Device 3 (OpenWrt) is merely for extra verification of data'''
 
     # additional chips
     if device_one['additional_chips'] != device_two['additional_chips']:
@@ -476,7 +476,9 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
 
     # record all origins in case the file is a result of multiple inputs
     if 'origins' in device_one and 'origins' in device_two:
-        device_one['origins']+= device_two['origins']
+        device_one['origins'] += device_two['origins']
+        if device_three:
+            device_one['origins'] += device_three['origins']
     return device_one
 
 @click.command(short_help='Squash TechInfoDepot, WikiDevi, OpenWrt and overlay information into a single file per device')
@@ -544,6 +546,7 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
     techinfodepot_to_wikidevi = {}
     wikidevi_to_techinfodepot = {}
     openwrt_to_wikidevi = {}
+    wikidevi_to_openwrt = {}
 
     # keep a mapping between data URLs to name. This is basically just a
     # cache as it would always yield the same result for a title.
@@ -609,8 +612,11 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                         wikidevi_items[device['title']] = device
                     elif p.name == 'OpenWrt':
                         if device['web']['wikidevi']:
-                            openwrt_to_wikidevi[device['title']] = device['web']['wikidevi']
-                        openwrt_to_wikidevi[device['title']] = device
+                            wikidevi_name = data_url_to_name.get(device['web']['wikidevi'], '')
+                            if wikidevi_name:
+                                openwrt_to_wikidevi[device['title']] = wikidevi_name
+                                wikidevi_to_openwrt[wikidevi_name] = device['title']
+                        openwrt_items[device['title']] = device
 
             except json.decoder.JSONDecodeError:
                 pass
@@ -669,7 +675,8 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                 # scenario 2: A --> B
                 # As a sanity check only squash if the names are the same
                 if name_techinfodepot == wikidevi_name:
-                    squash_result = squash(device, wikidevi_items[wikidevi_name], None, debug=debug, verbose=verbose)
+                    openwrt_device = openwrt_items.get(wikidevi_to_openwrt.get(wikidevi_name, None), None)
+                    squash_result = squash(device, wikidevi_items[wikidevi_name], openwrt_device, debug=debug, verbose=verbose)
                     processed_wikidevi.add(name_techinfodepot)
                     squashed_devices.append(squash_result)
             else:
@@ -677,7 +684,8 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                     # scenario 3: A <--> B
                     # As a sanity check only squash if the names are the same
                     if name_techinfodepot == wikidevi_name:
-                        squash_result = squash(device, wikidevi_items[wikidevi_name], None, debug=debug, verbose=verbose)
+                        openwrt_device = openwrt_items.get(wikidevi_to_openwrt.get(wikidevi_name, None), None)
+                        squash_result = squash(device, wikidevi_items[wikidevi_name], openwrt_device, debug=debug, verbose=verbose)
                         processed_wikidevi.add(name_techinfodepot)
                         squashed_devices.append(squash_result)
                     else:
@@ -707,7 +715,8 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                 # and see if it matches the device's name
                 for wikidevi_name, techinfodepot_target in wikidevi_to_techinfodepot.items():
                     if data_url == techinfodepot_target:
-                        squash_result = squash(device, wikidevi_items[wikidevi_name], None, debug=debug, verbose=verbose)
+                        openwrt_device = openwrt_items.get(wikidevi_to_openwrt.get(wikidevi_name, None), None)
+                        squash_result = squash(device, wikidevi_items[wikidevi_name], openwrt_device, debug=debug, verbose=verbose)
                         processed_wikidevi.add(name_techinfodepot)
                         squashed_devices.append(squash_result)
                         break
@@ -716,7 +725,8 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                 # store the device data
                 # TODO: do a more extensive search to find similar devices
                 if name_techinfodepot in wikidevi_items:
-                    squash_result = squash(device, wikidevi_items[name_techinfodepot], None, debug=debug, verbose=verbose)
+                    openwrt_device = openwrt_items.get(wikidevi_to_openwrt.get(wikidevi_name, None), None)
+                    squash_result = squash(device, wikidevi_items[name_techinfodepot], openwrt_device, debug=debug, verbose=verbose)
                     processed_wikidevi.add(name_techinfodepot)
                     squashed_devices.append(squash_result)
                 else:
