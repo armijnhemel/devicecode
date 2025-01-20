@@ -2178,6 +2178,10 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                 if owrt.bootloader not in ['¿', 'other']:
                     device.software.bootloader.manufacturer = defaults.BRAND_REWRITE.get(owrt.bootloader, owrt.bootloader)
 
+                # third party support (OpenWrt only)
+                if owrt.supportedsincecommit.strip() not in ['', 'http://¿']:
+                    device.software.third_party.append('OpenWrt')
+
                 # use the title as part of the file name as it is unique
                 model_name = f"{device.title}.json"
                 model_name = model_name.replace('/', '-')
