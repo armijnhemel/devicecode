@@ -14,8 +14,9 @@ import sys
 
 import click
 
-def squash(device_one, device_two, debug=False, verbose=False):
-    '''Squash two devices. Device 1 is "leading".'''
+def squash(device_one, device_two, device_three, debug=False, verbose=False):
+    '''Squash two devices. Device 1 is "leading".
+       Device 3 is merely for extra verification'''
 
     # additional chips
     if device_one['additional_chips'] != device_two['additional_chips']:
@@ -52,12 +53,12 @@ def squash(device_one, device_two, debug=False, verbose=False):
     # cpus
     if device_one['cpus'] != device_two['cpus']:
         conflict = False
-        cpu = copy.deepcopy(device_one['cpu'])
+        cpu = copy.deepcopy(device_one['cpus'])
 
         if conflict and debug:
             print(f"CPU CONFLICT for '{device_one['title']}'")
-            print(f"  Device 1: {device_one['cpu']}")
-            print(f"  Device 2: {device_two['cpu']}")
+            print(f"  Device 1: {device_one['cpus']}")
+            print(f"  Device 2: {device_two['cpus']}")
 
     # defaults
     if device_one['defaults'] != device_two['defaults']:
@@ -668,7 +669,7 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                 # scenario 2: A --> B
                 # As a sanity check only squash if the names are the same
                 if name_techinfodepot == wikidevi_name:
-                    squash_result = squash(device, wikidevi_items[wikidevi_name], debug=debug, verbose=verbose)
+                    squash_result = squash(device, wikidevi_items[wikidevi_name], None, debug=debug, verbose=verbose)
                     processed_wikidevi.add(name_techinfodepot)
                     squashed_devices.append(squash_result)
             else:
@@ -676,7 +677,7 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                     # scenario 3: A <--> B
                     # As a sanity check only squash if the names are the same
                     if name_techinfodepot == wikidevi_name:
-                        squash_result = squash(device, wikidevi_items[wikidevi_name], debug=debug, verbose=verbose)
+                        squash_result = squash(device, wikidevi_items[wikidevi_name], None, debug=debug, verbose=verbose)
                         processed_wikidevi.add(name_techinfodepot)
                         squashed_devices.append(squash_result)
                     else:
@@ -706,7 +707,7 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                 # and see if it matches the device's name
                 for wikidevi_name, techinfodepot_target in wikidevi_to_techinfodepot.items():
                     if data_url == techinfodepot_target:
-                        squash_result = squash(device, wikidevi_items[wikidevi_name], debug=debug, verbose=verbose)
+                        squash_result = squash(device, wikidevi_items[wikidevi_name], None, debug=debug, verbose=verbose)
                         processed_wikidevi.add(name_techinfodepot)
                         squashed_devices.append(squash_result)
                         break
@@ -715,7 +716,7 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                 # store the device data
                 # TODO: do a more extensive search to find similar devices
                 if name_techinfodepot in wikidevi_items:
-                    squash_result = squash(device, wikidevi_items[name_techinfodepot], debug=debug, verbose=verbose)
+                    squash_result = squash(device, wikidevi_items[name_techinfodepot], None, debug=debug, verbose=verbose)
                     processed_wikidevi.add(name_techinfodepot)
                     squashed_devices.append(squash_result)
                 else:
