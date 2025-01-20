@@ -2082,8 +2082,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                 device.title = owrt.page.split(':')[-1]
 
                 device_origin = Origin()
-                device_origin.data_url = f"https://openwrt.org/{owrt.page}"
-                device_origin.origin = 'openwrt'
+                device_origin.data_url = owrt.page
+                device_origin.origin = 'OpenWrt'
                 device.origins.append(device_origin)
 
                 if owrt.devicetype.strip() != '':
