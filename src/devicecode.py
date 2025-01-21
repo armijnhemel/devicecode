@@ -2181,6 +2181,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                 # third party support (OpenWrt only)
                 if owrt.supportedsincecommit.strip() not in ['', 'http://¿']:
                     device.software.third_party.append('OpenWrt')
+                    device.software.openwrt = 'yes'
 
                 # use the title as part of the file name as it is unique
                 model_name = f"{device.title}.json"
