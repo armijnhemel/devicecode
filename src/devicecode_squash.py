@@ -370,12 +370,16 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
                 conflict = True
 
         # data/parity/stop
-        if device_one['serial']['data_parity_stop'] == '' or device_two['serial']['data_parity_stop'] == '':
-            if device_one['serial']['data_parity_stop'] == '' and device_two['serial']['data_parity_stop']:
+        if device_one['serial']['data_parity_stop'] != device_two['serial']['data_parity_stop']:
+            if device_one['serial']['data_parity_stop'] == 'unknown':
                 serial['data_parity_stop'] = device_two['serial']['data_parity_stop']
-        else:
-            if device_one['serial']['data_parity_stop'] != device_two['serial']['data_parity_stop']:
+            elif device_two['serial']['data_parity_stop'] == 'unknown':
+                pass
+            else:
                 conflict = True
+        if not conflict and device_three:
+            if serial['data_parity_stop'] == 'unknown' and device_three['serial']['data_parity_stop'] != 'unknown':
+                serial['data_parity_stop'] = device_three['serial']['data_parity_stop']
 
         # number of pins
         if device_one['serial']['number_of_pins'] == 0 or device_two['serial']['number_of_pins'] == 0:
@@ -430,9 +434,15 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
             print(f"Third party software inconsistency for '{device_one['title']}'")
             print(f"  Device 1: {device_one['software']['third_party']}")
             print(f"  Device 2: {device_two['software']['third_party']}")
+
+        if not conflict:
+            if device_three:
+                third_party.update(device_three['software']['third_party'])
         software['third_party'] = sorted(third_party)
 
         if not conflict:
+            if device_three:
+                pass
             device_one['software'] = software
 
     # switch
