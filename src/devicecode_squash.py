@@ -360,6 +360,9 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
         else:
             if device_one['serial']['baud_rate'] != device_two['serial']['baud_rate']:
                 conflict = True
+        if not conflict and device_three:
+            if serial['baud_rate'] == 0 and device_three['serial']['baud_rate'] != 0:
+                serial['baud_rate'] = device_three['serial']['baud_rate']
 
         # connector
         if device_one['serial']['connector'] == '' or device_two['serial']['connector'] == '':
