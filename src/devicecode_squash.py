@@ -139,6 +139,14 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
     if device_three:
         if device_one['has_serial_port'] == 'unknown':
             device_one['has_serial_port'] = device_three['has_serial_port']
+        elif device_three['has_serial_port'] != 'unknown':
+            if device_one['has_serial_port'] != device_three['has_serial_port']:
+                # TODO
+                # This is weird, as OpenWrt says there is no serial port,
+                # while the other data says there is. Probably this is a data
+                # error somewhere. The only example in the current (Jan 2025) data
+                # is tp-link_archer_c2600 which is clearly a data error.
+                pass
 
     # images, not used, pass
     if device_one['images'] != device_two['images']:
