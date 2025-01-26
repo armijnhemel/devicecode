@@ -136,6 +136,9 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
                     print(f"Serial port CONFLICT for '{device_one['title']}'")
                     print(f"  Device 1: {device_one['has_serial_port']}")
                     print(f"  Device 2: {device_two['has_serial_port']}")
+    if device_three:
+        if device_one['has_serial_port'] == 'unknown':
+            device_one['has_serial_port'] = device_three['has_serial_port']
 
     # images, not used, pass
     if device_one['images'] != device_two['images']:
