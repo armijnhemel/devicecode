@@ -755,7 +755,7 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                 # store the device data
                 # TODO: do a more extensive search to find similar devices
                 if name_techinfodepot in wikidevi_items:
-                    openwrt_device = openwrt_items.get(wikidevi_to_openwrt.get(wikidevi_name, None), None)
+                    openwrt_device = openwrt_items.get(wikidevi_to_openwrt.get(name_techinfodepot, None), None)
                     squash_result = squash(device, wikidevi_items[name_techinfodepot], openwrt_device, debug=debug, verbose=verbose)
                     processed_wikidevi.add(name_techinfodepot)
                     squashed_devices.append(squash_result)
