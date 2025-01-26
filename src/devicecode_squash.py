@@ -424,6 +424,12 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
         if not conflict:
             device_one['serial'] = serial
 
+    if device_one['has_serial_port'] == 'unknown':
+        if device_one['serial']['baud_rate'] != 0:
+            device_one['has_serial_port'] = 'yes'
+        elif device_one['serial']['connector'] != '':
+            device_one['has_serial_port'] = 'yes'
+
     # software
     if device_one['software'] != device_two['software']:
         conflict = False
