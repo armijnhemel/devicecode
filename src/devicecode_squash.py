@@ -471,6 +471,7 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
             print(f"  Device 1: {device_one['software']}")
             print(f"  Device 2: {device_two['software']}")
 
+        # third party software
         third_party = set(device_one['software']['third_party'])
         third_party.update(device_two['software']['third_party'])
         if debug and device_one['software']['third_party'] and device_two['software']['third_party'] and verbose:
@@ -482,6 +483,13 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
             if device_three:
                 third_party.update(device_three['software']['third_party'])
         software['third_party'] = sorted(third_party)
+
+        # bootloader
+        if device_three:
+            if device_one['software']['bootloader']['manufacturer'] != device_three['software']['bootloader']['manufacturer']:
+                if device_one['software']['bootloader']['manufacturer'] == '':
+                    if device_three['software']['bootloader']['manufacturer'] != '':
+                        software['bootloader']['manufacturer'] = device_three['software']['bootloader']['manufacturer']
 
         if not conflict:
             if device_three:
