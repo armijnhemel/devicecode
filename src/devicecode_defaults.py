@@ -12,6 +12,7 @@ DATA_PARITY_STOP = ['8N1']
 # sometimes different names are used for the same brand
 BRAND_REWRITE = {'FON Wireless': 'Fon Wireless',
                  'CFeon': 'cFeon',
+                 'CFE (128k)': 'CFE',
                  'AppliedMicro': 'Applied Micro',
                  'BeagleBoard.org': 'BeagleBoard',
                  'Brite-view': 'brite-View',
