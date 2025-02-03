@@ -17,8 +17,8 @@ The OpenWrt CSV data has the following fields (names extracted from the OpenWrt 
 12. target - OpenWrt target, not interesting
 13. subtarget - OpenWrt subtarget, not interesting
 14. packagearchitecture - OpenWrt architecture, not interesting
-15. bootloader
-16. cpu
+15. bootloader - bootloader used. This only contains the manufacturer name/bootloader type.
+16. cpu - CPUs in the device, although it seems that this also covers peripherals?
 17. cpucores
 18. cpumhz
 19. flashmb
