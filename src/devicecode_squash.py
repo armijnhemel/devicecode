@@ -125,6 +125,29 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
                     print(f"JTAG CONFLICT for '{device_one['title']}'")
                     print(f"  Device 1: {device_one['has_jtag']}")
                     print(f"  Device 2: {device_two['has_jtag']}")
+    if device_three:
+        if device_one['has_jtag'] == 'unknown':
+            device_one['has_jtag'] = device_three['has_jtag']
+        elif device_three['has_jtag'] != 'unknown':
+            if device_one['has_jtag'] != device_three['has_jtag']:
+                # TODO
+                # This is weird, as OpenWrt says there is no JTAG, while
+                # the other data says there is. Probably this is a data
+                # error somewhere or a different interpretation of what
+                # the presence of JTAG means. There are a few examples
+                # in the current (Jan 2025) data:
+                # d-link_dir-615_c1
+                # gateworks_ventanagw5100
+                # gateworks_ventanagw5200
+                # gateworks_ventanagw5300
+                # gateworks_ventanagw5310
+                # gateworks_ventanagw5400
+                # gateworks_ventanagw5410
+                # fon_fonera2_fon2202
+                # mikrotik_rb750gr3
+                # netgear_wgt634u
+                # zyxel_nsa310b
+                pass
 
     # has_serial_port
     if device_one['has_serial_port'] != device_two['has_serial_port']:
