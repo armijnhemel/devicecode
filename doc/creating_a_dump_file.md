@@ -247,3 +247,6 @@ Then click "Export" and store the XML result somewhere.
 ## Downloading a dump file for the OpenWrt table of hardware
 
 Get the CSV dump at: <https://openwrt.org/toh/views/start>
+
+The script `devicecode_grab_openwrt.py` can then be used to download additional
+pages from the OpenWrt wiki.
