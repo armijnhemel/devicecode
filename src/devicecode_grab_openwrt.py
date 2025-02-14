@@ -29,7 +29,7 @@ TIMEOUT = 60
 @click.option('--gentle', is_flag=True, help=f'pause {SLEEP_INTERVAL} seconds between downloads')
 def main(output_directory, toh, verbose, force, gentle):
     openwrt_404 = []
-    downloaded_openwrt_devices = 0
+    downloaded_openwrt_pages = 0
 
     # set a User Agent for each user request. This is just to be nice
     # for the people that are running the website, and identify that
@@ -53,49 +53,55 @@ def main(output_directory, toh, verbose, force, gentle):
         if not owrt.page.startswith('toh:hwdata:'):
             continue
 
-        owrt_grab_url = f"https://openwrt.org/{owrt.page}?do=export_raw"
+        download_pages = []
+        download_pages.append(owrt.page)
+        if owrt.devicepage:
+            download_pages.append(owrt.devicepage)
 
-        try:
-            if not force:
-                if (output_directory/owrt.page).exists():
-                    if verbose:
-                        print(f"Skipping download of {owrt.page}")
+        for download_page in download_pages:
+            owrt_page_url = f"https://openwrt.org/{download_page}?do=export_raw"
+            try:
+                if not force:
+                    if (output_directory/download_page).exists():
+                        if verbose:
+                            print(f"Skipping download of {download_page}")
+                        continue
+
+                # grab stuff from OpenWrt
+                if verbose:
+                    print(f"Downloading {download_page}")
+                request = requests.get(owrt_page_url, headers=headers, timeout=TIMEOUT)
+
+                # now first check the headers to see if it is OK to do more requests
+                if request.status_code != 200:
+                    if request.status_code == 401:
+                        print("Denied by OpenWrt website, exiting", file=sys.stderr)
+                        sys.exit(1)
+                    elif request.status_code == 404:
+                        # record entries that are not available
+                        openwrt_404.append(download_page)
+                    elif request.status_code == 500:
+                        print("Server error, exiting", file=sys.stderr)
+                        sys.exit(1)
                     continue
-            # grab stuff from OpenWrt
-            if verbose:
-                print(f"Downloading {owrt.page}")
-            request = requests.get(owrt_grab_url, headers=headers, timeout=TIMEOUT)
 
-            # now first check the headers to see if it is OK to do more requests
-            if request.status_code != 200:
-                if request.status_code == 401:
-                    print("Denied by OpenWrt website, exiting", file=sys.stderr)
-                    sys.exit(1)
-                elif request.status_code == 404:
-                    # record entries that are not available
-                    openwrt_404.append(owrt.page)
-                elif request.status_code == 500:
-                    print("Server error, exiting", file=sys.stderr)
-                    sys.exit(1)
-                continue
+                result = request.text
+                if result == '':
+                    continue
 
-            result = request.text
-            if result == '':
-                continue
+                with open(output_directory/download_page, 'w') as output:
+                    output.write(result)
 
-            with open(output_directory/owrt.page, 'w') as output:
-                output.write(result)
+                downloaded_openwrt_pages += 1
 
-            downloaded_openwrt_devices += 1
-
-            if gentle:
-                time.sleep(SLEEP_INTERVAL)
-        except:
-            pass
+                if gentle:
+                    time.sleep(SLEEP_INTERVAL)
+            except:
+                pass
 
     if verbose:
         print("Statistics")
-        print(f"* downloaded {downloaded_openwrt_devices} pages\n")
+        print(f"* downloaded {downloaded_openwrt_pages} pages\n")
 
 
 if __name__ == "__main__":
