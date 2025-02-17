@@ -456,7 +456,8 @@ def parse_log(boot_log):
     # This will be a set of software packages (both open source
     # and proprietary) and functionality, as well as names of
     # source code files that were found, that could be used for
-    # fingerprinting
+    # fingerprinting, as well as other possibly interesting
+    # information.
     results = []
 
     # now try a bunch of regular expressions to find packages
@@ -529,6 +530,18 @@ def parse_log(boot_log):
                     serial_res = {'type': 'serial port', 'console': console, 'baudrate': int(baudrate)}
                     results.append(serial_res)
 
+    re_manufacturer = re.compile(r"NAND device: Manufacturer ID: 0x[\d\w]+, Chip ID: 0x[\d\w]+ \(([\d\w\s/]+) NAND")
+    re_manufacturer_2 = re.compile(r"NAND device: Manufacturer ID: 0x[\d\w]+, Chip ID: 0x[\d\w]+ \(([\d\w]+) (\w+)\)")
+
+    if 'NAND device: Manufacturer ID' in str(boot_log):
+        res = re_manufacturer.search(str(boot_log))
+        if res:
+            nand_manufacturer = res.groups()[0]
+        else:
+            res = re_manufacturer_2.search(str(boot_log))
+            if res:
+                nand_manufacturer = res.groups()[0]
+                nand_model = res.groups()[1]
     return results
 
 def parse_oui(oui_string):
