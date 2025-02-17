@@ -58,6 +58,7 @@ BRAND_REWRITE = {'FON Wireless': 'Fon Wireless',
                  'UBoot': 'U-Boot',
                  'U-boot': 'U-Boot',
                  'U-Media': 'U-MEDIA',
+                 'Wavlink': 'WAVLINK',
                  'Y-cam': 'Y-cam Solutions',
                  'Zilltek': 'ZillTek'}
 
