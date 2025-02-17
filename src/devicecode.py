@@ -475,7 +475,7 @@ def parse_log(boot_log):
     # Linux kernel version
     res = defaults.REGEX_LINUX_VERSION.findall(str(boot_log))
     if res != []:
-        package_res = {'type': 'package', 'name': 'Linux', 'versions': set(res)}
+        package_res = {'type': 'package', 'name': 'Linux', 'versions': sorted(set(res))}
         results.append(package_res)
 
     # CFE bootloader. There could be multiple hits in the same log file
