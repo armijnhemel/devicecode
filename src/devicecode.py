@@ -2057,6 +2057,17 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                             #    out.write('\n')
 
     elif wiki_type == 'OpenWrt':
+        bootlog_hints = ['Boot log (Factory)', 'Factory bootlog', 'Factory Bootlog', 'OEM bootlog',
+                         'OEM Bootlog', 'OEM bootloader log', 'OEM bootloader bootlog',
+                         'OEM factory reset log', 'OEM failsafe bootlog', 'OEM firmware bootlog',
+                         'OEM (original firmware) bootlog', 'OEM (stock firmware) bootlog',
+                         'OEM U-Boot bootlog', 'Old boot log', 'Original bootlog',
+                         'Original Bootlog', 'Original firmware bootlog',
+                         'Original firmware Boot log', 'Quantenna bootlog', 'Serial boot log',
+                         'Stock firmware bootlog', 'Stock Firmware Bootlog', 'Stock FW bootlog',
+                         'u-boot bootlog', 'U-boot bootlog', 'U-Boot bootlog', 'U-Boot log',
+                         'Vendor firmware bootlog', 'Xiaomi bootlog']
+
         # the OpenWrt CSV dump has 74 fields, but only a few
         # are (currently) interesting (see documentation in doc/ )
         OpenWrtDevice = namedtuple('OpenWrtDevice', 'pid, devicetype, brand, model, version, fccid, availability, whereavailable, supportedsincecommit, supportedsincerel, supportedcurrentrel, unsupported_functions, target, subtarget, packagearchitecture, bootloader, cpu, cpucores, cpumhz, flashmb, rammb, ethernet100mports, ethernetgbitports, ethernet1gports, ethernet2_5gports, ethernet5gports, ethernet10gports, sfp_ports, sfp_plus_ports, switch, vlan, modem, commentsnetworkports, wlanhardware, wlan24ghz, wlan50ghz, wlancomments, wlandriver, detachableantennas, bluetooth, usbports, sataports, commentsusbsataports, videoports, audioports, phoneports, commentsavports, serial, serialconnectionparameters, jtag, ledcount, buttoncount, gpios, powersupply, devicepage, device_techdata owrt_forum_topic_url, lede_forum_topic_url, forumsearch, gitsearch, wikideviurl, oemdevicehomepageurl, firmwareoemstockurl, firmwareopenwrtinstallurl, firmwareopenwrtupgradeurl, firmwareopenwrtsnapshotinstallurl, firmwareopenwrtsnapshotupgradeurl, installationmethods, commentinstallation, recoverymethods, commentrecovery, picture, comments, page')
@@ -2071,6 +2082,12 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                 owrt = OpenWrtDevice._make(line)
                 if not owrt.page.startswith('toh:hwdata:'):
                     continue
+
+                # check if a device page was downloaded and if so, load contents
+                devicepage = ""
+                if owrt.devicepage and (wiki_original_directory / owrt.devicepage).exists():
+                    with open(wiki_original_directory / owrt.devicepage, 'r') as dp:
+                        devicepage = dp.read()
 
                 # first create a Device() and fill in some of the details
                 device = Device()
@@ -2182,6 +2199,41 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                 if owrt.supportedsincecommit.strip() not in ['', 'http://¿']:
                     device.software.third_party.append('OpenWrt')
                     device.software.openwrt = 'yes'
+
+                # now process any logs in the device page, if available
+                if devicepage:
+                    for i in bootlog_hints:
+                        if i in devicepage:
+                            bootlog = []
+                            seen_start = False
+                            for line in devicepage.split('\n'):
+                                if line.startswith('=') and i in line:
+                                    seen_start = True
+                                    continue
+                                if not seen_start:
+                                    continue
+                                if '</nowiki>' in line or '</WRAP>' in line:
+                                    break
+                                bootlog.append(line)
+                            # parse and store the boot log.
+                            # TODO: further mine the boot log
+                            parse_results = parse_log("\n".join(bootlog))
+                            for p in parse_results:
+                                if p['type'] == 'package':
+                                    found_package = Package()
+                                    found_package.name = p['name']
+                                    found_package.package_type = p['type']
+                                    found_package.versions = p['versions']
+                                    device.software.packages.append(found_package)
+                                    if p['name'] == 'Linux':
+                                        if device.software.os == '':
+                                            device.software.os = p['name']
+                                elif p['type'] == 'bootloader':
+                                    found_package = Package()
+                                    found_package.name = p['name']
+                                    found_package.package_type = p['type']
+                                    found_package.versions = p['versions']
+                                    device.software.packages.append(found_package)
 
                 # use the title as part of the file name as it is unique
                 model_name = f"{device.title}.json"
