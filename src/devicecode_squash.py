@@ -491,9 +491,23 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
                     if device_three['software']['bootloader']['manufacturer'] != '':
                         software['bootloader']['manufacturer'] = device_three['software']['bootloader']['manufacturer']
 
+        # packages
+        if device_three:
+            if not software['packages']:
+                software['packages'] = device_three['software']['packages']
+
         if not conflict:
             if device_three:
                 pass
+            device_one['software'] = software
+    else:
+        conflict = False
+        software = copy.deepcopy(device_one['software'])
+        if device_three and device_one['software'] != device_three['software']:
+            if not device_one['software']['packages']:
+                software['packages'] = device_three['software']['packages']
+
+        if not conflict:
             device_one['software'] = software
 
     # switch
