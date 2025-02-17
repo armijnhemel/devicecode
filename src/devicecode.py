@@ -2057,12 +2057,12 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                             #    out.write('\n')
 
     elif wiki_type == 'OpenWrt':
-        bootlog_hints = ['Boot log (Factory)', 'Factory bootlog', 'Factory Bootlog', 'OEM bootlog',
-                         'OEM Bootlog', 'OEM bootloader log', 'OEM bootloader bootlog',
-                         'OEM factory reset log', 'OEM failsafe bootlog', 'OEM firmware bootlog',
-                         'OEM (original firmware) bootlog', 'OEM (stock firmware) bootlog',
-                         'OEM U-Boot bootlog', 'Old boot log', 'Original bootlog',
-                         'Original Bootlog', 'Original firmware bootlog',
+        bootlog_hints = ['Boot log (Factory)', 'EdgeOS Bootlog', 'Factory bootlog',
+                         'Factory Bootlog', 'OEM bootlog', 'OEM Bootlog', 'OEM bootloader log',
+                         'OEM bootloader bootlog', 'OEM factory reset log', 'OEM failsafe bootlog',
+                         'OEM firmware bootlog', 'OEM (original firmware) bootlog',
+                         'OEM (stock firmware) bootlog', 'OEM U-Boot bootlog', 'Old boot log',
+                         'Original bootlog', 'Original Bootlog', 'Original firmware bootlog',
                          'Original firmware Boot log', 'Quantenna bootlog', 'Serial boot log',
                          'Stock firmware bootlog', 'Stock Firmware Bootlog', 'Stock FW bootlog',
                          'u-boot bootlog', 'U-boot bootlog', 'U-Boot bootlog', 'U-Boot log',
