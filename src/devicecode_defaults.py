@@ -493,6 +493,9 @@ KNOWN_OS = set(['airOS', 'Android', 'Android TV', 'ArubaOS', 'Bananian', 'CBOS v
                 'reyeeOS', 'RokuOS', 'RouterOS', 'SonicOS', 'SuperTask!', 'ThreadX', 'tvOS',
                 'VxWorks', 'Windows', 'Windows CE', 'ZyNOS', 'μClinux'])
 
+KNOWN_ROOTFS = set(['btrfs', 'cramfs', 'ext2', 'ext3', 'ext4', 'jffs2',
+                    'ramfs', 'squashfs', 'squashM', 'ubifs', 'yaffs', 'yaffs2'])
+
 # regular expression for ASIN
 REGEX_ASIN = re.compile(r'^B[\d\w]{9}$')
 
