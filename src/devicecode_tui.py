@@ -149,6 +149,7 @@ class FilterValidator(Validator):
 
     def __init__(self, **kwargs):
         # Known values: only these will be regarded as valid.
+        self.baud_rates = kwargs.get('baud_rates', set())
         self.bootloaders = kwargs.get('bootloaders', set())
         self.brands = kwargs.get('brands', set())
         self.odms = kwargs.get('odms', set())
@@ -196,6 +197,13 @@ class FilterValidator(Validator):
                 elif token_identifier == 'connector':
                     if token_value not in self.connectors:
                         return self.failure("Invalid connector")
+                elif token_identifier == 'baud':
+                    try:
+                        int(token_value)
+                    except:
+                        return self.failure("Invalid baud rate")
+                    if int(token_value) not in self.baud_rates:
+                        return self.failure("Invalid baud rate")
                 elif token_identifier == 'ignore_brand':
                     if token_value not in self.brands:
                         return self.failure("Invalid brand")
@@ -306,7 +314,7 @@ class DevicecodeUI(App):
     ]
 
     CSS_PATH = "devicecode_tui.css"
-    TOKEN_IDENTIFIERS = ['bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
+    TOKEN_IDENTIFIERS = ['baud', 'bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
                          'connector', 'fcc', 'file', 'flag', 'ignore_brand', 'ignore_odm',
                          'ip', 'jtag', 'odm', 'os', 'package', 'password', 'program',
                          'serial', 'type', 'year']
@@ -318,6 +326,7 @@ class DevicecodeUI(App):
     def compose_data_sets(self, **kwargs):
         # Optional filters with data that should
         # be displayed or ignored.
+        filter_baud_rates = kwargs.get('serial_baud_rates', [])
         filter_bootloaders = kwargs.get('bootloaders', [])
         filter_brands = kwargs.get('brands', [])
         filter_chips = kwargs.get('chips', [])
@@ -345,6 +354,9 @@ class DevicecodeUI(App):
 
         # mapping of odms to devices
         odm_to_devices = {}
+
+        # known baud rates
+        baud_rates = set()
 
         # known bootloaders
         bootloaders = set()
@@ -465,6 +477,9 @@ class DevicecodeUI(App):
                     continue
             if filter_connectors:
                 if device['serial']['connector'].lower() not in filter_connectors:
+                    continue
+            if filter_baud_rates:
+                if device['serial']['baud_rate'] not in filter_baud_rates:
                     continue
             if filter_ips:
                 if device['defaults']['ip'] not in filter_ips:
@@ -610,6 +625,8 @@ class DevicecodeUI(App):
             if device['serial']['connector'] != '':
                 connectors.add(device['serial']['connector'].lower())
                 odm_connector.append((manufacturer_name, device['serial']['connector']))
+            if device['serial']['baud_rate'] != 0:
+                baud_rates.add(device['serial']['baud_rate'])
 
             for cpu in device['cpus']:
                 cpu_vendor_name = cpu['manufacturer']
@@ -659,6 +676,7 @@ class DevicecodeUI(App):
             flags.update([x.casefold() for x in device['flags']])
 
         return {'brands_to_devices': brands_to_devices, 'odm_to_devices': odm_to_devices,
+                'baud_rates': baud_rates,
                 'bootloaders': bootloaders, 'brands': brands, 'brand_data': brand_data,
                 'chips': chips, 'chip_types': chip_types, 'chip_vendors': chip_vendors,
                 'connectors': connectors, 'odms': odms, 'fcc': fcc, 'files': files, 'flags': flags,
@@ -708,6 +726,7 @@ class DevicecodeUI(App):
 
         brands_to_devices = data['brands_to_devices']
         odm_to_devices = data['odm_to_devices']
+        baud_rates = data['baud_rates']
         bootloaders = data['bootloaders']
         brands = data['brands']
         brand_data = data['brand_data']
@@ -817,12 +836,14 @@ class DevicecodeUI(App):
         # input field
         input_filter = Input(placeholder='Filter',
                             validators=[FilterValidator(bootloaders=bootloaders, brands=brands,
+                                                        baud_rates=baud_rates,
                                                         odms=odms, chips=chips, chip_types=chip_types,
                                                         chip_vendors=chip_vendors, connectors=connectors,
                                                         fcc=fcc, files=files, ips=ips, packages=packages,
                                                         passwords=passwords, programs=programs, types=device_types,
                                                         token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
+                            baud_rates=sorted(baud_rates),
                             bootloaders=sorted(bootloaders), brands=sorted(brands),
                             chips=sorted(chips), chip_types=sorted(chip_types),
                             chip_vendors=sorted(chip_vendors), connectors=sorted(connectors),
@@ -922,6 +943,7 @@ class DevicecodeUI(App):
         passwords = []
         programs = []
         serials = []
+        serial_baud_rates = []
         years = []
         is_filtered = False
         refresh = False
@@ -973,6 +995,8 @@ class DevicecodeUI(App):
                         programs.append(value)
                     elif identifier == 'serial':
                         serials.append(value)
+                    elif identifier == 'baud':
+                        serial_baud_rates.append(int(value))
                     elif identifier == 'type':
                         device_types.append(value)
                     elif identifier == 'jtag':
@@ -985,13 +1009,15 @@ class DevicecodeUI(App):
                             years += [int(x) for x in input_years]
 
         if refresh:
-            filtered_data = self.compose_data_sets(bootloaders=bootloaders, brands=brands, odms=odms,
-                                       chips=chips, chip_types=chip_types, chip_vendors=chip_vendors,
-                                       connectors=connectors, fccs=fccs, files=files, flags=flags,
-                                       ignore_brands=ignore_brands, ignore_odms=ignore_odms,
-                                       ips=ips, jtags=jtags, operating_systems=operating_systems,
-                                       passwords=passwords, packages=packages, programs=programs,
-                                       serials=serials, years=years, types=device_types)
+            filtered_data = self.compose_data_sets(bootloaders=bootloaders, brands=brands,
+                                odms=odms, chips=chips, chip_types=chip_types,
+                                chip_vendors=chip_vendors, connectors=connectors, fccs=fccs,
+                                files=files, flags=flags, ignore_brands=ignore_brands,
+                                ignore_odms=ignore_odms, ips=ips, jtags=jtags,
+                                operating_systems=operating_systems, passwords=passwords,
+                                packages=packages, programs=programs, serials=serials,
+                                serial_baud_rates=serial_baud_rates, years=years,
+                                types=device_types)
 
             self.brand_tree.build_tree(filtered_data['brands_to_devices'], is_filtered)
             self.odm_tree.build_tree(filtered_data['odm_to_devices'], is_filtered)
