@@ -512,11 +512,21 @@ def parse_log(boot_log):
     # find source code files
 
     # extract other information
-    res = re.findall(r"(\w+): module license 'Proprietary' taints kernel.", str(boot_log))
-    if res != []:
-        for r in res:
-            module_res = {'type': 'proprietary kernel module', 'name': r}
-            results.append(module_res)
+    for i in ['Proprietary', 'proprietary', 'Propritary', 'Motorola Proprietary',
+              'Watchguard Proprietary', 'Commercial product',
+              'Commercial. For support email ntfs-support@tuxera.com.', 'Sercomm', 'sercomm']:
+        res = re.findall(fr"(\w+): module license '{i}' taints kernel.", str(boot_log))
+        if res != []:
+            for r in res:
+                module_res = {'type': 'kernel module license', 'license': 'proprietary', 'name': r}
+                results.append(module_res)
+
+    for i in ['BSD', 'unspecified']:
+        res = re.findall(fr"(\w+): module license '{i}' taints kernel.", str(boot_log))
+        if res != []:
+            for r in res:
+                module_res = {'type': 'kernel module license', 'license': i, 'name': r}
+                results.append(module_res)
 
     # Linux kernel command line
     res = defaults.REGEX_LINUX_KERNEL_COMMANDLINE.findall(str(boot_log))
@@ -537,11 +547,15 @@ def parse_log(boot_log):
         res = re_manufacturer.search(str(boot_log))
         if res:
             nand_manufacturer = res.groups()[0]
+            serial_res = {'type': 'nand', 'manufacturer': nand_manufacturer}
+            results.append(serial_res)
         else:
             res = re_manufacturer_2.search(str(boot_log))
             if res:
                 nand_manufacturer = res.groups()[0]
                 nand_model = res.groups()[1]
+                serial_res = {'type': 'nand', 'manufacturer': nand_manufacturer, 'model': nand_model}
+                results.append(serial_res)
     return results
 
 def parse_oui(oui_string):
