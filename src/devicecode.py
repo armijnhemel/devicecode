@@ -540,8 +540,8 @@ def parse_log(boot_log):
             if 'console=' in fr:
                 console_res = re.search(r'console=([\w\d]+),(\d+)', fr)
                 if console_res is not None:
-                    console, baudrate = console_res.groups()
-                    serial_res = {'type': 'serial port', 'console': console, 'baudrate': int(baudrate)}
+                    console, baud_rate = console_res.groups()
+                    serial_res = {'type': 'serial port', 'console': console, 'baud_rate': int(baud_rate)}
                     results.append(serial_res)
             if 'rootfstype=' in fr:
                 rootfs_res = re.search(r'rootfstype=([\w\d,]+)', fr)
@@ -2193,11 +2193,6 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                     device.has_serial_port = 'no'
                 elif owrt.serial.lower() == 'yes':
                     device.has_serial_port = 'yes'
-                else:
-                    if owrt.serialconnectionparameters.strip() not in ['¿', '']:
-                        # TODO: what to do here? It seems that the OpenWrt
-                        # data isn't consistent here.
-                        pass
 
                 if device.has_serial_port == 'yes':
                     if owrt.serialconnectionparameters.strip() not in ['¿', '']:
@@ -2211,6 +2206,11 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                 device.serial.data_parity_stop = data_parity_stop
                         except:
                             pass
+                else:
+                    if owrt.serialconnectionparameters.strip() not in ['¿', '']:
+                        # TODO: what to do here? It seems that the OpenWrt
+                        # data isn't consistent here.
+                        pass
 
                 # JTAG
                 if owrt.jtag.lower() == 'no':
@@ -2271,6 +2271,21 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                     found_package.package_type = p['type']
                                     found_package.versions = p['versions']
                                     device.software.packages.append(found_package)
+                                elif p['type'] == 'serial port':
+                                    if device.has_serial_port == 'no':
+                                        # Something strange is going on here,
+                                        # most likely a data interpretation error
+                                        pass
+                                    elif device.has_serial_port == 'unknown':
+                                        # The device actually has a serial port.
+                                        device.has_serial_port = 'yes'
+                                    if device.has_serial_port == 'yes':
+                                        if 'baud_rate' in p:
+                                            if device.serial.baud_rate == 0:
+                                                device.serial.baud_rate = p['baud_rate']
+                                            elif device.serial.baud_rate != p['baud_rate']:
+                                                # Sigh. This shouldn't happen.
+                                                pass
 
                 # use the title as part of the file name as it is unique
                 model_name = f"{device.title}.json"
