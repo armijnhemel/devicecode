@@ -543,6 +543,12 @@ def parse_log(boot_log):
                     console, baudrate = console_res.groups()
                     serial_res = {'type': 'serial port', 'console': console, 'baudrate': int(baudrate)}
                     results.append(serial_res)
+            if 'rootfstype=' in fr:
+                rootfs_res = re.search(r'rootfstype=([\w\d,]+)', fr)
+                if rootfs_res:
+                    rootfs_types = rootfs_res.groups()[0].split(',')
+                    rootfstypes_res = {'type': 'rootfstype', 'values': defaults.KNOWN_ROOTFS.intersection(rootfs_types)}
+                    results.append(rootfstypes_res)
 
     re_manufacturer = re.compile(r"NAND device: Manufacturer ID: 0x[\d\w]+, Chip ID: 0x[\d\w]+ \(([\d\w\s/]+) NAND")
     re_manufacturer_2 = re.compile(r"NAND device: Manufacturer ID: 0x[\d\w]+, Chip ID: 0x[\d\w]+ \(([\d\w]+) (\w+)\)")
