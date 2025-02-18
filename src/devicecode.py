@@ -1067,6 +1067,21 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                         found_package.package_type = p['type']
                                                         found_package.versions = p['versions']
                                                         device.software.packages.append(found_package)
+                                                    elif p['type'] == 'serial port':
+                                                        if device.has_serial_port == 'no':
+                                                            # Something strange is going on here,
+                                                            # most likely a data interpretation error
+                                                            pass
+                                                        elif device.has_serial_port == 'unknown':
+                                                            # The device actually has a serial port.
+                                                            device.has_serial_port = 'yes'
+                                                        if device.has_serial_port == 'yes':
+                                                            if 'baud_rate' in p:
+                                                                if device.serial.baud_rate == 0:
+                                                                    device.serial.baud_rate = p['baud_rate']
+                                                                elif device.serial.baud_rate != p['baud_rate']:
+                                                                    # Sigh. This shouldn't happen.
+                                                                    pass
                                                 break
                                         if is_processed:
                                             have_valid_data = True
