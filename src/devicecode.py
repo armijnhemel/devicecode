@@ -553,6 +553,11 @@ def parse_log(boot_log):
                     rootfs_types = rootfs_res.groups()[0].split(',')
                     rootfstypes_res = {'type': 'rootfstype', 'values': defaults.KNOWN_ROOTFS.intersection(rootfs_types)}
                     results.append(rootfstypes_res)
+            if 'root=' in fr:
+                root_res = re.search(r'root=([\w\d/:=]+)', fr)
+                if root_res:
+                    root_results = {'type': 'init', 'value': root_res.groups()[0]}
+                    results.append(root_results)
             if 'init=' in fr:
                 init_res = re.search(r'init=([\w\d/]+)', fr)
                 if init_res:
