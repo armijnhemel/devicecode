@@ -451,7 +451,6 @@ def parse_ps(ps_log):
 
 def parse_log(boot_log):
     '''Parse logs, such as boot logs or serial output'''
-
     # store the interesting findings in a lookup table.
     # This will be a set of software packages (both open source
     # and proprietary) and functionality, as well as names of
@@ -504,10 +503,10 @@ def parse_log(boot_log):
         package_res = {'type': 'bootloader', 'name': 'adtran bootloader', 'versions': set(res)}
         results.append(package_res)
 
-    # find functionality
-    if 'console [ttyS0] enabled' in str(boot_log):
-        serial_res = {'type': 'serial port', 'console': 'ttyS0'}
-        results.append(serial_res)
+    # find functionality -- TODO is this actually correct?
+    #if 'console [ttyS0] enabled' in str(boot_log):
+    #    serial_res = {'type': 'serial port', 'console': 'ttyS0'}
+    #    results.append(serial_res)
 
     # find source code files
 
@@ -535,6 +534,11 @@ def parse_log(boot_log):
     # Linux kernel command line
     res = defaults.REGEX_LINUX_KERNEL_COMMANDLINE.findall(str(boot_log))
     if res != []:
+        # some log lines seem to be split across several lines in the
+        # file or have spaces inserted randomly, and sometimes some
+        # information is missing or incorrect.
+        # Example toh:blueendless:u35wf in OpenWrt
+        #  [ 0.000000] Kernel command line: console=ttyS0,115200 rootfstype=squashfs,jff s2
         func_res = {'type': 'Linux kernel commandline', 'values': set(res)}
         for fr in res:
             if 'console=' in fr:
@@ -549,6 +553,25 @@ def parse_log(boot_log):
                     rootfs_types = rootfs_res.groups()[0].split(',')
                     rootfstypes_res = {'type': 'rootfstype', 'values': defaults.KNOWN_ROOTFS.intersection(rootfs_types)}
                     results.append(rootfstypes_res)
+            if 'init=' in fr:
+                init_res = re.search(r'init=([\w\d/]+)', fr)
+                if init_res:
+                    init_results = {'type': 'init', 'value': init_res.groups()[0]}
+                    results.append(init_results)
+
+    re_squashfs = re.compile(r"squashfs: version ([\w\d\-\.]+) \(\d{4}/\d{2}/\d{2}\) Phillip Lougher")
+    if 'squashfs' in str(boot_log):
+        res_squashfs = re_squashfs.findall(str(boot_log))
+        if res_squashfs:
+            squashfss = set(res_squashfs)
+            squashfs_res = {'type': 'file system', 'name': 'squashfs', 'versions': list(squashfss), 'notes': ''}
+            results.append(squashfs_res)
+        if 'version 4.0 with LZMA457 ported by BRCM' in str(boot_log):
+            squashfs_res = {'type': 'file system', 'name': 'squashfs', 'versions': [4.0], 'notes': 'LZMA457 ported by BRCM'}
+            results.append(squashfs_res)
+        if 'version 3.1 includes LZMA decompression support' in str(boot_log):
+            squashfs_res = {'type': 'file system', 'name': 'squashfs', 'versions': [3.1], 'notes': 'LZMA decompression support'}
+            results.append(squashfs_res)
 
     re_manufacturer = re.compile(r"NAND device: Manufacturer ID: 0x[\d\w]+, Chip ID: 0x[\d\w]+ \(([\d\w\s/]+) NAND")
     re_manufacturer_2 = re.compile(r"NAND device: Manufacturer ID: 0x[\d\w]+, Chip ID: 0x[\d\w]+ \(([\d\w]+) (\w+)\)")
