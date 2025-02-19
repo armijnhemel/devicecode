@@ -544,6 +544,7 @@ REGEX_SERIAL_PIN_HEADER = re.compile(r'(?:via )?(\d+)[ -](?:in|pln|pin|pad|pads)
 # several regular expressions for software and software versions
 REGEX_BUSYBOX = re.compile(r'BusyBox (v\d\.\d+[\.\w+-]*\d*)')
 REGEX_IPTABLES = re.compile(r'iptables (v1\.\d+[\.\w+-]*\d*)')
+REGEX_LINUX_VERSION_ALT = re.compile(r'Linux version (\d\.\d+\.\d+[\.\+\w\d-]*)\s*\(([\w\d@\._\-\*]+)\)?')
 REGEX_LINUX_VERSION = re.compile(r'Linux version (\d\.\d+\.\d+[\.\+\w\d-]*)')
 REGEX_LINUX_KERNEL_COMMANDLINE = re.compile(r'Kernel command line:\s+([\w\d=,:\./ ]*)')
 REGEX_ADTRAN_BOOTLOADER = re.compile(r'Adtran bootloader version (\d+\.\d+\.\d+)')
