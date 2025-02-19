@@ -539,7 +539,11 @@ def parse_log(boot_log):
         # information is missing or incorrect.
         # Example toh:blueendless:u35wf in OpenWrt
         #  [ 0.000000] Kernel command line: console=ttyS0,115200 rootfstype=squashfs,jff s2
-        func_res = {'type': 'Linux kernel commandline', 'values': set(res)}
+        if set(filter(lambda x: '=' in x, res)):
+            command_line_res = {'type': 'Linux kernel commandline', 'values': set(filter(lambda x: len(x.strip()) > 0, res))}
+            results.append(command_line_res)
+
+        # extract a few specific commandline parameters
         for fr in res:
             if 'console=' in fr:
                 console_res = re.search(r'console=([\w\d]+),(\d+)', fr)
@@ -563,6 +567,11 @@ def parse_log(boot_log):
                 if init_res:
                     init_results = {'type': 'init', 'value': init_res.groups()[0]}
                     results.append(init_results)
+            if 'board=' in fr:
+                board_res = re.search(r'board=([\w\d\-]+)', fr)
+                if board_res:
+                    board_results = {'type': 'board', 'value': board_res.groups()[0]}
+                    results.append(board_results)
 
     re_squashfs = re.compile(r"squashfs: version ([\w\d\-\.]+) \(\d{4}/\d{2}/\d{2}\) Phillip Lougher")
     if 'squashfs' in str(boot_log):
