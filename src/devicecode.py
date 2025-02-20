@@ -577,6 +577,13 @@ def parse_log(boot_log):
                 if board_res:
                     board_results = {'type': 'board', 'value': board_res.groups()[0]}
                     results.append(board_results)
+            if 'mtdparts=' in fr:
+                mtdparts = fr.split('mtdparts=')[1].split()[0]
+                if '(' in mtdparts:
+                    mtdparts_results = re.findall(r'\(([\w\d\-\._]+)\)', mtdparts)
+                    if mtdparts_results:
+                        mtdparts_result = {'type': 'mtdparts', 'values': mtdparts_results}
+                        results.append(mtdparts_result)
 
     re_squashfs = re.compile(r"squashfs: version ([\w\d\-\.]+) \(\d{4}/\d{2}/\d{2}\) Phillip Lougher")
     if 'squashfs' in str(boot_log):
