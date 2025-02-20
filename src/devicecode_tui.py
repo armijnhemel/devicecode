@@ -47,6 +47,7 @@ class SuggestDevices(Suggester):
         self.flags = kwargs.get('flags', [])
         self.odms = kwargs.get('odms', [])
         self.packages = kwargs.get('packages', [])
+        self.partitions = kwargs.get('partitions', [])
         self.passwords = kwargs.get('passwords', [])
         self.programs = kwargs.get('programs', [])
         self.device_types = kwargs.get('types', [])
@@ -130,6 +131,10 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(self.packages):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + self.packages[idx][len(check_value)-8:]
+        elif check_value.startswith('partition='):
+            for idx, chk in enumerate(self.partitions):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.partitions[idx][len(check_value)-10:]
         elif check_value.startswith('program='):
             for idx, chk in enumerate(self.programs):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
@@ -162,6 +167,7 @@ class FilterValidator(Validator):
         self.files = kwargs.get('files', set())
         self.ips = kwargs.get('ips', set())
         self.packages = kwargs.get('packages', set())
+        self.partitions = kwargs.get('partitions', set())
         self.passwords = kwargs.get('passwords', set())
         self.token_identifiers = kwargs.get('token_identifiers', [])
 
@@ -228,6 +234,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'package':
                     if token_value not in self.packages:
                         return self.failure("Invalid package")
+                elif token_identifier == 'partition':
+                    if token_value not in self.partitions:
+                        return self.failure("Invalid partition")
                 #elif token_identifier == 'type':
                     #if token_value not in self.device_types:
                         #return self.failure("Invalid type")
@@ -316,8 +325,8 @@ class DevicecodeUI(App):
     CSS_PATH = "devicecode_tui.css"
     TOKEN_IDENTIFIERS = ['baud', 'bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
                          'connector', 'fcc', 'file', 'flag', 'ignore_brand', 'ignore_odm',
-                         'ip', 'jtag', 'odm', 'os', 'package', 'password', 'program',
-                         'serial', 'type', 'year']
+                         'ip', 'jtag', 'odm', 'os', 'package', 'partition', 'password',
+                         'program', 'serial', 'type', 'year']
 
     def __init__(self, devicecode_dirs, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -344,6 +353,7 @@ class DevicecodeUI(App):
         filter_odms = kwargs.get('odms', [])
         filter_operating_systems = kwargs.get('operating_systems', [])
         filter_packages = kwargs.get('packages', [])
+        filter_partitions = kwargs.get('partitions', [])
         filter_passwords = kwargs.get('passwords', [])
         filter_programs = kwargs.get('programs', [])
         filter_serials = kwargs.get('serials', [])
@@ -394,6 +404,9 @@ class DevicecodeUI(App):
 
         # known packages
         packages = set()
+
+        # known partitions
+        partitions = set()
 
         # known default passwords
         passwords = set()
@@ -557,6 +570,15 @@ class DevicecodeUI(App):
                 if not show_node:
                     continue
 
+            if filter_partitions:
+                show_node = False
+                for partition in device['software']['partitions']:
+                    if partition['name'].lower() in filter_partitions:
+                        show_node = True
+                        break
+                if not show_node:
+                    continue
+
             if filter_fccs:
                 show_node = False
                 for fcc_id in device['regulatory']['fcc_ids']:
@@ -661,6 +683,10 @@ class DevicecodeUI(App):
                 package_name = package['name'].lower()
                 packages.add(package_name)
 
+            for partition in device['software']['partitions']:
+                partition_name = partition['name']
+                partitions.add(partition_name)
+
             if 'programs' in device['software']:
                 for prog in device['software']['programs']:
                     program_name = prog['name'].lower()
@@ -682,8 +708,9 @@ class DevicecodeUI(App):
                 'connectors': connectors, 'odms': odms, 'fcc': fcc, 'files': files, 'flags': flags,
                 'ips': ips, 'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
                 'odm_connector': odm_connector, 'chip_vendor_connector': chip_vendor_connector,
-                'packages': packages, 'passwords': passwords, 'programs': programs,
-                'types': device_types, 'years': years, 'year_data': year_data}
+                'packages': packages, 'partitions': partitions, 'passwords': passwords,
+                'programs': programs, 'types': device_types, 'years': years,
+                'year_data': year_data}
 
 
     def compose(self) -> ComposeResult:
@@ -746,6 +773,7 @@ class DevicecodeUI(App):
         odm_connector = data['odm_connector']
         operating_systems = defaults.KNOWN_OS
         packages = data['packages']
+        partitions = data['partitions']
         passwords = data['passwords']
         programs = data['programs']
         chip_vendor_connector = data['chip_vendor_connector']
@@ -836,12 +864,12 @@ class DevicecodeUI(App):
         # input field
         input_filter = Input(placeholder='Filter',
                             validators=[FilterValidator(bootloaders=bootloaders, brands=brands,
-                                                        baud_rates=baud_rates,
-                                                        odms=odms, chips=chips, chip_types=chip_types,
-                                                        chip_vendors=chip_vendors, connectors=connectors,
-                                                        fcc=fcc, files=files, ips=ips, packages=packages,
-                                                        passwords=passwords, programs=programs, types=device_types,
-                                                        token_identifiers=self.TOKEN_IDENTIFIERS)],
+                                                baud_rates=baud_rates,
+                                                odms=odms, chips=chips, chip_types=chip_types,
+                                                chip_vendors=chip_vendors, connectors=connectors,
+                                                fcc=fcc, files=files, ips=ips, packages=packages,
+                                                partitions=partitions, passwords=passwords, programs=programs,
+                                                types=device_types, token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             baud_rates=sorted(baud_rates),
                             bootloaders=sorted(bootloaders), brands=sorted(brands),
@@ -849,9 +877,9 @@ class DevicecodeUI(App):
                             chip_vendors=sorted(chip_vendors), connectors=sorted(connectors),
                             odms=sorted(odms), operating_systems=sorted(operating_systems),
                             fcc=sorted(fcc), files=sorted(files), flags=sorted(flags),
-                            packages=sorted(packages), types=sorted(device_types),
-                            passwords=sorted(passwords), programs=sorted(programs)),
-                            valid_empty=True)
+                            packages=sorted(packages), partitions=sorted(partitions),
+                            passwords=sorted(passwords), programs=sorted(programs),
+                            types=sorted(device_types)), valid_empty=True)
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
@@ -940,6 +968,7 @@ class DevicecodeUI(App):
         odms = []
         operating_systems = []
         packages = []
+        partitions = []
         passwords = []
         programs = []
         serials = []
@@ -989,6 +1018,8 @@ class DevicecodeUI(App):
                         operating_systems.append(value)
                     elif identifier == 'package':
                         packages.append(value)
+                    elif identifier == 'partition':
+                        partitions.append(value)
                     elif identifier == 'password':
                         passwords.append(value)
                     elif identifier == 'program':
@@ -1015,8 +1046,8 @@ class DevicecodeUI(App):
                                 files=files, flags=flags, ignore_brands=ignore_brands,
                                 ignore_odms=ignore_odms, ips=ips, jtags=jtags,
                                 operating_systems=operating_systems, passwords=passwords,
-                                packages=packages, programs=programs, serials=serials,
-                                serial_baud_rates=serial_baud_rates, years=years,
+                                packages=packages, partitions=partitions, programs=programs,
+                                serials=serials, serial_baud_rates=serial_baud_rates, years=years,
                                 types=device_types)
 
             self.brand_tree.build_tree(filtered_data['brands_to_devices'], is_filtered)
@@ -1295,6 +1326,12 @@ class DevicecodeUI(App):
             #new_markdown += f"|**Gargoyle** |{ result['gargoyle']}\n"
             #new_markdown += f"|**OpenWrt** |{ result['openwrt']}\n"
             #new_markdown += f"|**Tomato** |{ result['tomato']}\n"
+
+            # Partitions
+            new_markdown += "# Partitions\n"
+            new_markdown += "|Name|\n|--|\n"
+            for p in result['partitions']:
+                new_markdown += f"| {p['name']} |\n"
 
             # packages
             new_markdown += "# Packages\n"
