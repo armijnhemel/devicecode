@@ -495,6 +495,8 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
         if device_three:
             if not software['packages']:
                 software['packages'] = device_three['software']['packages']
+            if not device_one['software']['partitions']:
+                software['partitions'] = device_three['software']['partitions']
 
         if not conflict:
             if device_three:
@@ -506,6 +508,8 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
         if device_three and device_one['software'] != device_three['software']:
             if not device_one['software']['packages']:
                 software['packages'] = device_three['software']['packages']
+            if not device_one['software']['partitions']:
+                software['partitions'] = device_three['software']['partitions']
 
         if not conflict:
             device_one['software'] = software
