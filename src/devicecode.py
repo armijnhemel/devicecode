@@ -1133,7 +1133,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                                     # Sigh. This shouldn't happen.
                                                                     pass
                                                     elif p['type'] == 'mtdparts':
-                                                        for name in p['names']:
+                                                        for name in sorted(set(p['names'])):
                                                             partition = Partition()
                                                             partition.name = name
                                                             device.software.partitions.append(partition)
@@ -2357,7 +2357,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                 # Sigh. This shouldn't happen.
                                                 pass
                                 elif p['type'] == 'mtdparts':
-                                    for name in p['names']:
+                                    for name in sorted(set(p['names'])):
                                         partition = Partition()
                                         partition.name = name
                                         device.software.partitions.append(partition)
