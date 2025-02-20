@@ -269,6 +269,7 @@ class Software:
     files: list[File] = field(default_factory=list)
     programs: list[Program] = field(default_factory=list)
     packages: list[Package] = field(default_factory=list)
+    partitions: list[Partition] = field(default_factory=list)
 
 @dataclass_json
 @dataclass
@@ -582,7 +583,7 @@ def parse_log(boot_log):
                 if '(' in mtdparts:
                     mtdparts_results = re.findall(r'\(([\w\d\-\._]+)\)', mtdparts)
                     if mtdparts_results:
-                        mtdparts_result = {'type': 'mtdparts', 'values': mtdparts_results}
+                        mtdparts_result = {'type': 'mtdparts', 'names': mtdparts_results}
                         results.append(mtdparts_result)
 
     re_squashfs = re.compile(r"squashfs: version ([\w\d\-\.]+) \(\d{4}/\d{2}/\d{2}\) Phillip Lougher")
@@ -1131,6 +1132,11 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                                 elif device.serial.baud_rate != p['baud_rate']:
                                                                     # Sigh. This shouldn't happen.
                                                                     pass
+                                                    elif p['type'] == 'mtdparts':
+                                                        for name in p['names']:
+                                                            partition = Partition()
+                                                            partition.name = name
+                                                            device.software.partitions.append(partition)
                                                 break
                                         if is_processed:
                                             have_valid_data = True
@@ -2350,6 +2356,11 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                             elif device.serial.baud_rate != p['baud_rate']:
                                                 # Sigh. This shouldn't happen.
                                                 pass
+                                elif p['type'] == 'mtdparts':
+                                    for name in p['names']:
+                                        partition = Partition()
+                                        partition.name = name
+                                        device.software.partitions.append(partition)
 
                 # use the title as part of the file name as it is unique
                 model_name = f"{device.title}.json"
