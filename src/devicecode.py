@@ -139,6 +139,11 @@ class Network:
 
 @dataclass_json
 @dataclass
+class Partition:
+    name: str = ''
+
+@dataclass_json
+@dataclass
 class Power:
     connector: str = ''
     barrel_length: float = 0.0
