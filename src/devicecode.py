@@ -861,6 +861,11 @@ def parse_serial_jtag(serial_string):
             result['number_of_pins'] = int(regex_result.groups()[0])
             continue
 
+        # console via RJ11?
+        if 'connector' not in result:
+            if field in ['RJ11', 'RJ-11', 'RJ11 port']:
+                result['connector'] = 'RJ11'
+
         # console via RJ45?
         if 'connector' not in result:
             if field in ['RJ45', 'RJ-45', 'RJ45 console', 'RJ-45 console', 'console port (RJ45)',
@@ -870,7 +875,8 @@ def parse_serial_jtag(serial_string):
 
         # DE-9 connector
         if 'connector' not in result:
-            if field in ['DB9', 'DB-9', '(DB9)', '(DB-9)', 'DE9', 'DE-9', 'console port (DE-9)']:
+            if field in ['DB9', 'DB-9', '(DB9)', '(DB-9)', 'DB9 (Consol)', 'DE9', 'DE-9',
+                         'console port (DE-9)', 'console (DE-9)']:
                 result['connector'] = 'DE-9'
 
     if result:
