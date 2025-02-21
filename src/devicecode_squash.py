@@ -440,6 +440,10 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
                 else:
                     conflict = True
 
+        if not (conflict or serial['voltage']) and device_three:
+            if device_three['serial']['voltage']:
+                serial['voltage'] = device_three['serial']['voltage']
+
         if conflict and debug:
             print(f"Serial CONFLICT for '{device_one['title']}'")
             print(f"  Device 1: {device_one['serial']}")
