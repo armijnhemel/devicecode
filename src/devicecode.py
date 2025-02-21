@@ -832,7 +832,7 @@ def parse_serial_jtag(serial_string):
         # data/parity/stop
         for dps in defaults.DATA_PARITY_STOP:
             if dps in field.upper():
-                result['data_parity_stop'] = dps
+                result['data_parity_stop'] = defaults.DATA_PARITY_STOP[dps]
                 break
 
         if baud_rate is not None:
@@ -2300,7 +2300,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                             if baud_rate in defaults.BAUD_RATES:
                                 device.serial.baud_rate = baud_rate
                             if data_parity_stop in defaults.DATA_PARITY_STOP:
-                                device.serial.data_parity_stop = data_parity_stop
+                                device.serial.data_parity_stop = defaults.DATA_PARITY_STOP[data_parity_stop]
                         except:
                             pass
                 else:
