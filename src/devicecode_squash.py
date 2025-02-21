@@ -196,9 +196,8 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
                 conflict = True
 
         # number of pins
-        if device_one['jtag']['number_of_pins'] == 0:
-            if device_two['jtag']['number_of_pins'] != 0:
-                jtag['number_of_pins'] = device_two['jtag']['number_of_pins']
+        if device_one['jtag']['number_of_pins'] == 0 or device_two['jtag']['number_of_pins'] == 0:
+            jtag['number_of_pins'] = max(device_one['jtag']['number_of_pins'], device_two['jtag']['number_of_pins'])
         else:
             if device_one['jtag']['number_of_pins'] != device_two['jtag']['number_of_pins']:
                 conflict = True
@@ -212,10 +211,11 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
 
         # voltage
         if device_one['jtag']['voltage'] != device_two['jtag']['voltage']:
-            if not device_one['jtag']['voltage']:
-                jtag['voltage'] = device_two['jtag']['voltage']
-            elif not device_two['jtag']['populated']:
-                conflict = True
+            if device_two['jtag']['voltage']:
+                if not device_one['jtag']['voltage']:
+                    jtag['voltage'] = device_two['jtag']['voltage']
+                else:
+                    conflict = True
 
         if conflict and debug:
             print(f"JTAG CONFLICT for '{device_one['title']}'")
