@@ -873,7 +873,7 @@ def parse_serial_jtag(serial_string):
             if field in ['DB9', 'DB-9', '(DB9)', '(DB-9)', 'DE9', 'DE-9', 'console port (DE-9)']:
                 result['connector'] = 'DE-9'
 
-    if not result:
+    if result:
         # there are some devices where the first field
         # is not explicitly 'yes' but there is clear serial port
         # information.
