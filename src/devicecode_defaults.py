@@ -7,7 +7,7 @@
 import re
 
 BAUD_RATES = [9600, 19200, 38400, 57600, 115200, 921600, 1500000]
-DATA_PARITY_STOP = ['8N1']
+DATA_PARITY_STOP = ['8N1', '8 BIT 1 STOP NO PARITY']
 
 # sometimes different names are used for the same brand
 BRAND_REWRITE = {'FON Wireless': 'Fon Wireless',
