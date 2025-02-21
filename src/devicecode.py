@@ -848,10 +848,10 @@ def parse_serial_jtag(serial_string):
             continue
 
         # voltage
-        if field.upper() in ['3.3', '3.3V', '3.3V TTL']:
+        if field.upper() in ['3.3', '3.3V', '3.3V TTL', 'TTL 3.3V']:
             result['voltage'] = 3.3
             continue
-        if field.upper() in ['1.8', '1.8V', '1.8V TTL']:
+        if field.upper() in ['1.8', '1.8V', '1.8V TTL', 'TTL 1.8V']:
             result['voltage'] = 1.8
             continue
 
@@ -863,8 +863,8 @@ def parse_serial_jtag(serial_string):
 
         # console via RJ45?
         if 'connector' not in result:
-            if field in ['RJ45 console', 'RJ-45 console', 'console port (RJ45)',
-                         'console port (RJ-45)', 'console (RJ45)', 'console (RJ-45)',
+            if field in ['RJ45', 'RJ-45', 'RJ45 console', 'RJ-45 console', 'console port (RJ45)',
+                         'console port (RJ-45)', 'console (RJ45)', 'console (RJ-45)', '(RJ45)',
                          'RJ-45 Console port']:
                 result['connector'] = 'RJ45'
 
