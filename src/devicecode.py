@@ -2190,6 +2190,31 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                 if not owrt.page.startswith('toh:hwdata:'):
                     continue
 
+                # check if the page with hardware information was downloaded and if so,
+                # load contents. The CSV and this hardware page contain different information.
+                # Example: Serial connection voltage is not available in the CSV.
+                owrt_page_values = {}
+                if owrt.devicepage and (wiki_original_directory / owrt.page).exists():
+                    with open(wiki_original_directory / owrt.page, 'r') as dp:
+                        owrtpage = dp.readlines()
+                        seen_techdata = False
+                        for line in owrtpage:
+                            if line.startswith('---- dataentry techdata ----'):
+                                seen_techdata = True
+                                continue
+                            if not seen_techdata:
+                                continue
+                            if line.startswith('----'):
+                                break
+                            if line.startswith('Serial connection voltage_serialvoltage'):
+                                voltage = line.split(':')[1].split('#')[0].strip()
+                                if voltage in ['', '¿']:
+                                    continue
+                                if voltage == '3.3V':
+                                    owrt_page_values['serial_connection_voltage'] = 3.3
+                                else:
+                                    owrt_page_values['serial_connection_voltage'] = float(voltage)
+
                 # check if a device page was downloaded and if so, load contents
                 devicepage = ""
                 if owrt.devicepage and (wiki_original_directory / owrt.devicepage).exists():
@@ -2265,6 +2290,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                     device.has_serial_port = 'yes'
 
                 if device.has_serial_port == 'yes':
+                    if 'serial_connection_voltage' in owrt_page_values:
+                        device.serial.voltage = owrt_page_values['serial_connection_voltage']
                     if owrt.serialconnectionparameters.strip() not in ['¿', '']:
                         # this doesn't include the connector on the board or the voltage
                         baud_rate, data_parity_stop = owrt.serialconnectionparameters.strip().replace('/', ' ').split()
