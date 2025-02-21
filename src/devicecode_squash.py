@@ -434,10 +434,11 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
 
         # voltage
         if device_one['serial']['voltage'] != device_two['serial']['voltage']:
-            if not device_one['serial']['voltage'] and device_two['serial']['voltage']:
-                serial['voltage'] = device_two['serial']['voltage']
-            elif not device_two['serial']['populated']:
-                conflict = True
+            if device_two['serial']['voltage']:
+                if not device_one['serial']['voltage']:
+                    serial['voltage'] = device_two['serial']['voltage']
+                else:
+                    conflict = True
 
         if conflict and debug:
             print(f"Serial CONFLICT for '{device_one['title']}'")
