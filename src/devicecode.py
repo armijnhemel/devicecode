@@ -865,6 +865,7 @@ def parse_serial_jtag(serial_string):
         if 'connector' not in result:
             if field in ['RJ11', 'RJ-11', 'RJ11 port']:
                 result['connector'] = 'RJ11'
+                continue
 
         # console via RJ45?
         if 'connector' not in result:
@@ -872,12 +873,22 @@ def parse_serial_jtag(serial_string):
                          'console port (RJ-45)', 'console (RJ45)', 'console (RJ-45)', '(RJ45)',
                          'RJ-45 Console port']:
                 result['connector'] = 'RJ45'
+                continue
 
         # DE-9 connector
         if 'connector' not in result:
             if field in ['DB9', 'DB-9', '(DB9)', '(DB-9)', 'DB9 (Consol)', 'DE9', 'DE-9',
                          'console port (DE-9)', 'console (DE-9)']:
                 result['connector'] = 'DE-9'
+                continue
+
+        # USB connector
+        if 'connector' not in result:
+            if field in ['microUSB', 'USB Female Micro-B', 'USB Female Mini-B',
+                         'USB Female (Type-C)', 'USB Micro-B (Female)', 'USB (Type-C) Female',
+                         'USB Female (Micro-B)', 'USB Female Type-C', 'USB (Micro-B) Female']:
+                result['connector'] = 'USB'
+                continue
 
     if result:
         # there are some devices where the first field
