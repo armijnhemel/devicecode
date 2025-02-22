@@ -890,6 +890,12 @@ def parse_serial_jtag(serial_string):
                 result['connector'] = 'USB'
                 continue
 
+        # console via HE10?
+        if 'connector' not in result:
+            if field in ['HE-10', 'HE-10 conn.', '(HE-10 connector']:
+                result['connector'] = 'HE10'
+                continue
+
     if result:
         # there are some devices where the first field
         # is not explicitly 'yes' but there is clear serial port
