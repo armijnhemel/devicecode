@@ -1631,7 +1631,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
 
                                                     # serial port
                                                     elif identifier == 'serial':
-                                                        if value == 'no':
+                                                        if value.lower() in ['no', 'none', 'none,']:
                                                             device.has_serial_port = 'no'
                                                             continue
 
@@ -1654,7 +1654,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
 
                                                     # JTAG
                                                     elif identifier == 'jtag':
-                                                        if value.lower() in ['no', 'none,']:
+                                                        if value.lower() in ['no', 'none', 'none,']:
                                                             device.has_jtag = 'no'
                                                             continue
 
