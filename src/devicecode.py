@@ -848,7 +848,7 @@ def parse_serial_jtag(serial_string):
             continue
 
         # voltage
-        if field.upper() in ['3.3', '3.3V', '3.3V TTL', 'TTL 3.3V']:
+        if field.upper() in ['3.3', '3.3V', '3.3V)', '3.3V TTL', 'TTL 3.3V']:
             result['voltage'] = 3.3
             continue
         if field.upper() in ['1.8', '1.8V', '1.8V TTL', 'TTL 1.8V']:
