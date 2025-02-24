@@ -828,7 +828,7 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
         squashed_devices.append(wikidevi_items[name_wikidevi])
 
     for squashed_device in squashed_devices:
-        squashed_file_name = squashed_directory / f"{squashed_device['title'].replace('/', '_')}.json"
+        squashed_file_name = squashed_directory / f"{squashed_device['title'].replace('/', '-')}.json"
         with open(squashed_file_name, 'w') as out_file:
             json_data = json.dumps(squashed_device, sort_keys=True, indent=4)
             out_file.write(json_data)
