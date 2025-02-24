@@ -368,6 +368,11 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
         if not regulatory['fcc_ids'] == device_two['regulatory']['fcc_ids']:
             if not regulatory['fcc_ids']:
                 regulatory['fcc_ids'] = device_two['regulatory']['fcc_ids']
+            elif device_two['regulatory']['fcc_ids']:
+                # This usually happens if dates don't match or if there
+                # is an invalid FCC id used with one entry having a date
+                # and the other not having an associated date.
+                pass
 
         # industry_canada_ids
         # us_ids
