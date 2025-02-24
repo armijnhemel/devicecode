@@ -666,7 +666,7 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                     data_url_to_name[data_url] = device['title']
 
                     # Then see if there are any overlays that need to be integrated
-                    overlay_dir_for_device = overlay_directory / device['title']
+                    overlay_dir_for_device = overlay_directory / title.replace('/', '-')
                     for overlay_file in overlay_dir_for_device.glob('**/*'):
                         if not overlay_file.is_file():
                             continue
