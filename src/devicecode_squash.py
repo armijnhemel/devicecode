@@ -16,7 +16,8 @@ import click
 
 def squash(device_one, device_two, device_three, debug=False, verbose=False):
     '''Squash two devices. Device 1 (TechInfoDepot) is "leading".
-       Device 3 (OpenWrt) is merely for extra verification of data'''
+       Device 3 (OpenWrt) is merely for extra verification of data
+       and adding some more information.'''
 
     # additional chips
     if device_one['additional_chips'] != device_two['additional_chips']:
