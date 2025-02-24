@@ -365,6 +365,10 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
         regulatory = copy.deepcopy(device_one['regulatory'])
 
         # fcc_ids
+        if not regulatory['fcc_ids'] == device_two['regulatory']['fcc_ids']:
+            if not regulatory['fcc_ids']:
+                regulatory['fcc_ids'] = device_two['regulatory']['fcc_ids']
+
         # industry_canada_ids
         # us_ids
 
