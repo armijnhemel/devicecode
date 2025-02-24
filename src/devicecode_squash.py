@@ -653,7 +653,6 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
             if not result_file.is_file():
                 continue
             try:
-                is_helper_page = False
                 with open(result_file, 'r') as wiki_file:
                     device = json.load(wiki_file)
                     title = device['title']
