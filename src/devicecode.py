@@ -768,8 +768,19 @@ def parse_os(os_string):
                         result['kernel_version'] = regex_res.groups()[0]
     return result
 
+def parse_serial_openwrt(log):
+    '''Parse serial port information from OpenWrt'''
+    result = {}
+
+    regex_result = list(set(defaults.REGEX_SERIAL_CONNECTOR.findall(log)))
+    if len(regex_result) == 1:
+        if 'connector' not in result:
+            result['connector'] = regex_result[0]
+
+    return result
+
 def parse_serial_jtag(serial_string):
-    '''Parse serial port or JTAG information'''
+    '''Parse serial port or JTAG information from TechInfoDepot and WikiDevi'''
     result = {}
 
     fields = serial_string.split(',')
@@ -2198,6 +2209,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                          'u-boot bootlog', 'U-boot bootlog', 'U-Boot bootlog', 'U-Boot log',
                          'Vendor firmware bootlog', 'Xiaomi bootlog']
 
+        serial_page_hints = ['Serial port', 'Serial', 'How to connect to the Serial Port (UART)']
+
         # the OpenWrt CSV dump has 74 fields, but only a few
         # are (currently) interesting (see documentation in doc/ )
         OpenWrtDevice = namedtuple('OpenWrtDevice', 'pid, devicetype, brand, model, version, fccid, availability, whereavailable, supportedsincecommit, supportedsincerel, supportedcurrentrel, unsupported_functions, target, subtarget, packagearchitecture, bootloader, cpu, cpucores, cpumhz, flashmb, rammb, ethernet100mports, ethernetgbitports, ethernet1gports, ethernet2_5gports, ethernet5gports, ethernet10gports, sfp_ports, sfp_plus_ports, switch, vlan, modem, commentsnetworkports, wlanhardware, wlan24ghz, wlan50ghz, wlancomments, wlandriver, detachableantennas, bluetooth, usbports, sataports, commentsusbsataports, videoports, audioports, phoneports, commentsavports, serial, serialconnectionparameters, jtag, ledcount, buttoncount, gpios, powersupply, devicepage, device_techdata owrt_forum_topic_url, lede_forum_topic_url, forumsearch, gitsearch, wikideviurl, oemdevicehomepageurl, firmwareoemstockurl, firmwareopenwrtinstallurl, firmwareopenwrtupgradeurl, firmwareopenwrtsnapshotinstallurl, firmwareopenwrtsnapshotupgradeurl, installationmethods, commentinstallation, recoverymethods, commentrecovery, picture, comments, page')
@@ -2411,6 +2424,24 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                         partition = Partition()
                                         partition.name = name
                                         device.software.partitions.append(partition)
+                    for i in serial_page_hints:
+                        if i in devicepage:
+                            serial_page = []
+                            seen_start = False
+                            for line in devicepage.split('\n'):
+                                if line.startswith('=') and i == re.split('=+', line)[1].strip():
+                                    seen_start = True
+                                    continue
+                                if not seen_start:
+                                    continue
+                                if line.startswith('='):
+                                    break
+                                serial_page.append(line)
+                            if serial_page:
+                                serial_result = parse_serial_openwrt("\n".join(serial_page))
+                                if 'connector' in serial_result:
+                                    device.serial.connector = serial_result['connector']
+                                break
 
                 # use the title as part of the file name as it is unique
                 model_name = f"{device.title}.json"
