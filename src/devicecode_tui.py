@@ -1502,7 +1502,9 @@ class DevicecodeUI(App):
 @click.option('--directory', '-d', 'devicecode_directory',
               help='DeviceCode results directory', required=True,
               type=click.Path(path_type=pathlib.Path, exists=True))
-def main(devicecode_directory):
+@click.option('--wiki-type', type=click.Choice(['TechInfoDepot', 'WikiDevi', 'OpenWrt'],
+              case_sensitive=False))
+def main(devicecode_directory, wiki_type):
     if not devicecode_directory.is_dir():
         print(f"Directory {devicecode_directory} is not a valid directory, exiting.",
               file=sys.stderr)
@@ -1514,9 +1516,10 @@ def main(devicecode_directory):
     # Inside these directories a directory called 'devices' should always
     # be present. Optionally there can be a directory called 'overlays'
     # with overlay files.
+    # If available the 'squashed' directory will always be preferred.
 
     squashed_directory = devicecode_directory / 'squashed'
-    if squashed_directory.exists():
+    if squashed_directory.exists() and not wiki_type:
         devicecode_dirs = [squashed_directory]
     else:
         devicecode_dirs = []
@@ -1525,6 +1528,9 @@ def main(devicecode_directory):
                 continue
             if not p.name in valid_directory_names:
                 continue
+            if wiki_type:
+                if p.name != wiki_type:
+                    continue
             devices_dir = p / 'devices'
             if not (devices_dir.exists() and devices_dir.is_dir()):
                 continue
