@@ -246,6 +246,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'jtag':
                     if token_value not in ['no', 'unknown', 'yes']:
                         return self.failure("Invalid jtag port information")
+                elif token_identifier == 'origin':
+                    if token_value not in ['techinfodepot', 'wikidevi', 'openwrt']:
+                        return self.failure("Invalid origin information")
                 elif token_identifier == 'year':
                     years = token_value.split(':', maxsplit=1)
                     for year in years:
@@ -325,8 +328,8 @@ class DevicecodeUI(App):
     CSS_PATH = "devicecode_tui.css"
     TOKEN_IDENTIFIERS = ['baud', 'bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
                          'connector', 'fcc', 'file', 'flag', 'ignore_brand', 'ignore_odm',
-                         'ip', 'jtag', 'odm', 'os', 'package', 'partition', 'password',
-                         'program', 'serial', 'type', 'year']
+                         'ip', 'jtag', 'odm', 'origin', 'os', 'package', 'partition',
+                         'password', 'program', 'serial', 'type', 'year']
 
     def __init__(self, devicecode_dirs, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -352,6 +355,7 @@ class DevicecodeUI(App):
         filter_jtags = kwargs.get('jtags', [])
         filter_odms = kwargs.get('odms', [])
         filter_operating_systems = kwargs.get('operating_systems', [])
+        filter_origins = kwargs.get('origins', [])
         filter_packages = kwargs.get('packages', [])
         filter_partitions = kwargs.get('partitions', [])
         filter_passwords = kwargs.get('passwords', [])
@@ -401,6 +405,9 @@ class DevicecodeUI(App):
 
         # known default IP addresses
         ips = set()
+
+        # known origins
+        origins = set()
 
         # known packages
         packages = set()
@@ -556,6 +563,15 @@ class DevicecodeUI(App):
                 show_node = False
                 for cpu in device['cpus']:
                     if cpu['manufacturer'].lower() in filter_chip_vendors:
+                        show_node = True
+                        break
+                if not show_node:
+                    continue
+
+            if filter_origins:
+                show_node = False
+                for origin in device['origins']:
+                    if origin['origin'].lower() in filter_origins:
                         show_node = True
                         break
                 if not show_node:
@@ -967,6 +983,7 @@ class DevicecodeUI(App):
         jtags = []
         odms = []
         operating_systems = []
+        origins = []
         packages = []
         partitions = []
         passwords = []
@@ -1014,6 +1031,8 @@ class DevicecodeUI(App):
                         ips.append(value)
                     elif identifier == 'odm':
                         odms.append(value)
+                    elif identifier == 'origin':
+                        origins.append(value)
                     elif identifier == 'os':
                         operating_systems.append(value)
                     elif identifier == 'package':
@@ -1045,9 +1064,10 @@ class DevicecodeUI(App):
                                 chip_vendors=chip_vendors, connectors=connectors, fccs=fccs,
                                 files=files, flags=flags, ignore_brands=ignore_brands,
                                 ignore_odms=ignore_odms, ips=ips, jtags=jtags,
-                                operating_systems=operating_systems, passwords=passwords,
-                                packages=packages, partitions=partitions, programs=programs,
-                                serials=serials, serial_baud_rates=serial_baud_rates, years=years,
+                                operating_systems=operating_systems, origins=origins,
+                                passwords=passwords, packages=packages, partitions=partitions,
+                                programs=programs, serials=serials,
+                                serial_baud_rates=serial_baud_rates, years=years,
                                 types=device_types)
 
             self.brand_tree.build_tree(filtered_data['brands_to_devices'], is_filtered)
