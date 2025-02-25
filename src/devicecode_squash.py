@@ -365,7 +365,7 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
         regulatory = copy.deepcopy(device_one['regulatory'])
 
         # fcc_ids
-        if not regulatory['fcc_ids'] == device_two['regulatory']['fcc_ids']:
+        if regulatory['fcc_ids'] != device_two['regulatory']['fcc_ids']:
             if not regulatory['fcc_ids']:
                 regulatory['fcc_ids'] = device_two['regulatory']['fcc_ids']
             elif device_two['regulatory']['fcc_ids']:
@@ -375,7 +375,18 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
                 pass
 
         # industry_canada_ids
+        if regulatory['industry_canada_ids'] != device_two['regulatory']['industry_canada_ids']:
+            if not regulatory['industry_canada_ids']:
+                regulatory['industry_canada_ids'] = device_two['regulatory']['industry_canada_ids']
+            elif device_two['regulatory']['industry_canada_ids']:
+                pass
+
         # us_ids
+        if regulatory['us_ids'] != device_two['regulatory']['us_ids']:
+            if not regulatory['us_ids']:
+                regulatory['us_ids'] = device_two['regulatory']['us_ids']
+            elif device_two['regulatory']['us_ids']:
+                pass
 
         for i in ['wifi_certified', 'wifi_certified_date']:
             if device_one['regulatory'][i] == '' or device_two['regulatory'][i] == '':
