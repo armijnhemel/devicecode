@@ -404,78 +404,74 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
         if not conflict:
             device_one['regulatory'] = regulatory
 
-    # serial
+    # serial.
+    # First make a deep copy of the data of device 1 and change that
+    # before assigning the merged result if there is no conflict
     conflict = False
-    if device_one['serial'] != device_two['serial']:
-        serial = copy.deepcopy(device_one['serial'])
-
+    serial = copy.deepcopy(device_one['serial'])
+    if serial != device_two['serial']:
         # baud rate
-        if device_one['serial']['baud_rate'] == 0 or device_two['serial']['baud_rate'] == 0:
-            serial['baud_rate'] = max(device_one['serial']['baud_rate'], device_two['serial']['baud_rate'])
+        if serial['baud_rate'] == 0 or device_two['serial']['baud_rate'] == 0:
+            serial['baud_rate'] = max(serial['baud_rate'], device_two['serial']['baud_rate'])
         else:
-            if device_one['serial']['baud_rate'] != device_two['serial']['baud_rate']:
+            if serial['baud_rate'] != device_two['serial']['baud_rate']:
                 conflict = True
 
         # connector
-        if device_one['serial']['connector'] == '' or device_two['serial']['connector'] == '':
-            if device_one['serial']['connector'] == '' and device_two['serial']['connector']:
+        if serial['connector'] == '' or device_two['serial']['connector'] == '':
+            if serial['connector'] == '' and device_two['serial']['connector']:
                 serial['connector'] = device_two['serial']['connector']
         else:
-            if device_one['serial']['connector'] != device_two['serial']['connector']:
+            if serial['connector'] != device_two['serial']['connector']:
                 conflict = True
 
         # data/parity/stop
-        if device_one['serial']['data_parity_stop'] != device_two['serial']['data_parity_stop']:
-            if device_one['serial']['data_parity_stop'] == 'unknown':
+        if serial['data_parity_stop'] != device_two['serial']['data_parity_stop']:
+            if serial['data_parity_stop'] == 'unknown':
                 serial['data_parity_stop'] = device_two['serial']['data_parity_stop']
             elif device_two['serial']['data_parity_stop'] == 'unknown':
                 pass
             else:
                 conflict = True
-        if not conflict and device_three:
-            if serial['data_parity_stop'] == 'unknown' and device_three['serial']['data_parity_stop'] != 'unknown':
-                serial['data_parity_stop'] = device_three['serial']['data_parity_stop']
 
         # number of pins
-        if device_one['serial']['number_of_pins'] == 0 or device_two['serial']['number_of_pins'] == 0:
+        if serial['number_of_pins'] == 0 or device_two['serial']['number_of_pins'] == 0:
             serial['number_of_pins'] = max(device_one['serial']['number_of_pins'], device_two['serial']['number_of_pins'])
         else:
-            if device_one['serial']['number_of_pins'] != device_two['serial']['number_of_pins']:
+            if serial['number_of_pins'] != device_two['serial']['number_of_pins']:
                 conflict = True
 
         # populated
-        if device_one['serial']['populated'] != device_two['serial']['populated']:
-            if device_one['serial']['populated'] == 'unknown':
+        if serial['populated'] != device_two['serial']['populated']:
+            if serial['populated'] == 'unknown':
                 serial['populated'] = device_two['serial']['populated']
             elif device_two['serial']['populated'] != 'unknown':
                 conflict = True
 
         # voltage
-        if device_one['serial']['voltage'] != device_two['serial']['voltage']:
+        if serial['voltage'] != device_two['serial']['voltage']:
             if device_two['serial']['voltage']:
-                if not device_one['serial']['voltage']:
+                if not serial['voltage']:
                     serial['voltage'] = device_two['serial']['voltage']
                 else:
                     conflict = True
-
-        if not (conflict or serial['voltage']) and device_three:
-            if device_three['serial']['voltage']:
-                serial['voltage'] = device_three['serial']['voltage']
 
         if conflict and debug:
             print(f"Serial CONFLICT for '{device_one['title']}'")
             print(f"  Device 1: {device_one['serial']}")
             print(f"  Device 2: {device_two['serial']}")
 
-        if not conflict:
-            device_one['serial'] = serial
-
     if not conflict:
         if device_three:
-            if not device_one['serial']['connector'] and device_three['serial']['connector']:
-                device_one['serial']['connector'] = device_three['serial']['connector']
-            if device_one['serial']['baud_rate'] == 0 and device_three['serial']['baud_rate'] != 0:
-                device_one['serial']['baud_rate'] = device_three['serial']['baud_rate']
+            if serial['data_parity_stop'] == 'unknown' and device_three['serial']['data_parity_stop'] != 'unknown':
+                serial['data_parity_stop'] = device_three['serial']['data_parity_stop']
+            if not serial['connector'] and device_three['serial']['connector']:
+                serial['connector'] = device_three['serial']['connector']
+            if serial['baud_rate'] == 0 and device_three['serial']['baud_rate'] != 0:
+                serial['baud_rate'] = device_three['serial']['baud_rate']
+            if not serial['voltage']:
+                serial['voltage'] = device_three['serial']['voltage']
+        device_one['serial'] = serial
 
     if device_one['has_serial_port'] == 'unknown':
         if device_one['serial']['baud_rate'] != 0:
