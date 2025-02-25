@@ -227,6 +227,8 @@ class Serial:
     number_of_pins: int = 0
     data_parity_stop: str = 'unknown'
 
+    comments: str = ''
+
 @dataclass_json
 @dataclass
 class File:
@@ -772,10 +774,15 @@ def parse_serial_openwrt(log):
     '''Parse serial port information from OpenWrt'''
     result = {}
 
+    # connector
     regex_result = list(set(defaults.REGEX_SERIAL_CONNECTOR.findall(log)))
     if len(regex_result) == 1:
         if 'connector' not in result:
             result['connector'] = regex_result[0]
+
+    # populated
+    if 'populated' in log:
+        pass
 
     return result
 
@@ -2441,6 +2448,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                 serial_result = parse_serial_openwrt("\n".join(serial_page))
                                 if 'connector' in serial_result:
                                     device.serial.connector = serial_result['connector']
+                                device.serial.comments = "\n".join(serial_page)
                                 break
 
                 # use the title as part of the file name as it is unique
