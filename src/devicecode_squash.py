@@ -436,7 +436,7 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
 
         # number of pins
         if serial['number_of_pins'] == 0 or device_two['serial']['number_of_pins'] == 0:
-            serial['number_of_pins'] = max(device_one['serial']['number_of_pins'], device_two['serial']['number_of_pins'])
+            serial['number_of_pins'] = max(serial['number_of_pins'], device_two['serial']['number_of_pins'])
         else:
             if serial['number_of_pins'] != device_two['serial']['number_of_pins']:
                 conflict = True
@@ -480,16 +480,17 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
             device_one['has_serial_port'] = 'yes'
 
     # software
-    if device_one['software'] != device_two['software']:
-        conflict = False
-        software = copy.deepcopy(device_one['software'])
-
+    # First make a deep copy of the data of device 1 and change that
+    # before assigning the merged result if there is no conflict
+    conflict = False
+    software = copy.deepcopy(device_one['software'])
+    if software != device_two['software']:
         for i in ['ddwrt', 'gargoyle', 'openwrt', 'os', 'os_version', 'sdk', 'tomato']:
-            if device_one['software'][i] == '' or device_two['software'][i] == '':
-                if device_one['software'][i] == '' and device_two['software'][i]:
+            if software[i] == '' or device_two['software'][i] == '':
+                if software[i] == '' and device_two['software'][i]:
                     software[i] = device_two['software'][i]
             else:
-                if device_one['software'][i] != device_two['software'][i]:
+                if software[i] != device_two['software'][i]:
                     conflict = True
 
         if debug and conflict:
@@ -498,9 +499,9 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
             print(f"  Device 2: {device_two['software']}")
 
         # third party software
-        third_party = set(device_one['software']['third_party'])
+        third_party = set(software['third_party'])
         third_party.update(device_two['software']['third_party'])
-        if debug and device_one['software']['third_party'] and device_two['software']['third_party'] and verbose:
+        if debug and software['third_party'] and device_two['software']['third_party'] and verbose:
             print(f"Third party software inconsistency for '{device_one['title']}'")
             print(f"  Device 1: {device_one['software']['third_party']}")
             print(f"  Device 2: {device_two['software']['third_party']}")
@@ -510,35 +511,17 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
                 third_party.update(device_three['software']['third_party'])
         software['third_party'] = sorted(third_party)
 
-        # bootloader
+    if not conflict:
         if device_three:
-            if device_one['software']['bootloader']['manufacturer'] != device_three['software']['bootloader']['manufacturer']:
-                if device_one['software']['bootloader']['manufacturer'] == '':
+            if software['bootloader']['manufacturer'] != device_three['software']['bootloader']['manufacturer']:
+                if software['bootloader']['manufacturer'] == '':
                     if device_three['software']['bootloader']['manufacturer'] != '':
                         software['bootloader']['manufacturer'] = device_three['software']['bootloader']['manufacturer']
-
-        # packages
-        if device_three:
             if not software['packages']:
                 software['packages'] = device_three['software']['packages']
-            if not device_one['software']['partitions']:
+            if not software['partitions']:
                 software['partitions'] = device_three['software']['partitions']
-
-        if not conflict:
-            if device_three:
-                pass
-            device_one['software'] = software
-    else:
-        conflict = False
-        software = copy.deepcopy(device_one['software'])
-        if device_three and device_one['software'] != device_three['software']:
-            if not device_one['software']['packages']:
-                software['packages'] = device_three['software']['packages']
-            if not device_one['software']['partitions']:
-                software['partitions'] = device_three['software']['partitions']
-
-        if not conflict:
-            device_one['software'] = software
+        device_one['software'] = software
 
     # switch
     if device_one['switch'] != device_two['switch']:
