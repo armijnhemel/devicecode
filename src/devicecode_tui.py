@@ -1251,23 +1251,6 @@ class DevicecodeUI(App):
     def build_serial_jtag_report(self, result):
         if result:
             new_markdown = ''
-            if result['has_serial_port'] == 'yes':
-                new_markdown += "# Serial port\n"
-                new_markdown += "| | |\n|--|--|\n"
-                if result['serial']['baud_rate'] != 0:
-                    new_markdown += f"|**Baud rate** | {result['serial']['baud_rate']}\n"
-                else:
-                    new_markdown += "|**Baud rate** |\n"
-                new_markdown += f"|**Connector** |{ result['serial']['connector']}\n"
-                if result['serial']['number_of_pins'] != 0:
-                    new_markdown += f"|**Number of pins** | {result['serial']['number_of_pins']}\n"
-                else:
-                    new_markdown += "|**Number of pins** | \n"
-                new_markdown += f"|**Populated** | {result['serial']['populated']}\n"
-                if result['serial']['voltage']:
-                    new_markdown += f"|**Voltage** | {result['serial']['voltage']}\n"
-                else:
-                    new_markdown += "|**Voltage** |\n"
             if result['has_jtag'] == 'yes':
                 new_markdown += "# JTAG\n"
                 new_markdown += "| | |\n|--|--|\n"
@@ -1285,6 +1268,31 @@ class DevicecodeUI(App):
                     new_markdown += f"|**Voltage** | {result['jtag']['voltage']}\n"
                 else:
                     new_markdown += "|**Voltage** |\n"
+            if result['has_serial_port'] == 'yes':
+                new_markdown += "# Serial port\n"
+                new_markdown += "| | |\n|--|--|\n"
+                if result['serial']['baud_rate'] != 0:
+                    new_markdown += f"|**Baud rate** | {result['serial']['baud_rate']}\n"
+                else:
+                    new_markdown += "|**Baud rate** |\n"
+                new_markdown += f"|**Connector** |{ result['serial']['connector']}\n"
+                if result['serial']['number_of_pins'] != 0:
+                    new_markdown += f"|**Number of pins** | {result['serial']['number_of_pins']}\n"
+                else:
+                    new_markdown += "|**Number of pins** | \n"
+                new_markdown += f"|**Populated** | {result['serial']['populated']}\n"
+                if result['serial']['data_parity_stop']:
+                    new_markdown += f"|**Data/parity/stop** | {result['serial']['data_parity_stop']}\n"
+                else:
+                    new_markdown += "|**Data/parity/stop** |\n"
+                if result['serial']['voltage']:
+                    new_markdown += f"|**Voltage** | {result['serial']['voltage']}\n"
+                else:
+                    new_markdown += "|**Voltage** |\n"
+                if result['serial']['comments']:
+                    new_markdown += f"|**Comments** | {result['serial']['comments']}\n"
+                else:
+                    new_markdown += "|**Comments** |\n"
             return new_markdown
         return "No serial information"
 
