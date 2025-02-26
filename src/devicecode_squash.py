@@ -19,6 +19,10 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
        Device 3 (OpenWrt) is merely for extra verification of data
        and adding some more information.'''
 
+    self_squash = False
+    if device_one == device_two:
+        self_squash = True
+
     # additional chips
     if device_one['additional_chips'] != device_two['additional_chips']:
         pass
@@ -564,7 +568,8 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
 
     # record all origins in case the file is a result of multiple inputs
     if 'origins' in device_one and 'origins' in device_two:
-        device_one['origins'] += device_two['origins']
+        if not self_squash:
+            device_one['origins'] += device_two['origins']
         if device_three:
             device_one['origins'] += device_three['origins']
     return device_one
@@ -824,7 +829,13 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
     for name_wikidevi in wikidevi_items:
         if name_wikidevi in processed_wikidevi:
             continue
-        squashed_devices.append(wikidevi_items[name_wikidevi])
+        openwrt_device = openwrt_items.get(wikidevi_to_openwrt.get(name_wikidevi, None), None)
+        if openwrt_device:
+            squash_result = squash(wikidevi_items[name_wikidevi], wikidevi_items[name_wikidevi], openwrt_device, debug=debug, verbose=verbose)
+            processed_wikidevi.add(name_wikidevi)
+            squashed_devices.append(squash_result)
+        else:
+            squashed_devices.append(wikidevi_items[name_wikidevi])
 
     for squashed_device in squashed_devices:
         squashed_file_name = squashed_directory / f"{squashed_device['title'].replace('/', '-')}.json"
