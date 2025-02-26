@@ -63,6 +63,7 @@ class SuggestDevices(Suggester):
         """
 
         jtag_values = serial_values = ['no', 'unknown', 'yes']
+        origin_values = ['techinfodepot', 'wikidevi', 'openwrt']
 
         # first split the value
         check_value = value.rsplit(' ', maxsplit=1)[-1]
@@ -123,6 +124,14 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(jtag_values):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + jtag_values[idx][len(check_value)-5:]
+        elif check_value.startswith('origin='):
+            for idx, chk in enumerate(origin_values):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + origin_values[idx][len(check_value)-7:]
+        elif check_value.startswith('ignore_origin='):
+            for idx, chk in enumerate(origin_values):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + origin_values[idx][len(check_value)-14:]
         elif check_value.startswith('password='):
             for idx, chk in enumerate(self.passwords):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
@@ -248,7 +257,10 @@ class FilterValidator(Validator):
                         return self.failure("Invalid jtag port information")
                 elif token_identifier == 'origin':
                     if token_value not in ['techinfodepot', 'wikidevi', 'openwrt']:
-                        return self.failure("Invalid origin information")
+                        return self.failure("Invalid origin")
+                elif token_identifier == 'ignore_origin':
+                    if token_value not in ['techinfodepot', 'wikidevi', 'openwrt']:
+                        return self.failure("Invalid origin")
                 elif token_identifier == 'year':
                     years = token_value.split(':', maxsplit=1)
                     for year in years:
@@ -328,8 +340,8 @@ class DevicecodeUI(App):
     CSS_PATH = "devicecode_tui.css"
     TOKEN_IDENTIFIERS = ['baud', 'bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
                          'connector', 'fcc', 'file', 'flag', 'ignore_brand', 'ignore_odm',
-                         'ip', 'jtag', 'odm', 'origin', 'os', 'package', 'partition',
-                         'password', 'program', 'serial', 'type', 'year']
+                         'ignore_origin', 'ip', 'jtag', 'odm', 'origin', 'os', 'package',
+                         'partition', 'password', 'program', 'serial', 'type', 'year']
 
     def __init__(self, devicecode_dirs, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -351,6 +363,7 @@ class DevicecodeUI(App):
         filter_flags = kwargs.get('flags', [])
         filter_ignore_brands = kwargs.get('ignore_brands', [])
         filter_ignore_odms = kwargs.get('ignore_odms', [])
+        filter_ignore_origins = kwargs.get('ignore_origins', [])
         filter_ips = kwargs.get('ips', [])
         filter_jtags = kwargs.get('jtags', [])
         filter_odms = kwargs.get('odms', [])
@@ -564,6 +577,15 @@ class DevicecodeUI(App):
                 for cpu in device['cpus']:
                     if cpu['manufacturer'].lower() in filter_chip_vendors:
                         show_node = True
+                        break
+                if not show_node:
+                    continue
+
+            if filter_ignore_origins:
+                show_node = True
+                for origin in device['origins']:
+                    if origin['origin'].lower() in filter_ignore_origins:
+                        show_node = False
                         break
                 if not show_node:
                     continue
@@ -979,6 +1001,7 @@ class DevicecodeUI(App):
         flags = []
         ignore_brands = []
         ignore_odms = []
+        ignore_origins = []
         ips = []
         jtags = []
         odms = []
@@ -1025,6 +1048,8 @@ class DevicecodeUI(App):
                         ignore_brands.append(value)
                     elif identifier == 'ignore_odm':
                         ignore_odms.append(value)
+                    elif identifier == 'ignore_origin':
+                        ignore_origins.append(value)
                     elif identifier == 'file':
                         files.append(value)
                     elif identifier == 'ip':
@@ -1063,8 +1088,8 @@ class DevicecodeUI(App):
                                 odms=odms, chips=chips, chip_types=chip_types,
                                 chip_vendors=chip_vendors, connectors=connectors, fccs=fccs,
                                 files=files, flags=flags, ignore_brands=ignore_brands,
-                                ignore_odms=ignore_odms, ips=ips, jtags=jtags,
-                                operating_systems=operating_systems, origins=origins,
+                                ignore_odms=ignore_odms, ignore_origins=ignore_origins, ips=ips,
+                                jtags=jtags, operating_systems=operating_systems, origins=origins,
                                 passwords=passwords, packages=packages, partitions=partitions,
                                 programs=programs, serials=serials,
                                 serial_baud_rates=serial_baud_rates, years=years,
