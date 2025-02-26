@@ -272,6 +272,7 @@ class Software:
     programs: list[Program] = field(default_factory=list)
     packages: list[Package] = field(default_factory=list)
     partitions: list[Partition] = field(default_factory=list)
+    rootfs: list[str] = field(default_factory=list)
 
 @dataclass_json
 @dataclass
@@ -1186,6 +1187,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             partition = Partition()
                                                             partition.name = name
                                                             device.software.partitions.append(partition)
+                                                    elif p['type'] == 'rootfstype':
+                                                        device.software.rootfs = p['values']
                                                 break
                                         if is_processed:
                                             have_valid_data = True
@@ -2439,6 +2442,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                         partition = Partition()
                                         partition.name = name
                                         device.software.partitions.append(partition)
+                                elif p['type'] == 'rootfstype':
+                                    device.software.rootfs = p['values']
                     for i in serial_page_hints:
                         if i in devicepage:
                             serial_page = []
