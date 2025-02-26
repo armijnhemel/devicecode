@@ -780,7 +780,13 @@ def parse_serial_openwrt(log):
     regex_result = list(set(defaults.REGEX_SERIAL_CONNECTOR.findall(log)))
     if len(regex_result) == 1:
         if 'connector' not in result:
-            result['connector'] = regex_result[0]
+            if regex_result[0] == 'J45':
+                if 'RJ45' in log:
+                    result['connector'] = 'RJ45'
+                else:
+                    result['connector'] = regex_result[0]
+            else:
+                result['connector'] = regex_result[0]
 
     # populated
     if 'populated' in log:
@@ -1188,7 +1194,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             partition.name = name
                                                             device.software.partitions.append(partition)
                                                     elif p['type'] == 'rootfstype':
-                                                        device.software.rootfs = p['values']
+                                                        device.software.rootfs = sorted(p['values'])
                                                 break
                                         if is_processed:
                                             have_valid_data = True
@@ -2443,7 +2449,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                         partition.name = name
                                         device.software.partitions.append(partition)
                                 elif p['type'] == 'rootfstype':
-                                    device.software.rootfs = p['values']
+                                    device.software.rootfs = sorted(p['values'])
                     for i in serial_page_hints:
                         if i in devicepage:
                             serial_page = []
