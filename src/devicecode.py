@@ -281,8 +281,9 @@ class Web:
     product_page: list[str] = field(default_factory=list)
     support_page: list[str] = field(default_factory=list)
 
-    # references to techinfodepot and wikidevi
+    # various references to techinfodepot, wikidevi and openwrt
     techinfodepot: str = ''
+    openwrt: str = ''
     wikidevi: str = ''
     wikipedia: str = ''
 
@@ -1130,7 +1131,15 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                         # this element contains no interesting information
                                         continue
 
-                                    if f.name.strip() in ['SCollapse', 'SCollapse2']:
+                                    if f.name.strip() in ['OpenWrt']:
+                                        wiki_section_header = f.params[0].strip()
+                                        if wiki_section_header.startswith('techdata'):
+                                            identifier, value = wiki_section_header.split('=', maxsplit=1)
+                                            if value.strip() != '':
+                                                # rewrite to OpenWrt identifier
+                                                if value.strip().startswith('https://openwrt.org/') and 'hwdata' in value:
+                                                    device.web.openwrt = value[21:].strip().replace('/', ':')
+                                    elif f.name.strip() in ['SCollapse', 'SCollapse2']:
                                         # alternative place for boot log, GPL info, /proc, etc.
                                         is_processed = False
                                         wiki_section_header = f.params[0].strip()
