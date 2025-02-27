@@ -104,22 +104,29 @@ identifier=value
 
 where identifier can be one of:
 
+* `baud`
 * `bootloader`
 * `brand`
 * `chip`
 * `chip_type`
 * `chip_vendor`
 * `connector`
+* `fcc`
 * `file`
 * `flag`
 * `ignore_brand`
 * `ignore_odm`
+* `ignore_origin`
+* `ip`
 * `jtag`
 * `odm`
+* `origin`
 * `os`
 * `package`
+* `partition`
 * `password`
 * `program`
+* `rootfs`
 * `serial`
 * `type`
 * `year`
@@ -183,6 +190,10 @@ example:
 brand="Banana Pi"
 ```
 
+##### Baud rate
+
+`baud` can be used to filter on the baud rate of the serial port (if present).
+
 ##### Bootloader
 
 `bootloader` can be used to filter on bootloader.
@@ -209,17 +220,26 @@ devices.
 `connector` can be used to filter connectors (serial port only for now, JTAG
 in the future as well).
 
+##### FCC
+
+`fcc` can be used to show devices associated with a certain FCC identifier.
+
 ##### File
 
-`file` can be used to show one or more more devices with certain files.
+`file` can be used to show devices with certain files.
 
 ##### Flag
 
-`flag` can be used to show one or more more devices with certain flags.
+`flag` can be used to show devices with certain flags.
+
+##### IP
+
+`ip` can be used to show devices using a certain default IP address (for
+example `192.168.1.1`).
 
 ##### ODM
 
-There are two ways to filter brands:
+There are two ways to filter ODMs:
 
 1. use the `odm` statement to show devices made by one or more ODMs
 2. use the `ignore_odm` statement to hide devices made by one or more ODMs
@@ -228,6 +248,19 @@ There are two ways to filter brands:
 
 `os` can be used to show the default operating system that is installed on
 the device.
+
+##### Origin
+
+There are two ways to filter origins (OpenWrt, TechInfoDepot, WikiDevi)::
+
+1. use the `origin` statement to show devices for which there is information
+   defined in that specific wiki
+2. use the `ignore_origin` statement to hide devices for which there is
+   information defined in that specific wiki
+
+For example, to show devices that are in OpenWrt, but not in WikiDevi use:
+
+`origin=openwrt ignore_origin=wikidevi`
 
 ##### Serial
 
@@ -244,6 +277,11 @@ known. Valid values are `yes`, `no` and `unknown`.
 `package` can be used to show devices containing the package. Package
 information is currently extracted from parsing boot logs.
 
+##### Partition
+
+`partition` can be used to show devices where the Linux kernel commandline
+has certain name for a partition (for example: `u-boot-env` or `nvram`).
+
 ##### Password
 
 Currently `password` can only be used to show devices with one or more default
@@ -253,6 +291,12 @@ passwords.
 
 `program` can be used to show devices containing specific program names as
 extracted from output of the `ps` command.
+
+##### root file system type
+
+`rootfs` can be used to show devices where the Linux kernel has support for
+having the root file system on a certain file system type (such as `squashfs`
+or `jffs2`).
 
 ##### Year
 
