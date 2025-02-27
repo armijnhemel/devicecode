@@ -183,6 +183,7 @@ class FilterValidator(Validator):
         self.packages = kwargs.get('packages', set())
         self.partitions = kwargs.get('partitions', set())
         self.passwords = kwargs.get('passwords', set())
+        self.rootfs = kwargs.get('rootfs', set())
         self.token_identifiers = kwargs.get('token_identifiers', [])
 
     def validate(self, value: str) -> ValidationResult:
@@ -251,6 +252,9 @@ class FilterValidator(Validator):
                 elif token_identifier == 'partition':
                     if token_value not in self.partitions:
                         return self.failure("Invalid partition")
+                elif token_identifier == 'rootfs':
+                    if token_value not in self.rootfs:
+                        return self.failure("Invalid rootfs")
                 #elif token_identifier == 'type':
                     #if token_value not in self.device_types:
                         #return self.failure("Invalid type")
@@ -744,7 +748,7 @@ class DevicecodeUI(App):
                 partitions.add(partition_name.lower())
 
             for fs in device['software']['rootfs']:
-                rootfs.add(fs)
+                rootfs.add(fs.lower())
 
             if 'programs' in device['software']:
                 for prog in device['software']['programs']:
