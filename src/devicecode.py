@@ -2286,7 +2286,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                 device.brand = defaults.BRAND_REWRITE.get(owrt.brand, owrt.brand)
                 device.model.model = owrt.model
                 if owrt.version != 'NULL':
-                    device.model.version = owrt.version
+                    device.model.revision = owrt.version
 
                 device.title = owrt.page.split(':')[-1]
 
