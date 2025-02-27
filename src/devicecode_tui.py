@@ -50,6 +50,7 @@ class SuggestDevices(Suggester):
         self.partitions = kwargs.get('partitions', [])
         self.passwords = kwargs.get('passwords', [])
         self.programs = kwargs.get('programs', [])
+        self.rootfs = kwargs.get('rootfs', [])
         self.device_types = kwargs.get('types', [])
 
     async def get_suggestion(self, value: str) -> str | None:
@@ -144,6 +145,10 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(self.partitions):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + self.partitions[idx][len(check_value)-10:]
+        elif check_value.startswith('rootfs='):
+            for idx, chk in enumerate(self.rootfs):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.rootfs[idx][len(check_value)-7:]
         elif check_value.startswith('program='):
             for idx, chk in enumerate(self.programs):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
@@ -341,7 +346,7 @@ class DevicecodeUI(App):
     TOKEN_IDENTIFIERS = ['baud', 'bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
                          'connector', 'fcc', 'file', 'flag', 'ignore_brand', 'ignore_odm',
                          'ignore_origin', 'ip', 'jtag', 'odm', 'origin', 'os', 'package',
-                         'partition', 'password', 'program', 'serial', 'type', 'year']
+                         'partition', 'password', 'program', 'rootfs', 'serial', 'type', 'year']
 
     def __init__(self, devicecode_dirs, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -373,6 +378,7 @@ class DevicecodeUI(App):
         filter_partitions = kwargs.get('partitions', [])
         filter_passwords = kwargs.get('passwords', [])
         filter_programs = kwargs.get('programs', [])
+        filter_rootfs = kwargs.get('rootfs', [])
         filter_serials = kwargs.get('serials', [])
         filter_years = kwargs.get('years', [])
 
@@ -433,6 +439,9 @@ class DevicecodeUI(App):
 
         # known programs
         programs = set()
+
+        # known rootfs
+        rootfs = set()
 
         # known device_types
         device_types = set()
@@ -617,6 +626,15 @@ class DevicecodeUI(App):
                 if not show_node:
                     continue
 
+            if filter_rootfs:
+                show_node = False
+                for fs in device['software']['rootfs']:
+                    if fs.lower() in filter_rootfs:
+                        show_node = True
+                        break
+                if not show_node:
+                    continue
+
             if filter_fccs:
                 show_node = False
                 for fcc_id in device['regulatory']['fcc_ids']:
@@ -723,7 +741,10 @@ class DevicecodeUI(App):
 
             for partition in device['software']['partitions']:
                 partition_name = partition['name']
-                partitions.add(partition_name)
+                partitions.add(partition_name.lower())
+
+            for fs in device['software']['rootfs']:
+                rootfs.add(fs)
 
             if 'programs' in device['software']:
                 for prog in device['software']['programs']:
@@ -747,7 +768,7 @@ class DevicecodeUI(App):
                 'ips': ips, 'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
                 'odm_connector': odm_connector, 'chip_vendor_connector': chip_vendor_connector,
                 'packages': packages, 'partitions': partitions, 'passwords': passwords,
-                'programs': programs, 'types': device_types, 'years': years,
+                'programs': programs, 'rootfs': rootfs, 'types': device_types, 'years': years,
                 'year_data': year_data}
 
 
@@ -814,6 +835,7 @@ class DevicecodeUI(App):
         partitions = data['partitions']
         passwords = data['passwords']
         programs = data['programs']
+        rootfs = data['rootfs']
         chip_vendor_connector = data['chip_vendor_connector']
         years = data['years']
         year_data = data['year_data']
@@ -907,7 +929,8 @@ class DevicecodeUI(App):
                                                 chip_vendors=chip_vendors, connectors=connectors,
                                                 fcc=fcc, files=files, ips=ips, packages=packages,
                                                 partitions=partitions, passwords=passwords, programs=programs,
-                                                types=device_types, token_identifiers=self.TOKEN_IDENTIFIERS)],
+                                                rootfs=rootfs, types=device_types,
+                                                token_identifiers=self.TOKEN_IDENTIFIERS)],
                             suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
                             baud_rates=sorted(baud_rates),
                             bootloaders=sorted(bootloaders), brands=sorted(brands),
@@ -917,7 +940,7 @@ class DevicecodeUI(App):
                             fcc=sorted(fcc), files=sorted(files), flags=sorted(flags),
                             packages=sorted(packages), partitions=sorted(partitions),
                             passwords=sorted(passwords), programs=sorted(programs),
-                            types=sorted(device_types)), valid_empty=True)
+                            rootfs=sorted(rootfs), types=sorted(device_types)), valid_empty=True)
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
@@ -1011,6 +1034,7 @@ class DevicecodeUI(App):
         partitions = []
         passwords = []
         programs = []
+        rootfs = []
         serials = []
         serial_baud_rates = []
         years = []
@@ -1068,6 +1092,8 @@ class DevicecodeUI(App):
                         passwords.append(value)
                     elif identifier == 'program':
                         programs.append(value)
+                    elif identifier == 'rootfs':
+                        rootfs.append(value)
                     elif identifier == 'serial':
                         serials.append(value)
                     elif identifier == 'baud':
@@ -1091,7 +1117,7 @@ class DevicecodeUI(App):
                                 ignore_odms=ignore_odms, ignore_origins=ignore_origins, ips=ips,
                                 jtags=jtags, operating_systems=operating_systems, origins=origins,
                                 passwords=passwords, packages=packages, partitions=partitions,
-                                programs=programs, serials=serials,
+                                programs=programs, rootfs=rootfs, serials=serials,
                                 serial_baud_rates=serial_baud_rates, years=years,
                                 types=device_types)
 
@@ -1385,6 +1411,12 @@ class DevicecodeUI(App):
             new_markdown += "|Name|\n|--|\n"
             for p in result['partitions']:
                 new_markdown += f"| {p['name']} |\n"
+
+            # rootfs
+            new_markdown += "# Rootfs\n"
+            new_markdown += "|Name|\n|--|\n"
+            for p in result['rootfs']:
+                new_markdown += f"| {p} |\n"
 
             # packages
             new_markdown += "# Packages\n"
