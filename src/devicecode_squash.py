@@ -550,9 +550,9 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
         conflict = False
         web = copy.deepcopy(device_one['web'])
 
-        for i in ['download_page', 'techinfodepot', 'wikidevi']:
-            if device_one['web'][i] == '' or device_two['web'][i] == '':
-                if device_one['web'][i] == '' and device_two['web'][i]:
+        for i in ['download_page', 'techinfodepot', 'wikidevi', 'openwrt']:
+            if web[i] == '' or device_two['web'][i] == '':
+                if web[i] == '' and device_two['web'][i]:
                     web[i] = device_two['web'][i]
             else:
                 if device_one['web'][i] != device_two['web'][i]:
