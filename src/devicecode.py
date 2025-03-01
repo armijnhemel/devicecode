@@ -2386,6 +2386,10 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                         wikidevi_name = wikidevi_split.split('/', maxsplit=1)[1]
                         device.web.wikidevi = wikidevi_name
 
+                if owrt.oemdevicehomepageurl != 'NULL':
+                    if owrt.oemdevicehomepageurl not in ['', 'http://', 'http://-', 'http://¿']:
+                        device.web.product_page.append(owrt.oemdevicehomepageurl)
+
                 if owrt.bootloader not in ['¿', 'other']:
                     device.software.bootloader.manufacturer = defaults.BRAND_REWRITE.get(owrt.bootloader, owrt.bootloader)
 
