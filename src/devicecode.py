@@ -459,7 +459,7 @@ def parse_ps(ps_log):
                 results.append(program_res)
     return results
 
-def parse_log(boot_log):
+def parse_log(bootlog):
     '''Parse logs, such as boot logs or serial output'''
     # store the interesting findings in a lookup table.
     # This will be a set of software packages (both open source
@@ -468,6 +468,8 @@ def parse_log(boot_log):
     # fingerprinting, as well as other possibly interesting
     # information.
     results = []
+
+    boot_log = "\n".join(bootlog)
 
     # now try a bunch of regular expressions to find packages
     # BusyBox
@@ -1156,7 +1158,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
 
                                                 # parse and store the boot log.
                                                 # TODO: further mine the boot log
-                                                parse_results = parse_log(f.params[1].value)
+                                                parse_results = parse_log(f.params[1].value.splitlines())
                                                 for p in parse_results:
                                                     if p['type'] == 'package':
                                                         found_package = Package()
@@ -2415,7 +2417,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                 bootlog.append(line)
                             # parse and store the boot log.
                             # TODO: further mine the boot log
-                            parse_results = parse_log("\n".join(bootlog))
+                            parse_results = parse_log(bootlog)
                             for p in parse_results:
                                 if p['type'] == 'package':
                                     found_package = Package()
