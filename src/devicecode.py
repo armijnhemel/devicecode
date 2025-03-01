@@ -473,19 +473,19 @@ def parse_log(bootlog):
 
     # now try a bunch of regular expressions to find packages
     # BusyBox
-    res = defaults.REGEX_BUSYBOX.findall(str(boot_log))
+    res = defaults.REGEX_BUSYBOX.findall(boot_log)
     if res != []:
         package_res = {'type': 'package', 'name': 'busybox', 'versions': set(res)}
         results.append(package_res)
 
     # iptables
-    res = defaults.REGEX_IPTABLES.findall(str(boot_log))
+    res = defaults.REGEX_IPTABLES.findall(boot_log)
     if res != []:
         package_res = {'type': 'package', 'name': 'iptables', 'versions': set(res)}
         results.append(package_res)
 
     # Linux kernel version
-    res = defaults.REGEX_LINUX_VERSION.findall(str(boot_log))
+    res = defaults.REGEX_LINUX_VERSION.findall(boot_log)
     if res != []:
         package_res = {'type': 'package', 'name': 'Linux', 'versions': sorted(set(res))}
         results.append(package_res)
@@ -493,30 +493,30 @@ def parse_log(bootlog):
     # CFE bootloader. There could be multiple hits in the same log file
     # but the findings should be consolidated somewhere else in the
     # code that is processing the results from this parser.
-    res = defaults.REGEX_CFE.findall(str(boot_log))
+    res = defaults.REGEX_CFE.findall(boot_log)
     if res != []:
         package_res = {'type': 'bootloader', 'name': 'CFE', 'versions': set(res)}
         results.append(package_res)
 
-    res = defaults.REGEX_CFE_BROADCOM.findall(str(boot_log))
+    res = defaults.REGEX_CFE_BROADCOM.findall(boot_log)
     if res != []:
         package_res = {'type': 'bootloader', 'name': 'CFE', 'versions': set(res)}
         results.append(package_res)
 
     # Ralink U-Boot bootloader (modified U-Boot)
-    res = defaults.REGEX_UBOOT_RALINK.findall(str(boot_log))
+    res = defaults.REGEX_UBOOT_RALINK.findall(boot_log)
     if res != []:
         package_res = {'type': 'bootloader', 'name': 'Ralink U-Boot', 'versions': set(res)}
         results.append(package_res)
 
     # Adtran bootloader (proprietary)
-    res = defaults.REGEX_ADTRAN_BOOTLOADER.findall(str(boot_log))
+    res = defaults.REGEX_ADTRAN_BOOTLOADER.findall(boot_log)
     if res != []:
         package_res = {'type': 'bootloader', 'name': 'adtran bootloader', 'versions': set(res)}
         results.append(package_res)
 
     # find functionality -- TODO is this actually correct?
-    #if 'console [ttyS0] enabled' in str(boot_log):
+    #if 'console [ttyS0] enabled' in boot_log:
     #    serial_res = {'type': 'serial port', 'console': 'ttyS0'}
     #    results.append(serial_res)
 
@@ -527,14 +527,14 @@ def parse_log(bootlog):
               'Watchguard Proprietary', 'Realtek Semiconductor Corp.', 'Commercial product',
               'Commercial. For support email ntfs-support@tuxera.com.', 'Sercomm', 'sercomm',
               'DNI', '5VT']:
-        res = re.findall(fr"(\w+): module license '{i}' taints kernel.", str(boot_log))
+        res = re.findall(fr"(\w+): module license '{i}' taints kernel.", boot_log)
         if res != []:
             for r in res:
                 module_res = {'type': 'kernel module license', 'license': 'proprietary', 'name': r}
                 results.append(module_res)
 
     for i in ['BSD', 'unspecified', 'unspecid']:
-        res = re.findall(fr"(\w+): module license '{i}' taints kernel.", str(boot_log))
+        res = re.findall(fr"(\w+): module license '{i}' taints kernel.", boot_log)
         if res != []:
             for r in res:
                 if i in ['BSD']:
@@ -544,7 +544,7 @@ def parse_log(bootlog):
                 results.append(module_res)
 
     # Linux kernel command line
-    res = defaults.REGEX_LINUX_KERNEL_COMMANDLINE.findall(str(boot_log))
+    res = defaults.REGEX_LINUX_KERNEL_COMMANDLINE.findall(boot_log)
     if res != []:
         # some log lines seem to be split across several lines in the
         # file or have spaces inserted randomly, and sometimes some
@@ -593,30 +593,30 @@ def parse_log(bootlog):
                         results.append(mtdparts_result)
 
     re_squashfs = re.compile(r"squashfs: version ([\w\d\-\.]+) \(\d{4}/\d{2}/\d{2}\) Phillip Lougher")
-    if 'squashfs' in str(boot_log):
-        res_squashfs = re_squashfs.findall(str(boot_log))
+    if 'squashfs' in boot_log:
+        res_squashfs = re_squashfs.findall(boot_log)
         if res_squashfs:
             squashfss = set(res_squashfs)
             squashfs_res = {'type': 'file system', 'name': 'squashfs', 'versions': list(squashfss), 'notes': ''}
             results.append(squashfs_res)
-        if 'version 4.0 with LZMA457 ported by BRCM' in str(boot_log):
+        if 'version 4.0 with LZMA457 ported by BRCM' in boot_log:
             squashfs_res = {'type': 'file system', 'name': 'squashfs', 'versions': [4.0], 'notes': 'LZMA457 ported by BRCM'}
             results.append(squashfs_res)
-        if 'version 3.1 includes LZMA decompression support' in str(boot_log):
+        if 'version 3.1 includes LZMA decompression support' in boot_log:
             squashfs_res = {'type': 'file system', 'name': 'squashfs', 'versions': [3.1], 'notes': 'LZMA decompression support'}
             results.append(squashfs_res)
 
     re_manufacturer = re.compile(r"NAND device: Manufacturer ID: 0x[\d\w]+, Chip ID: 0x[\d\w]+ \(([\d\w\s/]+) NAND")
     re_manufacturer_2 = re.compile(r"NAND device: Manufacturer ID: 0x[\d\w]+, Chip ID: 0x[\d\w]+ \(([\d\w]+) (\w+)\)")
 
-    if 'NAND device: Manufacturer ID' in str(boot_log):
-        res = re_manufacturer.search(str(boot_log))
+    if 'NAND device: Manufacturer ID' in boot_log:
+        res = re_manufacturer.search(boot_log)
         if res:
             nand_manufacturer = res.groups()[0]
             serial_res = {'type': 'nand', 'manufacturer': nand_manufacturer}
             results.append(serial_res)
         else:
-            res = re_manufacturer_2.search(str(boot_log))
+            res = re_manufacturer_2.search(boot_log)
             if res:
                 nand_manufacturer = res.groups()[0]
                 nand_model = res.groups()[1]
