@@ -641,6 +641,7 @@ def parse_log(boot_log_lines):
             if 'MTD partitions on "' in line:
                 mtd_res = re_mtd_partitions.search(line)
                 if mtd_res:
+                    ctr = 0
                     in_mtd = True
                     (num_mtd, mtd_name) = mtd_res.groups()
                     num_mtd = int(num_mtd)
