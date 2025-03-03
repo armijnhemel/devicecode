@@ -459,7 +459,7 @@ def parse_ps(ps_log):
                 results.append(program_res)
     return results
 
-def parse_log(bootlog):
+def parse_log(boot_log_lines):
     '''Parse logs, such as boot logs or serial output'''
     # store the interesting findings in a lookup table.
     # This will be a set of software packages (both open source
@@ -469,7 +469,7 @@ def parse_log(bootlog):
     # information.
     results = []
 
-    boot_log = "\n".join(bootlog)
+    boot_log = "\n".join(boot_log_lines)
 
     # now try a bunch of regular expressions to find packages
     # BusyBox
@@ -622,6 +622,85 @@ def parse_log(bootlog):
                 nand_model = res.groups()[1]
                 serial_res = {'type': 'nand', 'manufacturer': nand_manufacturer, 'model': nand_model}
                 results.append(serial_res)
+
+    re_mtd_partitions = re.compile(r'Creating (\d+) MTD partitions on "([\w\d:_,/\(\)\-\.\s]+)":')
+    re_mtd_partition = re.compile(r'(0x[\d\w]+)-(0x[\d\w]+) : "([\w\d:_,/\(\)\-\.\s=+]+)"')
+
+    if 'MTD partitions on "' in boot_log:
+        errors = ['Bad block detected at', 'ifxusb_hcd ifxusb_hcd', 'SATA link down',
+                  'mtdoops: Attached to MTD device', 'mtdoops: ready 0, 1 (no erase)',
+                  'i2c driver was not initialized yet.', 'Lantiq SPI flash driver',
+                  'routing cache hash table', 'Mounted devfs on /dev']
+        in_mtd = False
+        ctr = 0
+        partitions_per_mtd = {}
+        for line in boot_log_lines:
+            if not 'MTD partitions on "' in line and not in_mtd:
+                continue
+
+            if 'MTD partitions on "' in line:
+                mtd_res = re_mtd_partitions.search(line)
+                if mtd_res:
+                    in_mtd = True
+                    (num_mtd, mtd_name) = mtd_res.groups()
+                    num_mtd = int(num_mtd)
+                    partitions_per_mtd[mtd_name] = []
+                continue
+
+            # now walk num_mtd lines to find the partitions per MTD
+            is_error = False
+            for e in errors:
+                if e in line:
+                    is_error = True
+                    break
+            if is_error:
+                continue
+            if line.strip() == '':
+                continue
+            if 'mtd: firmware_partition->' in line:
+                continue
+            if 'mtd: rootfs_partition->' in line:
+                continue
+            if ']: logic[' in line:
+                continue
+            if 'set to be root filesystem' in line:
+                continue
+            if 'doesn\'t start on an erase block boundary' in line:
+                continue
+            if 'doesn\'t end on an erase block' in line:
+                continue
+            if 'created automatically' in line:
+                continue
+            if 'extends beyond the end of device' in line:
+                continue
+            if 'must either start or end on erase block boundary or be smaller than' in line:
+                continue
+            if ' {ifx_mtd_add_notifier} name' in line:
+                continue
+            if 'no squashfs found in' in line:
+                continue
+            if ' partitions found on MTD device ' in line:
+                # maybe some interesting stuff can be extracted from these lines?
+                continue
+            if 'the correct location of partition' in line:
+                # maybe some interesting stuff can be extracted from these lines?
+                continue
+            if 'find squashfs magic at ' in line:
+                # maybe some interesting stuff can be extracted from these lines?
+                continue
+            if '0x' not in line:
+                continue
+
+            partition_res = re_mtd_partition.search(line.strip())
+            if not partition_res:
+                continue
+            (partition_start, partition_end, partition_name) = partition_res.groups()
+            partitions_per_mtd[mtd_name].append({'name': partition_name,
+                                                 'start': partition_start, 'end': partition_end})
+            ctr += 1
+            if ctr == num_mtd:
+                in_mtd = False
+                ctr = 0
     return results
 
 def parse_oui(oui_string):
