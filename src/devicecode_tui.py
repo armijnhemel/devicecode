@@ -1191,6 +1191,9 @@ class DevicecodeUI(App):
             self.power_area.update('')
 
     def on_markdown_link_clicked(self, event: Markdown.LinkClicked) -> None:
+        # TODO: often terminals (such as MATE terminal in Fedora) will
+        # already open a link when clicking on it, causing the link to be opened
+        # multiple times. Is this desirable?
         if event.href.startswith('http://') or event.href.startswith('https://'):
             webbrowser.open(event.href)
 
