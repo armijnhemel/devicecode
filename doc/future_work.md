@@ -50,3 +50,7 @@ from the original data. Two existing overlays are:
 Crawl firmware update information, such as ChangeLogs or firmware update pages
 and press releases to get an indication of when devices were released or
 supported. Add this information as an overlay.
+
+## Add information from BoxMatrix (AVM Fritz!Box wiki)
+
+https://boxmatrix.info/wiki/BoxMatrix
