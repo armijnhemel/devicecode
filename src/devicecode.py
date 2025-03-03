@@ -623,10 +623,13 @@ def parse_log(boot_log_lines):
                 serial_res = {'type': 'nand', 'manufacturer': nand_manufacturer, 'model': nand_model}
                 results.append(serial_res)
 
+    # get a (partial) list of MTD partitions from the Linux kernel bootlog
     re_mtd_partitions = re.compile(r'Creating (\d+) MTD partitions on "([\w\d:_,/\(\)\-\.\s]+)":')
     re_mtd_partition = re.compile(r'(0x[\d\w]+)-(0x[\d\w]+) : "([\w\d:_,/\(\)\-\.\s=+]+)"')
 
     if 'MTD partitions on "' in boot_log:
+        # the lines defining the MTD partitions can be interleaved
+        # with other data or error messages.
         errors = ['Bad block detected at', 'ifxusb_hcd ifxusb_hcd', 'SATA link down',
                   'mtdoops: Attached to MTD device', 'mtdoops: ready 0, 1 (no erase)',
                   'i2c driver was not initialized yet.', 'Lantiq SPI flash driver',
@@ -634,6 +637,12 @@ def parse_log(boot_log_lines):
         in_mtd = False
         ctr = 0
         partitions_per_mtd = {}
+
+        # walk the log lines, search for the start of where MTD
+        # partitions are defined, and process and extract the names
+        # and byte ranges for each partition.
+        #
+        # There could be multiple MTD devices with partitions.
         for line in boot_log_lines:
             if not 'MTD partitions on "' in line and not in_mtd:
                 continue
@@ -702,6 +711,7 @@ def parse_log(boot_log_lines):
             if ctr == num_mtd:
                 in_mtd = False
                 ctr = 0
+        results.append({'type': 'mtd_partitions', 'value': partitions_per_mtd})
     return results
 
 def parse_oui(oui_string):
