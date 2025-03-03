@@ -2493,6 +2493,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                     continue
                                 if '</nowiki>' in line or '</WRAP>' in line:
                                     break
+                                if '= OpenWrt bootlog =' in line:
+                                    break
                                 bootlog.append(line)
                             # parse and store the boot log.
                             # TODO: further mine the boot log
