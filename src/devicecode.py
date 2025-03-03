@@ -712,6 +712,26 @@ def parse_log(boot_log_lines):
                 in_mtd = False
                 ctr = 0
         results.append({'type': 'mtd_partitions', 'value': partitions_per_mtd})
+
+    # various results
+    for line in boot_log_lines:
+        if 'Cavium Inc. SDK' in line:
+            sdk = line.strip().split('SDK-', maxsplit=1)[1]
+            results.append({'type': 'sdk', 'vendor': 'Cavium', 'version': sdk})
+        if 'LSDK' in line:
+            lsdk_res = re.search(r'--LSDK-([\d\w\.\-_]+) ', line.strip())
+            if lsdk_res:
+                sdk = lsdk_res.groups()[0]
+                results.append({'type': 'sdk', 'vendor': 'Qualcomm Atheros', 'version': sdk})
+        if 'MIPS: machine is' in line:
+            machine = line.strip().split('machine is ', maxsplit=1)[1].strip()
+            if machine:
+                results.append({'type': 'machine', 'cpu': 'MIPS', 'name': machine})
+        if 'Machine model:' in line:
+            machine = line.strip().split('Machine model: ', maxsplit=1)[1].strip()
+            if machine:
+                results.append({'type': 'machine', 'cpu': 'ARM', 'name': machine})
+
     return results
 
 def parse_oui(oui_string):
