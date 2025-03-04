@@ -746,6 +746,11 @@ def parse_log(boot_log_lines):
             if res:
                 ubi_res = {'type': 'ubi', 'peb': res.groups()[0], 'leb': res.groups()[1]}
                 results.append(ubi_res)
+        if 'Parallel flash device: name' in line:
+            res = re.search(r'Parallel flash device: name ([\w\d]*), id ([\w\d]+),? size (\d+)KB', line)
+            if res:
+                flash_res = {'type': 'parallel_flash', 'model': res.groups()[0], 'id': res.groups()[1], 'size_k': res.groups()[2]}
+                results.append(flash_res)
 
     return results
 
