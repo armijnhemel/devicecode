@@ -517,6 +517,9 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
 
     if not conflict:
         if device_three:
+            for i in ['ddwrt', 'gargoyle', 'openwrt', 'os', 'os_version', 'sdk', 'tomato']:
+                if not software[i]:
+                    software[i] = device_three['software'][i]
             if software['bootloader']['manufacturer'] != device_three['software']['bootloader']['manufacturer']:
                 if software['bootloader']['manufacturer'] == '':
                     if device_three['software']['bootloader']['manufacturer'] != '':
