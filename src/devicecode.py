@@ -746,18 +746,33 @@ def parse_log(boot_log_lines):
             if res:
                 ubi_res = {'type': 'ubi', 'peb': res.groups()[0], 'leb': res.groups()[1]}
                 results.append(ubi_res)
-        if 'Parallel flash device: name' in line:
-            res = re.search(r'Parallel flash device: name ([\w\d]*), id ([\w\d]+),? size (\d+)KB', line)
-            if res:
-                flash_res = {'type': 'parallel_flash', 'model': res.groups()[0], 'id': res.groups()[1], 'size_k': res.groups()[2]}
-                results.append(flash_res)
-        if 'NAND flash device: name' in line:
-            res = re.search(r'NAND flash device: name ([\w\d\s\.\-_]+), id ([\w\d]+) block (\d+)KB size (\d+)KB', line)
-            if res:
-                model, flash_id, block_size, flash_size = res.groups()
-                flash_res = {'type': 'nand_flash', 'model': model, 'id': flash_id, 'block_k': block_size, 'size_k': flash_size}
-                results.append(flash_res)
 
+        # various flash related lines
+        if 'flash device: name ' in line:
+            if 'Parallel flash device: name' in line:
+                res = re.search(r'Parallel flash device: name ([\w\d]*), id ([\w\d]+),? size (\d+)KB', line)
+                if res:
+                    flash_res = {'type': 'flash', 'flash_type': 'parallel', 'model': res.groups()[0],
+                                 'id': res.groups()[1], 'size_k': res.groups()[2]}
+                    results.append(flash_res)
+            elif 'NAND flash device: name' in line:
+                res = re.search(r'NAND flash device: name ([\w\d\s\.\-_]+), id ([\w\d]+) block (\d+)KB size (\d+)KB', line)
+                if res:
+                    model, flash_id, block_size, flash_size = res.groups()
+                    flash_res = {'type': 'flash', 'flash_type': 'nand', 'model': model,
+                                  'id': flash_id, 'block_k': block_size, 'size_k': flash_size}
+                    results.append(flash_res)
+            elif 'Serial flash device: name' in line:
+                res = re.search(r'Serial flash device: name ([\w\d\s\.\-_]+), id ([\w\d]+),? size (\d+)KB', line)
+                if res:
+                    model, flash_id, flash_size = res.groups()
+                    if 'HS Serial' in line:
+                        flash_type = 'hs_serial'
+                    else:
+                        flash_type = 'serial'
+                    flash_res = {'type': 'flash', 'flash_type': flash_type, 'model': model,
+                                 'id': flash_id, 'size_k': flash_size}
+                    results.append(flash_res)
 
     return results
 
