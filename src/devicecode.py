@@ -731,6 +731,11 @@ def parse_log(boot_log_lines):
             machine = line.strip().split('Machine model: ', maxsplit=1)[1].strip()
             if machine:
                 results.append({'type': 'machine', 'cpu': 'ARM', 'name': machine})
+        if 'e2fsck' in line:
+            res = re.search(r'e2fsck ([\d\.]+)', line)
+            if res:
+                package_res = {'type': 'package', 'name': 'e2fstools', 'versions': set(res.groups())}
+                results.append(package_res)
 
     return results
 
