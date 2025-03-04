@@ -184,7 +184,7 @@ class FilterValidator(Validator):
         self.partitions = kwargs.get('partitions', set())
         self.passwords = kwargs.get('passwords', set())
         self.rootfs = kwargs.get('rootfs', set())
-        self.token_identifiers = kwargs.get('token_identifiers', [])
+        self.token_names = kwargs.get('token_names', [])
 
     def validate(self, value: str) -> ValidationResult:
         try:
@@ -196,81 +196,81 @@ class FilterValidator(Validator):
             # verify each token
             for t in tokens:
                 if '=' not in t:
-                    return self.failure("Invalid identifier")
-                token_identifier, token_value = t.split('=', maxsplit=1)
-                if token_identifier not in self.token_identifiers:
-                    return self.failure("Invalid identifier")
-                if token_identifier == 'bootloader':
+                    return self.failure("Invalid name")
+                name, token_value = t.split('=', maxsplit=1)
+                if name not in self.token_names:
+                    return self.failure("Invalid name")
+                if name == 'bootloader':
                     if token_value not in self.bootloaders:
                         return self.failure("Invalid bootloader")
-                elif token_identifier == 'brand':
+                elif name == 'brand':
                     if token_value not in self.brands:
                         return self.failure("Invalid brand")
-                elif token_identifier == 'chip':
+                elif name == 'chip':
                     if token_value not in self.chips:
                         return self.failure("Invalid chip")
-                elif token_identifier == 'chip_type':
+                elif name == 'chip_type':
                     if token_value not in self.chip_types:
                         return self.failure("Invalid chip type")
-                elif token_identifier == 'chip_vendor':
+                elif name == 'chip_vendor':
                     if token_value not in self.chip_vendors:
                         return self.failure("Invalid chip vendor")
-                elif token_identifier == 'connector':
+                elif name == 'connector':
                     if token_value not in self.connectors:
                         return self.failure("Invalid connector")
-                elif token_identifier == 'baud':
+                elif name == 'baud':
                     try:
                         int(token_value)
                     except:
                         return self.failure("Invalid baud rate")
                     if int(token_value) not in self.baud_rates:
                         return self.failure("Invalid baud rate")
-                elif token_identifier == 'ignore_brand':
+                elif name == 'ignore_brand':
                     if token_value not in self.brands:
                         return self.failure("Invalid brand")
-                elif token_identifier == 'ignore_odm':
+                elif name == 'ignore_odm':
                     if token_value not in self.odms:
                         return self.failure("Invalid ODM")
-                elif token_identifier == 'fcc':
+                elif name == 'fcc':
                     if token_value not in self.fcc:
                         return self.failure("Invalid FCC")
-                elif token_identifier == 'file':
+                elif name == 'file':
                     if token_value not in self.files:
                         return self.failure("Invalid file")
-                elif token_identifier == 'ip':
+                elif name == 'ip':
                     if token_value not in self.ips:
                         return self.failure("Invalid IP")
-                elif token_identifier == 'odm':
+                elif name == 'odm':
                     if token_value not in self.odms:
                         return self.failure("Invalid ODM")
-                elif token_identifier == 'password':
+                elif name == 'password':
                     if token_value not in self.passwords:
                         return self.failure("Invalid password")
-                elif token_identifier == 'package':
+                elif name == 'package':
                     if token_value not in self.packages:
                         return self.failure("Invalid package")
-                elif token_identifier == 'partition':
+                elif name == 'partition':
                     if token_value not in self.partitions:
                         return self.failure("Invalid partition")
-                elif token_identifier == 'rootfs':
+                elif name == 'rootfs':
                     if token_value not in self.rootfs:
                         return self.failure("Invalid rootfs")
-                #elif token_identifier == 'type':
+                #elif name == 'type':
                     #if token_value not in self.device_types:
                         #return self.failure("Invalid type")
-                elif token_identifier == 'serial':
+                elif name == 'serial':
                     if token_value not in ['no', 'unknown', 'yes']:
                         return self.failure("Invalid serial port information")
-                elif token_identifier == 'jtag':
+                elif name == 'jtag':
                     if token_value not in ['no', 'unknown', 'yes']:
                         return self.failure("Invalid jtag port information")
-                elif token_identifier == 'origin':
+                elif name == 'origin':
                     if token_value not in ['techinfodepot', 'wikidevi', 'openwrt']:
                         return self.failure("Invalid origin")
-                elif token_identifier == 'ignore_origin':
+                elif name == 'ignore_origin':
                     if token_value not in ['techinfodepot', 'wikidevi', 'openwrt']:
                         return self.failure("Invalid origin")
-                elif token_identifier == 'year':
+                elif name == 'year':
                     years = token_value.split(':', maxsplit=1)
                     for year in years:
                         try:
@@ -347,10 +347,10 @@ class DevicecodeUI(App):
     ]
 
     CSS_PATH = "devicecode_tui.css"
-    TOKEN_IDENTIFIERS = ['baud', 'bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
-                         'connector', 'fcc', 'file', 'flag', 'ignore_brand', 'ignore_odm',
-                         'ignore_origin', 'ip', 'jtag', 'odm', 'origin', 'os', 'package',
-                         'partition', 'password', 'program', 'rootfs', 'serial', 'type', 'year']
+    TOKEN_NAMES = ['baud', 'bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
+                   'connector', 'fcc', 'file', 'flag', 'ignore_brand', 'ignore_odm',
+                   'ignore_origin', 'ip', 'jtag', 'odm', 'origin', 'os', 'package',
+                   'partition', 'password', 'program', 'rootfs', 'serial', 'type', 'year']
 
     def __init__(self, devicecode_dirs, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -932,10 +932,10 @@ class DevicecodeUI(App):
                                                 odms=odms, chips=chips, chip_types=chip_types,
                                                 chip_vendors=chip_vendors, connectors=connectors,
                                                 fcc=fcc, files=files, ips=ips, packages=packages,
-                                                partitions=partitions, passwords=passwords, programs=programs,
-                                                rootfs=rootfs, types=device_types,
-                                                token_identifiers=self.TOKEN_IDENTIFIERS)],
-                            suggester=SuggestDevices(self.TOKEN_IDENTIFIERS, case_sensitive=False,
+                                                partitions=partitions, passwords=passwords,
+                                                programs=programs, rootfs=rootfs,
+                                                types=device_types, token_names=self.TOKEN_NAMES)],
+                            suggester=SuggestDevices(self.TOKEN_NAMES, case_sensitive=False,
                             baud_rates=sorted(baud_rates),
                             bootloaders=sorted(bootloaders), brands=sorted(brands),
                             chips=sorted(chips), chip_types=sorted(chip_types),
@@ -1055,58 +1055,58 @@ class DevicecodeUI(App):
                 tokens = shlex.split(event.value.lower())
 
                 for t in tokens:
-                    identifier, value = t.split('=', maxsplit=1)
-                    if identifier == 'bootloader':
+                    name, value = t.split('=', maxsplit=1)
+                    if name == 'bootloader':
                         bootloaders.append(value)
-                    elif identifier == 'brand':
+                    elif name == 'brand':
                         brands.append(value)
-                    elif identifier == 'chip':
+                    elif name == 'chip':
                         chips.append(value)
-                    elif identifier == 'chip_type':
+                    elif name == 'chip_type':
                         chip_types.append(value)
-                    elif identifier == 'chip_vendor':
+                    elif name == 'chip_vendor':
                         chip_vendors.append(value)
-                    elif identifier == 'connector':
+                    elif name == 'connector':
                         connectors.add(value)
-                    elif identifier == 'fcc':
+                    elif name == 'fcc':
                         fccs.append(value)
-                    elif identifier == 'flag':
+                    elif name == 'flag':
                         flags.append(value)
-                    elif identifier == 'ignore_brand':
+                    elif name == 'ignore_brand':
                         ignore_brands.append(value)
-                    elif identifier == 'ignore_odm':
+                    elif name == 'ignore_odm':
                         ignore_odms.append(value)
-                    elif identifier == 'ignore_origin':
+                    elif name == 'ignore_origin':
                         ignore_origins.append(value)
-                    elif identifier == 'file':
+                    elif name == 'file':
                         files.append(value)
-                    elif identifier == 'ip':
+                    elif name == 'ip':
                         ips.append(value)
-                    elif identifier == 'odm':
+                    elif name == 'odm':
                         odms.append(value)
-                    elif identifier == 'origin':
+                    elif name == 'origin':
                         origins.append(value)
-                    elif identifier == 'os':
+                    elif name == 'os':
                         operating_systems.append(value)
-                    elif identifier == 'package':
+                    elif name == 'package':
                         packages.append(value)
-                    elif identifier == 'partition':
+                    elif name == 'partition':
                         partitions.append(value)
-                    elif identifier == 'password':
+                    elif name == 'password':
                         passwords.append(value)
-                    elif identifier == 'program':
+                    elif name == 'program':
                         programs.append(value)
-                    elif identifier == 'rootfs':
+                    elif name == 'rootfs':
                         rootfs.append(value)
-                    elif identifier == 'serial':
+                    elif name == 'serial':
                         serials.append(value)
-                    elif identifier == 'baud':
+                    elif name == 'baud':
                         serial_baud_rates.append(int(value))
-                    elif identifier == 'type':
+                    elif name == 'type':
                         device_types.append(value)
-                    elif identifier == 'jtag':
+                    elif name == 'jtag':
                         jtags.append(value)
-                    elif identifier == 'year':
+                    elif name == 'year':
                         input_years = sorted(value.split(':', maxsplit=1))
                         if len(input_years) > 1:
                             years += list(range(int(input_years[0]), int(input_years[1]) + 1))
