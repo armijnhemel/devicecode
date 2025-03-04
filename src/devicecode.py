@@ -774,6 +774,13 @@ def parse_log(boot_log_lines):
                                  'id': flash_id, 'size_k': flash_size}
                     results.append(flash_res)
 
+        # file names
+        if 'readXML: fname=' in line:
+            res = re.search(r'readXML: fname=([\w\d/\.\-_ ]+)', line)
+            if res:
+                file_res = {'type': 'filename', 'name': res.groups()[0]}
+                results.append(file_res)
+
     return results
 
 def parse_oui(oui_string):
