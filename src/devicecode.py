@@ -736,6 +736,11 @@ def parse_log(boot_log_lines):
             if res:
                 package_res = {'type': 'package', 'name': 'e2fstools', 'versions': set(res.groups())}
                 results.append(package_res)
+        if 'fsck from util-linux' in line:
+            res = re.search(r'fsck from util-linux ([\d\.]+)', line)
+            if res:
+                package_res = {'type': 'package', 'name': 'util-linux', 'versions': set(res.groups())}
+                results.append(package_res)
 
     return results
 
