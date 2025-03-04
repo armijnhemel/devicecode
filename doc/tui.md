@@ -111,7 +111,7 @@ where name can be one of:
 * `chip_type`
 * `chip_vendor`
 * `connector`
-* `fcc`
+* `fccid
 * `file`
 * `flag`
 * `ignore_brand`
@@ -220,9 +220,9 @@ devices.
 `connector` can be used to filter connectors (serial port only for now, JTAG
 in the future as well).
 
-##### FCC
+##### FCC id
 
-`fcc` can be used to show devices associated with a certain FCC identifier.
+`fccid` can be used to show devices associated with a certain FCC identifier.
 
 ##### File
 

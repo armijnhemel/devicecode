@@ -42,7 +42,7 @@ class SuggestDevices(Suggester):
         self.chips = kwargs.get('chips', [])
         self.chip_types = kwargs.get('chip_types', [])
         self.chip_vendors = kwargs.get('chip_vendors', [])
-        self.fcc = kwargs.get('fcc', [])
+        self.fcc_ids = kwargs.get('fcc_ids', [])
         self.files = kwargs.get('files', [])
         self.flags = kwargs.get('flags', [])
         self.odms = kwargs.get('odms', [])
@@ -105,10 +105,10 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(self.chip_vendors):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + self.chip_vendors[idx][len(check_value)-12:]
-        elif check_value.startswith('fcc='):
-            for idx, chk in enumerate(self.fcc):
+        elif check_value.startswith('fccid='):
+            for idx, chk in enumerate(self.fcc_ids):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.fcc[idx][len(check_value)-4:]
+                    return value + self.fcc_ids[idx][len(check_value)-6:]
         elif check_value.startswith('file='):
             for idx, chk in enumerate(self.files):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
@@ -177,7 +177,7 @@ class FilterValidator(Validator):
         self.chip_vendors = kwargs.get('chip_vendors', set())
         self.connectors = kwargs.get('connectors', set())
         self.device_types = kwargs.get('types', set())
-        self.fcc = kwargs.get('fcc', set())
+        self.fcc_ids = kwargs.get('fcc_ids', set())
         self.files = kwargs.get('files', set())
         self.ips = kwargs.get('ips', set())
         self.packages = kwargs.get('packages', set())
@@ -232,7 +232,7 @@ class FilterValidator(Validator):
                     if token_value not in self.odms:
                         return self.failure("Invalid ODM")
                 elif name == 'fcc':
-                    if token_value not in self.fcc:
+                    if token_value not in self.fcc_ids:
                         return self.failure("Invalid FCC")
                 elif name == 'file':
                     if token_value not in self.files:
@@ -348,7 +348,7 @@ class DevicecodeUI(App):
 
     CSS_PATH = "devicecode_tui.css"
     TOKEN_NAMES = ['baud', 'bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
-                   'connector', 'fcc', 'file', 'flag', 'ignore_brand', 'ignore_odm',
+                   'connector', 'fccid', 'file', 'flag', 'ignore_brand', 'ignore_odm',
                    'ignore_origin', 'ip', 'jtag', 'odm', 'origin', 'os', 'package',
                    'partition', 'password', 'program', 'rootfs', 'serial', 'type', 'year']
 
@@ -418,7 +418,7 @@ class DevicecodeUI(App):
         odms = set()
 
         # known FCC ids
-        fcc = set()
+        fcc_ids = set()
 
         # known files
         files = set()
@@ -737,7 +737,7 @@ class DevicecodeUI(App):
                     chips.add(chip['model'].lower())
 
             for fcc_id in device['regulatory']['fcc_ids']:
-                fcc.add(fcc_id['fcc_id'].lower())
+                fcc_ids.add(fcc_id['fcc_id'].lower())
 
             for package in device['software']['packages']:
                 package_name = package['name'].lower()
@@ -768,7 +768,7 @@ class DevicecodeUI(App):
                 'baud_rates': baud_rates,
                 'bootloaders': bootloaders, 'brands': brands, 'brand_data': brand_data,
                 'chips': chips, 'chip_types': chip_types, 'chip_vendors': chip_vendors,
-                'connectors': connectors, 'odms': odms, 'fcc': fcc, 'files': files, 'flags': flags,
+                'connectors': connectors, 'odms': odms, 'fcc': fcc_ids, 'files': files, 'flags': flags,
                 'ips': ips, 'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
                 'odm_connector': odm_connector, 'chip_vendor_connector': chip_vendor_connector,
                 'packages': packages, 'partitions': partitions, 'passwords': passwords,
@@ -826,7 +826,7 @@ class DevicecodeUI(App):
         connectors = data['connectors']
         device_types = data['types']
         odms = data['odms']
-        fcc = data['fcc']
+        fcc_ids = data['fcc']
         flags = data['flags']
         files = data['files']
         ips = data['ips']
@@ -931,7 +931,7 @@ class DevicecodeUI(App):
                                                 baud_rates=baud_rates,
                                                 odms=odms, chips=chips, chip_types=chip_types,
                                                 chip_vendors=chip_vendors, connectors=connectors,
-                                                fcc=fcc, files=files, ips=ips, packages=packages,
+                                                fcc_ids=fcc_ids, files=files, ips=ips, packages=packages,
                                                 partitions=partitions, passwords=passwords,
                                                 programs=programs, rootfs=rootfs,
                                                 types=device_types, token_names=self.TOKEN_NAMES)],
@@ -941,7 +941,7 @@ class DevicecodeUI(App):
                             chips=sorted(chips), chip_types=sorted(chip_types),
                             chip_vendors=sorted(chip_vendors), connectors=sorted(connectors),
                             odms=sorted(odms), operating_systems=sorted(operating_systems),
-                            fcc=sorted(fcc), files=sorted(files), flags=sorted(flags),
+                            fcc_ids=sorted(fcc_ids), files=sorted(files), flags=sorted(flags),
                             packages=sorted(packages), partitions=sorted(partitions),
                             passwords=sorted(passwords), programs=sorted(programs),
                             rootfs=sorted(rootfs), types=sorted(device_types)), valid_empty=True)
@@ -1068,7 +1068,7 @@ class DevicecodeUI(App):
                         chip_vendors.append(value)
                     elif name == 'connector':
                         connectors.add(value)
-                    elif name == 'fcc':
+                    elif name == 'fccid':
                         fccs.append(value)
                     elif name == 'flag':
                         flags.append(value)
