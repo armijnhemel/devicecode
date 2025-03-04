@@ -751,6 +751,13 @@ def parse_log(boot_log_lines):
             if res:
                 flash_res = {'type': 'parallel_flash', 'model': res.groups()[0], 'id': res.groups()[1], 'size_k': res.groups()[2]}
                 results.append(flash_res)
+        if 'NAND flash device: name' in line:
+            res = re.search(r'NAND flash device: name ([\w\d\s\.\-_]+), id ([\w\d]+) block (\d+)KB size (\d+)KB', line)
+            if res:
+                model, flash_id, block_size, flash_size = res.groups()
+                flash_res = {'type': 'nand_flash', 'model': model, 'id': flash_id, 'block_k': block_size, 'size_k': flash_size}
+                results.append(flash_res)
+
 
     return results
 
