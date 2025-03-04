@@ -127,6 +127,7 @@ where name can be one of:
 * `password`
 * `program`
 * `rootfs`
+* `sdk`
 * `serial`
 * `type`
 * `year`
@@ -297,6 +298,11 @@ extracted from output of the `ps` command.
 `rootfs` can be used to show devices where the Linux kernel has support for
 having the root file system on a certain file system type (such as `squashfs`
 or `jffs2`).
+
+##### SDK
+
+`sdk` can be used to show devices with references to a certain SDK, such as
+`LSDK` (Atheros and Qualcomm Atheros).
 
 ##### Year
 
