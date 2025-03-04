@@ -237,7 +237,7 @@ class FilterValidator(Validator):
                 elif name == 'ignore_odm':
                     if token_value not in self.odms:
                         return self.failure("Invalid ODM")
-                elif name == 'fcc':
+                elif name == 'fccid':
                     if token_value not in self.fcc_ids:
                         return self.failure("Invalid FCC")
                 elif name == 'file':
@@ -782,7 +782,7 @@ class DevicecodeUI(App):
                 'baud_rates': baud_rates, 'bootloaders': bootloaders, 'brands': brands,
                 'brand_data': brand_data, 'chips': chips, 'chip_types': chip_types,
                 'chip_vendors': chip_vendors, 'connectors': connectors, 'odms': odms,
-                'fcc': fcc_ids, 'files': files, 'flags': flags, 'ips': ips, 'brand_odm': brand_odm,
+                'fcc_ids': fcc_ids, 'files': files, 'flags': flags, 'ips': ips, 'brand_odm': brand_odm,
                 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu, 'odm_connector': odm_connector,
                 'chip_vendor_connector': chip_vendor_connector, 'packages': packages,
                 'partitions': partitions, 'passwords': passwords, 'programs': programs,
@@ -840,7 +840,7 @@ class DevicecodeUI(App):
         connectors = data['connectors']
         device_types = data['types']
         odms = data['odms']
-        fcc_ids = data['fcc']
+        fcc_ids = data['fcc_ids']
         flags = data['flags']
         files = data['files']
         ips = data['ips']
