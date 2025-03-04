@@ -741,6 +741,11 @@ def parse_log(boot_log_lines):
             if res:
                 package_res = {'type': 'package', 'name': 'util-linux', 'versions': set(res.groups())}
                 results.append(package_res)
+        if 'PEB size' in line:
+            res = re.search(r'PEB size: (\d+) bytes \(\d+ [KM]iB\), LEB size: (\d+) bytes', line)
+            if res:
+                ubi_res = {'type': 'ubi', 'peb': res.groups()[0], 'leb': res.groups()[1]}
+                results.append(ubi_res)
 
     return results
 
