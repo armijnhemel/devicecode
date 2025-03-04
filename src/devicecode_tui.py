@@ -258,6 +258,9 @@ class FilterValidator(Validator):
                 #elif name == 'type':
                     #if token_value not in self.device_types:
                         #return self.failure("Invalid type")
+                elif name == 'fcc':
+                    if token_value not in ['no', 'invalid', 'yes']:
+                        return self.failure("Invalid FCC information")
                 elif name == 'serial':
                     if token_value not in ['no', 'unknown', 'yes']:
                         return self.failure("Invalid serial port information")
