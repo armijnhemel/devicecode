@@ -717,12 +717,12 @@ def parse_log(boot_log_lines):
     for line in boot_log_lines:
         if 'Cavium Inc. SDK' in line:
             sdk = line.strip().split('SDK-', maxsplit=1)[1]
-            results.append({'type': 'sdk', 'vendor': 'Cavium', 'version': sdk})
+            results.append({'type': 'sdk', 'name': 'Cavium', 'vendor': 'Cavium', 'version': sdk})
         if 'LSDK' in line:
             lsdk_res = re.search(r'--LSDK-([\d\w\.\-_]+) ', line.strip())
             if lsdk_res:
                 sdk = lsdk_res.groups()[0]
-                results.append({'type': 'sdk', 'vendor': 'Qualcomm Atheros', 'version': sdk})
+                results.append({'type': 'sdk', 'name': 'LSDK', 'vendor': 'Qualcomm Atheros', 'version': sdk})
         if 'MIPS: machine is' in line:
             machine = line.strip().split('machine is ', maxsplit=1)[1].strip()
             if machine:
@@ -2625,6 +2625,9 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                         device.software.partitions.append(partition)
                                 elif p['type'] == 'rootfstype':
                                     device.software.rootfs = sorted(p['values'])
+                                elif p['type'] == 'sdk':
+                                    if device.software.sdk == '':
+                                        device.software.sdk = p['name']
                     for i in serial_page_hints:
                         if i in devicepage:
                             serial_page = []
