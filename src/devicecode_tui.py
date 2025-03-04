@@ -261,6 +261,9 @@ class FilterValidator(Validator):
                 elif name == 'rootfs':
                     if token_value not in self.rootfs:
                         return self.failure("Invalid rootfs")
+                elif name == 'sdk':
+                    if token_value not in self.sdks:
+                        return self.failure("Invalid SDK")
                 #elif name == 'type':
                     #if token_value not in self.device_types:
                         #return self.failure("Invalid type")
@@ -653,6 +656,10 @@ class DevicecodeUI(App):
                 if not show_node:
                     continue
 
+            if filter_sdks:
+                if device['software']['sdk'].lower() not in filter_sdks:
+                    continue
+
             if filter_fccs:
                 show_node = False
                 for fcc_id in device['regulatory']['fcc_ids']:
@@ -763,6 +770,9 @@ class DevicecodeUI(App):
 
             for fs in device['software']['rootfs']:
                 rootfs.add(fs.lower())
+
+            if device['software']['sdk']:
+                sdks.add(device['software']['sdk'].lower())
 
             if 'programs' in device['software']:
                 for prog in device['software']['programs']:
