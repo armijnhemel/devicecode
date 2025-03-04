@@ -781,6 +781,14 @@ def parse_log(boot_log_lines):
                 file_res = {'type': 'filename', 'name': res.groups()[0]}
                 results.append(file_res)
 
+        # source code and function file names
+        if '::' in line:
+            res = re.search(r'([\w\d/\.\-_]+\.c)::([\w\d_]+)\(\)', line)
+            if res:
+                name, function = res.groups()
+                file_res = {'type': 'source', 'name': name, 'function': function}
+                results.append(file_res)
+
     return results
 
 def parse_oui(oui_string):
