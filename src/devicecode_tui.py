@@ -51,6 +51,7 @@ class SuggestDevices(Suggester):
         self.passwords = kwargs.get('passwords', [])
         self.programs = kwargs.get('programs', [])
         self.rootfs = kwargs.get('rootfs', [])
+        self.sdks = kwargs.get('sdks', [])
         self.device_types = kwargs.get('types', [])
 
     async def get_suggestion(self, value: str) -> str | None:
@@ -117,6 +118,10 @@ class SuggestDevices(Suggester):
             for idx, chk in enumerate(self.flags):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
                     return value + self.flags[idx][len(check_value)-5:]
+        elif check_value.startswith('sdk='):
+            for idx, chk in enumerate(self.sdks):
+                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                    return value + self.sdks[idx][len(check_value)-4:]
         elif check_value.startswith('serial='):
             for idx, chk in enumerate(serial_values):
                 if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
@@ -184,6 +189,7 @@ class FilterValidator(Validator):
         self.partitions = kwargs.get('partitions', set())
         self.passwords = kwargs.get('passwords', set())
         self.rootfs = kwargs.get('rootfs', set())
+        self.sdks = kwargs.get('sdks', set())
         self.token_names = kwargs.get('token_names', [])
 
     def validate(self, value: str) -> ValidationResult:
@@ -353,7 +359,8 @@ class DevicecodeUI(App):
     TOKEN_NAMES = ['baud', 'bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
                    'connector', 'fccid', 'file', 'flag', 'ignore_brand', 'ignore_odm',
                    'ignore_origin', 'ip', 'jtag', 'odm', 'origin', 'os', 'package',
-                   'partition', 'password', 'program', 'rootfs', 'serial', 'type', 'year']
+                   'partition', 'password', 'program', 'rootfs', 'sdk', 'serial', 'type',
+                   'year']
 
     def __init__(self, devicecode_dirs, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -386,6 +393,7 @@ class DevicecodeUI(App):
         filter_passwords = kwargs.get('passwords', [])
         filter_programs = kwargs.get('programs', [])
         filter_rootfs = kwargs.get('rootfs', [])
+        filter_sdks = kwargs.get('sdks', [])
         filter_serials = kwargs.get('serials', [])
         filter_years = kwargs.get('years', [])
 
@@ -449,6 +457,9 @@ class DevicecodeUI(App):
 
         # known rootfs
         rootfs = set()
+
+        # known SDKs
+        sdks = set()
 
         # known device_types
         device_types = set()
@@ -768,14 +779,14 @@ class DevicecodeUI(App):
             flags.update([x.casefold() for x in device['flags']])
 
         return {'brands_to_devices': brands_to_devices, 'odm_to_devices': odm_to_devices,
-                'baud_rates': baud_rates,
-                'bootloaders': bootloaders, 'brands': brands, 'brand_data': brand_data,
-                'chips': chips, 'chip_types': chip_types, 'chip_vendors': chip_vendors,
-                'connectors': connectors, 'odms': odms, 'fcc': fcc_ids, 'files': files, 'flags': flags,
-                'ips': ips, 'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
-                'odm_connector': odm_connector, 'chip_vendor_connector': chip_vendor_connector,
-                'packages': packages, 'partitions': partitions, 'passwords': passwords,
-                'programs': programs, 'rootfs': rootfs, 'types': device_types, 'years': years,
+                'baud_rates': baud_rates, 'bootloaders': bootloaders, 'brands': brands,
+                'brand_data': brand_data, 'chips': chips, 'chip_types': chip_types,
+                'chip_vendors': chip_vendors, 'connectors': connectors, 'odms': odms,
+                'fcc': fcc_ids, 'files': files, 'flags': flags, 'ips': ips, 'brand_odm': brand_odm,
+                'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu, 'odm_connector': odm_connector,
+                'chip_vendor_connector': chip_vendor_connector, 'packages': packages,
+                'partitions': partitions, 'passwords': passwords, 'programs': programs,
+                'rootfs': rootfs, 'sdks': sdks, 'types': device_types, 'years': years,
                 'year_data': year_data}
 
 
@@ -843,6 +854,7 @@ class DevicecodeUI(App):
         passwords = data['passwords']
         programs = data['programs']
         rootfs = data['rootfs']
+        sdks = data['sdks']
         chip_vendor_connector = data['chip_vendor_connector']
         years = data['years']
         year_data = data['year_data']
@@ -931,13 +943,13 @@ class DevicecodeUI(App):
         # input field
         input_filter = Input(placeholder='Filter',
                             validators=[FilterValidator(bootloaders=bootloaders, brands=brands,
-                                                baud_rates=baud_rates,
-                                                odms=odms, chips=chips, chip_types=chip_types,
-                                                chip_vendors=chip_vendors, connectors=connectors,
-                                                fcc_ids=fcc_ids, files=files, ips=ips, packages=packages,
-                                                partitions=partitions, passwords=passwords,
-                                                programs=programs, rootfs=rootfs,
-                                                types=device_types, token_names=self.TOKEN_NAMES)],
+                                            baud_rates=baud_rates, odms=odms, chips=chips,
+                                            chip_types=chip_types, chip_vendors=chip_vendors,
+                                            connectors=connectors, fcc_ids=fcc_ids, files=files,
+                                            ips=ips, packages=packages, partitions=partitions,
+                                            passwords=passwords, programs=programs, rootfs=rootfs,
+                                            sdks=sdks, types=device_types,
+                                            token_names=self.TOKEN_NAMES)],
                             suggester=SuggestDevices(self.TOKEN_NAMES, case_sensitive=False,
                             baud_rates=sorted(baud_rates),
                             bootloaders=sorted(bootloaders), brands=sorted(brands),
@@ -947,7 +959,8 @@ class DevicecodeUI(App):
                             fcc_ids=sorted(fcc_ids), files=sorted(files), flags=sorted(flags),
                             packages=sorted(packages), partitions=sorted(partitions),
                             passwords=sorted(passwords), programs=sorted(programs),
-                            rootfs=sorted(rootfs), types=sorted(device_types)), valid_empty=True)
+                            rootfs=sorted(rootfs), sdks=sorted(sdks), types=sorted(device_types)),
+                            valid_empty=True)
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
@@ -1042,6 +1055,7 @@ class DevicecodeUI(App):
         passwords = []
         programs = []
         rootfs = []
+        sdks = []
         serials = []
         serial_baud_rates = []
         years = []
@@ -1101,6 +1115,8 @@ class DevicecodeUI(App):
                         programs.append(value)
                     elif name == 'rootfs':
                         rootfs.append(value)
+                    elif name == 'sdk':
+                        sdks.append(value)
                     elif name == 'serial':
                         serials.append(value)
                     elif name == 'baud':
@@ -1124,7 +1140,7 @@ class DevicecodeUI(App):
                                 ignore_odms=ignore_odms, ignore_origins=ignore_origins, ips=ips,
                                 jtags=jtags, operating_systems=operating_systems, origins=origins,
                                 passwords=passwords, packages=packages, partitions=partitions,
-                                programs=programs, rootfs=rootfs, serials=serials,
+                                programs=programs, rootfs=rootfs, sdks=sdks, serials=serials,
                                 serial_baud_rates=serial_baud_rates, years=years,
                                 types=device_types)
 
