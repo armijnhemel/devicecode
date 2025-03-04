@@ -99,10 +99,10 @@ operators (for combining results).
 Statements resemble bash shell commands and exports and are of the form:
 
 ```
-identifier=value
+name=value
 ```
 
-where identifier can be one of:
+where name can be one of:
 
 * `baud`
 * `bootloader`
@@ -131,11 +131,11 @@ where identifier can be one of:
 * `type`
 * `year`
 
-Both identifiers and values are case insensitive.
+Both names and values are case insensitive.
 
-An identifier can appear multiple times. Multiple instances with the same
-identifer should be interpreted as "OR". Instances with a different identifier
-should be interpreted as "AND". As an example:
+A name can appear multiple times. Multiple instances with the same name should
+be interpreted as "OR". Instances with a different name should be interpreted
+as "AND". As an example:
 
 ```
 odm=edimax odm=accton
