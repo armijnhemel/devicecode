@@ -370,8 +370,11 @@ class DevicecodeUI(App):
         self.devicecode_directories = devicecode_dirs
 
     def compose_data_sets(self, **kwargs):
-        # Optional filters with data that should
-        # be displayed or ignored.
+        '''Compose the data sets for devices for display, optionally filtered'''
+
+        # Optional filters with data for devices that should
+        # be displayed or ignored. If these filters are empty,
+        # then the data set will be the full data (unfiltered).
         filter_baud_rates = kwargs.get('serial_baud_rates', [])
         filter_bootloaders = kwargs.get('bootloaders', [])
         filter_brands = kwargs.get('brands', [])
@@ -792,12 +795,12 @@ class DevicecodeUI(App):
                 'baud_rates': baud_rates, 'bootloaders': bootloaders, 'brands': brands,
                 'brand_data': brand_data, 'chips': chips, 'chip_types': chip_types,
                 'chip_vendors': chip_vendors, 'connectors': connectors, 'odms': odms,
-                'fcc_ids': fcc_ids, 'files': files, 'flags': flags, 'ips': ips, 'brand_odm': brand_odm,
-                'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu, 'odm_connector': odm_connector,
-                'chip_vendor_connector': chip_vendor_connector, 'packages': packages,
-                'partitions': partitions, 'passwords': passwords, 'programs': programs,
-                'rootfs': rootfs, 'sdks': sdks, 'types': device_types, 'years': years,
-                'year_data': year_data}
+                'fcc_ids': fcc_ids, 'files': files, 'flags': flags, 'ips': ips,
+                'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
+                'odm_connector': odm_connector, 'chip_vendor_connector': chip_vendor_connector,
+                'packages': packages, 'partitions': partitions, 'passwords': passwords,
+                'programs': programs, 'rootfs': rootfs, 'sdks': sdks, 'types': device_types,
+                'years': years, 'year_data': year_data}
 
 
     def compose(self) -> ComposeResult:
@@ -1256,6 +1259,7 @@ class DevicecodeUI(App):
         pass
 
     def build_chips_report(self, results):
+        '''Construct Markdown with chip related information'''
         if results:
             new_markdown = ''
             if results['cpus']:
@@ -1319,6 +1323,8 @@ class DevicecodeUI(App):
         return "No known chips"
 
     def build_regulatory_report(self, result):
+        '''Construct Markdown with regulatory and commercial information
+           such as FCC ids, Amazon article numbers, WiFi certification, etc.'''
         new_markdown = ""
         if result:
             new_markdown += "# Regulatory\n"
@@ -1329,7 +1335,6 @@ class DevicecodeUI(App):
             new_markdown += f"|**WiFi date** | {result['regulatory']['wifi_certified_date']}\n"
 
             # FCC
-            fcc_ids = ''
             if result['regulatory']['fcc_ids']:
                 new_markdown += "# FCC\n"
                 new_markdown += "|FCC id|date|type|grantee|\n|--|--|--|--|\n"
@@ -1356,6 +1361,7 @@ class DevicecodeUI(App):
         return new_markdown
 
     def build_serial_jtag_report(self, result):
+        '''Construct Markdown with serial port and JTAG information'''
         if result:
             new_markdown = ''
             if result['has_jtag'] == 'yes':
@@ -1404,6 +1410,7 @@ class DevicecodeUI(App):
         return "No serial information"
 
     def build_fcc_document_report(self, result):
+        '''Construct Markdown with information from downloaded FCC reports'''
         new_markdown = ""
         if result:
             for pdf in result:
@@ -1419,6 +1426,8 @@ class DevicecodeUI(App):
         return new_markdown
 
     def build_software_report(self, result):
+        '''Construct Markdown with software related information, such as
+           bootloader, packages, partitions, file names, etcetera'''
         new_markdown = ""
         if result:
             # bootloader
@@ -1470,7 +1479,7 @@ class DevicecodeUI(App):
                     new_markdown += f"|**Full name** |{p['full_name']}\n"
                     new_markdown += f"|**Parameters** |{' '.join( p['parameters'])}\n"
                     new_markdown += f"|**Origin** |{p['origin']}\n"
-                    new_markdown += f"||\n"
+                    new_markdown += "||\n"
             # Files
             if 'files' in result:
                 new_markdown += "# Files\n"
@@ -1480,6 +1489,7 @@ class DevicecodeUI(App):
         return new_markdown
 
     def build_model_report(self, result):
+        '''Construct Markdown with device model information'''
         new_markdown = ""
         if result:
             new_markdown += "# Model information\n"
@@ -1502,6 +1512,7 @@ class DevicecodeUI(App):
         return new_markdown
 
     def build_network_report(self, result):
+        '''Construct Markdown with network information'''
         new_markdown = ''
         if result:
             new_markdown += "# Network information\n"
@@ -1539,6 +1550,7 @@ class DevicecodeUI(App):
         return new_markdown
 
     def build_power_report(self, result):
+        '''Construct Markdown with power supply information'''
         new_markdown = ''
         if result:
             new_markdown += "# Power Supply\n"
@@ -1561,6 +1573,7 @@ class DevicecodeUI(App):
         return new_markdown
 
     def build_device_report(self, result):
+        '''Construct Markdown with top level device information'''
         new_markdown = ""
         if result:
             new_markdown = "| | |\n|--|--|\n"
