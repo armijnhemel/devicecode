@@ -823,14 +823,13 @@ def parse_chip_openwrt(chip_string):
         if chip_manufacturer in defaults.CHIP_MANUFACTURERS:
             manufacturer_found = True
             break
-        elif len(chip_split) == 1:
+        if len(chip_split) == 1:
             # this is either just a model number without a manufacturer,
             # or bogus data
             break
-        else:
-            if maxsplit == num_spaces:
-                break
-            maxsplit += 1
+        if maxsplit == num_spaces:
+            break
+        maxsplit += 1
 
     if manufacturer_found:
         chip_result.manufacturer_verified = True
