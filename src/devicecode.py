@@ -597,13 +597,20 @@ def parse_log(boot_log_lines):
         res_squashfs = re_squashfs.findall(boot_log)
         if res_squashfs:
             squashfss = set(res_squashfs)
-            squashfs_res = {'type': 'file system', 'name': 'squashfs', 'versions': list(squashfss), 'notes': ''}
+            if 'LZMA suppport for slax.org by jro' in boot_log:
+                squashfs_res = {'type': 'file system', 'name': 'squashfs',
+                                'versions': list(squashfss), 'notes': 'LZMA support (slax.org)'}
+            else:
+                squashfs_res = {'type': 'file system', 'name': 'squashfs',
+                                'versions': list(squashfss), 'notes': ''}
             results.append(squashfs_res)
         if 'version 4.0 with LZMA457 ported by BRCM' in boot_log:
-            squashfs_res = {'type': 'file system', 'name': 'squashfs', 'versions': [4.0], 'notes': 'LZMA457 ported by BRCM'}
+            squashfs_res = {'type': 'file system', 'name': 'squashfs', 'versions': [4.0],
+                            'notes': 'LZMA457 ported by BRCM'}
             results.append(squashfs_res)
         if 'version 3.1 includes LZMA decompression support' in boot_log:
-            squashfs_res = {'type': 'file system', 'name': 'squashfs', 'versions': [3.1], 'notes': 'LZMA decompression support'}
+            squashfs_res = {'type': 'file system', 'name': 'squashfs', 'versions': [3.1],
+                            'notes': 'LZMA decompression support'}
             results.append(squashfs_res)
 
     re_manufacturer = re.compile(r"NAND device: Manufacturer ID: 0x[\d\w]+, Chip ID: 0x[\d\w]+ \(([\d\w\s/]+) NAND")
