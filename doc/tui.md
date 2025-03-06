@@ -102,7 +102,16 @@ Statements resemble bash shell commands and exports and are of the form:
 name=value
 ```
 
-where name can be one of:
+In the future this will be extended to allow extra parameters (which will be
+different for each field):
+
+```
+name?params=value
+```
+
+The format of `params` has not been defined yet.
+
+`name` can be one of:
 
 * `baud`
 * `bootloader`
@@ -111,7 +120,7 @@ where name can be one of:
 * `chip_type`
 * `chip_vendor`
 * `connector`
-* `fccid
+* `fccid`
 * `file`
 * `flag`
 * `ignore_brand`

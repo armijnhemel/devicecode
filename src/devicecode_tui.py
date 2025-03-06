@@ -69,99 +69,102 @@ class SuggestDevices(Suggester):
 
         # first split the value
         check_value = value.rsplit(' ', maxsplit=1)[-1]
+        if '=' in check_value:
+            name_args, token_value = check_value.split('=', maxsplit=1)
+            len_name = len(name_args) + 1
 
-        # then check and suggest a value. Don't ask how it works,
-        # but it works. When adding a new value, don't forget to
-        # correctly compute the lengths, otherwise some characters
-        # will appear to have been overwritten.
-        if check_value.startswith('odm='):
-            for idx, chk in enumerate(self.odms):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.odms[idx][len(check_value)-4:]
-        elif check_value.startswith('ignore_odm='):
-            for idx, chk in enumerate(self.odms):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.odms[idx][len(check_value)-11:]
-        elif check_value.startswith('ignore_brand='):
-            for idx, chk in enumerate(self.brands):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.brands[idx][len(check_value)-13:]
-        elif check_value.startswith('brand='):
-            for idx, chk in enumerate(self.brands):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.brands[idx][len(check_value)-6:]
-        elif check_value.startswith('bootloader='):
-            for idx, chk in enumerate(self.bootloaders):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.bootloaders[idx][len(check_value)-11:]
-        elif check_value.startswith('chip='):
-            for idx, chk in enumerate(self.chips):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.chips[idx][len(check_value)-5:]
-        elif check_value.startswith('chip_type='):
-            for idx, chk in enumerate(self.chip_types):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.chip_types[idx][len(check_value)-10:]
-        elif check_value.startswith('chip_vendor='):
-            for idx, chk in enumerate(self.chip_vendors):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.chip_vendors[idx][len(check_value)-12:]
-        elif check_value.startswith('fccid='):
-            for idx, chk in enumerate(self.fcc_ids):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.fcc_ids[idx][len(check_value)-6:]
-        elif check_value.startswith('file='):
-            for idx, chk in enumerate(self.files):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.files[idx][len(check_value)-5:]
-        elif check_value.startswith('flag='):
-            for idx, chk in enumerate(self.flags):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.flags[idx][len(check_value)-5:]
-        elif check_value.startswith('sdk='):
-            for idx, chk in enumerate(self.sdks):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.sdks[idx][len(check_value)-4:]
-        elif check_value.startswith('serial='):
-            for idx, chk in enumerate(serial_values):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + serial_values[idx][len(check_value)-7:]
-        elif check_value.startswith('jtag='):
-            for idx, chk in enumerate(jtag_values):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + jtag_values[idx][len(check_value)-5:]
-        elif check_value.startswith('origin='):
-            for idx, chk in enumerate(origin_values):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + origin_values[idx][len(check_value)-7:]
-        elif check_value.startswith('ignore_origin='):
-            for idx, chk in enumerate(origin_values):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + origin_values[idx][len(check_value)-14:]
-        elif check_value.startswith('password='):
-            for idx, chk in enumerate(self.passwords):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.passwords[idx][len(check_value)-9:]
-        elif check_value.startswith('package='):
-            for idx, chk in enumerate(self.packages):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.packages[idx][len(check_value)-8:]
-        elif check_value.startswith('partition='):
-            for idx, chk in enumerate(self.partitions):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.partitions[idx][len(check_value)-10:]
-        elif check_value.startswith('rootfs='):
-            for idx, chk in enumerate(self.rootfs):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.rootfs[idx][len(check_value)-7:]
-        elif check_value.startswith('program='):
-            for idx, chk in enumerate(self.programs):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.programs[idx][len(check_value)-8:]
-        elif check_value.startswith('type='):
-            for idx, chk in enumerate(self.device_types):
-                if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                    return value + self.device_types[idx][len(check_value)-5:]
+            # then check and suggest a value. Don't ask how it works,
+            # but it works. When adding a new value, don't forget to
+            # correctly compute the lengths, otherwise some characters
+            # will appear to have been overwritten.
+            if check_value.startswith('odm'):
+                for idx, chk in enumerate(self.odms):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.odms[idx][len(check_value)-len_name:]
+            elif check_value.startswith('ignore_odm'):
+                for idx, chk in enumerate(self.odms):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.odms[idx][len(check_value)-len_name:]
+            elif check_value.startswith('ignore_brand'):
+                for idx, chk in enumerate(self.brands):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.brands[idx][len(check_value)-len_name:]
+            elif check_value.startswith('brand'):
+                for idx, chk in enumerate(self.brands):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.brands[idx][len(check_value)-len_name:]
+            elif check_value.startswith('bootloader'):
+                for idx, chk in enumerate(self.bootloaders):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.bootloaders[idx][len(check_value)-len_name:]
+            elif check_value.startswith('chip'):
+                for idx, chk in enumerate(self.chips):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.chips[idx][len(check_value)-len_name:]
+            elif check_value.startswith('chip_type'):
+                for idx, chk in enumerate(self.chip_types):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.chip_types[idx][len(check_value)-len_name:]
+            elif check_value.startswith('chip_vendor'):
+                for idx, chk in enumerate(self.chip_vendors):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.chip_vendors[idx][len(check_value)-len_name:]
+            elif check_value.startswith('fccid'):
+                for idx, chk in enumerate(self.fcc_ids):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.fcc_ids[idx][len(check_value)-len_name:]
+            elif check_value.startswith('file'):
+                for idx, chk in enumerate(self.files):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.files[idx][len(check_value)-len_name:]
+            elif check_value.startswith('flag'):
+                for idx, chk in enumerate(self.flags):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.flags[idx][len(check_value)-len_name:]
+            elif check_value.startswith('sdk'):
+                for idx, chk in enumerate(self.sdks):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.sdks[idx][len(check_value)-len_name:]
+            elif check_value.startswith('serial'):
+                for idx, chk in enumerate(serial_values):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + serial_values[idx][len(check_value)-len_name:]
+            elif check_value.startswith('jtag'):
+                for idx, chk in enumerate(jtag_values):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + jtag_values[idx][len(check_value)-len_name:]
+            elif check_value.startswith('origin'):
+                for idx, chk in enumerate(origin_values):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + origin_values[idx][len(check_value)-len_name:]
+            elif check_value.startswith('ignore_origin'):
+                for idx, chk in enumerate(origin_values):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + origin_values[idx][len(check_value)-len_name:]
+            elif check_value.startswith('password'):
+                for idx, chk in enumerate(self.passwords):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.passwords[idx][len(check_value)-len_name:]
+            elif check_value.startswith('package'):
+                for idx, chk in enumerate(self.packages):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.packages[idx][len(check_value)-len_name:]
+            elif check_value.startswith('partition'):
+                for idx, chk in enumerate(self.partitions):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.partitions[idx][len(check_value)-len_name:]
+            elif check_value.startswith('rootfs'):
+                for idx, chk in enumerate(self.rootfs):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.rootfs[idx][len(check_value)-len_name:]
+            elif check_value.startswith('program'):
+                for idx, chk in enumerate(self.programs):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.programs[idx][len(check_value)-len_name:]
+            elif check_value.startswith('type'):
+                for idx, chk in enumerate(self.device_types):
+                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
+                        return value + self.device_types[idx][len(check_value)-len_name:]
 
         for idx, suggestion in enumerate(self._for_comparison):
             if suggestion.startswith(check_value):
@@ -203,7 +206,11 @@ class FilterValidator(Validator):
             for t in tokens:
                 if '=' not in t:
                     return self.failure("Invalid name")
-                name, token_value = t.split('=', maxsplit=1)
+                name_args, token_value = t.split('=', maxsplit=1)
+                if '?' in name_args:
+                    name, args = name_args.split('?', maxsplit=1)
+                else:
+                    name = name_args
                 if name not in self.token_names:
                     return self.failure("Invalid name")
                 if name == 'bootloader':
@@ -1085,7 +1092,11 @@ class DevicecodeUI(App):
                 tokens = shlex.split(event.value.lower())
 
                 for t in tokens:
-                    name, value = t.split('=', maxsplit=1)
+                    name_args, value = t.split('=', maxsplit=1)
+                    if '?' in name_args:
+                        name, args = name_args.split('?', maxsplit=1)
+                    else:
+                        name = name_args
                     if name == 'bootloader':
                         bootloaders.append(value)
                     elif name == 'brand':
