@@ -907,35 +907,35 @@ def parse_os(os_string):
     re_linux_kernel = re.compile(r"^([2-6]\.[\d\w\-\.\+]*)$")
 
     if len(fields) > 1:
-        for field in fields[1:]:
+        for os_field in fields[1:]:
             if fields[0] == 'Linux':
-                if field in ['', ',']:
+                if os_field in ['', ',']:
                     continue
-                if 'LSDK' in field:
+                if 'LSDK' in os_field:
                     # Atheros/Qualcomm Atheros SDK version
-                    sdk_splits = field.split('-', maxsplit=1)
+                    sdk_splits = os_field.split('-', maxsplit=1)
                     if len(sdk_splits) == 2:
                         sdk_version = sdk_splits[1]
                     else:
                         sdk_version = ''
                     result['sdk'] = 'LSDK'
                     result['sdk_version'] = sdk_version
-                if 'Android' in field:
+                if 'Android' in os_field:
                     result['distribution'] = 'Android'
-                elif 'Debian' in field:
+                elif 'Debian' in os_field:
                     result['distribution'] = 'Debian'
-                elif 'Ubuntu' in field:
+                elif 'Ubuntu' in os_field:
                     result['distribution'] = 'Ubuntu'
-                elif 'Fedora' in field:
+                elif 'Fedora' in os_field:
                     result['distribution'] = 'Fedora'
-                elif 'OpenWrt' in field:
+                elif 'OpenWrt' in os_field:
                     result['distribution'] = 'OpenWrt'
-                elif 'OpenIPC' in field:
+                elif 'OpenIPC' in os_field:
                     result['distribution'] = 'OpenIPC'
-                elif 'Yocto' in field:
+                elif 'Yocto' in os_field:
                     result['distribution'] = 'Yocto'
                 else:
-                    regex_res = re_linux_kernel.match(field)
+                    regex_res = re_linux_kernel.match(os_field)
                     if regex_res is not None:
                         result['kernel_version'] = regex_res.groups()[0]
     return result
@@ -975,18 +975,18 @@ def parse_serial_jtag(serial_string):
     # be a fixed order to store information the only way
     # is to process every single field.
     fields_to_process = []
-    for field in fields:
-        if field.strip() == '':
+    for serial_field in fields:
+        if serial_field.strip() == '':
             # skip empty fields
             continue
-        if field.strip().lower() == 'yes':
+        if serial_field.strip().lower() == 'yes':
             continue
-        if field.strip().lower() == 'internal':
+        if serial_field.strip().lower() == 'internal':
             continue
-        if ';' in field.strip():
+        if ';' in serial_field.strip():
             # fields have been concatenated with ; and
             # should first be split
-            fs = field.split(';')
+            fs = serial_field.split(';')
             for ff in fs:
                 if ff.strip().strip() == '':
                     # skip empty fields
@@ -997,19 +997,19 @@ def parse_serial_jtag(serial_string):
                     continue
                 fields_to_process.append(ff.strip())
         else:
-            fields_to_process.append(field.strip())
+            fields_to_process.append(serial_field.strip())
 
-    for field in fields_to_process:
+    for serial_field in fields_to_process:
         # try to find where the connector can be found
         # (typically which solder pads). TODO: some devices
         # have multiple connectors listed, example:
         # Arndale Board
         if 'connector' not in result:
-            regex_result = defaults.REGEX_SERIAL_CONNECTOR.match(field.upper())
+            regex_result = defaults.REGEX_SERIAL_CONNECTOR.match(serial_field.upper())
             if regex_result is not None:
                 result['connector'] = regex_result.groups()[0]
                 continue
-            regex_result = defaults.REGEX_SERIAL_CONNECTOR2.match(field.upper())
+            regex_result = defaults.REGEX_SERIAL_CONNECTOR2.match(serial_field.upper())
             if regex_result is not None:
                 result['connector'] = regex_result.groups()[0]
                 continue
@@ -1017,14 +1017,14 @@ def parse_serial_jtag(serial_string):
         # baud rates
         baud_rate = None
         for br in defaults.BAUD_RATES:
-            if str(br) in field:
+            if str(br) in serial_field:
                 baud_rate = br
                 result['baud_rate'] = baud_rate
                 break
 
         # data/parity/stop
         for dps in defaults.DATA_PARITY_STOP:
-            if dps in field.upper():
+            if dps in serial_field.upper():
                 result['data_parity_stop'] = defaults.DATA_PARITY_STOP[dps]
                 break
 
@@ -1033,51 +1033,51 @@ def parse_serial_jtag(serial_string):
             continue
 
         # populated or not?
-        if 'populated' in field:
-            if field == 'unpopulated':
+        if 'populated' in serial_field:
+            if serial_field == 'unpopulated':
                 result['populated'] = 'no'
-            elif field == 'populated':
+            elif serial_field == 'populated':
                 result['populated'] = 'yes'
             continue
 
         # voltage
-        if field.upper() in ['3.3', '3.3V', '3.3V)', '3.3V TTL', 'TTL 3.3V']:
+        if serial_field.upper() in ['3.3', '3.3V', '3.3V)', '3.3V TTL', 'TTL 3.3V']:
             result['voltage'] = 3.3
             continue
-        if field.upper() in ['1.8', '1.8V', '1.8V TTL', 'TTL 1.8V']:
+        if serial_field.upper() in ['1.8', '1.8V', '1.8V TTL', 'TTL 1.8V']:
             result['voltage'] = 1.8
             continue
 
         # pin header
-        regex_result = defaults.REGEX_SERIAL_PIN_HEADER.match(field)
+        regex_result = defaults.REGEX_SERIAL_PIN_HEADER.match(serial_field)
         if regex_result is not None:
             result['number_of_pins'] = int(regex_result.groups()[0])
             continue
 
         # console via RJ11?
         if 'connector' not in result:
-            if field in ['RJ11', 'RJ-11', 'RJ11 port']:
+            if serial_field in ['RJ11', 'RJ-11', 'RJ11 port']:
                 result['connector'] = 'RJ11'
                 continue
 
         # console via RJ45?
         if 'connector' not in result:
-            if field in ['RJ45', 'RJ-45', 'RJ45 console', 'RJ-45 console', 'console port (RJ45)',
-                         'console port (RJ-45)', 'console (RJ45)', 'console (RJ-45)', '(RJ45)',
-                         'RJ-45 Console port']:
+            if serial_field in ['RJ45', 'RJ-45', 'RJ45 console', 'RJ-45 console',
+                         'console port (RJ45)', 'console port (RJ-45)', 'console (RJ45)',
+                         'console (RJ-45)', '(RJ45)', 'RJ-45 Console port']:
                 result['connector'] = 'RJ45'
                 continue
 
         # DE-9 connector
         if 'connector' not in result:
-            if field in ['DB9', 'DB-9', '(DB9)', '(DB-9)', 'DB9 (Consol)', 'DE9', 'DE-9',
+            if serial_field in ['DB9', 'DB-9', '(DB9)', '(DB-9)', 'DB9 (Consol)', 'DE9', 'DE-9',
                          'console port (DE-9)', 'console (DE-9)']:
                 result['connector'] = 'DE-9'
                 continue
 
         # USB connector
         if 'connector' not in result:
-            if field in ['microUSB', 'USB Female Micro-B', 'USB Female Mini-B',
+            if serial_field in ['microUSB', 'USB Female Micro-B', 'USB Female Mini-B',
                          'USB Female (Type-C)', 'USB Micro-B (Female)', 'USB (Type-C) Female',
                          'USB Female (Micro-B)', 'USB Female Type-C', 'USB (Micro-B) Female']:
                 result['connector'] = 'USB'
@@ -1085,7 +1085,7 @@ def parse_serial_jtag(serial_string):
 
         # console via HE10?
         if 'connector' not in result:
-            if field in ['HE-10', 'HE-10 conn.', '(HE-10 connector']:
+            if serial_field in ['HE-10', 'HE-10 conn.', '(HE-10 connector']:
                 result['connector'] = 'HE10'
                 continue
 
