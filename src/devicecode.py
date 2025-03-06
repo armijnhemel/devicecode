@@ -1317,10 +1317,16 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                         wiki_section_header = f.params[0].strip()
                                         if wiki_section_header.startswith('techdata'):
                                             identifier, value = wiki_section_header.split('=', maxsplit=1)
-                                            if value.strip() != '':
+                                            value = value.strip()
+                                            if value:
                                                 # rewrite to OpenWrt identifier
-                                                if value.strip().startswith('https://openwrt.org/') and 'hwdata' in value:
-                                                    device.web.openwrt = value[21:].strip().replace('/', ':')
+                                                if value.startswith('https://openwrt.org/') and 'hwdata' in value:
+                                                    device.web.openwrt = value[20:].strip().replace('/', ':')
+                                    if f.name.strip() in ['OpenWrtTechData']:
+                                        value = f.params[0].strip()
+                                        # rewrite to OpenWrt identifier
+                                        if value.strip().startswith('https://openwrt.org/') and 'hwdata' in value:
+                                            device.web.openwrt = value[20:].strip().replace('/', ':')
                                     elif f.name.strip() in ['SCollapse', 'SCollapse2']:
                                         # alternative place for boot log, GPL info, /proc, etc.
                                         is_processed = False
