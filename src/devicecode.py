@@ -2586,6 +2586,13 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                     device.software.third_party.append('OpenWrt')
                     device.software.openwrt = 'yes'
 
+                # power supply
+                if owrt.powersupply not in ['¿', '', '-']:
+                    pass
+
+                if owrt.phoneports not in ['¿', '', '-', 'NULL']:
+                    device.flags.append('telephone')
+
                 # now process any logs in the device page, if available
                 if devicepage:
                     for i in bootlog_hints:

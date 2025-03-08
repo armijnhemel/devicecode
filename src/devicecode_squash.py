@@ -115,6 +115,11 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
             print(f"  Device 1: {device_one['flags']}")
             print(f"  Device 2: {device_two['flags']}")
         device_one['flags'] = sorted(flags)
+    if device_three:
+        if device_three['flags']:
+            flags = set(device_one['flags'])
+            flags.update(device_three['flags'])
+            device_one['flags'] = sorted(flags)
 
     # flash
     if device_one['flash'] != device_two['flash']:
