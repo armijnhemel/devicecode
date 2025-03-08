@@ -2343,6 +2343,9 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                 else:
                                     pass
 
+                            if device.brand == 'test':
+                                have_valid_data = False
+
                             if not have_valid_data:
                                 continue
 
