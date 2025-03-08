@@ -515,6 +515,11 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
             print(f"  Device 1: {device_one['software']['third_party']}")
             print(f"  Device 2: {device_two['software']['third_party']}")
 
+        if not conflict:
+            if device_three:
+                third_party.update(device_three['software']['third_party'])
+        software['third_party'] = sorted(third_party)
+
     if not conflict:
         if device_three:
             for i in ['ddwrt', 'gargoyle', 'openwrt', 'os', 'os_version', 'sdk', 'tomato']:
@@ -528,8 +533,6 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
                 software['packages'] = device_three['software']['packages']
             if not software['partitions']:
                 software['partitions'] = device_three['software']['partitions']
-            third_party.update(device_three['software']['third_party'])
-        software['third_party'] = sorted(third_party)
         device_one['software'] = software
 
     # switch
