@@ -378,6 +378,7 @@ class DevicecodeUI(App):
                    {'name': 'connector', 'has_params': False},
                    {'name': 'fccid', 'has_params': False},
                    {'name': 'file', 'has_params': False},
+                   {'name': 'flag', 'has_params': False},
                    {'name': 'ignore_brand', 'has_params': False},
                    {'name': 'ignore_odm', 'has_params': False},
                    {'name': 'ignore_origin', 'has_params': False},
