@@ -72,99 +72,100 @@ class SuggestDevices(Suggester):
         if '=' in check_value:
             name_args, token_value = check_value.split('=', maxsplit=1)
             len_name = len(name_args) + 1
+            suggestion_offset = len(check_value)-len_name
 
             # then check and suggest a value. Don't ask how it works,
             # but it works. When adding a new value, don't forget to
             # correctly compute the lengths, otherwise some characters
             # will appear to have been overwritten.
-            if check_value.startswith('odm'):
+            if name_args.startswith('odm'):
                 for idx, chk in enumerate(self.odms):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.odms[idx][len(check_value)-len_name:]
-            elif check_value.startswith('ignore_odm'):
+                    if chk.startswith(token_value):
+                        return value + self.odms[idx][suggestion_offset:]
+            elif name_args.startswith('ignore_odm'):
                 for idx, chk in enumerate(self.odms):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.odms[idx][len(check_value)-len_name:]
-            elif check_value.startswith('ignore_brand'):
+                    if chk.startswith(token_value):
+                        return value + self.odms[idx][suggestion_offset:]
+            elif name_args.startswith('ignore_brand'):
                 for idx, chk in enumerate(self.brands):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.brands[idx][len(check_value)-len_name:]
-            elif check_value.startswith('brand'):
+                    if chk.startswith(token_value):
+                        return value + self.brands[idx][suggestion_offset:]
+            elif name_args.startswith('brand'):
                 for idx, chk in enumerate(self.brands):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.brands[idx][len(check_value)-len_name:]
-            elif check_value.startswith('bootloader'):
+                    if chk.startswith(token_value):
+                        return value + self.brands[idx][suggestion_offset:]
+            elif name_args.startswith('bootloader'):
                 for idx, chk in enumerate(self.bootloaders):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.bootloaders[idx][len(check_value)-len_name:]
-            elif check_value.startswith('chip'):
+                    if chk.startswith(token_value):
+                        return value + self.bootloaders[idx][suggestion_offset:]
+            elif name_args.startswith('chip'):
                 for idx, chk in enumerate(self.chips):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.chips[idx][len(check_value)-len_name:]
-            elif check_value.startswith('chip_type'):
+                    if chk.startswith(token_value):
+                        return value + self.chips[idx][suggestion_offset:]
+            elif name_args.startswith('chip_type'):
                 for idx, chk in enumerate(self.chip_types):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.chip_types[idx][len(check_value)-len_name:]
-            elif check_value.startswith('chip_vendor'):
+                    if chk.startswith(token_value):
+                        return value + self.chip_types[idx][suggestion_offset:]
+            elif name_args.startswith('chip_vendor'):
                 for idx, chk in enumerate(self.chip_vendors):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.chip_vendors[idx][len(check_value)-len_name:]
-            elif check_value.startswith('fccid'):
+                    if chk.startswith(token_value):
+                        return value + self.chip_vendors[idx][suggestion_offset:]
+            elif name_args.startswith('fccid'):
                 for idx, chk in enumerate(self.fcc_ids):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.fcc_ids[idx][len(check_value)-len_name:]
-            elif check_value.startswith('file'):
+                    if chk.startswith(token_value):
+                        return value + self.fcc_ids[idx][suggestion_offset:]
+            elif name_args.startswith('file'):
                 for idx, chk in enumerate(self.files):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.files[idx][len(check_value)-len_name:]
-            elif check_value.startswith('flag'):
+                    if chk.startswith(token_value):
+                        return value + self.files[idx][suggestion_offset:]
+            elif name_args.startswith('flag'):
                 for idx, chk in enumerate(self.flags):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.flags[idx][len(check_value)-len_name:]
-            elif check_value.startswith('sdk'):
+                    if chk.startswith(token_value):
+                        return value + self.flags[idx][suggestion_offset:]
+            elif name_args.startswith('sdk'):
                 for idx, chk in enumerate(self.sdks):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.sdks[idx][len(check_value)-len_name:]
-            elif check_value.startswith('serial'):
+                    if chk.startswith(token_value):
+                        return value + self.sdks[idx][suggestion_offset:]
+            elif name_args.startswith('serial'):
                 for idx, chk in enumerate(serial_values):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + serial_values[idx][len(check_value)-len_name:]
-            elif check_value.startswith('jtag'):
+                    if chk.startswith(token_value):
+                        return value + serial_values[idx][suggestion_offset:]
+            elif name_args.startswith('jtag'):
                 for idx, chk in enumerate(jtag_values):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + jtag_values[idx][len(check_value)-len_name:]
-            elif check_value.startswith('origin'):
+                    if chk.startswith(token_value):
+                        return value + jtag_values[idx][suggestion_offset:]
+            elif name_args.startswith('origin'):
                 for idx, chk in enumerate(origin_values):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + origin_values[idx][len(check_value)-len_name:]
-            elif check_value.startswith('ignore_origin'):
+                    if chk.startswith(token_value):
+                        return value + origin_values[idx][suggestion_offset:]
+            elif name_args.startswith('ignore_origin'):
                 for idx, chk in enumerate(origin_values):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + origin_values[idx][len(check_value)-len_name:]
-            elif check_value.startswith('password'):
+                    if chk.startswith(token_value):
+                        return value + origin_values[idx][suggestion_offset:]
+            elif name_args.startswith('password'):
                 for idx, chk in enumerate(self.passwords):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.passwords[idx][len(check_value)-len_name:]
-            elif check_value.startswith('package'):
+                    if chk.startswith(token_value):
+                        return value + self.passwords[idx][suggestion_offset:]
+            elif name_args.startswith('package'):
                 for idx, chk in enumerate(self.packages):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.packages[idx][len(check_value)-len_name:]
-            elif check_value.startswith('partition'):
+                    if chk.startswith(token_value):
+                        return value + self.packages[idx][suggestion_offset:]
+            elif name_args.startswith('partition'):
                 for idx, chk in enumerate(self.partitions):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.partitions[idx][len(check_value)-len_name:]
-            elif check_value.startswith('rootfs'):
+                    if chk.startswith(token_value):
+                        return value + self.partitions[idx][suggestion_offset:]
+            elif name_args.startswith('rootfs'):
                 for idx, chk in enumerate(self.rootfs):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.rootfs[idx][len(check_value)-len_name:]
-            elif check_value.startswith('program'):
+                    if chk.startswith(token_value):
+                        return value + self.rootfs[idx][suggestion_offset:]
+            elif name_args.startswith('program'):
                 for idx, chk in enumerate(self.programs):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.programs[idx][len(check_value)-len_name:]
-            elif check_value.startswith('type'):
+                    if chk.startswith(token_value):
+                        return value + self.programs[idx][suggestion_offset:]
+            elif name_args.startswith('type'):
                 for idx, chk in enumerate(self.device_types):
-                    if chk.startswith(check_value.rsplit('=', maxsplit=1)[-1]):
-                        return value + self.device_types[idx][len(check_value)-len_name:]
+                    if chk.startswith(token_value):
+                        return value + self.device_types[idx][suggestion_offset:]
 
         for idx, suggestion in enumerate(self._for_comparison):
             if suggestion.startswith(check_value):
@@ -193,7 +194,8 @@ class FilterValidator(Validator):
         self.passwords = kwargs.get('passwords', set())
         self.rootfs = kwargs.get('rootfs', set())
         self.sdks = kwargs.get('sdks', set())
-        self.token_names = list(map(lambda x: x['name'], kwargs.get('token_names', [])))
+        self.token_names_params = kwargs.get('token_names', [])
+        self.token_names = list(map(lambda x: x['name'], self.token_names_params))
 
     def validate(self, value: str) -> ValidationResult:
         try:
@@ -206,6 +208,9 @@ class FilterValidator(Validator):
             for t in tokens:
                 if '=' not in t:
                     return self.failure("Invalid name")
+
+                # first verify if the token is well formed
+                # and if it has a valid name
                 name_args, token_value = t.split('=', maxsplit=1)
                 if '?' in name_args:
                     name, args = name_args.split('?', maxsplit=1)
@@ -213,6 +218,8 @@ class FilterValidator(Validator):
                     name = name_args
                 if name not in self.token_names:
                     return self.failure("Invalid name")
+
+                # then check each individual token
                 if name == 'bootloader':
                     if token_value not in self.bootloaders:
                         return self.failure("Invalid bootloader")
