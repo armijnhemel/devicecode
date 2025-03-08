@@ -31,7 +31,7 @@ class SuggestDevices(Suggester):
         self, suggestions: Iterable[str], *, case_sensitive: bool = True,
     **kwargs) -> None:
         super().__init__(case_sensitive=case_sensitive)
-        self._suggestions = list(suggestions)
+        self._suggestions = list(map(lambda x: x['name'], suggestions))
         self._for_comparison = (
             self._suggestions
             if self.case_sensitive
@@ -193,7 +193,7 @@ class FilterValidator(Validator):
         self.passwords = kwargs.get('passwords', set())
         self.rootfs = kwargs.get('rootfs', set())
         self.sdks = kwargs.get('sdks', set())
-        self.token_names = kwargs.get('token_names', [])
+        self.token_names = list(map(lambda x: x['name'], kwargs.get('token_names', [])))
 
     def validate(self, value: str) -> ValidationResult:
         try:
@@ -366,11 +366,36 @@ class DevicecodeUI(App):
     ]
 
     CSS_PATH = "devicecode_tui.css"
-    TOKEN_NAMES = ['baud', 'bootloader', 'brand', 'chip', 'chip_type', 'chip_vendor',
-                   'connector', 'fccid', 'file', 'flag', 'ignore_brand', 'ignore_odm',
-                   'ignore_origin', 'ip', 'jtag', 'odm', 'origin', 'os', 'package',
-                   'partition', 'password', 'program', 'rootfs', 'sdk', 'serial', 'type',
-                   'year']
+
+    # a list of tokens for filtering
+    # This is a list of dicts.
+    TOKEN_NAMES = [{'name': 'baud', 'has_params': False},
+                   {'name': 'bootloader', 'has_params': True, 'params': ['version']},
+                   {'name': 'brand', 'has_params': False},
+                   {'name': 'chip', 'has_params': False},
+                   {'name': 'chip_type', 'has_params': False},
+                   {'name': 'chip_vendor', 'has_params': False},
+                   {'name': 'connector', 'has_params': False},
+                   {'name': 'fccid', 'has_params': False},
+                   {'name': 'file', 'has_params': False},
+                   {'name': 'ignore_brand', 'has_params': False},
+                   {'name': 'ignore_odm', 'has_params': False},
+                   {'name': 'ignore_origin', 'has_params': False},
+                   {'name': 'ip', 'has_params': False},
+                   {'name': 'jtag', 'has_params': True, 'params': ['populated']},
+                   {'name': 'odm', 'has_params': False},
+                   {'name': 'origin', 'has_params': False},
+                   {'name': 'os', 'has_params': False},
+                   {'name': 'package', 'has_params': False},
+                   {'name': 'partition', 'has_params': False},
+                   {'name': 'password', 'has_params': False},
+                   {'name': 'program', 'has_params': False},
+                   {'name': 'rootfs', 'has_params': False},
+                   {'name': 'sdk', 'has_params': True, 'params': ['version']},
+                   {'name': 'serial', 'has_params': True, 'params': ['populated']},
+                   {'name': 'type', 'has_params': False},
+                   {'name': 'year', 'has_params': False},
+                  ]
 
     def __init__(self, devicecode_dirs, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
