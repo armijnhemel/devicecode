@@ -484,12 +484,6 @@ def parse_log(boot_log_lines):
         package_res = {'type': 'package', 'name': 'iptables', 'versions': set(res)}
         results.append(package_res)
 
-    # Linux kernel version
-    res = defaults.REGEX_LINUX_VERSION.findall(boot_log)
-    if res != []:
-        package_res = {'type': 'package', 'name': 'Linux', 'versions': sorted(set(res))}
-        results.append(package_res)
-
     # CFE bootloader. There could be multiple hits in the same log file
     # but the findings should be consolidated somewhere else in the
     # code that is processing the results from this parser.
@@ -519,8 +513,6 @@ def parse_log(boot_log_lines):
     #if 'console [ttyS0] enabled' in boot_log:
     #    serial_res = {'type': 'serial port', 'console': 'ttyS0'}
     #    results.append(serial_res)
-
-    # find source code files
 
     # extract other information
     for i in ['Proprietary', 'proprietary', 'Propritary', 'Motorola Proprietary',
@@ -730,12 +722,21 @@ def parse_log(boot_log_lines):
             if lsdk_res:
                 sdk = lsdk_res.groups()[0]
                 results.append({'type': 'sdk', 'name': 'LSDK', 'vendor': 'Qualcomm Atheros', 'version': sdk})
-        if 'Linux version' in line and '#' in line:
+        if 'Linux version' in line:
             # find the Linux kernel compilation date. This can give some information
             # about when the device was made, as well as where it was made (timezone).
-            kernel_version_res = re.search(r'#(\d+)(?: SMP)?(?: PREEMPT)? (\w{3} \w{3} \d{1,2} \d{2}:\d{2}:\d{2}) (\w+) (\d{4})', line)
-            if kernel_version_res:
-                kernel_nr, compilation_time, compilation_tz, compilation_year = kernel_version_res.groups()
+            res = defaults.REGEX_LINUX_VERSION.search(line)
+
+            if res:
+                kernel_result =  {'type': 'package', 'name': 'Linux', 'versions': set(res.groups())}
+                if '#' in line:
+                    kernel_version_res = re.search(r'#(\d+)(?: SMP)?(?: PREEMPT)? (\w{3} \w{3} +\d{1,2} \d{2}:\d{2}:\d{2}) (\w+) (\d{4})', line)
+                    if kernel_version_res:
+                        build_nr, compilation_time, compilation_tz, compilation_year = kernel_version_res.groups()
+                        kernel_result['date'] = compilation_time + " " + compilation_year
+                        kernel_result['timezone'] = compilation_tz
+                        kernel_result['build'] = int(build_nr)
+                results.append(kernel_result)
         if 'MIPS: machine is' in line:
             machine = line.strip().split('machine is ', maxsplit=1)[1].strip()
             if machine:
