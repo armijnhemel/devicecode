@@ -730,6 +730,12 @@ def parse_log(boot_log_lines):
             if lsdk_res:
                 sdk = lsdk_res.groups()[0]
                 results.append({'type': 'sdk', 'name': 'LSDK', 'vendor': 'Qualcomm Atheros', 'version': sdk})
+        if 'Linux version' in line and '#' in line:
+            # find the Linux kernel compilation date. This can give some information
+            # about when the device was made, as well as where it was made (timezone).
+            kernel_version_res = re.search(r'#(\d+)(?: SMP)?(?: PREEMPT)? (\w{3} \w{3} \d{1,2} \d{2}:\d{2}:\d{2}) (\w+) (\d{4})', line)
+            if kernel_version_res:
+                kernel_nr, compilation_time, compilation_tz, compilation_year = kernel_version_res.groups()
         if 'MIPS: machine is' in line:
             machine = line.strip().split('machine is ', maxsplit=1)[1].strip()
             if machine:
