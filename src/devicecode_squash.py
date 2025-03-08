@@ -363,10 +363,10 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
     if device_one['ram'] != device_two['ram']:
         pass
 
+    conflict = False
+    regulatory = copy.deepcopy(device_one['regulatory'])
     # regulatory
     if device_one['regulatory'] != device_two['regulatory']:
-        conflict = False
-        regulatory = copy.deepcopy(device_one['regulatory'])
 
         # fcc_ids
         if regulatory['fcc_ids'] != device_two['regulatory']['fcc_ids']:
@@ -405,8 +405,13 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
             print(f"  Device 1: {device_one['regulatory']}")
             print(f"  Device 2: {device_two['regulatory']}")
 
-        if not conflict:
-            device_one['regulatory'] = regulatory
+    if not conflict and device_three:
+        # fcc_ids
+        if not regulatory['fcc_ids']:
+            regulatory['fcc_ids'] = device_three['regulatory']['fcc_ids']
+
+    if not conflict:
+        device_one['regulatory'] = regulatory
 
     # serial.
     # First make a deep copy of the data of device 1 and change that
