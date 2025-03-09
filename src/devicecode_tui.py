@@ -72,10 +72,10 @@ class SuggestDevices(Suggester):
         # first split the value
         check_value = value.rsplit(' ', maxsplit=1)[-1]
         if '=' in check_value:
-            name_args, token_value = check_value.split('=', maxsplit=1)
-            len_name_args = len(name_args) + 1
-            suggestion_offset = len(check_value)-len_name_args
-            name = name_args.split('?', maxsplit=1)[0]
+            name_params, token_value = check_value.split('=', maxsplit=1)
+            len_name_params = len(name_params) + 1
+            suggestion_offset = len(check_value)-len_name_params
+            name = name_params.split('?', maxsplit=1)[0]
 
             # then check and suggest a value. Don't ask how it works,
             # but it works. When adding a new value, don't forget to
@@ -130,11 +130,11 @@ class FilterValidator(Validator):
 
                 # first verify if the token is well formed
                 # and if it has a valid name
-                name_args, token_value = t.split('=', maxsplit=1)
-                if '?' in name_args:
-                    name, args = name_args.split('?', maxsplit=1)
+                name_params, token_value = t.split('=', maxsplit=1)
+                if '?' in name_params:
+                    name, args = name_params.split('?', maxsplit=1)
                 else:
-                    name = name_args
+                    name = name_params
                 if name not in self.token_names:
                     return self.failure("Invalid name")
 
@@ -1044,11 +1044,11 @@ class DevicecodeUI(App):
                 tokens = shlex.split(event.value.lower())
 
                 for t in tokens:
-                    name_args, value = t.split('=', maxsplit=1)
-                    if '?' in name_args:
-                        name, args = name_args.split('?', maxsplit=1)
+                    name_params, value = t.split('=', maxsplit=1)
+                    if '?' in name_params:
+                        name, args = name_params.split('?', maxsplit=1)
                     else:
-                        name = name_args
+                        name = name_params
                     if name == 'bootloader':
                         bootloaders.append(value)
                     elif name == 'brand':
