@@ -27,6 +27,8 @@ TEXT_TO_FUNCTIONALITY = {
     'universal plug and play': 'UPnP',
     'telnet': 'telnet',
     'syslog': 'syslog',
+    'wps': 'WPS',
+    'wireless protected setup': 'WPS',
 }
 
 PROGRAMS = ['arptables', 'bpalogin', 'bridge-utils', 'busybox', 'ebtables', 'glibc',
