@@ -173,7 +173,7 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
                 elif line.strip().startswith('<td>'):
                     # first extract the date
                     try:
-                        current_date = datetime.datetime.strptime(line[4:-5], '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+                        current_date = datetime.datetime.strptime(line.strip()[4:-5], '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
                     except ValueError:
                         pass
                     if '.pdf' in line:
