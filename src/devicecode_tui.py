@@ -1003,7 +1003,8 @@ class DevicecodeUI(App):
 
     @on(Input.Submitted)
     def process_filter(self, event: Input.Submitted) -> None:
-        '''Process the filter, create new tree'''
+        '''Filter values and create new trees, datatables, and
+           refresh data areas'''
         bootloaders = []
         brands = []
         chips = []
