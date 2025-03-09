@@ -51,6 +51,16 @@ Crawl firmware update information, such as ChangeLogs or firmware update pages
 and press releases to get an indication of when devices were released or
 supported. Add this information as an overlay.
 
+## Add informationf rom firmware analysis
+
+A lot of information can be extracted from doing a proper firmware analysis.
+
 ## Add information from BoxMatrix (AVM Fritz!Box wiki)
 
 https://boxmatrix.info/wiki/BoxMatrix
+
+## Move TUI filtering code to separate file to allow reuse by CLI tools.
+
+The filtering language is quite useful but can currently only be used inside
+the TUI. By moving it to a separate class it can be made reusable so CLI tools
+can also be used for filtering.
