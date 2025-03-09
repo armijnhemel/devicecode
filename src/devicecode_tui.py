@@ -37,22 +37,26 @@ class SuggestDevices(Suggester):
             if self.case_sensitive
             else [suggestion.casefold() for suggestion in self._suggestions]
         )
-        self.bootloaders = kwargs.get('bootloaders', [])
-        self.brands = kwargs.get('brands', [])
-        self.chips = kwargs.get('chips', [])
-        self.chip_types = kwargs.get('chip_types', [])
-        self.chip_vendors = kwargs.get('chip_vendors', [])
-        self.fcc_ids = kwargs.get('fcc_ids', [])
-        self.files = kwargs.get('files', [])
-        self.flags = kwargs.get('flags', [])
-        self.odms = kwargs.get('odms', [])
-        self.packages = kwargs.get('packages', [])
-        self.partitions = kwargs.get('partitions', [])
-        self.passwords = kwargs.get('passwords', [])
-        self.programs = kwargs.get('programs', [])
-        self.rootfs = kwargs.get('rootfs', [])
-        self.sdks = kwargs.get('sdks', [])
-        self.device_types = kwargs.get('types', [])
+
+        suggestion_names = {'bootloader': 'bootloaders',
+                            'brand': 'brands', 'ignore_brand': 'brands',
+                            'chip': 'chips', 'chip_type': 'chip_types',
+                            'chip_vendor': 'chip_vendors', 'fccid': 'fcc_ids',
+                            'file': 'files', 'flag': 'flags', 'odm': 'odms',
+                            'ignore_odm': 'odms', 'package': 'packages',
+                            'partition': 'partitions', 'password': 'passwords',
+                            'program': 'programs', 'rootfs': 'rootfs', 'sdk': 'sdks',
+                            'type': 'types'
+                           }
+
+        self.suggestion_table = {}
+        for i in suggestion_names:
+            self.suggestion_table[i] = kwargs.get(suggestion_names[i], [])
+
+        self.suggestion_table['jtag'] = ['no', 'unknown', 'yes']
+        self.suggestion_table['serial'] = ['no', 'unknown', 'yes']
+        self.suggestion_table['origin'] = ['techinfodepot', 'wikidevi', 'openwrt']
+        self.suggestion_table['ignore_origin'] = ['techinfodepot', 'wikidevi', 'openwrt']
 
     async def get_suggestion(self, value: str) -> str | None:
         """Gets a completion from the given possibilities.
@@ -63,9 +67,6 @@ class SuggestDevices(Suggester):
         Returns:
             A valid completion suggestion or `None`.
         """
-
-        jtag_values = serial_values = ['no', 'unknown', 'yes']
-        origin_values = ['techinfodepot', 'wikidevi', 'openwrt']
 
         # first split the value
         check_value = value.rsplit(' ', maxsplit=1)[-1]
@@ -84,94 +85,10 @@ class SuggestDevices(Suggester):
             # but it works. When adding a new value, don't forget to
             # correctly compute the lengths, otherwise some characters
             # will appear to have been overwritten.
-            if name == 'odm':
-                for idx, chk in enumerate(self.odms):
+            if name in self.suggestion_table:
+                for idx, chk in enumerate(self.suggestion_table[name]):
                     if chk.startswith(token_value):
-                        return value + self.odms[idx][suggestion_offset:]
-            elif name == 'ignore_odm':
-                for idx, chk in enumerate(self.odms):
-                    if chk.startswith(token_value):
-                        return value + self.odms[idx][suggestion_offset:]
-            elif name == 'ignore_brand':
-                for idx, chk in enumerate(self.brands):
-                    if chk.startswith(token_value):
-                        return value + self.brands[idx][suggestion_offset:]
-            elif name == 'brand':
-                for idx, chk in enumerate(self.brands):
-                    if chk.startswith(token_value):
-                        return value + self.brands[idx][suggestion_offset:]
-            elif name == 'bootloader':
-                for idx, chk in enumerate(self.bootloaders):
-                    if chk.startswith(token_value):
-                        return value + self.bootloaders[idx][suggestion_offset:]
-            elif name == 'chip':
-                for idx, chk in enumerate(self.chips):
-                    if chk.startswith(token_value):
-                        return value + self.chips[idx][suggestion_offset:]
-            elif name == 'chip_type':
-                for idx, chk in enumerate(self.chip_types):
-                    if chk.startswith(token_value):
-                        return value + self.chip_types[idx][suggestion_offset:]
-            elif name == 'chip_vendor':
-                for idx, chk in enumerate(self.chip_vendors):
-                    if chk.startswith(token_value):
-                        return value + self.chip_vendors[idx][suggestion_offset:]
-            elif name == 'fccid':
-                for idx, chk in enumerate(self.fcc_ids):
-                    if chk.startswith(token_value):
-                        return value + self.fcc_ids[idx][suggestion_offset:]
-            elif name == 'file':
-                for idx, chk in enumerate(self.files):
-                    if chk.startswith(token_value):
-                        return value + self.files[idx][suggestion_offset:]
-            elif name == 'flag':
-                for idx, chk in enumerate(self.flags):
-                    if chk.startswith(token_value):
-                        return value + self.flags[idx][suggestion_offset:]
-            elif name == 'sdk':
-                for idx, chk in enumerate(self.sdks):
-                    if chk.startswith(token_value):
-                        return value + self.sdks[idx][suggestion_offset:]
-            elif name == 'serial':
-                for idx, chk in enumerate(serial_values):
-                    if chk.startswith(token_value):
-                        return value + serial_values[idx][suggestion_offset:]
-            elif name == 'jtag':
-                for idx, chk in enumerate(jtag_values):
-                    if chk.startswith(token_value):
-                        return value + jtag_values[idx][suggestion_offset:]
-            elif name == 'origin':
-                for idx, chk in enumerate(origin_values):
-                    if chk.startswith(token_value):
-                        return value + origin_values[idx][suggestion_offset:]
-            elif name == 'ignore_origin':
-                for idx, chk in enumerate(origin_values):
-                    if chk.startswith(token_value):
-                        return value + origin_values[idx][suggestion_offset:]
-            elif name == 'password':
-                for idx, chk in enumerate(self.passwords):
-                    if chk.startswith(token_value):
-                        return value + self.passwords[idx][suggestion_offset:]
-            elif name == 'package':
-                for idx, chk in enumerate(self.packages):
-                    if chk.startswith(token_value):
-                        return value + self.packages[idx][suggestion_offset:]
-            elif name == 'partition':
-                for idx, chk in enumerate(self.partitions):
-                    if chk.startswith(token_value):
-                        return value + self.partitions[idx][suggestion_offset:]
-            elif name == 'rootfs':
-                for idx, chk in enumerate(self.rootfs):
-                    if chk.startswith(token_value):
-                        return value + self.rootfs[idx][suggestion_offset:]
-            elif name == 'program':
-                for idx, chk in enumerate(self.programs):
-                    if chk.startswith(token_value):
-                        return value + self.programs[idx][suggestion_offset:]
-            elif name == 'type':
-                for idx, chk in enumerate(self.device_types):
-                    if chk.startswith(token_value):
-                        return value + self.device_types[idx][suggestion_offset:]
+                        return value + self.suggestion_table[name][idx][suggestion_offset:]
 
         for idx, suggestion in enumerate(self._for_comparison):
             if suggestion.startswith(check_value):
