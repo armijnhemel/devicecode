@@ -71,98 +71,104 @@ class SuggestDevices(Suggester):
         check_value = value.rsplit(' ', maxsplit=1)[-1]
         if '=' in check_value:
             name_args, token_value = check_value.split('=', maxsplit=1)
-            len_name = len(name_args) + 1
-            suggestion_offset = len(check_value)-len_name
+            len_name_args = len(name_args) + 1
+            suggestion_offset = len(check_value)-len_name_args
+
+            if '?' in name_args:
+                name, args = name_args.split('?', maxsplit=1)
+            else:
+                name = name_args
+                args = ''
 
             # then check and suggest a value. Don't ask how it works,
             # but it works. When adding a new value, don't forget to
             # correctly compute the lengths, otherwise some characters
             # will appear to have been overwritten.
-            if name_args.startswith('odm'):
+            if name == 'odm':
                 for idx, chk in enumerate(self.odms):
                     if chk.startswith(token_value):
                         return value + self.odms[idx][suggestion_offset:]
-            elif name_args.startswith('ignore_odm'):
+            elif name == 'ignore_odm':
                 for idx, chk in enumerate(self.odms):
                     if chk.startswith(token_value):
                         return value + self.odms[idx][suggestion_offset:]
-            elif name_args.startswith('ignore_brand'):
+            elif name == 'ignore_brand':
                 for idx, chk in enumerate(self.brands):
                     if chk.startswith(token_value):
                         return value + self.brands[idx][suggestion_offset:]
-            elif name_args.startswith('brand'):
+            elif name == 'brand':
                 for idx, chk in enumerate(self.brands):
                     if chk.startswith(token_value):
                         return value + self.brands[idx][suggestion_offset:]
-            elif name_args.startswith('bootloader'):
+            elif name == 'bootloader':
                 for idx, chk in enumerate(self.bootloaders):
                     if chk.startswith(token_value):
                         return value + self.bootloaders[idx][suggestion_offset:]
-            elif name_args.startswith('chip'):
+            elif name == 'chip':
                 for idx, chk in enumerate(self.chips):
                     if chk.startswith(token_value):
                         return value + self.chips[idx][suggestion_offset:]
-            elif name_args.startswith('chip_type'):
+            elif name == 'chip_type':
                 for idx, chk in enumerate(self.chip_types):
                     if chk.startswith(token_value):
                         return value + self.chip_types[idx][suggestion_offset:]
-            elif name_args.startswith('chip_vendor'):
+            elif name == 'chip_vendor':
                 for idx, chk in enumerate(self.chip_vendors):
                     if chk.startswith(token_value):
                         return value + self.chip_vendors[idx][suggestion_offset:]
-            elif name_args.startswith('fccid'):
+            elif name == 'fccid':
                 for idx, chk in enumerate(self.fcc_ids):
                     if chk.startswith(token_value):
                         return value + self.fcc_ids[idx][suggestion_offset:]
-            elif name_args.startswith('file'):
+            elif name == 'file':
                 for idx, chk in enumerate(self.files):
                     if chk.startswith(token_value):
                         return value + self.files[idx][suggestion_offset:]
-            elif name_args.startswith('flag'):
+            elif name == 'flag':
                 for idx, chk in enumerate(self.flags):
                     if chk.startswith(token_value):
                         return value + self.flags[idx][suggestion_offset:]
-            elif name_args.startswith('sdk'):
+            elif name == 'sdk':
                 for idx, chk in enumerate(self.sdks):
                     if chk.startswith(token_value):
                         return value + self.sdks[idx][suggestion_offset:]
-            elif name_args.startswith('serial'):
+            elif name == 'serial':
                 for idx, chk in enumerate(serial_values):
                     if chk.startswith(token_value):
                         return value + serial_values[idx][suggestion_offset:]
-            elif name_args.startswith('jtag'):
+            elif name == 'jtag':
                 for idx, chk in enumerate(jtag_values):
                     if chk.startswith(token_value):
                         return value + jtag_values[idx][suggestion_offset:]
-            elif name_args.startswith('origin'):
+            elif name == 'origin':
                 for idx, chk in enumerate(origin_values):
                     if chk.startswith(token_value):
                         return value + origin_values[idx][suggestion_offset:]
-            elif name_args.startswith('ignore_origin'):
+            elif name == 'ignore_origin':
                 for idx, chk in enumerate(origin_values):
                     if chk.startswith(token_value):
                         return value + origin_values[idx][suggestion_offset:]
-            elif name_args.startswith('password'):
+            elif name == 'password':
                 for idx, chk in enumerate(self.passwords):
                     if chk.startswith(token_value):
                         return value + self.passwords[idx][suggestion_offset:]
-            elif name_args.startswith('package'):
+            elif name == 'package':
                 for idx, chk in enumerate(self.packages):
                     if chk.startswith(token_value):
                         return value + self.packages[idx][suggestion_offset:]
-            elif name_args.startswith('partition'):
+            elif name == 'partition':
                 for idx, chk in enumerate(self.partitions):
                     if chk.startswith(token_value):
                         return value + self.partitions[idx][suggestion_offset:]
-            elif name_args.startswith('rootfs'):
+            elif name == 'rootfs':
                 for idx, chk in enumerate(self.rootfs):
                     if chk.startswith(token_value):
                         return value + self.rootfs[idx][suggestion_offset:]
-            elif name_args.startswith('program'):
+            elif name == 'program':
                 for idx, chk in enumerate(self.programs):
                     if chk.startswith(token_value):
                         return value + self.programs[idx][suggestion_offset:]
-            elif name_args.startswith('type'):
+            elif name == 'type':
                 for idx, chk in enumerate(self.device_types):
                     if chk.startswith(token_value):
                         return value + self.device_types[idx][suggestion_offset:]
