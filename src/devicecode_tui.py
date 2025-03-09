@@ -38,6 +38,7 @@ class SuggestDevices(Suggester):
             else [suggestion.casefold() for suggestion in self._suggestions]
         )
 
+        # mapping of filter name to kwargs names
         suggestion_names = {'bootloader': 'bootloaders',
                             'brand': 'brands', 'ignore_brand': 'brands',
                             'chip': 'chips', 'chip_type': 'chip_types',
@@ -46,13 +47,13 @@ class SuggestDevices(Suggester):
                             'ignore_odm': 'odms', 'package': 'packages',
                             'partition': 'partitions', 'password': 'passwords',
                             'program': 'programs', 'rootfs': 'rootfs', 'sdk': 'sdks',
-                            'type': 'types'
-                           }
+                            'type': 'types'}
 
         self.suggestion_table = {}
         for i in suggestion_names:
             self.suggestion_table[i] = kwargs.get(suggestion_names[i], [])
 
+        # some values are always hardcoded
         self.suggestion_table['jtag'] = ['no', 'unknown', 'yes']
         self.suggestion_table['serial'] = ['no', 'unknown', 'yes']
         self.suggestion_table['origin'] = ['techinfodepot', 'wikidevi', 'openwrt']
@@ -74,12 +75,7 @@ class SuggestDevices(Suggester):
             name_args, token_value = check_value.split('=', maxsplit=1)
             len_name_args = len(name_args) + 1
             suggestion_offset = len(check_value)-len_name_args
-
-            if '?' in name_args:
-                name, args = name_args.split('?', maxsplit=1)
-            else:
-                name = name_args
-                args = ''
+            name = name_args.split('?', maxsplit=1)[0]
 
             # then check and suggest a value. Don't ask how it works,
             # but it works. When adding a new value, don't forget to
