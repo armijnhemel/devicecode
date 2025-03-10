@@ -1404,16 +1404,22 @@ class DevicecodeUI(App):
             new_markdown += f"|**Extra info** | {extra_infos}\n"
 
             # software
-            new_markdown += "# Operating system, SDK & Third party software\n"
+            new_markdown += "# Operating system & Third party software\n"
             new_markdown += "| | |\n|--|--|\n"
             new_markdown += f"|**OS** |{ result['os']}\n"
-            new_markdown += f"|**SDK** |{ result['sdk']['name']}\n"
             third_parties = ", ".join(result['third_party'])
             new_markdown += f"|**Third party software** | {third_parties}\n"
             #new_markdown += f"|**DD-WRT** |{ result['ddwrt']}\n"
             #new_markdown += f"|**Gargoyle** |{ result['gargoyle']}\n"
             #new_markdown += f"|**OpenWrt** |{ result['openwrt']}\n"
             #new_markdown += f"|**Tomato** |{ result['tomato']}\n"
+
+            # SDK
+            new_markdown += "# SDK\n"
+            new_markdown += "| | |\n|--|--|\n"
+            new_markdown += f"|**Name** |{ result['sdk']['name']}\n"
+            new_markdown += f"|**Version** |{ result['sdk']['version']}\n"
+            new_markdown += f"|**Vendor** |{ result['sdk']['vendor']}\n"
 
             # Partitions
             new_markdown += "# Partitions\n"
