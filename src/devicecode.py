@@ -1135,8 +1135,6 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
             print("'git' program not installed, exiting.", file=sys.stderr)
             sys.exit(1)
 
-        cwd = os.getcwd()
-
         os.chdir(output_directory)
 
         # verify the output directory is a valid Git repository
