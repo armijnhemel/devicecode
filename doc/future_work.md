@@ -51,7 +51,7 @@ Crawl firmware update information, such as ChangeLogs or firmware update pages
 and press releases to get an indication of when devices were released or
 supported. Add this information as an overlay.
 
-## Add informationf rom firmware analysis
+## Add information from firmware analysis
 
 A lot of information can be extracted from doing a proper firmware analysis.
 
@@ -64,3 +64,7 @@ https://boxmatrix.info/wiki/BoxMatrix
 The filtering language is quite useful but can currently only be used inside
 the TUI. By moving it to a separate class it can be made reusable so CLI tools
 can also be used for filtering.
+
+## Use purl for package information
+
+Additionally add package information as (approximate) purls.
