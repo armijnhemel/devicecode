@@ -499,12 +499,19 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
     conflict = False
     software = copy.deepcopy(device_one['software'])
     if software != device_two['software']:
-        for i in ['ddwrt', 'gargoyle', 'openwrt', 'os', 'os_version', 'sdk', 'tomato']:
+        for i in ['ddwrt', 'gargoyle', 'openwrt', 'os', 'os_version', 'tomato']:
             if software[i] == '' or device_two['software'][i] == '':
                 if software[i] == '' and device_two['software'][i]:
                     software[i] = device_two['software'][i]
             else:
                 if software[i] != device_two['software'][i]:
+                    conflict = True
+
+        if software['sdk'] != device_two['software']['sdk']:
+            if software['sdk']['name'] == '':
+                software['sdk'] = device_two['software']['sdk']
+            else:
+                if device_two['software']['sdk']['name']:
                     conflict = True
 
         if debug and conflict:
@@ -527,7 +534,7 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
 
     if not conflict:
         if device_three:
-            for i in ['ddwrt', 'gargoyle', 'openwrt', 'os', 'os_version', 'sdk', 'tomato']:
+            for i in ['ddwrt', 'gargoyle', 'openwrt', 'os', 'os_version', 'tomato']:
                 if not software[i]:
                     software[i] = device_three['software'][i]
             if software['bootloader']['manufacturer'] != device_three['software']['bootloader']['manufacturer']:
@@ -538,6 +545,8 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
                 software['packages'] = device_three['software']['packages']
             if not software['partitions']:
                 software['partitions'] = device_three['software']['partitions']
+            if software['sdk']['name'] == '':
+                software['sdk'] = device_three['software']['sdk']
         device_one['software'] = software
 
     # switch

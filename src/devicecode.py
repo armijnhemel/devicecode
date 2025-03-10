@@ -257,12 +257,19 @@ class Program:
 
 @dataclass_json
 @dataclass
+class SDK:
+    name: str = ''
+    vendor: str = ''
+    version: str = ''
+
+@dataclass_json
+@dataclass
 class Software:
     '''Software information: stock OS/bootloader, third party support'''
     bootloader: Bootloader = field(default_factory=Bootloader)
     os: str = ''
     os_version: str = ''
-    sdk: str = ''
+    sdk: SDK = field(default_factory=SDK)
     ddwrt: str = 'unknown'
     gargoyle: str = 'unknown'
     openwrt: str = 'unknown'
@@ -2179,8 +2186,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                         # software information
                                                         elif identifier == 'stock_os_sdk':
                                                             # overwrite SDK if empty
-                                                            if device.software.sdk == '':
-                                                                device.software.sdk = value
+                                                            if device.software.sdk.name == '':
+                                                                device.software.sdk.name = value
 
                                                         # third party firmware
                                                         elif identifier in ['ddwrtsupport', 'gargoylesupport',
@@ -2653,8 +2660,10 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                 elif p['type'] == 'rootfstype':
                                     device.software.rootfs = sorted(p['values'])
                                 elif p['type'] == 'sdk':
-                                    if device.software.sdk == '':
-                                        device.software.sdk = p['name']
+                                    if device.software.sdk.name == '':
+                                        device.software.sdk.name = p['name']
+                                        device.software.sdk.version = p['version']
+                                        device.software.sdk.vendor = p['vendor']
                     for i in serial_page_hints:
                         if i in devicepage:
                             serial_page = []

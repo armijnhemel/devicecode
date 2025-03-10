@@ -619,7 +619,7 @@ class DevicecodeUI(App):
                     continue
 
             if filter_sdks:
-                if device['software']['sdk'].lower() not in filter_sdks:
+                if device['software']['sdk']['name'].lower() not in filter_sdks:
                     continue
 
             if filter_fccs:
@@ -734,7 +734,7 @@ class DevicecodeUI(App):
                 rootfs.add(fs.lower())
 
             if device['software']['sdk']:
-                sdks.add(device['software']['sdk'].lower())
+                sdks.add(device['software']['sdk']['name'].lower())
 
             if 'programs' in device['software']:
                 for prog in device['software']['programs']:
@@ -1407,7 +1407,7 @@ class DevicecodeUI(App):
             new_markdown += "# Operating system, SDK & Third party software\n"
             new_markdown += "| | |\n|--|--|\n"
             new_markdown += f"|**OS** |{ result['os']}\n"
-            new_markdown += f"|**SDK** |{ result['sdk']}\n"
+            new_markdown += f"|**SDK** |{ result['sdk']['name']}\n"
             third_parties = ", ".join(result['third_party'])
             new_markdown += f"|**Third party software** | {third_parties}\n"
             #new_markdown += f"|**DD-WRT** |{ result['ddwrt']}\n"
