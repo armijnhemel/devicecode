@@ -25,7 +25,9 @@ import devicecode_defaults as defaults
               help='top level output directory, overlays will be stored in a subdirectory called \'overlay\'',
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--use-git', is_flag=True, help='use Git (not recommended, see documentation)')
-def main(manufacturer_file, devicecode_directory, output_directory, use_git):
+@click.option('--wiki-type', type=click.Choice(['TechInfoDepot', 'WikiDevi', 'OpenWrt'],
+              case_sensitive=False))
+def main(manufacturer_file, devicecode_directory, output_directory, use_git, wiki_type):
     if not output_directory.is_dir():
         print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
@@ -69,6 +71,9 @@ def main(manufacturer_file, devicecode_directory, output_directory, use_git):
 
     devicecode_dirs = []
     for p in devicecode_directory.iterdir():
+        if wiki_type:
+            if p.name != wiki_type:
+                continue
         if not p.is_dir():
             continue
         if not p.name in valid_directory_names:
