@@ -197,9 +197,19 @@ class FCC:
 
 @dataclass_json
 @dataclass
+class CPE:
+    '''NVD CPE'''
+    cpe: str = ''
+    cpe23: str = ''
+    references: list[str] = field(default_factory=list)
+
+@dataclass_json
+@dataclass
 class Regulatory:
     '''Regulatory information such as FCC
        as well as certification such as Wi-Fi Certified'''
+    cpe: CPE = field(default_factory=CPE)
+
     # all dates are YYYY-MM-DD
     fcc_ids: list[FCC] = field(default_factory=list)
 
