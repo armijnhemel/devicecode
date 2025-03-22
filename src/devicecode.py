@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 import urllib.parse
+import xml
 from collections import namedtuple
 from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json
@@ -1184,8 +1185,12 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
 
     if wiki_type in ['TechInfoDepot', 'WikiDevi']:
         # load XML
-        with open(input_file) as wiki_dump:
-            wiki_info = defusedxml.minidom.parse(wiki_dump)
+        try:
+            with open(input_file) as wiki_dump:
+                wiki_info = defusedxml.minidom.parse(wiki_dump)
+        except xml.parsers.expat.ExpatError:
+            print(f"{input_file} is not a valid XML file, exiting.", file=sys.stderr)
+            sys.exit(1)
 
         # store which devices were processed. This is information needed
         # when processing so called "helper pages" which do not need to be
