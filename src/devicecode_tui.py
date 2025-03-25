@@ -448,6 +448,8 @@ class DevicecodeUI(App):
                 for overlay in self.overlays[device['title']]:
                     if overlay['name'] == 'fcc_id':
                         device['regulatory']['fcc_ids'] = overlay['data']
+                    elif overlay['name'] == 'cpe':
+                        device['regulatory']['cpe'] = overlay['data']
                     elif overlay['name'] == 'oui':
                         device['network']['ethernet_oui'] = overlay['data']['ethernet_oui']
                         device['network']['wireless_oui'] = overlay['data']['wireless_oui']
@@ -1308,6 +1310,14 @@ class DevicecodeUI(App):
                     fcc_type = fcc['fcc_type']
                     grantee = fcc.get('grantee', '')
                     new_markdown += f"|[{fcc_id}](<https://fcc.report/FCC-ID/{fcc_id}>)|{fcc_date}|{fcc_type}|{grantee}|\n"
+
+            # CPE
+            if result['regulatory']['cpe']:
+                new_markdown += "# CPE\n"
+                new_markdown += "|CPE|CPE 2.3|\n|--|--|\n"
+                cpe_name = result['regulatory']['cpe']['cpe']
+                cpe_23 = result['regulatory']['cpe']['cpe23']
+                new_markdown += f"|{cpe_name}|{cpe_23}|\n"
 
             # Commercial information
             new_markdown += "# Commercial\n"
