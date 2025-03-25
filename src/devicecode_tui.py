@@ -1316,7 +1316,7 @@ class DevicecodeUI(App):
                     new_markdown += f"|[{fcc_id}](<https://fcc.report/FCC-ID/{fcc_id}>)|{fcc_date}|{fcc_type}|{grantee}|\n"
 
             # CPE
-            if result['regulatory']['cpe']:
+            if result['regulatory']['cpe'] and result['regulatory']['cpe']['cpe']:
                 new_markdown += "# CPE\n"
                 new_markdown += "| | |\n|--|--|\n"
                 new_markdown += f"|**CPE**|{result['regulatory']['cpe']['cpe']}|\n"
