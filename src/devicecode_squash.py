@@ -601,7 +601,7 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
               help='DeviceCode results directory', required=True,
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--output', '-o', 'output_directory', required=True,
-              help='top level output directory, overlays will be stored in a subdirectory called \'squash\'',
+              help='top level output directory, data will be stored in a subdirectory called \'squash\'',
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--use-git', is_flag=True, help='use Git (not recommended, see documentation)')
 @click.option('--debug', is_flag=True, help='print debug output')
@@ -650,11 +650,9 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
         print(f"No valid directories found in {devicecode_directory}, should contain one of {valid_directory_names}.", file=sys.stderr)
         sys.exit(1)
 
+    # create the 'squashed' directory if necessary
     squashed_directory = output_directory / 'squashed'
     squashed_directory.mkdir(exist_ok=True, parents=True)
-
-    # Then walk all the result files and overlays for both TechInfoDepot
-    # and WikiDevi and apply the overlays to the data.
 
     # keep mappings between TechInfoDepot and WikiDevi devices names/URLs
     techinfodepot_to_wikidevi = {}
@@ -676,6 +674,8 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
     wikidevi_items = {}
     openwrt_items = {}
 
+    # Then walk the result files for the wikis, apply the overlays
+    # to the data and keep a mapping betweeen the various wikis.
     for p in devicecode_dirs:
         devicecode_dir = p / 'devices'
         overlay_directory = p / 'overlays'
