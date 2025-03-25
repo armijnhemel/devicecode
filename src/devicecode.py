@@ -204,6 +204,19 @@ class CPE:
     cpe23: str = ''
     references: list[str] = field(default_factory=list)
 
+    # fully parsed CPE
+    part: str = ''
+    vendor: str = ''
+    product: str = ''
+    version: str = ''
+    update: str = ''
+    edition: str = ''
+    language: str = ''
+    software_edition: str = ''
+    target_software: str = ''
+    target_hardware: str = ''
+    other: str = ''
+
 @dataclass_json
 @dataclass
 class Regulatory:
