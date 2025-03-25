@@ -106,6 +106,9 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type):
                     cpe_metadata['product_version'] = child.text
                 elif child.tag == f"{{{ns}}}schema_version":
                     cpe_metadata['schema_version'] = child.text
+
+            # reduce memory usage
+            element.clear()
         elif element.tag == f"{{{ns}}}cpe-item":
             cpe_name = element.attrib['name']
 
@@ -113,12 +116,18 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type):
             if cpe_name.startswith('cpe:/h'):
                 # skip firmware entries for now
                 if '_firmware' in cpe_name:
+                    # reduce memory usage
+                    element.clear()
                     continue
                 parsed_cpe = cpe.CPE(cpe_name)
             elif '_firmware' in cpe_name:
+                # reduce memory usage
+                element.clear()
                 continue
                 parsed_cpe = cpe.CPE(cpe_name)
             else:
+                # reduce memory usage
+                element.clear()
                 continue
 
             if parsed_cpe.is_hardware():
@@ -150,6 +159,8 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type):
                 if title:
                     cpe_title_to_cpe[title.lower()] = {'cpe': cpe_name, 'cpe23': cpe23,
                                                        'references': references, 'title': title}
+            # reduce memory usage
+            element.clear()
 
     # Then walk all the result files, check the names of the devices
     # and optionally create overlays
