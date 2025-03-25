@@ -24,6 +24,10 @@ from textual.widgets import Footer, Markdown, Tree, TabbedContent, TabPane, Inpu
 
 import devicecode_defaults as defaults
 
+PART_TO_NAME = {'h': 'hardware', 'a': 'application',
+                'o': 'operating system'}
+
+
 class SuggestDevices(Suggester):
     '''A custom suggester, based on the SuggestFromList example from Textual'''
 
@@ -1314,10 +1318,12 @@ class DevicecodeUI(App):
             # CPE
             if result['regulatory']['cpe']:
                 new_markdown += "# CPE\n"
-                new_markdown += "|CPE|CPE 2.3|\n|--|--|\n"
-                cpe_name = result['regulatory']['cpe']['cpe']
-                cpe_23 = result['regulatory']['cpe']['cpe23']
-                new_markdown += f"|{cpe_name}|{cpe_23}|\n"
+                new_markdown += "| | |\n|--|--|\n"
+                new_markdown += f"|**CPE**|{result['regulatory']['cpe']['cpe']}|\n"
+                new_markdown += f"|**CPE 2.3**|{result['regulatory']['cpe']['cpe23']}|\n"
+
+                part_full_name = PART_TO_NAME[result['regulatory']['cpe']['part']]
+                new_markdown += f"|**Part**|{result['regulatory']['cpe']['part']} ({part_full_name})|\n"
 
             # Commercial information
             new_markdown += "# Commercial\n"
