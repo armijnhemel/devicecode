@@ -17,6 +17,9 @@ import cpe
 # import XML processing that guards against several XML attacks
 import defusedxml.ElementTree as et
 
+PART_TO_NAME = {'h': 'hardware', 'a': 'application',
+                'o': 'operating system'}
+
 
 @click.command(short_help='Create CPE overlay files to provide additional data')
 @click.option('--cpe', '-c', 'cpe_file', required=True,
@@ -111,6 +114,8 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type):
             element.clear()
         elif element.tag == f"{{{ns}}}cpe-item":
             cpe_name = element.attrib['name']
+            if element.get('deprecated') == 'true':
+                continue
 
             # only interesting for now: hardware, operating system and firmware
             if cpe_name.startswith('cpe:/h'):
@@ -158,7 +163,18 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type):
 
                 if title:
                     cpe_title_to_cpe[title.lower()] = {'cpe': cpe_name, 'cpe23': cpe23,
-                                                       'references': references, 'title': title}
+                                                       'references': references, 'title': title,
+                                                       'part': parsed_cpe.get_part()[0],
+                                                       'vendor': parsed_cpe.get_vendor()[0],
+                                                       'product': parsed_cpe.get_product()[0],
+                                                       'version': parsed_cpe.get_version()[0],
+                                                       'update': parsed_cpe.get_update()[0],
+                                                       'edition': parsed_cpe.get_edition()[0],
+                                                       'language': parsed_cpe.get_language()[0],
+                                                       'software_edition': parsed_cpe.get_software_edition()[0],
+                                                       'target_software': parsed_cpe.get_target_software()[0],
+                                                       'target_hardware': parsed_cpe.get_target_hardware()[0],
+                                                       'other': parsed_cpe.get_other()[0]}
             # reduce memory usage
             element.clear()
 
