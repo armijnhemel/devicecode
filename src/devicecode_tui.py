@@ -981,7 +981,7 @@ class DevicecodeUI(App):
                 with TabPane('Network'):
                     with VerticalScroll():
                         yield self.network_data_area
-                with TabPane('Regulatory & Commercial'):
+                with TabPane('Regulatory, CPE & Commercial'):
                     with VerticalScroll():
                         yield self.regulatory_data_area
                 with TabPane('Serial & JTAG'):
