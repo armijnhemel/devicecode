@@ -15,7 +15,7 @@ import sys
 import click
 
 def squash(device_one, device_two, device_three, debug=False, verbose=False):
-    '''Squash two devices. Device 1 (TechInfoDepot) is "leading".
+    '''Squash devices. Device 1 (TechInfoDepot) is "leading".
        Device 3 (OpenWrt) is merely for extra verification of data
        and adding some more information.'''
 
@@ -596,6 +596,13 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
             device_one['origins'] += device_three['origins']
     return device_one
 
+def squash_overlay(device_one, device_two, device_three, debug=False, verbose=False):
+    '''Squash overlays. Device 1 (TechInfoDepot) is "leading".
+       Device 3 (OpenWrt) is merely for extra verification of data
+       and adding some more information.'''
+    pass
+
+
 @click.command(short_help='Squash TechInfoDepot, WikiDevi, OpenWrt and overlay information into a single file per device')
 @click.option('--directory', '-d', 'devicecode_directory',
               help='DeviceCode results directory', required=True,
@@ -650,9 +657,12 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
         print(f"No valid directories found in {devicecode_directory}, should contain one of {valid_directory_names}.", file=sys.stderr)
         sys.exit(1)
 
-    # create the 'squashed' directory if necessary
+    # create the 'squashed' directories if necessary
     squashed_directory = output_directory / 'squashed' / 'devices'
     squashed_directory.mkdir(exist_ok=True, parents=True)
+
+    squashed_overlay_directory = output_directory / 'squashed' / 'overlays'
+    squashed_overlay_directory.mkdir(exist_ok=True, parents=True)
 
     # keep mappings between TechInfoDepot and WikiDevi devices names/URLs
     techinfodepot_to_wikidevi = {}
@@ -695,7 +705,26 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
 
                     data_url_to_name[data_url] = device['title']
 
-                    # Then see if there are any overlays that need to be integrated
+                    # store known mappings for each device in the different wikis
+                    if p.name == 'TechInfoDepot':
+                        if device['web']['wikidevi']:
+                            techinfodepot_to_wikidevi[device['title']] = device['web']['wikidevi']
+                        if device['web']['openwrt']:
+                            techinfodepot_to_openwrt[device['title']] = device['web']['openwrt']
+                        techinfodepot_items[device['title']] = device
+                    elif p.name == 'WikiDevi':
+                        if device['web']['techinfodepot']:
+                            wikidevi_to_techinfodepot[device['title']] = device['web']['techinfodepot']
+                        wikidevi_items[device['title']] = device
+                    elif p.name == 'OpenWrt':
+                        if device['web']['wikidevi']:
+                            wikidevi_name = data_url_to_name.get(device['web']['wikidevi'], '')
+                            if wikidevi_name:
+                                openwrt_to_wikidevi[device['title']] = wikidevi_name
+                                wikidevi_to_openwrt[wikidevi_name] = device['title']
+                        openwrt_items[device['title']] = device
+
+                    # Then see if there are any overlays that need to be applied
                     overlay_dir_for_device = overlay_directory / title.replace('/', '-')
                     for overlay_file in overlay_dir_for_device.glob('**/*'):
                         if not overlay_file.is_file():
@@ -719,25 +748,6 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                         except json.decoder.JSONDecodeError:
                             pass
 
-                    # create a mapping for each device in the different wikis
-                    if p.name == 'TechInfoDepot':
-                        if device['web']['wikidevi']:
-                            techinfodepot_to_wikidevi[device['title']] = device['web']['wikidevi']
-                        if device['web']['openwrt']:
-                            techinfodepot_to_openwrt[device['title']] = device['web']['openwrt']
-                        techinfodepot_items[device['title']] = device
-                    elif p.name == 'WikiDevi':
-                        if device['web']['techinfodepot']:
-                            wikidevi_to_techinfodepot[device['title']] = device['web']['techinfodepot']
-                        wikidevi_items[device['title']] = device
-                    elif p.name == 'OpenWrt':
-                        if device['web']['wikidevi']:
-                            wikidevi_name = data_url_to_name.get(device['web']['wikidevi'], '')
-                            if wikidevi_name:
-                                openwrt_to_wikidevi[device['title']] = wikidevi_name
-                                wikidevi_to_openwrt[wikidevi_name] = device['title']
-                        openwrt_items[device['title']] = device
-
             except json.decoder.JSONDecodeError:
                 pass
 
@@ -750,13 +760,15 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
     # 1. there is no link to wikidevi and no link from wikidevi to techinfodepot A     B
     # 2. there is a link to wikidevi and no link from wikidevi to techinfodepot  A --> B
     # 3. there is a link to wikidevi and a matching link from wikidevi to techinfodepot A <--> B
-    # 4. there is a link to wikidevi and a non-matching link from wikidevi to techinfodepot A --> B --> C
+    # 4. there is a link to wikidevi and a non-matching link
+    #    from wikidevi to techinfodepot A --> B --> C
     # 5. there is no link to wikidevi and a link from wikidevi to techinfodepot   A <-- B
     #
     # Additionally there can be data from OpenWrt devices, in all scenarios.
 
-    # store all the squashed devices.
+    # store all the squashed devices and overlays
     squashed_devices = []
+    squashed_overlays = []
 
     # store which wikidevi devices have already been processed.
     processed_wikidevi = set()
@@ -790,7 +802,8 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                 if openwrt_name:
                     openwrt_device = openwrt_items.get(openwrt_name.rsplit(':', maxsplit=1)[-1], None)
                     if openwrt_device:
-                        squash_result = squash(device, device, openwrt_device, debug=debug, verbose=verbose)
+                        squash_result = squash(device, device, openwrt_device,
+                                               debug=debug, verbose=verbose)
                         squashed_devices.append(squash_result)
                         processed_openwrt.add(openwrt_name.rsplit(':', maxsplit=1)[-1])
                     else:
@@ -806,7 +819,8 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                 if openwrt_name:
                     openwrt_device = openwrt_items.get(openwrt_name.rsplit(':', maxsplit=1)[-1], None)
                     if openwrt_device:
-                        squash_result = squash(device, device, openwrt_device, debug=debug, verbose=verbose)
+                        squash_result = squash(device, device, openwrt_device,
+                                               debug=debug, verbose=verbose)
                         squashed_devices.append(squash_result)
                         processed_openwrt.add(openwrt_name.rsplit(':', maxsplit=1)[-1])
                     else:
@@ -827,7 +841,8 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                         if openwrt_name:
                             openwrt_name = openwrt_name.rsplit(':', maxsplit=1)[-1]
                     openwrt_device = openwrt_items.get(openwrt_name, None)
-                    squash_result = squash(device, wikidevi_items[wikidevi_name], openwrt_device, debug=debug, verbose=verbose)
+                    squash_result = squash(device, wikidevi_items[wikidevi_name],
+                                           openwrt_device, debug=debug, verbose=verbose)
                     processed_wikidevi.add(name_techinfodepot)
                     if openwrt_name:
                         processed_openwrt.add(openwrt_name)
@@ -843,7 +858,8 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                             if openwrt_name:
                                 openwrt_name = openwrt_name.rsplit(':', maxsplit=1)[-1]
                         openwrt_device = openwrt_items.get(openwrt_name, None)
-                        squash_result = squash(device, wikidevi_items[wikidevi_name], openwrt_device, debug=debug, verbose=verbose)
+                        squash_result = squash(device, wikidevi_items[wikidevi_name],
+                                               openwrt_device, debug=debug, verbose=verbose)
                         processed_wikidevi.add(name_techinfodepot)
                         if openwrt_name:
                             processed_openwrt.add(openwrt_name)
@@ -881,7 +897,8 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                             if openwrt_name:
                                 openwrt_name = openwrt_name.rsplit(':', maxsplit=1)[-1]
                         openwrt_device = openwrt_items.get(openwrt_name, None)
-                        squash_result = squash(device, wikidevi_items[wikidevi_name], openwrt_device, debug=debug, verbose=verbose)
+                        squash_result = squash(device, wikidevi_items[wikidevi_name],
+                                               openwrt_device, debug=debug, verbose=verbose)
                         processed_wikidevi.add(name_techinfodepot)
                         if openwrt_name:
                             processed_openwrt.add(openwrt_name)
@@ -898,7 +915,8 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                         if openwrt_name:
                             openwrt_name = openwrt_name.rsplit(':', maxsplit=1)[-1]
                     openwrt_device = openwrt_items.get(openwrt_name, None)
-                    squash_result = squash(device, wikidevi_items[name_techinfodepot], openwrt_device, debug=debug, verbose=verbose)
+                    squash_result = squash(device, wikidevi_items[name_techinfodepot],
+                                           openwrt_device, debug=debug, verbose=verbose)
                     processed_wikidevi.add(name_techinfodepot)
                     if openwrt_name:
                         processed_openwrt.add(openwrt_name)
@@ -909,7 +927,8 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                     if openwrt_name:
                         openwrt_device = openwrt_items.get(openwrt_name.rsplit(':', maxsplit=1)[-1], None)
                         if openwrt_device:
-                            squash_result = squash(device, device, openwrt_device, debug=debug, verbose=verbose)
+                            squash_result = squash(device, device, openwrt_device,
+                                                   debug=debug, verbose=verbose)
                             squashed_devices.append(squash_result)
                             processed_openwrt.add(openwrt_name.rsplit(':', maxsplit=1)[-1])
                         else:
@@ -924,7 +943,8 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
         openwrt_name = wikidevi_to_openwrt.get(name_wikidevi, None)
         openwrt_device = openwrt_items.get(openwrt_name, None)
         if openwrt_device:
-            squash_result = squash(wikidevi_items[name_wikidevi], wikidevi_items[name_wikidevi], openwrt_device, debug=debug, verbose=verbose)
+            squash_result = squash(wikidevi_items[name_wikidevi], wikidevi_items[name_wikidevi],
+                                   openwrt_device, debug=debug, verbose=verbose)
             processed_wikidevi.add(name_wikidevi)
             squashed_devices.append(squash_result)
             if openwrt_name:
