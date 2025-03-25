@@ -651,7 +651,7 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
         sys.exit(1)
 
     # create the 'squashed' directory if necessary
-    squashed_directory = output_directory / 'squashed'
+    squashed_directory = output_directory / 'squashed' / 'devices'
     squashed_directory.mkdir(exist_ok=True, parents=True)
 
     # keep mappings between TechInfoDepot and WikiDevi devices names/URLs

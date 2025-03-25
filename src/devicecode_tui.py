@@ -1632,7 +1632,7 @@ def main(devicecode_directory, wiki_type):
     # with overlay files.
     # If available the 'squashed' directory will always be preferred.
 
-    squashed_directory = devicecode_directory / 'squashed'
+    squashed_directory = devicecode_directory / 'squashed' / 'devices'
     if squashed_directory.exists() and not wiki_type:
         devicecode_dirs = [squashed_directory]
     else:
