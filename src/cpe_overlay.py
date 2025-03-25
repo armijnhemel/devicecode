@@ -87,8 +87,6 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type):
         print(f"No valid directories found in {devicecode_directory}, should contain one of {valid_directory_names}.", file=sys.stderr)
         sys.exit(1)
 
-    cpe_title_to_cpe = {}
-
     # https://nvd.nist.gov/general/FAQ-Sections/General-FAQs#faqLink7
     cpe_metadata = {'source': 'NVD', 'license': 'public domain',
                     'url': 'https://nvd.nist.gov/products/cpe'}
@@ -96,6 +94,8 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type):
     # first process the CPE dictionary and store information
     ns = 'http://cpe.mitre.org/dictionary/2.0'
     titles_mod_to_title = {}
+    cpe_title_to_cpe = {}
+    product_page_to_title = {}
 
     for event, element in et.iterparse(cpe_file):
         if element.tag == f"{{{ns}}}generator":
@@ -127,18 +127,25 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type):
                 references = []
                 for child in element:
                     # first get the title. This is basically the CPE 2.2 name
+                    # Please note: some entries can have multiple titles in multipe
+                    # languages. TODO.
                     if child.tag == f"{{{ns}}}title":
                         title = child.text.strip()
                         titles_mod_to_title[title.lower().replace(' ', '')] = title.lower()
 
                     # then grab the CPE 2.3 name
-                    if child.tag == "{{http://scap.nist.gov/schema/cpe-extension/2.3}}cpe23-item":
+                    if child.tag == "{http://scap.nist.gov/schema/cpe-extension/2.3}cpe23-item":
                         cpe23 = child.attrib['name']
 
                     # and the references
                     if child.tag == f"{{{ns}}}references":
                         for ch in child:
-                            references.append({'type': ch.text.lower(), 'href': ch.attrib['href']})
+                            href = ch.attrib['href']
+                            reference_type = ch.text.lower()
+                            if reference_type in ['product']:
+                                if not href in product_page_to_title:
+                                    product_page_to_title[href] = title.lower()
+                            references.append({'type': reference_type, 'href': href})
 
                 if title:
                     cpe_title_to_cpe[title.lower()] = {'name': cpe_name, 'cpe23': cpe23,
@@ -161,19 +168,42 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type):
                     overlay_data = {'type': 'overlay', 'name': 'cpe',
                                     'metadata': cpe_metadata}
 
+                    write_overlay = False
+
                     # first the obvious check: are the names the same?
                     if device['title'].lower() in cpe_title_to_cpe:
-                        cpe_data = {}
                         write_overlay = True
+                        title = device['title'].lower()
                     else:
                         mod_title = device['title'].lower().replace(' ', '')
                         if mod_title in titles_mod_to_title:
-                            cpe_data = {}
-                            write_overlay = True
+                            title = titles_mod_to_title[mod_title]
+                            #write_overlay = True
 
-                    write_overlay = False
+                    # see if product pages match
+                    if not write_overlay:
+                        for product_page in device['web']['product_page']:
+                            # first direct match
+                            if product_page in product_page_to_title:
+                                title = product_page_to_title[product_page]
+                                #write_overlay = True
+                                break
 
-                    if write_overlay:
+                            # then check for both http and https differences
+                            if product_page.startswith('http://'):
+                                if product_page.replace('http://', 'https://') in product_page_to_title:
+                                    title = product_page_to_title[product_page.replace('http://', 'https://')]
+                                    #write_overlay = True
+                                    break
+                            elif product_page.startswith('https://'):
+                                if product_page.replace('https://', 'http://') in product_page_to_title:
+                                    title = product_page_to_title[product_page.replace('https://', 'http://')]
+                                    #write_overlay = True
+                                    break
+
+                    if write_overlay and title in cpe_title_to_cpe:
+                        cpe_data = cpe_title_to_cpe[title]
+                        overlay_data['data'] = cpe_data
                         overlay_file = overlay_directory / result_file.stem / 'cpe.json'
                         overlay_file.parent.mkdir(parents=True, exist_ok=True)
                         with open(overlay_file, 'w') as overlay:
