@@ -148,7 +148,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type):
                             references.append({'type': reference_type, 'href': href})
 
                 if title:
-                    cpe_title_to_cpe[title.lower()] = {'name': cpe_name, 'cpe23': cpe23,
+                    cpe_title_to_cpe[title.lower()] = {'cpe': cpe_name, 'cpe23': cpe23,
                                                        'references': references, 'title': title}
 
     # Then walk all the result files, check the names of the devices
