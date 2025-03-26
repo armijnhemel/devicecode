@@ -607,7 +607,23 @@ def squash_overlay(device_one, device_two, device_three, debug=False, verbose=Fa
     '''Squash overlays. Device 1 (TechInfoDepot) is "leading".
        Device 3 (OpenWrt) is merely for extra verification of data
        and adding some more information.'''
-    pass
+
+    # first consolidate TechInfoDepot and WikiDevi information
+    squashed = copy.deepcopy(device_one)
+    if device_two and squashed != device_two:
+        if not squashed:
+            squashed = device_two
+        else:
+            pass
+
+    # then brush up the data using OpenWrt data
+    if device_three and squashed != device_three:
+        if not squashed:
+            squashed = device_three
+        else:
+            pass
+
+    return squashed
 
 
 @click.command(short_help='Squash TechInfoDepot, WikiDevi, OpenWrt and overlay information into a single file per device')
@@ -808,30 +824,42 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
 
         device_name = device['title']
         if name_techinfodepot in techinfodepot_to_wikidevi:
-            # There is a link to something in WikiDevi, so this means
-            # scenario 2, 3, 4, but of course only if it is actually
-            # in our data.
+            # There is a link to something in WikiDevi in the TechInfoDepot
+            # data, so this means scenario 2, 3, 4, but of course data can
+            # only be squashed if the WikiDevi name is actually known in
+            # the data set.
 
-            # first extract the target name
+            # first extract the WikiDevi target name
             target_name = techinfodepot_to_wikidevi[name_techinfodepot]
 
-            # then see if the device is known in the current Wikidevi data set
+            # then see if the WikiDevi target name maps to something in the
+            # data set with known WikiDevi devices.
             wikidevi_name = data_url_to_name.get(target_name, None)
             if not wikidevi_name:
                 # the device is not known in WikiDevi, so just copy
-                # the original data and continue.
+                # the original data and continue, after possibly squashing
+                # with data from OpenWrt.
                 openwrt_name = techinfodepot_to_openwrt.get(name_techinfodepot, None)
                 if openwrt_name:
+                    # grab the actual OpenWrt device data, if it exists
                     openwrt_device = openwrt_items.get(openwrt_name.rsplit(':', maxsplit=1)[-1], None)
                     if openwrt_device:
                         squash_result = squash(device, device, openwrt_device,
                                                debug=debug, verbose=verbose)
                         squashed_devices.append(squash_result)
                         processed_openwrt.add(openwrt_name.rsplit(':', maxsplit=1)[-1])
+
+                        squashed_overlay = squash_overlay(None, None, None)
+                        squashed_overlays.append((device_name, squashed_overlay))
                     else:
                         squashed_devices.append(device)
+                        squashed_overlay = squash_overlay(None, None, None)
+                        squashed_overlays.append((device_name, squashed_overlay))
                 else:
+                    # There is no data from OpenWrt, so just copy everything
                     squashed_devices.append(device)
+                    squashed_overlay = squash_overlay(None, None, None)
+                    squashed_overlays.append((device_name, squashed_overlay))
                 continue
 
             if wikidevi_name not in wikidevi_items:
@@ -845,10 +873,18 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                                                debug=debug, verbose=verbose)
                         squashed_devices.append(squash_result)
                         processed_openwrt.add(openwrt_name.rsplit(':', maxsplit=1)[-1])
+
+                        squashed_overlay = squash_overlay(None, None, None)
+                        squashed_overlays.append((device_name, squashed_overlay))
                     else:
                         squashed_devices.append(device)
+
+                        squashed_overlay = squash_overlay(None, None, None)
+                        squashed_overlays.append((device_name, squashed_overlay))
                 else:
                     squashed_devices.append(device)
+                    squashed_overlay = squash_overlay(None, None, None)
+                    squashed_overlays.append((device_name, squashed_overlay))
                 continue
 
             # there is a known WikiDevi device
@@ -869,6 +905,9 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                     if openwrt_name:
                         processed_openwrt.add(openwrt_name)
                     squashed_devices.append(squash_result)
+
+                    squashed_overlay = squash_overlay(None, None, None)
+                    squashed_overlays.append((device_name, squashed_overlay))
             else:
                 if data_url == wikidevi_items[wikidevi_name]['web']['techinfodepot']:
                     # scenario 3: A <--> B
@@ -886,6 +925,9 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                         if openwrt_name:
                             processed_openwrt.add(openwrt_name)
                         squashed_devices.append(squash_result)
+
+                        squashed_overlay = squash_overlay(None, None, None)
+                        squashed_overlays.append((device_name, squashed_overlay))
                     else:
                         # TODO: find out what to do here
                         pass
@@ -1003,6 +1045,9 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
 
     for squashed_overlay in squashed_overlays:
         title, overlay = squashed_overlay
+        if not overlay:
+            continue
+
         overlay_dir = squashed_overlay_directory / title
         overlay_directory.mkdir(exist_ok=True, parents=True)
         squashed_file_name = overlay_directory / f"{overlay['name']}.json"
