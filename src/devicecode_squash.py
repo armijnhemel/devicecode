@@ -691,8 +691,14 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
     wikidevi_items = {}
     openwrt_items = {}
 
-    # Then walk the result files for the wikis, apply the overlays
-    # to the data and keep a mapping betweeen the various wikis.
+    # Keep a mapping between devices and overlays
+    techinfodepot_to_overlay = {}
+    wikidevi_to_overlay = {}
+    openwrt_to_overlay = {}
+
+    # Walk the result files for the wikis and store known mappings
+    # betweeen entries in the various wikis as well as between devices
+    # and overlays.
     for p in devicecode_dirs:
         devicecode_dir = p / 'devices'
         overlay_directory = p / 'overlays'
@@ -743,6 +749,14 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                                     continue
                                 if overlay['type'] != 'overlay':
                                     continue
+
+                                if p.name == 'TechInfoDepot':
+                                    techinfodepot_to_overlay[title] = overlay
+                                elif p.name == 'WikiDevi':
+                                    wikidevi_to_overlay[title] = overlay
+                                elif p.name == 'OpenWrt':
+                                    openwrt_to_overlay[title] = overlay
+
                                 if overlay['name'] == 'fcc_id':
                                     device['regulatory']['fcc_ids'] = overlay['data']
                                 elif overlay['name'] == 'cpe':
@@ -756,7 +770,6 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                                     device['brand'] = overlay['data']['brand']
                         except json.decoder.JSONDecodeError:
                             pass
-
             except json.decoder.JSONDecodeError:
                 pass
 
@@ -987,6 +1000,31 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
             (outputmsg, errormsg) = p.communicate()
             if p.returncode != 0:
                 print(f"{squashed_file_name} could not be committed", file=sys.stderr)
+
+    for squashed_overlay in squashed_overlays:
+        title, overlay = squashed_overlay
+        overlay_dir = squashed_overlay_directory / title
+        overlay_directory.mkdir(exist_ok=True, parents=True)
+        squashed_file_name = overlay_directory / f"{overlay['name']}.json"
+        with open(squashed_file_name, 'w') as out_file:
+            json_data = json.dumps(overlay, sort_keys=True, indent=4)
+            out_file.write(json_data)
+
+        if use_git:
+            # add the file
+            p = subprocess.Popen(['git', 'add', squashed_file_name],
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+            (outputmsg, errormsg) = p.communicate()
+            if p.returncode != 0:
+                print(f"{squashed_file_name} could not be added", file=sys.stderr)
+
+            commit_message = f'Add squashed version for {title}/{squashed_file_name.stem}'
+
+            p = subprocess.Popen(['git', 'commit', "-m", commit_message],
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+            (outputmsg, errormsg) = p.communicate()
+            if p.returncode != 0:
+                print(f"{title}/{squashed_file_name} could not be committed", file=sys.stderr)
 
 if __name__ == "__main__":
     main()
