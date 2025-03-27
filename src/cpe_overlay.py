@@ -21,7 +21,7 @@ PART_TO_NAME = {'h': 'hardware', 'a': 'application',
                 'o': 'operating system'}
 
 
-@click.command(short_help='Create CPE overlay files to provide additional data')
+@click.command(short_help='Create CPE & CVE (optional) overlay files to provide additional data')
 @click.option('--cpe', '-c', 'cpe_file', required=True,
               help='CPE dictionary file', type=click.File('r'))
 @click.option('--directory', '-d', 'devicecode_directory',
@@ -30,16 +30,26 @@ PART_TO_NAME = {'h': 'hardware', 'a': 'application',
 @click.option('--output', '-o', 'output_directory', required=True,
               help='top level output directory, overlays will be stored in a subdirectory called \'overlay\'',
               type=click.Path(path_type=pathlib.Path, exists=True))
+@click.option('--cve-directory', '-e', 'cve_directory',
+              help='CVE list directory', type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--use-git', is_flag=True, help='use Git (not recommended, see documentation)')
 @click.option('--wiki-type', type=click.Choice(['TechInfoDepot', 'WikiDevi', 'OpenWrt'],
               case_sensitive=False))
-def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type):
+def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, cve_directory):
     if not output_directory.is_dir():
         print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
         sys.exit(1)
 
     if not devicecode_directory.is_dir():
         print(f"{devicecode_directory} is not a directory, exiting.", file=sys.stderr)
+        sys.exit(1)
+
+    if cve_directory and not cve_directory.is_dir():
+        print(f"{cve_directory} is not a directory, exiting.", file=sys.stderr)
+        sys.exit(1)
+
+    if cve_directory and not (cve_directory / 'cves').exists():
+        print(f"{cve_directory} is not a valid cvelistV5 directory, exiting.", file=sys.stderr)
         sys.exit(1)
 
     if use_git:
@@ -178,6 +188,30 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type):
             # reduce memory usage
             element.clear()
 
+    # keep a mapping from CPE to a list of CVEs
+    cpe_to_cve = {}
+
+    # walk the CVE data, if it exists
+    for p in (cve_directory / 'cves').walk():
+        parent, directories, files = p
+        for f in files:
+            if f.startswith('CVE'):
+                with open(parent / f, 'r') as cve_file:
+                    try:
+                        cve_json = json.load(cve_file)
+                        if cve_json['cveMetadata']['state'] == 'REJECTED':
+                            continue
+                        for container in cve_json['containers'].get('adp', []):
+                            for affected in container.get('affected', []):
+                                for cve_cpe in affected['cpes']:
+                                    # TODO: first rename. Example: d-link -> dlink
+                                    # Use NAME_CORRECTION in the CPE dictionary for this
+                                    if cve_cpe not in cpe_to_cve:
+                                        cpe_to_cve[cve_cpe] = []
+                                    cpe_to_cve[cve_cpe].append(cve_json['cveMetadata']['cveId'])
+                    except json.decoder.JSONDecodeError:
+                        continue
+
     # Then walk all the result files, check the names of the devices
     # and optionally create overlays
     for p in devicecode_dirs:
@@ -230,13 +264,25 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type):
 
                     if write_overlay and title in cpe_title_to_cpe:
                         cpe_data = cpe_title_to_cpe[title]
+
                         overlay_data['data'] = cpe_data
                         overlay_file = overlay_directory / result_file.stem / 'cpe.json'
                         overlay_file.parent.mkdir(parents=True, exist_ok=True)
                         with open(overlay_file, 'w') as overlay:
                             overlay.write(json.dumps(overlay_data, indent=4))
+
+                        # write CVE overlay file
+                        if cpe_data['cpe23'] in cpe_to_cve:
+                            cve_overlay_data = {'type': 'overlay', 'name': 'cve',
+                                            'data': cpe_to_cve[cpe_data['cpe23']]}
+                            cve_overlay_file = overlay_directory / result_file.stem / 'cve.json'
+                            cve_overlay_file.parent.mkdir(parents=True, exist_ok=True)
+
+                            with open(cve_overlay_file, 'w') as overlay:
+                                overlay.write(json.dumps(cve_overlay_data, indent=4))
+
                         if use_git:
-                            # add the file
+                            # add the files
                             p = subprocess.Popen(['git', 'add', overlay_file],
                                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
                             (outputmsg, errormsg) = p.communicate()
@@ -250,6 +296,21 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type):
                             (outputmsg, errormsg) = p.communicate()
                             if p.returncode != 0:
                                 print(f"{overlay_file} could not be committed", file=sys.stderr)
+
+                            if cpe_data['cpe23'] in cpe_to_cve:
+                                p = subprocess.Popen(['git', 'add', overlay_file],
+                                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                                (outputmsg, errormsg) = p.communicate()
+                                if p.returncode != 0:
+                                    print(f"{cve_overlay_file} could not be added", file=sys.stderr)
+
+                                commit_message = f'Add CVE overlay for {result_file.stem}'
+
+                                p = subprocess.Popen(['git', 'commit', "-m", commit_message],
+                                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                                (outputmsg, errormsg) = p.communicate()
+                                if p.returncode != 0:
+                                    print(f"{cve_overlay_file} could not be committed", file=sys.stderr)
 
             except json.decoder.JSONDecodeError:
                 pass
