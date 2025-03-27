@@ -58,6 +58,7 @@ class SuggestDevices(Suggester):
             self.suggestion_table[i] = kwargs.get(suggestion_names[i], [])
 
         # some values are always hardcoded
+        self.suggestion_table['cve'] = ['no', 'yes']
         self.suggestion_table['jtag'] = ['no', 'unknown', 'yes']
         self.suggestion_table['serial'] = ['no', 'unknown', 'yes']
         self.suggestion_table['origin'] = ['techinfodepot', 'wikidevi', 'openwrt']
@@ -168,6 +169,9 @@ class FilterValidator(Validator):
                         return self.failure("Invalid baud rate")
                     if int(token_value) not in self.baud_rates:
                         return self.failure("Invalid baud rate")
+                elif name == 'cve':
+                    if token_value not in ['no', 'yes']:
+                        return self.failure("Invalid CVE information")
                 elif name == 'ignore_brand':
                     if token_value not in self.brands:
                         return self.failure("Invalid brand")
@@ -306,6 +310,7 @@ class DevicecodeUI(App):
                    {'name': 'chip_type', 'has_params': False},
                    {'name': 'chip_vendor', 'has_params': False},
                    {'name': 'connector', 'has_params': False},
+                   {'name': 'cve', 'has_params': False},
                    {'name': 'fccid', 'has_params': False},
                    {'name': 'file', 'has_params': False},
                    {'name': 'flag', 'has_params': False},
@@ -345,6 +350,7 @@ class DevicecodeUI(App):
         filter_chip_types = kwargs.get('chip_types', [])
         filter_chip_vendors = kwargs.get('chip_vendors', [])
         filter_connectors = kwargs.get('connectors', set())
+        filter_cves = kwargs.get('cves', set())
         filter_device_types = kwargs.get('types', [])
         filter_fccs = kwargs.get('fccs', [])
         filter_files = kwargs.get('files', [])
@@ -517,6 +523,15 @@ class DevicecodeUI(App):
             if filter_ips:
                 if device['defaults']['ip'] not in filter_ips:
                     continue
+            if filter_cves:
+                if 'yes' in filter_cves and 'no' in filter_cves:
+                    pass
+                elif 'yes' in filter_cves:
+                    if not device['regulatory']['cve']:
+                        continue
+                else:
+                    if device['regulatory']['cve']:
+                        continue
 
             # first collect all the years that have been declared
             # in the data: FCC, wifi certified, release date
@@ -1019,6 +1034,7 @@ class DevicecodeUI(App):
         chip_types = []
         chip_vendors = []
         connectors = set()
+        cves = []
         device_types = []
         fccs = []
         files = []
@@ -1070,6 +1086,8 @@ class DevicecodeUI(App):
                         chip_vendors.append(value)
                     elif name == 'connector':
                         connectors.add(value)
+                    elif name == 'cve':
+                        cves.append(value)
                     elif name == 'fccid':
                         fccs.append(value)
                     elif name == 'flag':
@@ -1120,8 +1138,8 @@ class DevicecodeUI(App):
         if refresh:
             filtered_data = self.compose_data_sets(bootloaders=bootloaders, brands=brands,
                                 odms=odms, chips=chips, chip_types=chip_types,
-                                chip_vendors=chip_vendors, connectors=connectors, fccs=fccs,
-                                files=files, flags=flags, ignore_brands=ignore_brands,
+                                chip_vendors=chip_vendors, connectors=connectors, cves=cves,
+                                fccs=fccs, files=files, flags=flags, ignore_brands=ignore_brands,
                                 ignore_odms=ignore_odms, ignore_origins=ignore_origins, ips=ips,
                                 jtags=jtags, operating_systems=operating_systems, origins=origins,
                                 passwords=passwords, packages=packages, partitions=partitions,
