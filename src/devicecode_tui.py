@@ -454,6 +454,8 @@ class DevicecodeUI(App):
                         device['regulatory']['fcc_ids'] = overlay['data']
                     elif overlay['name'] == 'cpe':
                         device['regulatory']['cpe'] = overlay['data']
+                    elif overlay['name'] == 'cve':
+                        device['regulatory']['cve'] = overlay['data']
                     elif overlay['name'] == 'oui':
                         device['network']['ethernet_oui'] = overlay['data']['ethernet_oui']
                         device['network']['wireless_oui'] = overlay['data']['wireless_oui']
@@ -1324,6 +1326,12 @@ class DevicecodeUI(App):
 
                 part_full_name = PART_TO_NAME[result['regulatory']['cpe']['part']]
                 new_markdown += f"|**Part**|{result['regulatory']['cpe']['part']} ({part_full_name})|\n"
+
+            # CVE
+            if result['regulatory']['cve']:
+                new_markdown += "# CVE\n"
+                for c in result['regulatory']['cve']:
+                    new_markdown += f"[{c}](<https://www.cve.org/CVERecord?id={c}>)\n"
 
             # Commercial information
             new_markdown += "# Commercial\n"

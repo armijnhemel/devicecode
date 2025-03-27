@@ -412,6 +412,13 @@ def squash(device_one, device_two, device_three, debug=False, verbose=False):
             elif device_two['regulatory']['cpe']:
                 pass
 
+        # cve
+        if regulatory['cve'] != device_two['regulatory']['cve']:
+            if not regulatory['cve']:
+                regulatory['cve'] = device_two['regulatory']['cve']
+            elif device_two['regulatory']['cve']:
+                pass
+
         if debug and conflict:
             print(f"Regulatory CONFLICT for '{device_one['title']}'")
             print(f"  Device 1: {device_one['regulatory']}")
@@ -777,6 +784,8 @@ def main(devicecode_directory, output_directory, use_git, debug, verbose):
                                     device['regulatory']['fcc_ids'] = overlay['data']
                                 elif overlay['name'] == 'cpe':
                                     device['regulatory']['cpe'] = overlay['data']
+                                elif overlay['name'] == 'cve':
+                                    device['regulatory']['cve'] = overlay['data']
                                 elif overlay['name'] == 'oui':
                                     device['network']['ethernet_oui'] = overlay['data']['ethernet_oui']
                                     device['network']['wireless_oui'] = overlay['data']['wireless_oui']

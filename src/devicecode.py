@@ -223,6 +223,7 @@ class Regulatory:
     '''Regulatory information such as FCC
        as well as certification such as Wi-Fi Certified'''
     cpe: CPE = field(default_factory=CPE)
+    cve: list[str] = field(default_factory=list)
 
     # all dates are YYYY-MM-DD
     fcc_ids: list[FCC] = field(default_factory=list)
