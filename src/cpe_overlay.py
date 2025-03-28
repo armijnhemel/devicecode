@@ -110,6 +110,8 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
     cpe_title_to_cpe = {}
     product_page_to_title = {}
 
+    cpe23_rewrite = {}
+
     for event, element in et.iterparse(cpe_file):
         if element.tag == f"{{{ns}}}generator":
             for child in element:
@@ -124,8 +126,9 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
             element.clear()
         elif element.tag == f"{{{ns}}}cpe-item":
             cpe_name = element.attrib['name']
+            is_deprecated = False
             if element.get('deprecated') == 'true':
-                continue
+                is_deprecated = True
 
             # only interesting for now: hardware, operating system and firmware
             if cpe_name.startswith('cpe:/h'):
@@ -160,6 +163,16 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                     # then grab the CPE 2.3 name
                     if child.tag == "{http://scap.nist.gov/schema/cpe-extension/2.3}cpe23-item":
                         cpe23 = child.attrib['name']
+                        if is_deprecated:
+                            dep_child = child.find('{http://scap.nist.gov/schema/cpe-extension/2.3}deprecation')
+                            if dep_child is not None:
+                                dep_rewrite = dep_child.find('{http://scap.nist.gov/schema/cpe-extension/2.3}deprecated-by')
+                                if dep_rewrite.attrib['type'] == 'NAME_CORRECTION':
+                                    cpe23_rewrite[cpe23] = dep_rewrite.attrib['name']
+                            # finally make sure that none of these files are written by
+                            # emptying the title. This is a bit of a hack, but it works.
+                            title=''
+                            break
 
                     # and the references
                     if child.tag == f"{{{ns}}}references":
@@ -206,9 +219,10 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                                 for cve_cpe in affected['cpes']:
                                     # TODO: first rename. Example: d-link -> dlink
                                     # Use NAME_CORRECTION in the CPE dictionary for this
-                                    if cve_cpe not in cpe_to_cve:
-                                        cpe_to_cve[cve_cpe] = []
-                                    cpe_to_cve[cve_cpe].append(cve_json['cveMetadata']['cveId'])
+                                    cpe23 = cpe23_rewrite.get(cve_cpe, cve_cpe)
+                                    if cpe23 not in cpe_to_cve:
+                                        cpe_to_cve[cpe23] = []
+                                    cpe_to_cve[cpe23].append(cve_json['cveMetadata']['cveId'])
                     except json.decoder.JSONDecodeError:
                         continue
 
