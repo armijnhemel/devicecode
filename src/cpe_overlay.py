@@ -164,6 +164,12 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                     if child.tag == "{http://scap.nist.gov/schema/cpe-extension/2.3}cpe23-item":
                         cpe23 = child.attrib['name']
                         if is_deprecated:
+                            # Sometimes the CPEs have been renamed because people used
+                            # different/wrong names. Example: d-link -> dlink
+                            # The CPE dictionary contains hints about which ones were renamed
+                            # namely the NAME_CORRECTION attribute (but only for cpe23)
+                            # As this is only used for rewriting CVEs (that *mostly* use the
+                            # CPE 2.3 schema except entries from Red Hat) this is not a problem.
                             dep_child = child.find('{http://scap.nist.gov/schema/cpe-extension/2.3}deprecation')
                             if dep_child is not None:
                                 dep_rewrite = dep_child.find('{http://scap.nist.gov/schema/cpe-extension/2.3}deprecated-by')
@@ -218,8 +224,6 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                             for container in cve_json['containers'].get('adp', []):
                                 for affected in container.get('affected', []):
                                     for cve_cpe in affected['cpes']:
-                                        # TODO: first rename. Example: d-link -> dlink
-                                        # Use NAME_CORRECTION in the CPE dictionary for this
                                         cpe23 = cpe23_rewrite.get(cve_cpe, cve_cpe)
                                         if cpe23 not in cpe_to_cve:
                                             cpe_to_cve[cpe23] = []
