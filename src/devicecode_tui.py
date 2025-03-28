@@ -43,15 +43,13 @@ class SuggestDevices(Suggester):
         )
 
         # mapping of filter name to kwargs names
-        suggestion_names = {'bootloader': 'bootloaders',
-                            'brand': 'brands', 'ignore_brand': 'brands',
-                            'chip': 'chips', 'chip_type': 'chip_types',
-                            'chip_vendor': 'chip_vendors', 'fccid': 'fcc_ids',
-                            'file': 'files', 'flag': 'flags', 'odm': 'odms',
-                            'ignore_odm': 'odms', 'package': 'packages',
-                            'partition': 'partitions', 'password': 'passwords',
-                            'program': 'programs', 'rootfs': 'rootfs', 'sdk': 'sdks',
-                            'type': 'types'}
+        suggestion_names = {'bootloader': 'bootloaders', 'brand': 'brands',
+                            'ignore_brand': 'brands', 'chip': 'chips', 'chip_type': 'chip_types',
+                            'chip_vendor': 'chip_vendors', 'cveid': 'cveids', 'fccid': 'fcc_ids',
+                            'file': 'files', 'flag': 'flags', 'odm': 'odms', 'ignore_odm': 'odms',
+                            'package': 'packages', 'partition': 'partitions',
+                            'password': 'passwords', 'program': 'programs', 'rootfs': 'rootfs',
+                            'sdk': 'sdks', 'type': 'types'}
 
         self.suggestion_table = {}
         for i in suggestion_names:
@@ -104,6 +102,7 @@ class FilterValidator(Validator):
         self.baud_rates = kwargs.get('baud_rates', set())
         self.bootloaders = kwargs.get('bootloaders', set())
         self.brands = kwargs.get('brands', set())
+        self.cveids = kwargs.get('cveids', set())
         self.odms = kwargs.get('odms', set())
         self.chips = kwargs.get('chips', set())
         self.chip_types = kwargs.get('chip_types', set())
@@ -172,6 +171,9 @@ class FilterValidator(Validator):
                 elif name == 'cve':
                     if token_value not in ['no', 'yes']:
                         return self.failure("Invalid CVE information")
+                elif name == 'cveid':
+                    if token_value not in self.cveids:
+                        return self.failure("Invalid CVE id")
                 elif name == 'ignore_brand':
                     if token_value not in self.brands:
                         return self.failure("Invalid brand")
@@ -311,6 +313,7 @@ class DevicecodeUI(App):
                    {'name': 'chip_vendor', 'has_params': False},
                    {'name': 'connector', 'has_params': False},
                    {'name': 'cve', 'has_params': False},
+                   {'name': 'cveid', 'has_params': False},
                    {'name': 'fccid', 'has_params': False},
                    {'name': 'file', 'has_params': False},
                    {'name': 'flag', 'has_params': False},
@@ -351,6 +354,7 @@ class DevicecodeUI(App):
         filter_chip_vendors = kwargs.get('chip_vendors', [])
         filter_connectors = kwargs.get('connectors', set())
         filter_cves = kwargs.get('cves', set())
+        filter_cveids = kwargs.get('cveids', set())
         filter_device_types = kwargs.get('types', [])
         filter_fccs = kwargs.get('fccs', [])
         filter_files = kwargs.get('files', [])
@@ -399,6 +403,9 @@ class DevicecodeUI(App):
 
         # known serial/JTAG connectors
         connectors = set()
+
+        # known CVE ids
+        cveids = set()
 
         # known ODMS
         odms = set()
@@ -547,6 +554,11 @@ class DevicecodeUI(App):
 
             if filter_years:
                 if not set(filter_years).intersection(declared_years):
+                    continue
+
+            if filter_cveids:
+                cv = [x.lower() for x in device['regulatory']['cve']]
+                if not set(cv).intersection(filter_cveids):
                     continue
 
             if filter_programs:
@@ -745,6 +757,9 @@ class DevicecodeUI(App):
             for fcc_id in device['regulatory']['fcc_ids']:
                 fcc_ids.add(fcc_id['fcc_id'].lower())
 
+            for cveid in device['regulatory']['cve']:
+                cveids.add(cveid.lower())
+
             for package in device['software']['packages']:
                 package_name = package['name'].lower()
                 packages.add(package_name)
@@ -776,8 +791,8 @@ class DevicecodeUI(App):
         return {'brands_to_devices': brands_to_devices, 'odm_to_devices': odm_to_devices,
                 'baud_rates': baud_rates, 'bootloaders': bootloaders, 'brands': brands,
                 'brand_data': brand_data, 'chips': chips, 'chip_types': chip_types,
-                'chip_vendors': chip_vendors, 'connectors': connectors, 'odms': odms,
-                'fcc_ids': fcc_ids, 'files': files, 'flags': flags, 'ips': ips,
+                'chip_vendors': chip_vendors, 'connectors': connectors, 'cveids': cveids,
+                'odms': odms, 'fcc_ids': fcc_ids, 'files': files, 'flags': flags, 'ips': ips,
                 'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
                 'odm_connector': odm_connector, 'chip_vendor_connector': chip_vendor_connector,
                 'packages': packages, 'partitions': partitions, 'passwords': passwords,
@@ -833,6 +848,7 @@ class DevicecodeUI(App):
         chip_types = data['chip_types']
         chip_vendors = data['chip_vendors']
         connectors = data['connectors']
+        cveids = data['cveids']
         device_types = data['types']
         odms = data['odms']
         fcc_ids = data['fcc_ids']
@@ -937,25 +953,25 @@ class DevicecodeUI(App):
 
         # input field
         input_filter = Input(placeholder='Filter',
-                            validators=[FilterValidator(bootloaders=bootloaders, brands=brands,
-                                            baud_rates=baud_rates, odms=odms, chips=chips,
-                                            chip_types=chip_types, chip_vendors=chip_vendors,
-                                            connectors=connectors, fcc_ids=fcc_ids, files=files,
-                                            ips=ips, packages=packages, partitions=partitions,
-                                            passwords=passwords, programs=programs, rootfs=rootfs,
-                                            sdks=sdks, types=device_types,
-                                            token_names=self.TOKEN_NAMES)],
-                            suggester=SuggestDevices(self.TOKEN_NAMES, case_sensitive=False,
-                            baud_rates=sorted(baud_rates),
-                            bootloaders=sorted(bootloaders), brands=sorted(brands),
-                            chips=sorted(chips), chip_types=sorted(chip_types),
-                            chip_vendors=sorted(chip_vendors), connectors=sorted(connectors),
-                            odms=sorted(odms), operating_systems=sorted(operating_systems),
-                            fcc_ids=sorted(fcc_ids), files=sorted(files), flags=sorted(flags),
-                            packages=sorted(packages), partitions=sorted(partitions),
-                            passwords=sorted(passwords), programs=sorted(programs),
-                            rootfs=sorted(rootfs), sdks=sorted(sdks), types=sorted(device_types)),
-                            valid_empty=True)
+                        validators=[FilterValidator(bootloaders=bootloaders, brands=brands,
+                                        baud_rates=baud_rates, odms=odms, chips=chips,
+                                        chip_types=chip_types, chip_vendors=chip_vendors,
+                                        connectors=connectors, cveids=cveids, fcc_ids=fcc_ids,
+                                        files=files, ips=ips, packages=packages,
+                                        partitions=partitions, passwords=passwords,
+                                        programs=programs, rootfs=rootfs, sdks=sdks,
+                                        types=device_types, token_names=self.TOKEN_NAMES)],
+                        suggester=SuggestDevices(self.TOKEN_NAMES, case_sensitive=False,
+                        baud_rates=sorted(baud_rates), bootloaders=sorted(bootloaders),
+                        brands=sorted(brands), chips=sorted(chips), chip_types=sorted(chip_types),
+                        chip_vendors=sorted(chip_vendors), connectors=sorted(connectors),
+                        cveids=sorted(cveids), odms=sorted(odms),
+                        operating_systems=sorted(operating_systems), fcc_ids=sorted(fcc_ids),
+                        files=sorted(files), flags=sorted(flags), packages=sorted(packages),
+                        partitions=sorted(partitions), passwords=sorted(passwords),
+                        programs=sorted(programs), rootfs=sorted(rootfs), sdks=sorted(sdks),
+                        types=sorted(device_types)),
+                        valid_empty=True)
 
         # Yield the elements. The UI is a container with an app grid. On the left
         # there are some tabs, each containing a tree. On the right there is a
@@ -1035,6 +1051,7 @@ class DevicecodeUI(App):
         chip_vendors = []
         connectors = set()
         cves = []
+        cveids = []
         device_types = []
         fccs = []
         files = []
@@ -1088,6 +1105,8 @@ class DevicecodeUI(App):
                         connectors.add(value)
                     elif name == 'cve':
                         cves.append(value)
+                    elif name == 'cveid':
+                        cveids.append(value)
                     elif name == 'fccid':
                         fccs.append(value)
                     elif name == 'flag':
@@ -1139,9 +1158,10 @@ class DevicecodeUI(App):
             filtered_data = self.compose_data_sets(bootloaders=bootloaders, brands=brands,
                                 odms=odms, chips=chips, chip_types=chip_types,
                                 chip_vendors=chip_vendors, connectors=connectors, cves=cves,
-                                fccs=fccs, files=files, flags=flags, ignore_brands=ignore_brands,
-                                ignore_odms=ignore_odms, ignore_origins=ignore_origins, ips=ips,
-                                jtags=jtags, operating_systems=operating_systems, origins=origins,
+                                cveids=cveids, fccs=fccs, files=files, flags=flags,
+                                ignore_brands=ignore_brands, ignore_odms=ignore_odms,
+                                ignore_origins=ignore_origins, ips=ips, jtags=jtags,
+                                operating_systems=operating_systems, origins=origins,
                                 passwords=passwords, packages=packages, partitions=partitions,
                                 programs=programs, rootfs=rootfs, sdks=sdks, serials=serials,
                                 serial_baud_rates=serial_baud_rates, years=years,
