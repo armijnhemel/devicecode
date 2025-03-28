@@ -255,6 +255,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                         title = device['title'].lower()
                         write_overlay = True
                     else:
+                        # then check if there modified title (so without spaces) is the same
                         mod_title = device['title'].lower().replace(' ', '')
                         if mod_title in titles_mod_to_title:
                             title = titles_mod_to_title[mod_title]
@@ -269,7 +270,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                                 write_overlay = True
                                 break
 
-                            # then check for both http and https differences
+                            # then check for both http and https versions
                             if product_page.startswith('http://'):
                                 if product_page.replace('http://', 'https://') in product_page_to_title:
                                     title = product_page_to_title[product_page.replace('http://', 'https://')]
