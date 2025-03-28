@@ -211,6 +211,20 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
     cpe_to_cve = {}
 
     if cve_directory:
+        # parse the delta.json file for the time stamp
+        delta_json = cve_directory / 'cves' / 'delta.json'
+        if not delta_json.exists():
+            print(f"{delta_json} is not a valid cvelistV5 delta file, exiting.", file=sys.stderr)
+            sys.exit(1)
+        with open(delta_json, 'r') as cve_file:
+            try:
+                cve_json = json.load(cve_file)
+            except json.decoder.JSONDecodeError:
+                print(f"{delta_json} is not a valid cvelistV5 delta file, exiting.",
+                      file=sys.stderr)
+                sys.exit(1)
+            cve_metadata = {'timestamp': cve_json['fetchTime']}
+
         # walk the CVE data, if it exists
         for p in (cve_directory / 'cves').walk():
             parent, directories, files = p
@@ -272,15 +286,15 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
 
                             # then check for both http and https versions
                             if product_page.startswith('http://'):
-                                if product_page.replace('http://', 'https://') in product_page_to_title:
-                                    title = product_page_to_title[product_page.replace('http://', 'https://')]
-                                    write_overlay = True
-                                    break
+                                replaced = product_page.replace('http://', 'https://')
                             elif product_page.startswith('https://'):
-                                if product_page.replace('https://', 'http://') in product_page_to_title:
-                                    title = product_page_to_title[product_page.replace('https://', 'http://')]
-                                    write_overlay = True
-                                    break
+                                replaced = product_page.replace('https://', 'http://')
+                            else:
+                                continue
+                            if replaced in product_page_to_title:
+                                title = product_page_to_title[replaced]
+                                write_overlay = True
+                                break
 
                     if write_overlay and title in cpe_title_to_cpe:
                         cpe_data = cpe_title_to_cpe[title]
@@ -294,7 +308,8 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                         # write CVE overlay file
                         if cpe_data['cpe23'] in cpe_to_cve:
                             cve_overlay_data = {'type': 'overlay', 'name': 'cve',
-                                            'data': cpe_to_cve[cpe_data['cpe23']]}
+                                                'metadata': cve_metadata,
+                                                'data': cpe_to_cve[cpe_data['cpe23']]}
                             cve_overlay_file = overlay_directory / result_file.stem / 'cve.json'
                             cve_overlay_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -304,7 +319,8 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                         if use_git:
                             # add the files
                             p = subprocess.Popen(['git', 'add', overlay_file],
-                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                                 close_fds=True)
                             (outputmsg, errormsg) = p.communicate()
                             if p.returncode != 0:
                                 print(f"{overlay_file} could not be added", file=sys.stderr)
@@ -312,14 +328,16 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                             commit_message = f'Add CPE overlay for {result_file.stem}'
 
                             p = subprocess.Popen(['git', 'commit', "-m", commit_message],
-                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                                 close_fds=True)
                             (outputmsg, errormsg) = p.communicate()
                             if p.returncode != 0:
                                 print(f"{overlay_file} could not be committed", file=sys.stderr)
 
                             if cpe_data['cpe23'] in cpe_to_cve:
                                 p = subprocess.Popen(['git', 'add', overlay_file],
-                                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                                     close_fds=True)
                                 (outputmsg, errormsg) = p.communicate()
                                 if p.returncode != 0:
                                     print(f"{cve_overlay_file} could not be added", file=sys.stderr)
@@ -327,10 +345,12 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                                 commit_message = f'Add CVE overlay for {result_file.stem}'
 
                                 p = subprocess.Popen(['git', 'commit', "-m", commit_message],
-                                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                                     close_fds=True)
                                 (outputmsg, errormsg) = p.communicate()
                                 if p.returncode != 0:
-                                    print(f"{cve_overlay_file} could not be committed", file=sys.stderr)
+                                    print(f"{cve_overlay_file} could not be committed",
+                                          file=sys.stderr)
 
             except json.decoder.JSONDecodeError:
                 pass
