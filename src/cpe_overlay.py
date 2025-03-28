@@ -252,13 +252,13 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
 
                     # first the obvious check: are the names the same?
                     if device['title'].lower() in cpe_title_to_cpe:
-                        write_overlay = True
                         title = device['title'].lower()
+                        write_overlay = True
                     else:
                         mod_title = device['title'].lower().replace(' ', '')
                         if mod_title in titles_mod_to_title:
                             title = titles_mod_to_title[mod_title]
-                            #write_overlay = True
+                            write_overlay = True
 
                     # see if product pages match
                     if not write_overlay:
@@ -266,19 +266,19 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                             # first direct match
                             if product_page in product_page_to_title:
                                 title = product_page_to_title[product_page]
-                                #write_overlay = True
+                                write_overlay = True
                                 break
 
                             # then check for both http and https differences
                             if product_page.startswith('http://'):
                                 if product_page.replace('http://', 'https://') in product_page_to_title:
                                     title = product_page_to_title[product_page.replace('http://', 'https://')]
-                                    #write_overlay = True
+                                    write_overlay = True
                                     break
                             elif product_page.startswith('https://'):
                                 if product_page.replace('https://', 'http://') in product_page_to_title:
                                     title = product_page_to_title[product_page.replace('https://', 'http://')]
-                                    #write_overlay = True
+                                    write_overlay = True
                                     break
 
                     if write_overlay and title in cpe_title_to_cpe:
