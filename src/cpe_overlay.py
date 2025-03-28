@@ -204,27 +204,28 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
     # keep a mapping from CPE to a list of CVEs
     cpe_to_cve = {}
 
-    # walk the CVE data, if it exists
-    for p in (cve_directory / 'cves').walk():
-        parent, directories, files = p
-        for f in files:
-            if f.startswith('CVE'):
-                with open(parent / f, 'r') as cve_file:
-                    try:
-                        cve_json = json.load(cve_file)
-                        if cve_json['cveMetadata']['state'] == 'REJECTED':
+    if cve_directory:
+        # walk the CVE data, if it exists
+        for p in (cve_directory / 'cves').walk():
+            parent, directories, files = p
+            for f in files:
+                if f.startswith('CVE'):
+                    with open(parent / f, 'r') as cve_file:
+                        try:
+                            cve_json = json.load(cve_file)
+                            if cve_json['cveMetadata']['state'] == 'REJECTED':
+                                continue
+                            for container in cve_json['containers'].get('adp', []):
+                                for affected in container.get('affected', []):
+                                    for cve_cpe in affected['cpes']:
+                                        # TODO: first rename. Example: d-link -> dlink
+                                        # Use NAME_CORRECTION in the CPE dictionary for this
+                                        cpe23 = cpe23_rewrite.get(cve_cpe, cve_cpe)
+                                        if cpe23 not in cpe_to_cve:
+                                            cpe_to_cve[cpe23] = []
+                                        cpe_to_cve[cpe23].append(cve_json['cveMetadata']['cveId'])
+                        except json.decoder.JSONDecodeError:
                             continue
-                        for container in cve_json['containers'].get('adp', []):
-                            for affected in container.get('affected', []):
-                                for cve_cpe in affected['cpes']:
-                                    # TODO: first rename. Example: d-link -> dlink
-                                    # Use NAME_CORRECTION in the CPE dictionary for this
-                                    cpe23 = cpe23_rewrite.get(cve_cpe, cve_cpe)
-                                    if cpe23 not in cpe_to_cve:
-                                        cpe_to_cve[cpe23] = []
-                                    cpe_to_cve[cpe23].append(cve_json['cveMetadata']['cveId'])
-                    except json.decoder.JSONDecodeError:
-                        continue
 
     # Then walk all the result files, check the names of the devices
     # and optionally create overlays
