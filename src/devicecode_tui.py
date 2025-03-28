@@ -1018,7 +1018,7 @@ class DevicecodeUI(App):
                 with TabPane('Network'):
                     with VerticalScroll():
                         yield self.network_data_area
-                with TabPane('Regulatory, CPE & Commercial'):
+                with TabPane('Regulatory, CPE, CVE & Commercial'):
                     with VerticalScroll():
                         yield self.regulatory_data_area
                 with TabPane('Serial & JTAG'):
@@ -1368,7 +1368,7 @@ class DevicecodeUI(App):
             # CVE
             if result['regulatory']['cve']:
                 new_markdown += "# CVE\n"
-                for c in result['regulatory']['cve']:
+                for c in sorted(result['regulatory']['cve']):
                     new_markdown += f"[{c}](<https://www.cve.org/CVERecord?id={c}>)\n"
 
             # Commercial information
