@@ -120,6 +120,8 @@ The format of `params` has not been defined yet.
 * `chip_type`
 * `chip_vendor`
 * `connector`
+* `cve`
+* `cveid`
 * `fccid`
 * `file`
 * `flag`
@@ -229,6 +231,15 @@ devices.
 
 `connector` can be used to filter connectors (serial port only for now, JTAG
 in the future as well).
+
+##### CVE
+
+`cve` can be used to show devices that have, or don't have, an associated CVE.
+Valid values are `yes` and `no`.
+
+##### CVE id
+
+`cveid` can be used to show devices associated with a certain CVE identifier.
 
 ##### FCC id
 
