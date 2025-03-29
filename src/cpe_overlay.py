@@ -189,13 +189,19 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                 cpe23 = ''
                 references = []
                 cves = []
+                titles = set()
                 for child in element:
                     # first get the title. This is basically the CPE 2.2 name
                     # Please note: some entries can have multiple titles in multipe
                     # languages. TODO.
-                    if child.tag == f"{{{ns}}}title":
+                    if not is_deprecated and child.tag == f"{{{ns}}}title":
                         title = child.text.strip()
                         titles_mod_to_title[title.lower().replace(' ', '')] = title.lower()
+
+                        # hackish workaround for multiple titles
+                        if title in titles:
+                            continue
+                        titles.add(title)
 
                     # then grab the CPE 2.3 name
                     if child.tag == "{http://scap.nist.gov/schema/cpe-extension/2.3}cpe23-item":
@@ -212,9 +218,6 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                                 dep_rewrite = dep_child.find('{http://scap.nist.gov/schema/cpe-extension/2.3}deprecated-by')
                                 if dep_rewrite.attrib['type'] == 'NAME_CORRECTION':
                                     cpe23_rewrite[cpe23] = dep_rewrite.attrib['name']
-                            # finally make sure that none of these files are written by
-                            # emptying the title. This is a bit of a hack, but it works.
-                            title=''
                             break
 
                     # and the references
