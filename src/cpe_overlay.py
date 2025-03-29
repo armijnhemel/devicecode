@@ -7,6 +7,7 @@
 import json
 import os
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -112,6 +113,41 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
 
     cpe23_rewrite = {}
 
+    # keep a mapping from CPE to a list of CVEs
+    cpe_to_cve = {}
+
+    # a list of known CVE ids
+    cve_ids = set()
+
+    if cve_directory:
+        # parse the delta.json file for the time stamp
+        delta_json = cve_directory / 'cves' / 'delta.json'
+        if not delta_json.exists():
+            print(f"{delta_json} is not a valid cvelistV5 delta file, exiting.", file=sys.stderr)
+            sys.exit(1)
+        with open(delta_json, 'r') as cve_file:
+            try:
+                cve_json = json.load(cve_file)
+            except json.decoder.JSONDecodeError:
+                print(f"{delta_json} is not a valid cvelistV5 delta file, exiting.",
+                      file=sys.stderr)
+                sys.exit(1)
+            cve_metadata = {'timestamp': cve_json['fetchTime']}
+
+        # walk the CVE data, if it exists
+        for p in (cve_directory / 'cves').walk():
+            parent, directories, files = p
+            for f in files:
+                if f.startswith('CVE'):
+                    with open(parent / f, 'r') as cve_file:
+                        try:
+                            cve_json = json.load(cve_file)
+                            if cve_json['cveMetadata']['state'] == 'REJECTED':
+                                continue
+                            cve_ids.add(pathlib.Path(f).stem)
+                        except json.decoder.JSONDecodeError:
+                            continue
+
     for event, element in et.iterparse(cpe_file):
         if element.tag == f"{{{ns}}}generator":
             for child in element:
@@ -152,6 +188,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                 title = ''
                 cpe23 = ''
                 references = []
+                cves = []
                 for child in element:
                     # first get the title. This is basically the CPE 2.2 name
                     # Please note: some entries can have multiple titles in multipe
@@ -190,6 +227,17 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                                     product_page_to_title[href] = title.lower()
                             references.append({'type': reference_type, 'href': href})
 
+                            # Then process advisories, as there are sometimes CVE
+                            # identifiers or other identifiers in there. Please
+                            # note that these references are not necessarily correct.
+                            # Filter these later.
+                            if 'advisory' in reference_type.lower():
+                                # try to extract a known CVE identifier
+                                cve_res = re.findall(r'CVE-\d{4}-\d{4,5}', href)
+                                for c in sorted(set(cve_res)):
+                                    if c in cve_ids:
+                                        cves.append(c)
+
                 if title:
                     cpe_title_to_cpe[title.lower()] = {'cpe': cpe_name, 'cpe23': cpe23,
                                                        'references': references, 'title': title,
@@ -204,37 +252,27 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                                                        'target_software': parsed_cpe.get_target_software()[0],
                                                        'target_hardware': parsed_cpe.get_target_hardware()[0],
                                                        'other': parsed_cpe.get_other()[0]}
+                    if cves:
+                        if cpe23 not in cpe_to_cve:
+                            cpe_to_cve[cpe23] = []
+                        cpe_to_cve[cpe23] += cves
+
             # reduce memory usage
             element.clear()
 
-    # keep a mapping from CPE to a list of CVEs
-    cpe_to_cve = {}
-
     if cve_directory:
-        # parse the delta.json file for the time stamp
-        delta_json = cve_directory / 'cves' / 'delta.json'
-        if not delta_json.exists():
-            print(f"{delta_json} is not a valid cvelistV5 delta file, exiting.", file=sys.stderr)
-            sys.exit(1)
-        with open(delta_json, 'r') as cve_file:
-            try:
-                cve_json = json.load(cve_file)
-            except json.decoder.JSONDecodeError:
-                print(f"{delta_json} is not a valid cvelistV5 delta file, exiting.",
-                      file=sys.stderr)
-                sys.exit(1)
-            cve_metadata = {'timestamp': cve_json['fetchTime']}
-
-        # walk the CVE data, if it exists
+        # walk the CVE data again. This adds some overhead
+        # to the system, but since these scripts aren't run
+        # very frequently it is probably OK.
         for p in (cve_directory / 'cves').walk():
             parent, directories, files = p
             for f in files:
                 if f.startswith('CVE'):
+                    if pathlib.Path(f).stem not in cve_ids:
+                        continue
                     with open(parent / f, 'r') as cve_file:
                         try:
                             cve_json = json.load(cve_file)
-                            if cve_json['cveMetadata']['state'] == 'REJECTED':
-                                continue
                             for container in cve_json['containers'].get('adp', []):
                                 for affected in container.get('affected', []):
                                     for cve_cpe in affected['cpes']:
@@ -309,7 +347,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                         if cpe_data['cpe23'] in cpe_to_cve:
                             cve_overlay_data = {'type': 'overlay', 'name': 'cve',
                                                 'metadata': cve_metadata,
-                                                'data': cpe_to_cve[cpe_data['cpe23']]}
+                                                'data': sorted(set(cpe_to_cve[cpe_data['cpe23']]))}
                             cve_overlay_file = overlay_directory / result_file.stem / 'cve.json'
                             cve_overlay_file.parent.mkdir(parents=True, exist_ok=True)
 
