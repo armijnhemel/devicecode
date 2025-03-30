@@ -353,17 +353,6 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                         with open(overlay_file, 'w') as overlay:
                             overlay.write(json.dumps(overlay_data, indent=4))
 
-                        # write CVE overlay file
-                        if cpe_data['cpe23'] in cpe_to_cve:
-                            cve_overlay_data = {'type': 'overlay', 'name': 'cve',
-                                                'metadata': cve_metadata,
-                                                'data': sorted(set(cpe_to_cve[cpe_data['cpe23']]))}
-                            cve_overlay_file = overlay_directory / result_file.stem / 'cve.json'
-                            cve_overlay_file.parent.mkdir(parents=True, exist_ok=True)
-
-                            with open(cve_overlay_file, 'w') as overlay:
-                                overlay.write(json.dumps(cve_overlay_data, indent=4))
-
                         if use_git:
                             # add the files
                             p = subprocess.Popen(['git', 'add', overlay_file],
@@ -382,8 +371,19 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                             if p.returncode != 0:
                                 print(f"{overlay_file} could not be committed", file=sys.stderr)
 
-                            if cpe_data['cpe23'] in cpe_to_cve:
-                                p = subprocess.Popen(['git', 'add', overlay_file],
+                        # write CVE overlay file
+                        if cpe_data['cpe23'] in cpe_to_cve:
+                            cve_overlay_data = {'type': 'overlay', 'name': 'cve',
+                                                'metadata': cve_metadata,
+                                                'data': sorted(set(cpe_to_cve[cpe_data['cpe23']]))}
+                            cve_overlay_file = overlay_directory / result_file.stem / 'cve.json'
+                            cve_overlay_file.parent.mkdir(parents=True, exist_ok=True)
+
+                            with open(cve_overlay_file, 'w') as overlay:
+                                overlay.write(json.dumps(cve_overlay_data, indent=4))
+
+                            if use_git:
+                                p = subprocess.Popen(['git', 'add', cve_overlay_file],
                                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                                      close_fds=True)
                                 (outputmsg, errormsg) = p.communicate()
