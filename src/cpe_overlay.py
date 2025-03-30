@@ -185,7 +185,6 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                 continue
 
             if parsed_cpe.is_hardware():
-                title = ''
                 cpe23 = ''
                 references = []
                 cves = []
@@ -193,14 +192,10 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                 for child in element:
                     # first get the title. This is basically the CPE 2.2 name
                     # Please note: some entries can have multiple titles in multipe
-                    # languages. TODO.
+                    # languages and data is duplicated for every title.
                     if not is_deprecated and child.tag == f"{{{ns}}}title":
                         title = child.text.strip()
                         titles_mod_to_title[title.lower().replace(' ', '')] = title.lower()
-
-                        # hackish workaround for multiple titles
-                        if title in titles:
-                            continue
                         titles.add(title)
 
                     # then grab the CPE 2.3 name
@@ -225,9 +220,6 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                         for ch in child:
                             href = ch.attrib['href']
                             reference_type = ch.text.lower()
-                            if reference_type in ['product']:
-                                if not href in product_page_to_title:
-                                    product_page_to_title[href] = title.lower()
                             references.append({'type': reference_type, 'href': href})
 
                             # Then process advisories, as there are sometimes CVE
@@ -241,7 +233,12 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                                     if c in cve_ids:
                                         cves.append(c)
 
-                if title:
+                for title in titles:
+                    for reference in references:
+                        if reference['type'] in ['product']:
+                            if not reference['href'] in product_page_to_title:
+                                product_page_to_title[reference['href']] = title.lower()
+
                     cpe_title_to_cpe[title.lower()] = {'cpe': cpe_name, 'cpe23': cpe23,
                                                        'references': references, 'title': title,
                                                        'part': parsed_cpe.get_part()[0],
