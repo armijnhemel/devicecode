@@ -107,6 +107,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
 
     # first process the CPE dictionary and store information
     ns = 'http://cpe.mitre.org/dictionary/2.0'
+    scap_ns = 'http://scap.nist.gov/schema/cpe-extension/2.3'
     titles_mod_to_title = {}
     cpe_title_to_cpe = {}
     product_page_to_title = {}
@@ -199,7 +200,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                         titles.add(title)
 
                     # then grab the CPE 2.3 name
-                    if child.tag == "{http://scap.nist.gov/schema/cpe-extension/2.3}cpe23-item":
+                    if child.tag == f'{{{scap_ns}}}cpe23-item':
                         cpe23 = child.attrib['name']
                         if is_deprecated:
                             # Sometimes the CPEs have been renamed because people used
@@ -208,9 +209,9 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                             # namely the NAME_CORRECTION attribute (but only for cpe23)
                             # As this is only used for rewriting CVEs (that *mostly* use the
                             # CPE 2.3 schema except entries from Red Hat) this is not a problem.
-                            dep_child = child.find('{http://scap.nist.gov/schema/cpe-extension/2.3}deprecation')
+                            dep_child = child.find(f'{{{scap_ns}}}deprecation')
                             if dep_child is not None:
-                                dep_rewrite = dep_child.find('{http://scap.nist.gov/schema/cpe-extension/2.3}deprecated-by')
+                                dep_rewrite = dep_child.find(f'{{{scap_ns}}}deprecated-by')
                                 if dep_rewrite.attrib['type'] == 'NAME_CORRECTION':
                                     cpe23_rewrite[cpe23] = dep_rewrite.attrib['name']
                             break
@@ -234,24 +235,33 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                                         cves.append(c)
 
                 for title in titles:
+                    # sometimes titles are duplicated in the CPE data
+                    # for some reason (usually data entry errors). Skip
+                    # duplicates, although this might mean missing out
+                    # on some data. This needs a much cleaner solution.
+                    # TODO.
+                    if title.lower() in cpe_title_to_cpe:
+                        continue
+
                     for reference in references:
                         if reference['type'] in ['product']:
                             if not reference['href'] in product_page_to_title:
                                 product_page_to_title[reference['href']] = title.lower()
 
                     cpe_title_to_cpe[title.lower()] = {'cpe': cpe_name, 'cpe23': cpe23,
-                                                       'references': references, 'title': title,
-                                                       'part': parsed_cpe.get_part()[0],
-                                                       'vendor': parsed_cpe.get_vendor()[0],
-                                                       'product': parsed_cpe.get_product()[0],
-                                                       'version': parsed_cpe.get_version()[0],
-                                                       'update': parsed_cpe.get_update()[0],
-                                                       'edition': parsed_cpe.get_edition()[0],
-                                                       'language': parsed_cpe.get_language()[0],
-                                                       'software_edition': parsed_cpe.get_software_edition()[0],
-                                                       'target_software': parsed_cpe.get_target_software()[0],
-                                                       'target_hardware': parsed_cpe.get_target_hardware()[0],
-                                                       'other': parsed_cpe.get_other()[0]}
+                            'references': references, 'title': title,
+                             'part': parsed_cpe.get_part()[0],
+                             'vendor': parsed_cpe.get_vendor()[0],
+                             'product': parsed_cpe.get_product()[0],
+                             'version': parsed_cpe.get_version()[0],
+                             'update': parsed_cpe.get_update()[0],
+                             'edition': parsed_cpe.get_edition()[0],
+                             'language': parsed_cpe.get_language()[0],
+                             'software_edition': parsed_cpe.get_software_edition()[0],
+                             'target_software': parsed_cpe.get_target_software()[0],
+                             'target_hardware': parsed_cpe.get_target_hardware()[0],
+                             'other': parsed_cpe.get_other()[0]}
+
                     if cves:
                         if cpe23 not in cpe_to_cve:
                             cpe_to_cve[cpe23] = []
