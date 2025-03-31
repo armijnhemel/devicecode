@@ -21,7 +21,6 @@ import defusedxml.ElementTree as et
 PART_TO_NAME = {'h': 'hardware', 'a': 'application',
                 'o': 'operating system'}
 
-
 @click.command(short_help='Create CPE & CVE (optional) overlay files to provide additional data')
 @click.option('--cpe', '-c', 'cpe_file', required=True,
               help='CPE dictionary file', type=click.File('r'))
@@ -137,7 +136,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
 
         # walk the CVE data, if it exists
         for p in (cve_directory / 'cves').walk():
-            parent, directories, files = p
+            parent, _, files = p
             for f in files:
                 if f.startswith('CVE'):
                     with open(parent / f, 'r') as cve_file:
@@ -289,7 +288,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
         # to the system, but since these scripts aren't run
         # very frequently it is probably OK.
         for p in (cve_directory / 'cves').walk():
-            parent, directories, files = p
+            parent, _, files = p
             for f in files:
                 if f.startswith('CVE'):
                     if pathlib.Path(f).stem not in cve_ids:
