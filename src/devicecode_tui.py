@@ -1437,11 +1437,12 @@ class DevicecodeUI(App):
     def build_fcc_document_report(self, result):
         '''Construct Markdown with information from downloaded FCC reports'''
         new_markdown = ""
+        base_url = 'https://fcc.report/FCC-ID'
         if result:
             for pdf in result:
                 fcc_id = pdf['fcc_id']
                 pdf_name = pdf['pdf']
-                new_markdown += f"# [{pdf_name}](<https://fcc.report/FCC-ID/{fcc_id}/{pdf_name}>): {pdf['type']} - {pdf['description']}\n"
+                new_markdown += f"# [{pdf_name}](<{base_url}/{fcc_id}/{pdf_name}>): {pdf['type']} - {pdf['description']}\n"
                 new_markdown += "| Page | Type | Hint | Extra data|\n|--|--|--|--|\n"
                 for hint in pdf['hints']:
                     page = hint['page']
