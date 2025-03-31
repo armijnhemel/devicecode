@@ -1047,6 +1047,9 @@ class DevicecodeUI(App):
     def process_filter(self, event: Input.Submitted) -> None:
         '''Filter values and create new trees, datatables, and
            refresh data areas'''
+        if event.validation_result and not event.validation_result.is_valid:
+            return
+
         bootloaders = []
         brands = []
         chips = []
@@ -1077,163 +1080,157 @@ class DevicecodeUI(App):
         serial_baud_rates = []
         years = []
         is_filtered = False
-        refresh = False
 
-        if event.validation_result is None:
-            refresh = True
-        else:
-            if event.validation_result.is_valid:
-                is_filtered = True
-                refresh = True
-                # input was already syntactically validated.
-                tokens = shlex.split(event.value.lower())
+        if event.validation_result is not None:
+            is_filtered = True
+            # input was already syntactically validated.
+            tokens = shlex.split(event.value.lower())
 
-                for t in tokens:
-                    name_params, value = t.split('=', maxsplit=1)
-                    if '?' in name_params:
-                        name, args = name_params.split('?', maxsplit=1)
+            for t in tokens:
+                name_params, value = t.split('=', maxsplit=1)
+                if '?' in name_params:
+                    name, args = name_params.split('?', maxsplit=1)
+                else:
+                    name = name_params
+                if name == 'bootloader':
+                    bootloaders.append(value)
+                elif name == 'brand':
+                    brands.append(value)
+                elif name == 'chip':
+                    chips.append(value)
+                elif name == 'chip_type':
+                    chip_types.append(value)
+                elif name == 'chip_vendor':
+                    chip_vendors.append(value)
+                elif name == 'connector':
+                    connectors.add(value)
+                elif name == 'cve':
+                    cves.append(value)
+                elif name == 'cveid':
+                    cveids.append(value)
+                elif name == 'fccid':
+                    fccs.append(value)
+                elif name == 'flag':
+                    flags.append(value)
+                elif name == 'ignore_brand':
+                    ignore_brands.append(value)
+                elif name == 'ignore_odm':
+                    ignore_odms.append(value)
+                elif name == 'ignore_origin':
+                    ignore_origins.append(value)
+                elif name == 'file':
+                    files.append(value)
+                elif name == 'ip':
+                    ips.append(value)
+                elif name == 'odm':
+                    odms.append(value)
+                elif name == 'origin':
+                    origins.append(value)
+                elif name == 'os':
+                    operating_systems.append(value)
+                elif name == 'package':
+                    packages.append(value)
+                elif name == 'partition':
+                    partitions.append(value)
+                elif name == 'password':
+                    passwords.append(value)
+                elif name == 'program':
+                    programs.append(value)
+                elif name == 'rootfs':
+                    rootfs.append(value)
+                elif name == 'sdk':
+                    sdks.append(value)
+                elif name == 'serial':
+                    serials.append(value)
+                elif name == 'baud':
+                    serial_baud_rates.append(int(value))
+                elif name == 'type':
+                    device_types.append(value)
+                elif name == 'jtag':
+                    jtags.append(value)
+                elif name == 'year':
+                    input_years = sorted(value.split(':', maxsplit=1))
+                    if len(input_years) > 1:
+                        years += list(range(int(input_years[0]), int(input_years[1]) + 1))
                     else:
-                        name = name_params
-                    if name == 'bootloader':
-                        bootloaders.append(value)
-                    elif name == 'brand':
-                        brands.append(value)
-                    elif name == 'chip':
-                        chips.append(value)
-                    elif name == 'chip_type':
-                        chip_types.append(value)
-                    elif name == 'chip_vendor':
-                        chip_vendors.append(value)
-                    elif name == 'connector':
-                        connectors.add(value)
-                    elif name == 'cve':
-                        cves.append(value)
-                    elif name == 'cveid':
-                        cveids.append(value)
-                    elif name == 'fccid':
-                        fccs.append(value)
-                    elif name == 'flag':
-                        flags.append(value)
-                    elif name == 'ignore_brand':
-                        ignore_brands.append(value)
-                    elif name == 'ignore_odm':
-                        ignore_odms.append(value)
-                    elif name == 'ignore_origin':
-                        ignore_origins.append(value)
-                    elif name == 'file':
-                        files.append(value)
-                    elif name == 'ip':
-                        ips.append(value)
-                    elif name == 'odm':
-                        odms.append(value)
-                    elif name == 'origin':
-                        origins.append(value)
-                    elif name == 'os':
-                        operating_systems.append(value)
-                    elif name == 'package':
-                        packages.append(value)
-                    elif name == 'partition':
-                        partitions.append(value)
-                    elif name == 'password':
-                        passwords.append(value)
-                    elif name == 'program':
-                        programs.append(value)
-                    elif name == 'rootfs':
-                        rootfs.append(value)
-                    elif name == 'sdk':
-                        sdks.append(value)
-                    elif name == 'serial':
-                        serials.append(value)
-                    elif name == 'baud':
-                        serial_baud_rates.append(int(value))
-                    elif name == 'type':
-                        device_types.append(value)
-                    elif name == 'jtag':
-                        jtags.append(value)
-                    elif name == 'year':
-                        input_years = sorted(value.split(':', maxsplit=1))
-                        if len(input_years) > 1:
-                            years += list(range(int(input_years[0]), int(input_years[1]) + 1))
-                        else:
-                            years += [int(x) for x in input_years]
+                        years += [int(x) for x in input_years]
 
-        if refresh:
-            filtered_data = self.compose_data_sets(bootloaders=bootloaders, brands=brands,
-                                odms=odms, chips=chips, chip_types=chip_types,
-                                chip_vendors=chip_vendors, connectors=connectors, cves=cves,
-                                cveids=cveids, fccs=fccs, files=files, flags=flags,
-                                ignore_brands=ignore_brands, ignore_odms=ignore_odms,
-                                ignore_origins=ignore_origins, ips=ips, jtags=jtags,
-                                operating_systems=operating_systems, origins=origins,
-                                passwords=passwords, packages=packages, partitions=partitions,
-                                programs=programs, rootfs=rootfs, sdks=sdks, serials=serials,
-                                serial_baud_rates=serial_baud_rates, years=years,
-                                types=device_types)
+        filtered_data = self.compose_data_sets(bootloaders=bootloaders, brands=brands,
+                            odms=odms, chips=chips, chip_types=chip_types,
+                            chip_vendors=chip_vendors, connectors=connectors, cves=cves,
+                            cveids=cveids, fccs=fccs, files=files, flags=flags,
+                            ignore_brands=ignore_brands, ignore_odms=ignore_odms,
+                            ignore_origins=ignore_origins, ips=ips, jtags=jtags,
+                            operating_systems=operating_systems, origins=origins,
+                            passwords=passwords, packages=packages, partitions=partitions,
+                            programs=programs, rootfs=rootfs, sdks=sdks, serials=serials,
+                            serial_baud_rates=serial_baud_rates, years=years,
+                            types=device_types)
 
-            self.brand_tree.build_tree(filtered_data['brands_to_devices'], is_filtered)
-            self.odm_tree.build_tree(filtered_data['odm_to_devices'], is_filtered)
+        self.brand_tree.build_tree(filtered_data['brands_to_devices'], is_filtered)
+        self.odm_tree.build_tree(filtered_data['odm_to_devices'], is_filtered)
 
-            # build the various datatables.
-            brand_datatable_data = collections.Counter(filtered_data['brand_data'])
-            brand_odm_datatable_data = collections.Counter(filtered_data['brand_odm'])
-            brand_cpu_datatable_data = collections.Counter(filtered_data['brand_cpu'])
-            odm_cpu_datatable_data = collections.Counter(filtered_data['odm_cpu'])
-            odm_connector_data = collections.Counter(filtered_data['odm_connector'])
-            chip_vendor_connector_data = collections.Counter(filtered_data['chip_vendor_connector'])
-            year_datatable_data = collections.Counter(filtered_data['year_data'])
+        # build the various datatables.
+        brand_datatable_data = collections.Counter(filtered_data['brand_data'])
+        brand_odm_datatable_data = collections.Counter(filtered_data['brand_odm'])
+        brand_cpu_datatable_data = collections.Counter(filtered_data['brand_cpu'])
+        odm_cpu_datatable_data = collections.Counter(filtered_data['odm_cpu'])
+        odm_connector_data = collections.Counter(filtered_data['odm_connector'])
+        chip_vendor_connector_data = collections.Counter(filtered_data['chip_vendor_connector'])
+        year_datatable_data = collections.Counter(filtered_data['year_data'])
 
-            # clear and rebuild the data tables
-            self.brand_data_table.clear()
-            rank = 1
-            for i in brand_datatable_data.most_common():
-                self.brand_data_table.add_row(rank, i[1], i[0])
-                rank += 1
+        # clear and rebuild the data tables
+        self.brand_data_table.clear()
+        rank = 1
+        for i in brand_datatable_data.most_common():
+            self.brand_data_table.add_row(rank, i[1], i[0])
+            rank += 1
 
-            self.brand_odm_data_table.clear()
-            rank = 1
-            for i in brand_odm_datatable_data.most_common():
-                self.brand_odm_data_table.add_row(rank, i[1], i[0][0], i[0][1])
-                rank += 1
+        self.brand_odm_data_table.clear()
+        rank = 1
+        for i in brand_odm_datatable_data.most_common():
+            self.brand_odm_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+            rank += 1
 
-            self.brand_cpu_data_table.clear()
-            rank = 1
-            for i in brand_cpu_datatable_data.most_common():
-                self.brand_cpu_data_table.add_row(rank, i[1], i[0][0], i[0][1])
-                rank += 1
+        self.brand_cpu_data_table.clear()
+        rank = 1
+        for i in brand_cpu_datatable_data.most_common():
+            self.brand_cpu_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+            rank += 1
 
-            self.odm_cpu_data_table.clear()
-            rank = 1
-            for i in odm_cpu_datatable_data.most_common():
-                self.odm_cpu_data_table.add_row(rank, i[1], i[0][0], i[0][1])
-                rank += 1
+        self.odm_cpu_data_table.clear()
+        rank = 1
+        for i in odm_cpu_datatable_data.most_common():
+            self.odm_cpu_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+            rank += 1
 
-            self.odm_connector_data_table.clear()
-            rank = 1
-            for i in odm_connector_data.most_common():
-                self.odm_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
-                rank += 1
+        self.odm_connector_data_table.clear()
+        rank = 1
+        for i in odm_connector_data.most_common():
+            self.odm_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+            rank += 1
 
-            self.chip_vendor_connector_data_table.clear()
-            rank = 1
-            for i in chip_vendor_connector_data.most_common():
-                self.chip_vendor_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
-                rank += 1
+        self.chip_vendor_connector_data_table.clear()
+        rank = 1
+        for i in chip_vendor_connector_data.most_common():
+            self.chip_vendor_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
+            rank += 1
 
-            self.year_data_table.clear()
-            rank = 1
-            for i in year_datatable_data.most_common():
-                self.year_data_table.add_row(rank, i[1], i[0])
-                rank += 1
+        self.year_data_table.clear()
+        rank = 1
+        for i in year_datatable_data.most_common():
+            self.year_data_table.add_row(rank, i[1], i[0])
+            rank += 1
 
-            # reset the data areas to prevent old data being displayed
-            self.device_data_area.update('')
-            self.regulatory_data_area.update('')
-            self.model_data_area.update('')
-            self.network_data_area.update('')
-            self.serial_jtag_area.update('')
-            self.software_area.update('')
-            self.chips_area.update('')
-            self.power_area.update('')
+        # reset the data areas to prevent old data being displayed
+        self.device_data_area.update('')
+        self.regulatory_data_area.update('')
+        self.model_data_area.update('')
+        self.network_data_area.update('')
+        self.serial_jtag_area.update('')
+        self.software_area.update('')
+        self.chips_area.update('')
+        self.power_area.update('')
 
     def on_markdown_link_clicked(self, event: Markdown.LinkClicked) -> None:
         # TODO: often terminals (such as MATE terminal in Fedora) will
