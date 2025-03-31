@@ -167,10 +167,24 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
             if element.get('deprecated') == 'true':
                 is_deprecated = True
 
-            # only interesting for now: hardware, operating system and firmware
+            # only interesting for now: hardware, operating system
+            # and CPEs specific to firmware.
             if cpe_name.startswith('cpe:/h'):
                 # skip firmware entries for now
                 if '_firmware' in cpe_name:
+                    # These entries are tricky, as it isn't always
+                    # clear for which device they are meant. For example:
+                    #
+                    # cpe:/h:huawei:huawei_firmware:v5500r001c00
+                    #
+                    # or would require more parsing effort to find model and version number:
+                    #
+                    # cpe:/h:lenovo:thinkagile_mx650_v3_firmware:-
+                    #
+                    # or have spelling errors:
+                    #
+                    # cpe:/h:lenovo:thinkagile_mx630_v3_intergrated_system_firmware:-
+
                     # reduce memory usage
                     element.clear()
                     continue
