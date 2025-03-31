@@ -250,7 +250,8 @@ class BrandTree(Tree):
             # recurse into the device and add nodes for devices
             for model in sorted(brands_to_devices[brand], key=lambda x: x['model']):
                 if model['labels']:
-                    node.add_leaf(f"{model['model']}  {''.join(model['labels'])}", data=model['data'])
+                    node.add_leaf(f"{model['model']}  {''.join(model['labels'])}",
+                                  data=model['data'])
                 else:
                     node.add_leaf(f"{model['model']}", data=model['data'])
                 node_leaves += 1
@@ -276,7 +277,8 @@ class OdmTree(Tree):
                 for model in sorted(odm_to_devices[odm][brand], key=lambda x: x['model']):
                     # default case
                     if model['labels']:
-                        brand_node.add_leaf(f"{model['model']}  {''.join(model['labels'])}", data=model['data'])
+                        brand_node.add_leaf(f"{model['model']}  {''.join(model['labels'])}",
+                                            data=model['data'])
                     else:
                         brand_node.add_leaf(f"{model['model']}", data=model['data'])
                     brand_node_leaves += 1
@@ -695,7 +697,8 @@ class DevicecodeUI(App):
             if 'fcc_data' in device:
                 labels.add("\U000024BB")
 
-            brands_to_devices[brand_name].append({'model': model, 'data': device, 'labels': sorted(labels)})
+            brands_to_devices[brand_name].append({'model': model, 'data': device,
+                                                  'labels': sorted(labels)})
             brands.add(brand_name.lower())
             brand_data.append(brand_name)
 
@@ -709,7 +712,8 @@ class DevicecodeUI(App):
                 odm_to_devices[manufacturer_name] = {}
             if brand_name not in odm_to_devices[manufacturer_name]:
                 odm_to_devices[manufacturer_name][brand_name] = []
-            odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device, 'labels': sorted(labels)})
+            odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device,
+                                                                  'labels': sorted(labels)})
             odms.add(manufacturer_name.lower())
 
             if device['defaults']['ip'] != '':
@@ -1252,7 +1256,7 @@ class DevicecodeUI(App):
             self.software_area.update(self.build_software_report(event.node.data['software']))
             self.chips_area.update(self.build_chips_report(event.node.data))
             self.power_area.update(self.build_power_report(event.node.data))
-            self.fcc_area.update(self.build_fcc_document_report(event.node.data.get('fcc_data', {})))
+            self.fcc_area.update(self.build_fcc_report(event.node.data.get('fcc_data', {})))
         else:
             self.device_data_area.update('')
             self.regulatory_data_area.update('')
@@ -1434,7 +1438,7 @@ class DevicecodeUI(App):
             return new_markdown
         return "No serial information"
 
-    def build_fcc_document_report(self, result):
+    def build_fcc_report(self, result):
         '''Construct Markdown with information from downloaded FCC reports'''
         new_markdown = ""
         base_url = 'https://fcc.report/FCC-ID'
@@ -1517,7 +1521,7 @@ class DevicecodeUI(App):
                 new_markdown += "# Files\n"
                 new_markdown += "|Name|Type|User|Group|\n|--|--|--|--|\n"
                 for p in result['files']:
-                    new_markdown += f"| {p['name']} | {p['file_type']}| {p['user']} | {p['group']}\n"
+                    new_markdown += f"|{p['name']}|{p['file_type']}|{p['user']}|{p['group']}\n"
         return new_markdown
 
     def build_model_report(self, result):
@@ -1651,16 +1655,15 @@ class DevicecodeUI(App):
             new_markdown += "# Data origin\n"
             new_markdown += "|Origin|URL|\n|--|--|\n"
 
+            origin_to_url = {'TechInfoDepot': 'https://techinfodepot.shoutwiki.com/wiki',
+                             'WikiDevi': 'https://wikidevi.wi-cat.ru',
+                             'OpenWrt': 'https://openwrt.org'}
+
             for origin in result['origins']:
-                if origin['origin'] == 'TechInfoDepot':
-                    origin_data_url = f" <https://techinfodepot.shoutwiki.com/wiki/{origin['data_url']}>"
-                elif origin['origin'] == 'WikiDevi':
-                    origin_data_url = f" <https://wikidevi.wi-cat.ru/{origin['data_url']}>"
-                elif origin['origin'] == 'OpenWrt':
-                    origin_data_url = f" <https://openwrt.org/{origin['data_url']}>"
-                else:
-                    continue
-                new_markdown += f"{origin['origin']}|{origin_data_url}\n"
+                origin_url = origin_to_url.get(origin['origin'], '')
+                if origin_url:
+                    origin_data_url = f"<{origin_url}/{origin['data_url']}>"
+                    new_markdown += f"{origin['origin']}|{origin_data_url}\n"
 
         return new_markdown
 
@@ -1677,7 +1680,7 @@ def main(devicecode_directory, wiki_type):
         sys.exit(1)
 
     # verify the directory names, they should be one of the following
-    valid_directory_names = ['TechInfoDepot', 'WikiDevi', 'OpenWrt']
+    valid_directories = ['TechInfoDepot', 'WikiDevi', 'OpenWrt']
 
     # Inside these directories a directory called 'devices' should always
     # be present. Optionally there can be a directory called 'overlays'
@@ -1692,7 +1695,7 @@ def main(devicecode_directory, wiki_type):
         for p in devicecode_directory.iterdir():
             if not p.is_dir():
                 continue
-            if not p.name in valid_directory_names:
+            if not p.name in valid_directories:
                 continue
             if wiki_type:
                 if p.name != wiki_type:
@@ -1703,7 +1706,7 @@ def main(devicecode_directory, wiki_type):
             devicecode_dirs.append(devices_dir)
 
     if not devicecode_dirs:
-        print(f"No valid directories found in {devicecode_directory}, should contain one of {valid_directory_names}.", file=sys.stderr)
+        print(f"No valid directories found in {devicecode_directory}, should be one of {valid_directories}.", file=sys.stderr)
         sys.exit(1)
 
     app = DevicecodeUI(devicecode_dirs)
