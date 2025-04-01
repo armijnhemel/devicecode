@@ -504,8 +504,11 @@ class DevicecodeUI(App):
         overlay = True
 
         if event.validation_result is not None:
+            # input was already syntactically validated before
+            # being sent here so it can be processed without any
+            # extra checks.
+
             is_filtered = True
-            # input was already syntactically validated.
             tokens = shlex.split(event.value.lower())
 
             for t in tokens:
