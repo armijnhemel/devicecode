@@ -214,16 +214,10 @@ class FilterValidator(Validator):
                 elif name == 'fcc':
                     if token_value not in ['no', 'invalid', 'yes']:
                         return self.failure("Invalid FCC information")
-                elif name == 'serial':
+                elif name in ['jtag', 'serial']:
                     if token_value not in ['no', 'unknown', 'yes']:
-                        return self.failure("Invalid serial port information")
-                elif name == 'jtag':
-                    if token_value not in ['no', 'unknown', 'yes']:
-                        return self.failure("Invalid jtag port information")
-                elif name == 'origin':
-                    if token_value not in ['techinfodepot', 'wikidevi', 'openwrt']:
-                        return self.failure("Invalid origin")
-                elif name == 'ignore_origin':
+                        return self.failure("Invalid JTAG/serial port information")
+                elif name in ['origin', 'ignore_origin']:
                     if token_value not in ['techinfodepot', 'wikidevi', 'openwrt']:
                         return self.failure("Invalid origin")
                 elif name == 'year':
