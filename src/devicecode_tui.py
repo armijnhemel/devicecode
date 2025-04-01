@@ -237,8 +237,7 @@ class DevicecodeUI(App):
 
     CSS_PATH = "devicecode_tui.css"
 
-    # a list of tokens for filtering
-    # This is a list of dicts.
+    # A list of tokens for filtering. This is a list of dicts.
     TOKEN_NAMES = [{'name': 'baud', 'has_params': False},
                    {'name': 'bootloader', 'has_params': True, 'params': ['version']},
                    {'name': 'brand', 'has_params': False},

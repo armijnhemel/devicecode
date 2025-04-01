@@ -25,7 +25,7 @@ If operating system is the most imporant, then the results could be sorted
 by operating system. If release year is the most important, then it could be
 sorted by year, and so on.
 
-Currently there are two types views:
+Currently there are two types of views:
 
 1. tree view
 2. table view
