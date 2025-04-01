@@ -61,6 +61,7 @@ class SuggestDevices(Suggester):
         self.suggestion_table['serial'] = ['no', 'unknown', 'yes']
         self.suggestion_table['origin'] = ['techinfodepot', 'wikidevi', 'openwrt']
         self.suggestion_table['ignore_origin'] = ['techinfodepot', 'wikidevi', 'openwrt']
+        self.suggestion_table['overlays'] = ['off']
 
     async def get_suggestion(self, value: str) -> str | None:
         """Gets a completion from the given possibilities.
@@ -234,6 +235,9 @@ class FilterValidator(Validator):
                             return self.failure("Invalid year")
                         if valid_year < 1990 or valid_year > 2040:
                             return self.failure("Invalid year")
+                elif name == 'overlays':
+                    if token_value not in ['off']:
+                        return self.failure("Invalid overlay flag")
             return self.success()
         except ValueError:
             return self.failure('Incomplete')
@@ -327,6 +331,7 @@ class DevicecodeUI(App):
                    {'name': 'odm', 'has_params': False},
                    {'name': 'origin', 'has_params': False},
                    {'name': 'os', 'has_params': False},
+                   {'name': 'overlays', 'has_params': False},
                    {'name': 'package', 'has_params': False},
                    {'name': 'partition', 'has_params': False},
                    {'name': 'password', 'has_params': False},
@@ -567,6 +572,7 @@ class DevicecodeUI(App):
         serial_baud_rates = []
         years = []
         is_filtered = False
+        overlay = True
 
         if event.validation_result is not None:
             is_filtered = True
@@ -641,18 +647,22 @@ class DevicecodeUI(App):
                         years += list(range(int(input_years[0]), int(input_years[1]) + 1))
                     else:
                         years += [int(x) for x in input_years]
+                elif name == 'overlays':
+                    # special filtering flag
+                    if value == 'off':
+                        overlay = False
 
-        filtered_data = self.dataset.compose_data_sets(bootloaders=bootloaders,
-                            brands=brands, odms=odms, chips=chips, chip_types=chip_types,
-                            chip_vendors=chip_vendors, connectors=connectors, cves=cves,
-                            cveids=cveids, fccs=fccs, files=files, flags=flags,
-                            ignore_brands=ignore_brands, ignore_odms=ignore_odms,
-                            ignore_origins=ignore_origins, ips=ips, jtags=jtags,
-                            operating_systems=operating_systems, origins=origins,
-                            passwords=passwords, packages=packages, partitions=partitions,
-                            programs=programs, rootfs=rootfs, sdks=sdks, serials=serials,
-                            serial_baud_rates=serial_baud_rates, years=years,
-                            types=device_types)
+        filtered_data = self.dataset.compose_data_sets(use_overlays=overlay,
+                    bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
+                    chip_types=chip_types, chip_vendors=chip_vendors, connectors=connectors,
+                    cves=cves, cveids=cveids, fccs=fccs, files=files, flags=flags,
+                    ignore_brands=ignore_brands, ignore_odms=ignore_odms,
+                    ignore_origins=ignore_origins, ips=ips, jtags=jtags,
+                    operating_systems=operating_systems, origins=origins,
+                    passwords=passwords, packages=packages, partitions=partitions,
+                    programs=programs, rootfs=rootfs, sdks=sdks, serials=serials,
+                    serial_baud_rates=serial_baud_rates, years=years,
+                    types=device_types)
 
         self.brand_tree.build_tree(filtered_data['brands_to_devices'], is_filtered)
         self.odm_tree.build_tree(filtered_data['odm_to_devices'], is_filtered)

@@ -132,6 +132,7 @@ The format of `params` has not been defined yet.
 * `jtag`
 * `odm`
 * `origin`
+* `overlay`
 * `os`
 * `package`
 * `partition`
@@ -282,6 +283,20 @@ There are two ways to filter origins (OpenWrt, TechInfoDepot, WikiDevi)::
 For example, to show devices that are in OpenWrt, but not in WikiDevi use:
 
 `origin=openwrt ignore_origin=wikidevi`
+
+##### Overlay
+
+`overlay` can be used to disable showing any overlays as sometimes it is
+interesting to only show the "pure" data from the Wiki. Overlays can be
+disabled as follows:
+
+`overlays=off`
+
+The only valid value for this flag is `off`.
+
+Please note: this will only work if there actually are any overlays. In the
+current `squashed` data set all overlays have already been applied (this will
+be changed in the future) so there it doesn't have any effect.
 
 ##### Serial
 
