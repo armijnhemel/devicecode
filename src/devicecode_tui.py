@@ -507,7 +507,6 @@ class DevicecodeUI(App):
             # being sent here so it can be processed without any
             # extra checks.
 
-            is_filtered = True
             tokens = shlex.split(event.value.lower())
 
             for t in tokens:
@@ -578,10 +577,13 @@ class DevicecodeUI(App):
                         years += list(range(int(input_years[0]), int(input_years[1]) + 1))
                     else:
                         years += [int(x) for x in input_years]
-                elif name == 'overlays':
+
+                if name == 'overlays':
                     # special filtering flag
                     if value == 'off':
                         overlay = False
+                else:
+                    is_filtered = True
 
         filtered_data = self.dataset.compose_data_sets(use_overlays=overlay,
                     bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
