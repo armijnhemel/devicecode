@@ -10,7 +10,7 @@ import shlex
 import sys
 import webbrowser
 
-from typing import Any, Iterable
+from typing import Any
 
 import click
 
