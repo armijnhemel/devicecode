@@ -20,10 +20,10 @@ from textual.binding import Binding
 from textual.containers import Container, VerticalScroll
 from textual.widgets import Footer, Markdown, Tree, TabbedContent, TabPane, Input, Header, DataTable
 
-import devicecode.dataset_composer as dataset_composer
 import devicecode.filter as devicecode_filter
-import devicecode.suggester as Suggester
-import devicecode.defaults as defaults
+from devicecode import dataset_composer
+from devicecode import suggester as Suggester
+from devicecode import defaults
 
 PART_TO_NAME = {'h': 'hardware', 'a': 'application',
                 'o': 'operating system'}
@@ -133,12 +133,25 @@ class DevicecodeUI(App):
         super().__init__(*args, **kwargs)
         self.devices = devices
         self.overlays = overlays
+        self.brand_tree: BrandTree[dict] = BrandTree("DeviceCode brand results")
+        self.odm_tree: OdmTree[dict] = OdmTree("DeviceCode ODM results")
 
-    def compose(self) -> ComposeResult:
+        # Create Markdown areas.
+        self.device_data_area = Markdown()
+        self.regulatory_data_area = Markdown()
+        self.model_data_area = Markdown()
+        self.network_data_area = Markdown()
+        self.serial_jtag_area = Markdown()
+        self.software_area = Markdown()
+        self.chips_area = Markdown()
+        self.power_area = Markdown()
+        self.fcc_area = Markdown()
+
         # first create a DatasetComposer object and populate it with
         # the full set of data (devices and overlays).
         self.dataset = dataset_composer.DatasetComposer(self.devices, self.overlays)
 
+    def compose(self) -> ComposeResult:
         # then compose the data set. Initially this will always be all data.
         data = self.dataset.compose_data_sets()
 
@@ -210,27 +223,13 @@ class DevicecodeUI(App):
                                odm_connector_data, chip_vendor_connector_data, year_datatable_data)
 
         # build the various trees.
-        self.brand_tree: BrandTree[dict] = BrandTree("DeviceCode brand results")
         self.brand_tree.show_root = False
         self.brand_tree.root.expand()
         self.brand_tree.build_tree(brands_to_devices)
 
-        self.odm_tree: OdmTree[dict] = OdmTree("DeviceCode ODM results")
         self.odm_tree.show_root = False
         self.odm_tree.root.expand()
         self.odm_tree.build_tree(odm_to_devices)
-
-        # Create a table with the results. The root element will
-        # not have any associated data with it.
-        self.device_data_area = Markdown()
-        self.regulatory_data_area = Markdown()
-        self.model_data_area = Markdown()
-        self.network_data_area = Markdown()
-        self.serial_jtag_area = Markdown()
-        self.software_area = Markdown()
-        self.chips_area = Markdown()
-        self.power_area = Markdown()
-        self.fcc_area = Markdown()
 
         # create the input field. Use the (filtered) data for the suggester
         # and filter validator so only valid data is entered in the filter.
