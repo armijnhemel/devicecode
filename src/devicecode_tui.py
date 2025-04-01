@@ -392,54 +392,31 @@ class DevicecodeUI(App):
         chip_vendor_connector_data = collections.Counter(chip_vendor_connector)
         year_datatable_data = collections.Counter(year_data)
 
+        # create the data tables and declare the column names
         self.brand_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.brand_data_table.add_columns("rank", "count", "brand")
-        rank = 1
-        for i in brand_datatable_data.most_common():
-            self.brand_data_table.add_row(rank, i[1], i[0])
-            rank += 1
 
         self.brand_odm_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.brand_odm_data_table.add_columns("rank", "count", "brand", "ODM")
-        rank = 1
-        for i in brand_odm_datatable_data.most_common():
-            self.brand_odm_data_table.add_row(rank, i[1], i[0][0], i[0][1])
-            rank += 1
 
         self.brand_cpu_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.brand_cpu_data_table.add_columns("rank", "count", "brand", "CPU brand")
-        rank = 1
-        for i in brand_cpu_datatable_data.most_common():
-            self.brand_cpu_data_table.add_row(rank, i[1], i[0][0], i[0][1])
-            rank += 1
 
         self.odm_cpu_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.odm_cpu_data_table.add_columns("rank", "count", "ODM", "CPU brand")
-        rank = 1
-        for i in odm_cpu_datatable_data.most_common():
-            self.odm_cpu_data_table.add_row(rank, i[1], i[0][0], i[0][1])
-            rank += 1
 
         self.odm_connector_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.odm_connector_data_table.add_columns("rank", "count", "ODM", "connector")
-        rank = 1
-        for i in odm_connector_data.most_common():
-            self.odm_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
-            rank += 1
 
         self.chip_vendor_connector_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.chip_vendor_connector_data_table.add_columns("rank", "count", "CPU", "connector")
-        rank = 1
-        for i in chip_vendor_connector_data.most_common():
-            self.chip_vendor_connector_data_table.add_row(rank, i[1], i[0][0], i[0][1])
-            rank += 1
 
         self.year_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.year_data_table.add_columns("rank", "count", "year")
-        rank = 1
-        for i in year_datatable_data.most_common():
-            self.year_data_table.add_row(rank, i[1], i[0])
-            rank += 1
+
+        self.build_data_tables(brand_datatable_data, brand_odm_datatable_data,
+                               brand_cpu_datatable_data, odm_cpu_datatable_data,
+                               odm_connector_data, chip_vendor_connector_data, year_datatable_data)
 
         # build the various trees.
         self.brand_tree: BrandTree[dict] = BrandTree("DeviceCode brand results")
@@ -689,7 +666,16 @@ class DevicecodeUI(App):
         chip_vendor_connector_data = collections.Counter(filtered_data['chip_vendor_connector'])
         year_datatable_data = collections.Counter(filtered_data['year_data'])
 
-        # clear and rebuild the data tables
+        self.build_data_tables(brand_datatable_data, brand_odm_datatable_data,
+                               brand_cpu_datatable_data, odm_cpu_datatable_data,
+                               odm_connector_data, chip_vendor_connector_data, year_datatable_data)
+
+        self.reset_areas()
+
+    def build_data_tables(self, brand_datatable_data, brand_odm_datatable_data,
+                          brand_cpu_datatable_data, odm_cpu_datatable_data,
+                          odm_connector_data, chip_vendor_connector_data, year_datatable_data):
+        '''Clear and rebuild the data tables'''
         self.brand_data_table.clear()
         rank = 1
         for i in brand_datatable_data.most_common():
@@ -732,10 +718,8 @@ class DevicecodeUI(App):
             self.year_data_table.add_row(rank, i[1], i[0])
             rank += 1
 
-        self.reset_areas()
-
     def reset_areas(self):
-        # reset the data areas to prevent old data being displayed
+        '''Reset the data areas to prevent old data being displayed'''
         self.device_data_area.update('')
         self.regulatory_data_area.update('')
         self.model_data_area.update('')
