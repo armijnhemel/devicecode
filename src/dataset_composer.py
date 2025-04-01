@@ -46,6 +46,7 @@ class DatasetComposer():
         filter_serials = kwargs.get('serials', [])
         filter_years = kwargs.get('years', [])
 
+        # Data structures to store the (optionally filtered) data
         # mapping of brands to devices
         brands_to_devices = {}
 
@@ -125,6 +126,7 @@ class DatasetComposer():
         odm_connector = []
         chip_vendor_connector = []
 
+        # walk all the devices and (optionally) apply overlays
         for original_device in self.devices:
             if 'title' not in original_device:
                 continue
