@@ -1177,7 +1177,8 @@ class DevicecodeUI(App):
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--wiki-type', type=click.Choice(['TechInfoDepot', 'WikiDevi', 'OpenWrt'],
               case_sensitive=False))
-def main(devicecode_directory, wiki_type):
+@click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
+def main(devicecode_directory, wiki_type, no_overlays):
     if not devicecode_directory.is_dir():
         print(f"Directory {devicecode_directory} is not a valid directory, exiting.",
               file=sys.stderr)
@@ -1230,7 +1231,7 @@ def main(devicecode_directory, wiki_type):
                 pass
 
         overlays_directory = devicecode_dir.parent / 'overlays'
-        if overlays_directory.exists() and overlays_directory.is_dir():
+        if not no_overlays and overlays_directory.exists() and overlays_directory.is_dir():
             for result_file in overlays_directory.glob('**/*'):
                 if not result_file.is_file():
                     continue
