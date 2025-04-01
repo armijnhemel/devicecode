@@ -681,8 +681,8 @@ class DevicecodeUI(App):
 
     def build_serial_jtag_report(self, result):
         '''Construct Markdown with serial port and JTAG information'''
+        new_markdown = ''
         if result:
-            new_markdown = ''
             if result['has_jtag'] == 'yes':
                 new_markdown += "# JTAG\n"
                 new_markdown += "| | |\n|--|--|\n"
@@ -725,8 +725,7 @@ class DevicecodeUI(App):
                     new_markdown += f"|**Comments** | {result['serial']['comments']}\n"
                 else:
                     new_markdown += "|**Comments** |\n"
-            return new_markdown
-        return "No serial information"
+        return new_markdown
 
     def build_fcc_report(self, result):
         '''Construct Markdown with information from downloaded FCC reports'''
