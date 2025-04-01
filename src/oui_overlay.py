@@ -13,7 +13,7 @@ import sys
 
 import click
 
-import devicecode_defaults as defaults
+import devicecode.defaults as defaults
 
 @click.command(short_help='Create OUI overlay files to provide additional data')
 @click.option('--manufacturer', '-m', 'manufacturer_file', required=True,

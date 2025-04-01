@@ -19,7 +19,7 @@ import pdfminer
 import PIL.Image
 from pdfminer.high_level import extract_pages
 
-import devicecode_defaults as defaults
+import devicecode.defaults as defaults
 
 # mapping of texts to functionality
 TEXT_TO_FUNCTIONALITY = {

@@ -22,8 +22,8 @@ from textual.validation import ValidationResult, Validator
 from textual.widgets import Footer, Markdown, Tree, TabbedContent, TabPane, Input, Header, DataTable
 
 import dataset_composer
-import devicecode_suggester as Suggester
-import devicecode_defaults as defaults
+import devicecode.suggester as Suggester
+import devicecode.defaults as defaults
 
 PART_TO_NAME = {'h': 'hardware', 'a': 'application',
                 'o': 'operating system'}

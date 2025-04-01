@@ -25,7 +25,7 @@ import defusedxml.minidom
 import click
 import mwparserfromhell
 
-import devicecode_defaults as defaults
+import devicecode.defaults as defaults
 
 @dataclass_json
 @dataclass
