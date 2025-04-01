@@ -126,15 +126,19 @@ class DatasetComposer():
         odm_connector = []
         chip_vendor_connector = []
 
-        # walk all the devices and (optionally) apply overlays
+        # walk all the devices, (optionally) apply overlays
+        # and determine if it needs end up in the data set
+        # or if it should be filtered.
         for original_device in self.devices:
             if 'title' not in original_device:
                 continue
 
+            # first make a copy of the original data, so the original
+            # data can always be used a next time.
             device = copy.deepcopy(original_device)
 
+            # (optionally) apply overlays
             if use_overlays and device['title'] in self.overlays:
-                # apply overlays
                 for overlay in self.overlays[device['title']]:
                     if overlay['name'] == 'fcc_id':
                         device['regulatory']['fcc_ids'] = overlay['data']
@@ -173,6 +177,7 @@ class DatasetComposer():
                 if filter_manufacturer_name in filter_ignore_odms:
                     continue
 
+            # then filter various other things
             if filter_device_types:
                 if not set(map(lambda x: x.lower(), device['device_types'])).intersection(filter_device_types):
                     continue
@@ -218,6 +223,7 @@ class DatasetComposer():
             declared_years = []
             if device['commercial']['release_date']:
                 declared_years.append(int(device['commercial']['release_date'][:4]))
+
             for f in device['regulatory']['fcc_ids']:
                 if f['fcc_date']:
                     if f['fcc_type'] in ['main', 'unknown']:
@@ -369,6 +375,12 @@ class DatasetComposer():
             if 'fcc_data' in device:
                 labels.add("\U000024BB")
 
+            # store the manufacturer name. If it is empty
+            # assign it a value.
+            manufacturer_name = device['manufacturer']['name']
+            if manufacturer_name == '':
+                manufacturer_name = '***UNKNOWN***'
+
             brands_to_devices[brand_name].append({'model': model, 'data': device,
                                                   'labels': sorted(labels)})
             brands.add(brand_name.lower())
@@ -377,9 +389,6 @@ class DatasetComposer():
             years.update(declared_years)
             year_data += declared_years
 
-            manufacturer_name = device['manufacturer']['name']
-            if manufacturer_name == '':
-                manufacturer_name = '***UNKNOWN***'
             if manufacturer_name not in odm_to_devices:
                 odm_to_devices[manufacturer_name] = {}
             if brand_name not in odm_to_devices[manufacturer_name]:
@@ -387,6 +396,7 @@ class DatasetComposer():
             odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device,
                                                                   'labels': sorted(labels)})
             odms.add(manufacturer_name.lower())
+            brand_odm.append((brand_name, manufacturer_name))
 
             if device['defaults']['ip'] != '':
                 ips.add(device['defaults']['ip'])
