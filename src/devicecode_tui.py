@@ -281,7 +281,7 @@ class DevicecodeUI(App):
         # the full set of data (devices and overlays).
         self.dataset = dataset_composer.DatasetComposer(self.devices, self.overlays)
 
-        # first compose the data set. Initially this will always be the full data
+        # then compose the data set. Initially this will always be all data.
         data = self.dataset.compose_data_sets()
 
         brands_to_devices = data['brands_to_devices']
@@ -374,7 +374,8 @@ class DevicecodeUI(App):
         self.power_area = Markdown()
         self.fcc_area = Markdown()
 
-        # input field
+        # create the input field. Use the (filtered) data for the suggester
+        # and filter validator so only valid data is entered in the filter.
         input_filter = Input(placeholder='Filter',
                         validators=[FilterValidator(bootloaders=bootloaders, brands=brands,
                                         baud_rates=baud_rates, odms=odms, chips=chips,
@@ -396,9 +397,9 @@ class DevicecodeUI(App):
                         types=sorted(device_types)),
                         valid_empty=True)
 
-        # Yield the elements. The UI is a container with an app grid. On the left
-        # there are some tabs, each containing a tree. On the right there is a
-        # an area to display the results.
+        # Yield all UI elements. The UI is a container with an app grid. On the
+        # left there are tabs, each containing a tree. On the right there is an
+        # area to display the results.
         yield Header()
         with Container(id='app-grid'):
             with Container(id='left-grid'):
@@ -608,6 +609,7 @@ class DevicecodeUI(App):
                                brand_cpu_datatable_data, odm_cpu_datatable_data,
                                odm_connector_data, chip_vendor_connector_data, year_datatable_data)
 
+        # reset the data areas
         self.reset_areas()
 
     def build_data_tables(self, brand_datatable_data, brand_odm_datatable_data,
