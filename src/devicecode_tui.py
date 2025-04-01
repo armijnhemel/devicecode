@@ -729,6 +729,9 @@ class DevicecodeUI(App):
             self.year_data_table.add_row(rank, i[1], i[0])
             rank += 1
 
+        self.reset_areas()
+
+    def reset_areas(self):
         # reset the data areas to prevent old data being displayed
         self.device_data_area.update('')
         self.regulatory_data_area.update('')
@@ -738,6 +741,7 @@ class DevicecodeUI(App):
         self.software_area.update('')
         self.chips_area.update('')
         self.power_area.update('')
+        self.fcc_area.update('')
 
     def on_markdown_link_clicked(self, event: Markdown.LinkClicked) -> None:
         # TODO: often terminals (such as MATE terminal in Fedora) will
@@ -762,15 +766,7 @@ class DevicecodeUI(App):
             self.power_area.update(self.build_power_report(event.node.data))
             self.fcc_area.update(self.build_fcc_report(event.node.data.get('fcc_data', {})))
         else:
-            self.device_data_area.update('')
-            self.regulatory_data_area.update('')
-            self.model_data_area.update('')
-            self.network_data_area.update("")
-            self.serial_jtag_area.update('')
-            self.software_area.update('')
-            self.chips_area.update('')
-            self.power_area.update('')
-            self.fcc_area.update('')
+            self.reset_areas()
 
     def on_tree_node_collapsed(self, event: Tree.NodeCollapsed[None]) -> None:
         pass
@@ -1191,7 +1187,6 @@ def main(devicecode_directory, wiki_type, no_overlays):
     # be present. Optionally there can be a directory called 'overlays'
     # with overlay files.
     # If available the 'squashed' directory will always be preferred.
-
     squashed_directory = devicecode_directory / 'squashed' / 'devices'
     if squashed_directory.exists() and not wiki_type:
         devicecode_directories = [squashed_directory]
@@ -1222,7 +1217,6 @@ def main(devicecode_directory, wiki_type, no_overlays):
         for result_file in devicecode_dir.glob('**/*'):
             if not result_file.is_file():
                 continue
-
             try:
                 with open(result_file, 'r') as wiki_file:
                     device = json.load(wiki_file)
