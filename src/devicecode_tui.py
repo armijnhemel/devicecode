@@ -344,8 +344,11 @@ class DevicecodeUI(App):
         self.overlays = overlays
 
     def compose(self) -> ComposeResult:
+        # first create a DatasetComposer object and populate it with
+        # the full set of data (devices and overlays).
         self.dataset = dataset_composer.DatasetComposer(self.devices, self.overlays)
 
+        # first compose the data set. Initially this will always be the full data
         data = self.dataset.compose_data_sets()
 
         brands_to_devices = data['brands_to_devices']
@@ -1183,10 +1186,11 @@ def main(devicecode_directory, wiki_type, no_overlays):
     # verify the directory names, they should be one of the following
     valid_directories = ['TechInfoDepot', 'WikiDevi', 'OpenWrt']
 
-    # Inside these directories a directory called 'devices' should always
-    # be present. Optionally there can be a directory called 'overlays'
-    # with overlay files.
-    # If available the 'squashed' directory will always be preferred.
+    # The wiki directories should have a fixed structure. There should
+    # always be a directory 'devices' (with device data). Optionally there
+    # can be a directory called 'overlays' with overlay files.
+    # If present the 'squashed' directory will always be chosen and
+    # the other directories will be ignored.
     squashed_directory = devicecode_directory / 'squashed' / 'devices'
     if squashed_directory.exists() and not wiki_type:
         devicecode_directories = [squashed_directory]
