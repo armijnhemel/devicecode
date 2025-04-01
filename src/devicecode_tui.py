@@ -21,7 +21,7 @@ from textual.containers import Container, VerticalScroll
 from textual.validation import ValidationResult, Validator
 from textual.widgets import Footer, Markdown, Tree, TabbedContent, TabPane, Input, Header, DataTable
 
-import dataset_composer
+import devicecode.dataset_composer as dataset_composer
 import devicecode.suggester as Suggester
 import devicecode.defaults as defaults
 
