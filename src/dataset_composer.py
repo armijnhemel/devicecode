@@ -3,13 +3,14 @@
 # Licensed under the terms of the Apache license
 # SPDX-License-Identifier: Apache-2.0
 
+import copy
 
 class DatasetComposer():
     def __init__(self, devices, overlays):
         self.devices = devices
         self.overlays = overlays
 
-    def compose_data_sets(self, **kwargs):
+    def compose_data_sets(self, use_overlays=True, **kwargs):
         '''Compose the data sets for devices for display, optionally filtered'''
 
         # Optional filters with data for devices that should
@@ -123,10 +124,14 @@ class DatasetComposer():
         odm_cpu = []
         odm_connector = []
         chip_vendor_connector = []
-        for device in self.devices:
-            if 'title' not in device:
+
+        for original_device in self.devices:
+            if 'title' not in original_device:
                 continue
-            if device['title'] in self.overlays:
+
+            device = copy.deepcopy(original_device)
+
+            if use_overlays and device['title'] in self.overlays:
                 # apply overlays
                 for overlay in self.overlays[device['title']]:
                     if overlay['name'] == 'fcc_id':
