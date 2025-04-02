@@ -362,29 +362,27 @@ class DevicecodeUI(App):
         is_filtered = result['is_filtered']
         overlay = result['overlay']
 
-        filtered_data = self.dataset.compose_data_sets(use_overlays=overlay,
-                    bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,
-                    chip_types=chip_types, chip_vendors=chip_vendors, connectors=connectors,
-                    cves=cves, cveids=cveids, fccs=fccs, files=files, flags=flags,
-                    ignore_brands=ignore_brands, ignore_odms=ignore_odms,
-                    ignore_origins=ignore_origins, ips=ips, jtags=jtags,
-                    operating_systems=operating_systems, origins=origins,
-                    passwords=passwords, packages=packages, partitions=partitions,
-                    programs=programs, rootfs=rootfs, sdks=sdks, serials=serials,
-                    serial_baud_rates=serial_baud_rates, years=years,
-                    types=device_types)
+        data = self.dataset.compose_data_sets(use_overlays=overlay, bootloaders=bootloaders,
+                brands=brands, odms=odms, chips=chips, chip_types=chip_types,
+                chip_vendors=chip_vendors, connectors=connectors, cves=cves, cveids=cveids,
+                fccs=fccs, files=files, flags=flags, ignore_brands=ignore_brands,
+                ignore_odms=ignore_odms, ignore_origins=ignore_origins, ips=ips, jtags=jtags,
+                operating_systems=operating_systems, origins=origins, passwords=passwords,
+                packages=packages, partitions=partitions, programs=programs, rootfs=rootfs,
+                sdks=sdks, serials=serials, serial_baud_rates=serial_baud_rates, years=years,
+                types=device_types)
 
-        self.brand_tree.build_tree(filtered_data['brands_to_devices'], is_filtered)
-        self.odm_tree.build_tree(filtered_data['odm_to_devices'], is_filtered)
+        self.brand_tree.build_tree(data['brands_to_devices'], is_filtered)
+        self.odm_tree.build_tree(data['odm_to_devices'], is_filtered)
 
         # build the various datatables.
-        brand_datatable_data = collections.Counter(filtered_data['brand_data'])
-        brand_odm_datatable_data = collections.Counter(filtered_data['brand_odm'])
-        brand_cpu_datatable_data = collections.Counter(filtered_data['brand_cpu'])
-        odm_cpu_datatable_data = collections.Counter(filtered_data['odm_cpu'])
-        odm_connector_data = collections.Counter(filtered_data['odm_connector'])
-        chip_vendor_connector_data = collections.Counter(filtered_data['chip_vendor_connector'])
-        year_datatable_data = collections.Counter(filtered_data['year_data'])
+        brand_datatable_data = collections.Counter(data['brand_data'])
+        brand_odm_datatable_data = collections.Counter(data['brand_odm'])
+        brand_cpu_datatable_data = collections.Counter(data['brand_cpu'])
+        odm_cpu_datatable_data = collections.Counter(data['odm_cpu'])
+        odm_connector_data = collections.Counter(data['odm_connector'])
+        chip_vendor_connector_data = collections.Counter(data['chip_vendor_connector'])
+        year_datatable_data = collections.Counter(data['year_data'])
 
         self.build_data_tables(brand_datatable_data, brand_odm_datatable_data,
                                brand_cpu_datatable_data, odm_cpu_datatable_data,
