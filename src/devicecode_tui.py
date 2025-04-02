@@ -328,120 +328,39 @@ class DevicecodeUI(App):
         if event.validation_result and not event.validation_result.is_valid:
             return
 
-        bootloaders = []
-        brands = []
-        chips = []
-        chip_types = []
-        chip_vendors = []
-        connectors = set()
-        cves = []
-        cveids = []
-        device_types = []
-        fccs = []
-        files = []
-        flags = []
-        ignore_brands = []
-        ignore_odms = []
-        ignore_origins = []
-        ips = []
-        jtags = []
-        odms = []
-        operating_systems = []
-        origins = []
-        packages = []
-        partitions = []
-        passwords = []
-        programs = []
-        rootfs = []
-        sdks = []
-        serials = []
-        serial_baud_rates = []
-        years = []
-        is_filtered = False
-        overlay = True
+        result = devicecode_filter.process_filter(event)
 
-        if event.validation_result is not None:
-            # input was already syntactically validated before
-            # being sent here so it can be processed without any
-            # extra checks.
-
-            tokens = shlex.split(event.value.lower())
-
-            for t in tokens:
-                name_params, value = t.split('=', maxsplit=1)
-                if '?' in name_params:
-                    name, args = name_params.split('?', maxsplit=1)
-                else:
-                    name = name_params
-                if name == 'bootloader':
-                    bootloaders.append(value)
-                elif name == 'brand':
-                    brands.append(value)
-                elif name == 'chip':
-                    chips.append(value)
-                elif name == 'chip_type':
-                    chip_types.append(value)
-                elif name == 'chip_vendor':
-                    chip_vendors.append(value)
-                elif name == 'connector':
-                    connectors.add(value)
-                elif name == 'cve':
-                    cves.append(value)
-                elif name == 'cveid':
-                    cveids.append(value)
-                elif name == 'fccid':
-                    fccs.append(value)
-                elif name == 'flag':
-                    flags.append(value)
-                elif name == 'ignore_brand':
-                    ignore_brands.append(value)
-                elif name == 'ignore_odm':
-                    ignore_odms.append(value)
-                elif name == 'ignore_origin':
-                    ignore_origins.append(value)
-                elif name == 'file':
-                    files.append(value)
-                elif name == 'ip':
-                    ips.append(value)
-                elif name == 'odm':
-                    odms.append(value)
-                elif name == 'origin':
-                    origins.append(value)
-                elif name == 'os':
-                    operating_systems.append(value)
-                elif name == 'package':
-                    packages.append(value)
-                elif name == 'partition':
-                    partitions.append(value)
-                elif name == 'password':
-                    passwords.append(value)
-                elif name == 'program':
-                    programs.append(value)
-                elif name == 'rootfs':
-                    rootfs.append(value)
-                elif name == 'sdk':
-                    sdks.append(value)
-                elif name == 'serial':
-                    serials.append(value)
-                elif name == 'baud':
-                    serial_baud_rates.append(int(value))
-                elif name == 'type':
-                    device_types.append(value)
-                elif name == 'jtag':
-                    jtags.append(value)
-                elif name == 'year':
-                    input_years = sorted(value.split(':', maxsplit=1))
-                    if len(input_years) > 1:
-                        years += list(range(int(input_years[0]), int(input_years[1]) + 1))
-                    else:
-                        years += [int(x) for x in input_years]
-
-                if name == 'overlays':
-                    # special filtering flag
-                    if value == 'off':
-                        overlay = False
-                else:
-                    is_filtered = True
+        bootloaders = result['bootloaders']
+        brands = result['brands']
+        chips = result['chips']
+        chip_types = result['chip_types']
+        chip_vendors = result['chip_vendors']
+        connectors = result['connectors']
+        cves = result['cves']
+        cveids = result['cveids']
+        device_types = result['device_types']
+        fccs = result['fccs']
+        files = result['files']
+        flags = result['flags']
+        ignore_brands = result['ignore_brands']
+        ignore_odms = result['ignore_odms']
+        ignore_origins = result['ignore_origins']
+        ips = result['ips']
+        jtags = result['jtags']
+        odms = result['odms']
+        operating_systems = result['operating_systems']
+        origins = result['origins']
+        packages = result['packages']
+        partitions = result['partitions']
+        passwords = result['passwords']
+        programs = result['programs']
+        rootfs = result['rootfs']
+        sdks = result['sdks']
+        serials = result['serials']
+        serial_baud_rates = result['serial_baud_rates']
+        years = result['years']
+        is_filtered = result['is_filtered']
+        overlay = result['overlay']
 
         filtered_data = self.dataset.compose_data_sets(use_overlays=overlay,
                     bootloaders=bootloaders, brands=brands, odms=odms, chips=chips,

@@ -6,6 +6,131 @@
 import shlex
 
 from textual.validation import ValidationResult, Validator
+from textual.widgets import Input
+
+def process_filter(event: Input.Submitted):
+    '''Process filter statements: tokenize and add to data structures
+       that are '''
+    result = {}
+    result['bootloaders'] = []
+    result['brands'] = []
+    result['chips'] = []
+    result['chip_types'] = []
+    result['chip_vendors'] = []
+    result['connectors'] = set()
+    result['cves'] = []
+    result['cveids'] = []
+    result['device_types'] = []
+    result['fccs'] = []
+    result['files'] = []
+    result['flags'] = []
+    result['ignore_brands'] = []
+    result['ignore_odms'] = []
+    result['ignore_origins'] = []
+    result['ips'] = []
+    result['jtags'] = []
+    result['odms'] = []
+    result['operating_systems'] = []
+    result['origins'] = []
+    result['packages'] = []
+    result['partitions'] = []
+    result['passwords'] = []
+    result['programs'] = []
+    result['rootfs'] = []
+    result['sdks'] = []
+    result['serials'] = []
+    result['serial_baud_rates'] = []
+    result['years'] = []
+    result['is_filtered'] = False
+    result['overlay'] = True
+
+    if event.validation_result is not None:
+        # input was already syntactically validated before
+        # being sent here so it can be processed without any
+        # extra checks.
+
+        tokens = shlex.split(event.value.lower())
+
+        for t in tokens:
+            # first split the tokens in names and values
+            # and optional parameters
+            name_params, value = t.split('=', maxsplit=1)
+            if '?' in name_params:
+                name, args = name_params.split('?', maxsplit=1)
+            else:
+                name = name_params
+
+            # process each known name
+            if name == 'bootloader':
+                result['bootloaders'].append(value)
+            elif name == 'brand':
+                result['brands'].append(value)
+            elif name == 'chip':
+                result['chips'].append(value)
+            elif name == 'chip_type':
+                result['chip_types'].append(value)
+            elif name == 'chip_vendor':
+                result['chip_vendors'].append(value)
+            elif name == 'connector':
+                result['connectors'].add(value)
+            elif name == 'cve':
+                result['cves'].append(value)
+            elif name == 'cveid':
+                result['cveids'].append(value)
+            elif name == 'fccid':
+                result['fccs'].append(value)
+            elif name == 'flag':
+                result['flags'].append(value)
+            elif name == 'ignore_brand':
+                result['ignore_brands'].append(value)
+            elif name == 'ignore_odm':
+                result['ignore_odms'].append(value)
+            elif name == 'ignore_origin':
+                result['ignore_origins'].append(value)
+            elif name == 'file':
+                result['files'].append(value)
+            elif name == 'ip':
+                result['ips'].append(value)
+            elif name == 'odm':
+                result['odms'].append(value)
+            elif name == 'origin':
+                result['origins'].append(value)
+            elif name == 'os':
+                result['operating_systems'].append(value)
+            elif name == 'package':
+                result['packages'].append(value)
+            elif name == 'partition':
+                result['partitions'].append(value)
+            elif name == 'password':
+                result['passwords'].append(value)
+            elif name == 'program':
+                result['programs'].append(value)
+            elif name == 'rootfs':
+                result['rootfs'].append(value)
+            elif name == 'sdk':
+                result['sdks'].append(value)
+            elif name == 'serial':
+                result['serials'].append(value)
+            elif name == 'baud':
+                result['serial_baud_rates'].append(int(value))
+            elif name == 'type':
+                result['device_types'].append(value)
+            elif name == 'jtag':
+                result['jtags'].append(value)
+            elif name == 'year':
+                input_years = sorted(value.split(':', maxsplit=1))
+                if len(input_years) > 1:
+                    result['years'] += list(range(int(input_years[0]), int(input_years[1]) + 1))
+                else:
+                    result['years'] += [int(x) for x in input_years]
+
+            if name == 'overlays':
+                # special filtering flag
+                if value == 'off':
+                    result['overlay'] = False
+            else:
+                result['is_filtered'] = True
+    return result
 
 
 class FilterValidator(Validator):
