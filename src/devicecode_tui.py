@@ -148,27 +148,14 @@ class DevicecodeUI(App):
         self.power_area = Markdown()
         self.fcc_area = Markdown()
 
-        # Create the data tables and declare the column names
+        # Create the data tables
         self.brand_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
-        self.brand_data_table.add_columns("rank", "count", "brand")
-
-        self.brand_odm_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
-        self.brand_odm_data_table.add_columns("rank", "count", "brand", "ODM")
-
         self.brand_cpu_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
-        self.brand_cpu_data_table.add_columns("rank", "count", "brand", "CPU brand")
-
+        self.brand_odm_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.odm_cpu_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
-        self.odm_cpu_data_table.add_columns("rank", "count", "ODM", "CPU brand")
-
         self.odm_connector_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
-        self.odm_connector_data_table.add_columns("rank", "count", "ODM", "connector")
-
         self.chip_vendor_connector_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
-        self.chip_vendor_connector_data_table.add_columns("rank", "count", "CPU", "connector")
-
         self.year_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
-        self.year_data_table.add_columns("rank", "count", "year")
 
         # first create a DatasetComposer object and populate it with
         # the full set of data (devices and overlays).
@@ -210,7 +197,16 @@ class DevicecodeUI(App):
         years = data['years']
         year_data = data['year_data']
 
-        # build the various datatables.
+        # Declare the data table column names
+        self.brand_data_table.add_columns("rank", "count", "brand")
+        self.brand_odm_data_table.add_columns("rank", "count", "brand", "ODM")
+        self.brand_cpu_data_table.add_columns("rank", "count", "brand", "CPU brand")
+        self.odm_cpu_data_table.add_columns("rank", "count", "ODM", "CPU brand")
+        self.odm_connector_data_table.add_columns("rank", "count", "ODM", "connector")
+        self.chip_vendor_connector_data_table.add_columns("rank", "count", "CPU", "connector")
+        self.year_data_table.add_columns("rank", "count", "year")
+
+        # Build the various datatables.
         brand_datatable_data = collections.Counter(brand_data)
         brand_odm_datatable_data = collections.Counter(brand_odm)
         brand_cpu_datatable_data = collections.Counter(brand_cpu)
