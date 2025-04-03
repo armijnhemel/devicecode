@@ -23,6 +23,7 @@ class SuggestDevices(Suggester):
         )
 
         # mapping of filter name to kwargs names
+        # The 'kwargs' are used below to populate the suggestion table
         suggestion_names = {'bootloader': 'bootloaders', 'brand': 'brands',
                 'ignore_brand': 'brands', 'chip': 'chips', 'chip_type': 'chip_types',
                 'chip_vendor': 'chip_vendors', 'cveid': 'cveids', 'fccid': 'fcc_ids',
@@ -52,23 +53,29 @@ class SuggestDevices(Suggester):
             A valid completion suggestion or `None`.
         """
 
-        # first split the value
+        # First split the value. Assume that the suggestions are only
+        # for the right most part of the filtering data: if data is changed
+        # while there are characters following this data no suggestions will
+        # be given for the changed parts.
         check_value = value.rsplit(' ', maxsplit=1)[-1]
         if '=' in check_value:
             name_params, token_value = check_value.split('=', maxsplit=1)
+
+            # When adding a new value the right offset for the
+            # string needs to be computed, otherwise some characters
+            # will appear to have been overwritten or "hidden".
             len_name_params = len(name_params) + 1
             suggestion_offset = len(check_value)-len_name_params
             name = name_params.split('?', maxsplit=1)[0]
 
-            # then check and suggest a value. Don't ask how it works,
-            # but it works. When adding a new value, don't forget to
-            # correctly compute the lengths, otherwise some characters
-            # will appear to have been overwritten.
+            # Then check and suggest a value. Don't ask how it works,
+            # but it works!
             if name in self.suggestion_table:
                 for idx, chk in enumerate(self.suggestion_table[name]):
                     if chk.startswith(token_value):
                         return value + self.suggestion_table[name][idx][suggestion_offset:]
 
+        # Suggestions for the token names (without a value)
         for idx, suggestion in enumerate(self._for_comparison):
             if suggestion.startswith(check_value):
                 return value + self._suggestions[idx][len(check_value):]
