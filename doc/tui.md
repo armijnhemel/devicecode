@@ -369,9 +369,10 @@ year=2018 year=2019 year=2020
 ### Adding more filter options
 
 When adding a new filtering option the code needs to be changed in a few
-places, depending on what functionality is needed. The three places where
+places, depending on what functionality is needed. The four places where
 code needs to be changed:
 
+* `deviceode_tui.py` - the dictionary `TOKEN_NAMES` needs to be updated.
 * `devicecode/suggester.py` - this code controls the type ahead suggestions.
   This is not mandatory to have for filtering, but it is useful for users.
 * `devicecode/filter.py` - this code controls the filtering validation, as well
