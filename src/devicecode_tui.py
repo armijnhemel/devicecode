@@ -31,7 +31,7 @@ PART_TO_NAME = {'h': 'hardware', 'a': 'application',
 class BrandTree(Tree):
 
     def build_tree(self, brands_to_devices, is_filtered=False):
-        # build the initial brand_tree.
+        '''Build the initial brand_tree.'''
         self.reset("DeviceCode brand results")
         for brand in sorted(brands_to_devices.keys(), key=str.casefold):
             # add each brand as a node. Then add each model as a leaf.
@@ -52,7 +52,7 @@ class BrandTree(Tree):
 class OdmTree(Tree):
 
     def build_tree(self, odm_to_devices, is_filtered=False):
-        # build the odm_tree.
+        '''Build the initial odm_tree.'''
         self.reset("DeviceCode OEM results")
 
         # add each manufacturer as a node. Then add each brand as a subtree
@@ -162,7 +162,7 @@ class DevicecodeUI(App):
         self.dataset = dataset_composer.DatasetComposer(self.devices, self.overlays)
 
     def compose(self) -> ComposeResult:
-        # Compose the data set. Initially this will always be all data.
+        '''Compose the data set. Initially this will always be all data.'''
         data = self.dataset.compose_data_sets()
 
         brands_to_devices = data['brands_to_devices']
