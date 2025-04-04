@@ -7,6 +7,7 @@ import copy
 
 class DatasetComposer():
     def __init__(self, devices, overlays):
+        # keep a full copy of the original data
         self.devices = devices
         self.overlays = overlays
 
@@ -134,10 +135,12 @@ class DatasetComposer():
                 continue
 
             # first make a copy of the original data, so the original
-            # data can always be used a next time.
+            # data is not overwritten.
             device = copy.deepcopy(original_device)
 
-            # (optionally) apply overlays
+            # (optionally) apply overlays. This is done dynamically and
+            # not during the start of the program, as overlays can be disabled
+            # at run time.
             if use_overlays and device['title'] in self.overlays:
                 for overlay in self.overlays[device['title']]:
                     if overlay['name'] == 'fcc_id':
