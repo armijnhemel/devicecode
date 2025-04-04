@@ -9,8 +9,7 @@ from textual.validation import ValidationResult, Validator
 from textual.widgets import Input
 
 def process_filter(event: Input.Submitted):
-    '''Process filter statements: tokenize and add to data structures
-       that are '''
+    '''Process filter statements: tokenize and add to right data structures'''
     result = {}
     result['bootloaders'] = []
     result['brands'] = []
@@ -54,6 +53,9 @@ def process_filter(event: Input.Submitted):
         for t in tokens:
             # first split the tokens in names and values
             # and optional parameters
+
+            params = {}
+
             name_params, value = t.split('=', maxsplit=1)
             if '?' in name_params:
                 name, args = name_params.split('?', maxsplit=1)
