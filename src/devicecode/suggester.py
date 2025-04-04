@@ -25,11 +25,12 @@ class SuggestDevices(Suggester):
         # mapping of filter name to kwargs names
         # The 'kwargs' are used below to populate the suggestion table
         suggestion_names = {'bootloader': 'bootloaders', 'brand': 'brands',
-                'ignore_brand': 'brands', 'chip': 'chips', 'chip_type': 'chip_types',
-                'chip_vendor': 'chip_vendors', 'cveid': 'cveids', 'fccid': 'fcc_ids',
-                'file': 'files', 'flag': 'flags', 'odm': 'odms', 'ignore_odm': 'odms',
-                'package': 'packages', 'partition': 'partitions', 'password': 'passwords',
-                'program': 'programs', 'rootfs': 'rootfs', 'sdk': 'sdks', 'type': 'types'}
+            'ignore_brand': 'brands', 'chip': 'chips', 'chip_type': 'chip_types',
+            'chip_vendor': 'chip_vendors', 'connector': 'connectors', 'cveid': 'cveids',
+            'fccid': 'fcc_ids', 'file': 'files', 'flag': 'flags', 'odm': 'odms',
+            'ignore_odm': 'odms', 'package': 'packages', 'partition': 'partitions',
+            'password': 'passwords', 'program': 'programs', 'rootfs': 'rootfs', 'sdk': 'sdks',
+            'type': 'types'}
 
         self.suggestion_table = {}
         for i in suggestion_names:
