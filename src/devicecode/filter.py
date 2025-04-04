@@ -17,7 +17,7 @@ def process_filter(event: Input.Submitted):
           'ignore_origins', 'ips', 'jtags', 'odms', 'operating_systems', 'origins', 'packages',
           'partitions', 'passwords', 'programs', 'rootfs', 'sdks', 'serials', 'serial_baud_rates']
 
-    for i in  names:
+    for i in names:
         result[i] = set()
 
     # Then add some special cases.
@@ -125,8 +125,7 @@ class FilterValidator(Validator):
     # A mapping for filter error messages. These are most likely
     # never seen by a user but could come in handy for debugging.
     NAME_TO_ERROR = {'bootloader': 'Invalid bootloader',
-                     'brand': 'Invalid brand',
-                     'ignore_brand': 'Invalid brand',
+                     'brand': 'Invalid brand', 'ignore_brand': 'Invalid brand',
                      'chip': 'Invalid chip',
                      'chip_type': 'Invalid chip type',
                      'chip_vendor': 'Invalid chip vendor',
@@ -141,8 +140,8 @@ class FilterValidator(Validator):
                      'odm': 'Invalid ODM',
                      'ignore_odm': 'Invalid ODM',
                      'origin': 'Invalid origin',
-                     'overlays': 'Invalid overlay flag',
                      'ignore_origin': 'Invalid origin',
+                     'overlays': 'Invalid overlay flag',
                      'package': 'Invalid package',
                      'partition': 'Invalid partition',
                      'password': 'Invalid password',
@@ -202,93 +201,88 @@ class FilterValidator(Validator):
                 is_error = False
 
                 # then check each individual token
-                if name == 'bootloader':
-                    if token_value not in self.bootloaders:
-                        is_error = True
-                elif name == 'brand':
-                    if token_value not in self.brands:
-                        is_error = True
-                elif name == 'chip':
-                    if token_value not in self.chips:
-                        is_error = True
-                elif name == 'chip_type':
-                    if token_value not in self.chip_types:
-                        is_error = True
-                elif name == 'chip_vendor':
-                    if token_value not in self.chip_vendors:
-                        is_error = True
-                elif name == 'connector':
-                    if token_value not in self.connectors:
-                        is_error = True
-                elif name == 'baud':
-                    try:
-                        if int(token_value) not in self.baud_rates:
+                match name:
+                    case 'bootloader':
+                        if token_value not in self.bootloaders:
                             is_error = True
-                    except:
-                        is_error = True
-                elif name == 'cve':
-                    if token_value not in ['no', 'yes']:
-                        is_error = True
-                elif name == 'cveid':
-                    if token_value not in self.cveids:
-                        is_error = True
-                elif name == 'ignore_brand':
-                    if token_value not in self.brands:
-                        is_error = True
-                elif name == 'ignore_odm':
-                    if token_value not in self.odms:
-                        is_error = True
-                elif name == 'fccid':
-                    if token_value not in self.fcc_ids:
-                        is_error = True
-                elif name == 'file':
-                    if token_value not in self.files:
-                        is_error = True
-                elif name == 'ip':
-                    if token_value not in self.ips:
-                        is_error = True
-                elif name == 'odm':
-                    if token_value not in self.odms:
-                        is_error = True
-                elif name == 'password':
-                    if token_value not in self.passwords:
-                        is_error = True
-                elif name == 'package':
-                    if token_value not in self.packages:
-                        is_error = True
-                elif name == 'partition':
-                    if token_value not in self.partitions:
-                        is_error = True
-                elif name == 'rootfs':
-                    if token_value not in self.rootfs:
-                        is_error = True
-                elif name == 'sdk':
-                    if token_value not in self.sdks:
-                        is_error = True
-                #elif name == 'type':
-                    #if token_value not in self.device_types:
-                        #is_error = True
-                elif name == 'fcc':
-                    if token_value not in ['no', 'invalid', 'yes']:
-                        is_error = True
-                elif name in ['jtag', 'serial']:
-                    if token_value not in ['no', 'unknown', 'yes']:
-                        is_error = True
-                elif name in ['origin', 'ignore_origin']:
-                    if token_value not in ['techinfodepot', 'wikidevi', 'openwrt']:
-                        is_error = True
-                elif name == 'year':
-                    years = token_value.split(':', maxsplit=1)
-                    for year in years:
+                    case 'brand' | 'ignore_brand':
+                        if token_value not in self.brands:
+                            is_error = True
+                    case 'chip':
+                        if token_value not in self.chips:
+                            is_error = True
+                    case 'chip_type':
+                        if token_value not in self.chip_types:
+                            is_error = True
+                    case 'chip_vendor':
+                        if token_value not in self.chip_vendors:
+                            is_error = True
+                    case 'connector':
+                        if token_value not in self.connectors:
+                            is_error = True
+                    case 'baud':
                         try:
-                            valid_year=int(year)
-                            if valid_year < 1990 or valid_year > 2040:
+                            if int(token_value) not in self.baud_rates:
                                 is_error = True
                         except:
                             is_error = True
-                elif name == 'overlays':
-                    if token_value not in ['off']:
-                        is_error = True
+                    case 'cve':
+                        if token_value not in ['no', 'yes']:
+                            is_error = True
+                    case 'cveid':
+                        if token_value not in self.cveids:
+                            is_error = True
+                    case 'fccid':
+                        if token_value not in self.fcc_ids:
+                            is_error = True
+                    case 'file':
+                        if token_value not in self.files:
+                            is_error = True
+                    case 'ip':
+                        if token_value not in self.ips:
+                            is_error = True
+                    case 'odm' | 'ignore_odm':
+                        if token_value not in self.odms:
+                            is_error = True
+                    case 'password':
+                        if token_value not in self.passwords:
+                            is_error = True
+                    case 'package':
+                        if token_value not in self.packages:
+                            is_error = True
+                    case 'partition':
+                        if token_value not in self.partitions:
+                            is_error = True
+                    case 'rootfs':
+                        if token_value not in self.rootfs:
+                            is_error = True
+                    case 'sdk':
+                        if token_value not in self.sdks:
+                            is_error = True
+                    #case 'type':
+                        #if token_value not in self.device_types:
+                            #is_error = True
+                    case 'fcc':
+                        if token_value not in ['no', 'invalid', 'yes']:
+                            is_error = True
+                    case 'jtag' | 'serial':
+                        if token_value not in ['no', 'unknown', 'yes']:
+                            is_error = True
+                    case 'origin' | 'ignore_origin':
+                        if token_value not in ['techinfodepot', 'wikidevi', 'openwrt']:
+                            is_error = True
+                    case 'year':
+                        years = token_value.split(':', maxsplit=1)
+                        for year in years:
+                            try:
+                                valid_year=int(year)
+                                if valid_year < 1990 or valid_year > 2040:
+                                    is_error = True
+                            except:
+                                is_error = True
+                    case 'overlays':
+                        if token_value not in ['off']:
+                            is_error = True
 
                 if is_error:
                     return self.failure(self.NAME_TO_ERROR[name])
