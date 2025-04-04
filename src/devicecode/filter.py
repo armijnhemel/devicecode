@@ -11,34 +11,34 @@ from textual.widgets import Input
 def process_filter(event: Input.Submitted):
     '''Process filter statements: tokenize and add to right data structures'''
     result = {}
-    result['bootloaders'] = []
-    result['brands'] = []
-    result['chips'] = []
-    result['chip_types'] = []
-    result['chip_vendors'] = []
+    result['bootloaders'] = set()
+    result['brands'] = set()
+    result['chips'] = set()
+    result['chip_types'] = set()
+    result['chip_vendors'] = set()
     result['connectors'] = set()
-    result['cves'] = []
-    result['cveids'] = []
-    result['device_types'] = []
-    result['fccs'] = []
-    result['files'] = []
-    result['flags'] = []
-    result['ignore_brands'] = []
-    result['ignore_odms'] = []
-    result['ignore_origins'] = []
-    result['ips'] = []
-    result['jtags'] = []
-    result['odms'] = []
-    result['operating_systems'] = []
-    result['origins'] = []
-    result['packages'] = []
-    result['partitions'] = []
-    result['passwords'] = []
-    result['programs'] = []
-    result['rootfs'] = []
-    result['sdks'] = []
-    result['serials'] = []
-    result['serial_baud_rates'] = []
+    result['cves'] = set()
+    result['cveids'] = set()
+    result['device_types'] = set()
+    result['fccs'] = set()
+    result['files'] = set()
+    result['flags'] = set()
+    result['ignore_brands'] = set()
+    result['ignore_odms'] = set()
+    result['ignore_origins'] = set()
+    result['ips'] = set()
+    result['jtags'] = set()
+    result['odms'] = set()
+    result['operating_systems'] = set()
+    result['origins'] = set()
+    result['packages'] = set()
+    result['partitions'] = set()
+    result['passwords'] = set()
+    result['programs'] = set()
+    result['rootfs'] = set()
+    result['sdks'] = set()
+    result['serials'] = set()
+    result['serial_baud_rates'] = set()
     result['years'] = []
     result['is_filtered'] = False
     result['overlay'] = True
@@ -64,61 +64,61 @@ def process_filter(event: Input.Submitted):
 
             # process each known name
             if name == 'bootloader':
-                result['bootloaders'].append(value)
+                result['bootloaders'].add(value)
             elif name == 'brand':
-                result['brands'].append(value)
+                result['brands'].add(value)
             elif name == 'chip':
-                result['chips'].append(value)
+                result['chips'].add(value)
             elif name == 'chip_type':
-                result['chip_types'].append(value)
+                result['chip_types'].add(value)
             elif name == 'chip_vendor':
-                result['chip_vendors'].append(value)
+                result['chip_vendors'].add(value)
             elif name == 'connector':
                 result['connectors'].add(value)
             elif name == 'cve':
-                result['cves'].append(value)
+                result['cves'].add(value)
             elif name == 'cveid':
-                result['cveids'].append(value)
+                result['cveids'].add(value)
             elif name == 'fccid':
-                result['fccs'].append(value)
+                result['fccs'].add(value)
             elif name == 'flag':
-                result['flags'].append(value)
+                result['flags'].add(value)
             elif name == 'ignore_brand':
-                result['ignore_brands'].append(value)
+                result['ignore_brands'].add(value)
             elif name == 'ignore_odm':
-                result['ignore_odms'].append(value)
+                result['ignore_odms'].add(value)
             elif name == 'ignore_origin':
-                result['ignore_origins'].append(value)
+                result['ignore_origins'].add(value)
             elif name == 'file':
-                result['files'].append(value)
+                result['files'].add(value)
             elif name == 'ip':
-                result['ips'].append(value)
+                result['ips'].add(value)
             elif name == 'odm':
-                result['odms'].append(value)
+                result['odms'].add(value)
             elif name == 'origin':
-                result['origins'].append(value)
+                result['origins'].add(value)
             elif name == 'os':
-                result['operating_systems'].append(value)
+                result['operating_systems'].add(value)
             elif name == 'package':
-                result['packages'].append(value)
+                result['packages'].add(value)
             elif name == 'partition':
-                result['partitions'].append(value)
+                result['partitions'].add(value)
             elif name == 'password':
-                result['passwords'].append(value)
+                result['passwords'].add(value)
             elif name == 'program':
-                result['programs'].append(value)
+                result['programs'].add(value)
             elif name == 'rootfs':
-                result['rootfs'].append(value)
+                result['rootfs'].add(value)
             elif name == 'sdk':
-                result['sdks'].append(value)
+                result['sdks'].add(value)
             elif name == 'serial':
-                result['serials'].append(value)
+                result['serials'].add(value)
             elif name == 'baud':
-                result['serial_baud_rates'].append(int(value))
+                result['serial_baud_rates'].add(int(value))
             elif name == 'type':
-                result['device_types'].append(value)
+                result['device_types'].add(value)
             elif name == 'jtag':
-                result['jtags'].append(value)
+                result['jtags'].add(value)
             elif name == 'year':
                 input_years = sorted(value.split(':', maxsplit=1))
                 if len(input_years) > 1:
