@@ -12,6 +12,7 @@ def process_filter(event: Input.Submitted):
     '''Process filter statements: tokenize and add to right data structures'''
     result = {}
 
+    # A mapping of token names to names used in the result dict.
     name_to_results = {'bootloader': 'bootloaders', 'brand': 'brands', 'chip': 'chips',
                        'chip_type': 'chip_types', 'chip_vendor': 'chip_vendors',
                        'connector': 'connectors', 'cve': 'cves', 'cveid': 'cveids',
