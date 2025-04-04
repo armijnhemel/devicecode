@@ -366,5 +366,19 @@ which is equivalent to:
 year=2018 year=2019 year=2020
 ```
 
+### Adding more filter options
+
+When adding a new filtering option the code needs to be changed in a few
+places, depending on what functionality is needed. The three places where
+code needs to be changed:
+
+* `devicecode/suggester.py` - this code controls the type ahead suggestions.
+  This is not mandatory to have for filtering, but it is useful for users.
+* `devicecode/filter.py` - this code controls the filtering validation, as well
+  as splitting the code and putting the data into the right data structures.
+* `devicecode/dataset_composer.py` - this code compiles the data sets that are
+  used for displaying, optionally filtering results using data obtained earlier
+  (and can be considered to be the actual filter)
+
 [rich]:https://github.com/Textualize/rich
 [textual]:https://github.com/Textualize/textual
