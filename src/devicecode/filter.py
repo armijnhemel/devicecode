@@ -12,13 +12,19 @@ def process_filter(event: Input.Submitted):
     '''Process filter statements: tokenize and add to right data structures'''
     result = {}
 
-    names = ['bootloaders', 'brands', 'chips', 'chip_types', 'chip_vendors', 'connectors', 'cves',
-          'cveids', 'device_types', 'fccs', 'files', 'flags', 'ignore_brands', 'ignore_odms',
-          'ignore_origins', 'ips', 'jtags', 'odms', 'operating_systems', 'origins', 'packages',
-          'partitions', 'passwords', 'programs', 'rootfs', 'sdks', 'serials', 'serial_baud_rates']
+    name_to_results = {'bootloader': 'bootloaders', 'brand': 'brands', 'chip': 'chips',
+                       'chip_type': 'chip_types', 'chip_vendor': 'chip_vendors',
+                       'connector': 'connectors', 'cve': 'cves', 'cveid': 'cveids',
+                       'fccid': 'fccs', 'file': 'files', 'flag': 'flags',
+                       'ignore_brand': 'ignore_brands', 'ignore_odm': 'ignore_odms',
+                       'ignore_origin': 'ignore_origins', 'ip': 'ips', 'jtags': 'jtags',
+                       'odm': 'odms', 'os': 'operating_systems', 'origin': 'origins',
+                       'package': 'packages', 'partition': 'partitions', 'password': 'passwords',
+                       'program': 'programs', 'rootfs': 'rootfs', 'sdk': 'sdks',
+                       'serial': 'serials', 'baud': 'serial_baud_rates', 'type': 'device_types'}
 
-    for i in names:
-        result[i] = set()
+    for name, result_name in name_to_results.items():
+        result[result_name] = set()
 
     # Then add some special cases.
     result['years'] = []
@@ -44,78 +50,25 @@ def process_filter(event: Input.Submitted):
             else:
                 name = name_params
 
-            # Process each known name
+            # Process each known name. First the generic case
+            # that's all the same.
+            if name in name_to_results:
+                result[name_to_results[name]].add(value)
+                result['is_filtered'] = True
+
+            # Then the special cases.
             match name:
-                case 'bootloader':
-                    result['bootloaders'].add(value)
-                case 'brand':
-                    result['brands'].add(value)
-                case 'chip':
-                    result['chips'].add(value)
-                case 'chip_type':
-                    result['chip_types'].add(value)
-                case 'chip_vendor':
-                    result['chip_vendors'].add(value)
-                case 'connector':
-                    result['connectors'].add(value)
-                case 'cve':
-                    result['cves'].add(value)
-                case 'cveid':
-                    result['cveids'].add(value)
-                case 'fccid':
-                    result['fccs'].add(value)
-                case 'flag':
-                    result['flags'].add(value)
-                case 'ignore_brand':
-                    result['ignore_brands'].add(value)
-                case 'ignore_odm':
-                    result['ignore_odms'].add(value)
-                case 'ignore_origin':
-                    result['ignore_origins'].add(value)
-                case 'file':
-                    result['files'].add(value)
-                case 'ip':
-                    result['ips'].add(value)
-                case 'odm':
-                    result['odms'].add(value)
-                case 'origin':
-                    result['origins'].add(value)
-                case 'os':
-                    result['operating_systems'].add(value)
-                case 'package':
-                    result['packages'].add(value)
-                case 'partition':
-                    result['partitions'].add(value)
-                case 'password':
-                    result['passwords'].add(value)
-                case 'program':
-                    result['programs'].add(value)
-                case 'rootfs':
-                    result['rootfs'].add(value)
-                case 'sdk':
-                    result['sdks'].add(value)
-                case 'serial':
-                    result['serials'].add(value)
-                case 'baud':
-                    result['serial_baud_rates'].add(int(value))
-                case 'type':
-                    result['device_types'].add(value)
-                case 'jtag':
-                    result['jtags'].add(value)
                 case 'year':
                     input_years = sorted(value.split(':', maxsplit=1))
                     if len(input_years) > 1:
                         result['years'] += list(range(int(input_years[0]), int(input_years[1]) + 1))
                     else:
                         result['years'] += [int(x) for x in input_years]
-
-            match name:
+                    result['is_filtered'] = True
                 case 'overlays':
                     # special filtering flag
                     if value == 'off':
                         result['overlay'] = False
-                case _:
-                    result['is_filtered'] = True
     return result
 
 
@@ -178,18 +131,18 @@ class FilterValidator(Validator):
 
     def validate(self, value: str) -> ValidationResult:
         try:
-            # split the value into tokens
+            # Split the value into individual tokens
             tokens = shlex.split(value.lower())
             if not tokens:
                 return self.failure("Empty string")
 
-            # verify each token
+            # Verify each token
             for t in tokens:
                 if '=' not in t:
                     return self.failure("Invalid name")
 
-                # first verify if the token is well formed
-                # and if it has a valid name
+                # Verify if the token is well formed
+                # and if it has a valid name.
                 name_params, token_value = t.split('=', maxsplit=1)
                 if '?' in name_params:
                     name, args = name_params.split('?', maxsplit=1)
@@ -200,7 +153,7 @@ class FilterValidator(Validator):
 
                 is_error = False
 
-                # then check each individual token
+                # Then check each individual token.
                 match name:
                     case 'bootloader':
                         if token_value not in self.bootloaders:
