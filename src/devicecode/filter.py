@@ -11,47 +11,29 @@ from textual.widgets import Input
 def process_filter(event: Input.Submitted):
     '''Process filter statements: tokenize and add to right data structures'''
     result = {}
-    result['bootloaders'] = set()
-    result['brands'] = set()
-    result['chips'] = set()
-    result['chip_types'] = set()
-    result['chip_vendors'] = set()
-    result['connectors'] = set()
-    result['cves'] = set()
-    result['cveids'] = set()
-    result['device_types'] = set()
-    result['fccs'] = set()
-    result['files'] = set()
-    result['flags'] = set()
-    result['ignore_brands'] = set()
-    result['ignore_odms'] = set()
-    result['ignore_origins'] = set()
-    result['ips'] = set()
-    result['jtags'] = set()
-    result['odms'] = set()
-    result['operating_systems'] = set()
-    result['origins'] = set()
-    result['packages'] = set()
-    result['partitions'] = set()
-    result['passwords'] = set()
-    result['programs'] = set()
-    result['rootfs'] = set()
-    result['sdks'] = set()
-    result['serials'] = set()
-    result['serial_baud_rates'] = set()
+
+    names = ['bootloaders', 'brands', 'chips', 'chip_types', 'chip_vendors', 'connectors', 'cves',
+          'cveids', 'device_types', 'fccs', 'files', 'flags', 'ignore_brands', 'ignore_odms',
+          'ignore_origins', 'ips', 'jtags', 'odms', 'operating_systems', 'origins', 'packages',
+          'partitions', 'passwords', 'programs', 'rootfs', 'sdks', 'serials', 'serial_baud_rates']
+
+    for i in  names:
+        result[i] = set()
+
+    # Then add some special cases.
     result['years'] = []
     result['is_filtered'] = False
     result['overlay'] = True
 
     if event.validation_result is not None:
-        # input was already syntactically validated before
+        # Input was already syntactically validated before
         # being sent here so it can be processed without any
         # extra checks.
 
         tokens = shlex.split(event.value.lower())
 
         for t in tokens:
-            # first split the tokens in names and values
+            # First split the tokens in names and values
             # and optional parameters
 
             params = {}
@@ -62,76 +44,78 @@ def process_filter(event: Input.Submitted):
             else:
                 name = name_params
 
-            # process each known name
-            if name == 'bootloader':
-                result['bootloaders'].add(value)
-            elif name == 'brand':
-                result['brands'].add(value)
-            elif name == 'chip':
-                result['chips'].add(value)
-            elif name == 'chip_type':
-                result['chip_types'].add(value)
-            elif name == 'chip_vendor':
-                result['chip_vendors'].add(value)
-            elif name == 'connector':
-                result['connectors'].add(value)
-            elif name == 'cve':
-                result['cves'].add(value)
-            elif name == 'cveid':
-                result['cveids'].add(value)
-            elif name == 'fccid':
-                result['fccs'].add(value)
-            elif name == 'flag':
-                result['flags'].add(value)
-            elif name == 'ignore_brand':
-                result['ignore_brands'].add(value)
-            elif name == 'ignore_odm':
-                result['ignore_odms'].add(value)
-            elif name == 'ignore_origin':
-                result['ignore_origins'].add(value)
-            elif name == 'file':
-                result['files'].add(value)
-            elif name == 'ip':
-                result['ips'].add(value)
-            elif name == 'odm':
-                result['odms'].add(value)
-            elif name == 'origin':
-                result['origins'].add(value)
-            elif name == 'os':
-                result['operating_systems'].add(value)
-            elif name == 'package':
-                result['packages'].add(value)
-            elif name == 'partition':
-                result['partitions'].add(value)
-            elif name == 'password':
-                result['passwords'].add(value)
-            elif name == 'program':
-                result['programs'].add(value)
-            elif name == 'rootfs':
-                result['rootfs'].add(value)
-            elif name == 'sdk':
-                result['sdks'].add(value)
-            elif name == 'serial':
-                result['serials'].add(value)
-            elif name == 'baud':
-                result['serial_baud_rates'].add(int(value))
-            elif name == 'type':
-                result['device_types'].add(value)
-            elif name == 'jtag':
-                result['jtags'].add(value)
-            elif name == 'year':
-                input_years = sorted(value.split(':', maxsplit=1))
-                if len(input_years) > 1:
-                    result['years'] += list(range(int(input_years[0]), int(input_years[1]) + 1))
-                else:
-                    result['years'] += [int(x) for x in input_years]
+            # Process each known name
+            match name:
+                case 'bootloader':
+                    result['bootloaders'].add(value)
+                case 'brand':
+                    result['brands'].add(value)
+                case 'chip':
+                    result['chips'].add(value)
+                case 'chip_type':
+                    result['chip_types'].add(value)
+                case 'chip_vendor':
+                    result['chip_vendors'].add(value)
+                case 'connector':
+                    result['connectors'].add(value)
+                case 'cve':
+                    result['cves'].add(value)
+                case 'cveid':
+                    result['cveids'].add(value)
+                case 'fccid':
+                    result['fccs'].add(value)
+                case 'flag':
+                    result['flags'].add(value)
+                case 'ignore_brand':
+                    result['ignore_brands'].add(value)
+                case 'ignore_odm':
+                    result['ignore_odms'].add(value)
+                case 'ignore_origin':
+                    result['ignore_origins'].add(value)
+                case 'file':
+                    result['files'].add(value)
+                case 'ip':
+                    result['ips'].add(value)
+                case 'odm':
+                    result['odms'].add(value)
+                case 'origin':
+                    result['origins'].add(value)
+                case 'os':
+                    result['operating_systems'].add(value)
+                case 'package':
+                    result['packages'].add(value)
+                case 'partition':
+                    result['partitions'].add(value)
+                case 'password':
+                    result['passwords'].add(value)
+                case 'program':
+                    result['programs'].add(value)
+                case 'rootfs':
+                    result['rootfs'].add(value)
+                case 'sdk':
+                    result['sdks'].add(value)
+                case 'serial':
+                    result['serials'].add(value)
+                case 'baud':
+                    result['serial_baud_rates'].add(int(value))
+                case 'type':
+                    result['device_types'].add(value)
+                case 'jtag':
+                    result['jtags'].add(value)
+                case 'year':
+                    input_years = sorted(value.split(':', maxsplit=1))
+                    if len(input_years) > 1:
+                        result['years'] += list(range(int(input_years[0]), int(input_years[1]) + 1))
+                    else:
+                        result['years'] += [int(x) for x in input_years]
 
-            if name == 'overlays':
-                # special filtering flag
-                if value == 'off':
-                    result['overlay'] = False
-            else:
-                result['is_filtered'] = True
+            match name:
+                case 'overlays':
+                    # special filtering flag
+                    if value == 'off':
+                        result['overlay'] = False
+                case _:
+                    result['is_filtered'] = True
     return result
 
 
