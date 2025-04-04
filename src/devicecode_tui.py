@@ -34,11 +34,13 @@ class BrandTree(Tree):
         '''Build the initial brand_tree.'''
         self.reset("DeviceCode brand results")
         for brand in sorted(brands_to_devices.keys(), key=str.casefold):
-            # add each brand as a node. Then add each model as a leaf.
+            # Add each brand as a node. Then add each model as a leaf.
             node = self.root.add(brand, data={'brand': brand}, expand=is_filtered)
             node_leaves = 0
 
-            # recurse into the device and add nodes for devices
+            # Recurse into the devices and add nodes each device,
+            # optionally with labels added to the name. Each valid leaf
+            # node is decorated with the device data.
             for model in sorted(brands_to_devices[brand], key=lambda x: x['model']):
                 if model['labels']:
                     node.add_leaf(f"{model['model']}  {''.join(model['labels'])}",
@@ -56,17 +58,18 @@ class OdmTree(Tree):
         self.reset("DeviceCode OEM results")
 
         # add each manufacturer as a node. Then add each brand as a subtree
-        # and each model as a leaf. Optionally filter for brands and prune.
+        # and each model as a leaf to the brand subtree.
         for odm in sorted(odm_to_devices.keys(), key=str.casefold):
             # create a node with brand subnodes
             node = self.root.add(odm, expand=is_filtered)
             node_leaves = 0
             for brand in sorted(odm_to_devices[odm], key=str.casefold):
-                # recurse into the device and add nodes for devices
+                # Recurse into the devices and add nodes each device,
+                # optionally with labels added to the name. Each valid leaf
+                # node is decorated with the device data.
                 brand_node = node.add(brand)
                 brand_node_leaves = 0
                 for model in sorted(odm_to_devices[odm][brand], key=lambda x: x['model']):
-                    # default case
                     if model['labels']:
                         brand_node.add_leaf(f"{model['model']}  {''.join(model['labels'])}",
                                             data=model['data'])
@@ -75,15 +78,17 @@ class OdmTree(Tree):
                     brand_node_leaves += 1
                     node_leaves += 1
 
-                # check if there are any valid leaf nodes.
-                # If not, remove the brand node
+                # Check if the brand node that was added actually has any leaf nodes.
+                # If not, remove the brand node. This has to be done on the fly, as
+                # due to any potential filtering this cannot be computed easily in
+                # advance.
                 if brand_node_leaves == 0:
                     brand_node.remove()
                 else:
                     brand_node.label = f"{brand_node.label}  ({brand_node_leaves})"
 
-            # check if there are any valid leaf nodes.
-            # If not, remove the ODM node
+            # check if there are any valid leaf nodes for the ODM (across all
+            # the brands). If not, remove the ODM node.
             if node_leaves == 0:
                 node.remove()
             node.label = f"{node.label}  ({node_leaves})"
