@@ -167,7 +167,7 @@ class DevicecodeUI(App):
         self.dataset = dataset_composer.DatasetComposer(self.devices, self.overlays)
 
     def compose(self) -> ComposeResult:
-        '''Compose the data set. Initially this will always be all data.'''
+        '''Compose the initial data set using all data.'''
         data = self.dataset.compose_data_sets()
 
         brands_to_devices = data['brands_to_devices']
@@ -233,8 +233,8 @@ class DevicecodeUI(App):
         self.odm_tree.root.expand()
         self.odm_tree.build_tree(odm_to_devices)
 
-        # create the input field. Use the (filtered) data for the suggester
-        # and filter validator so only valid data is entered in the filter.
+        # Create the input field. Use the data for the suggester and filter
+        # validator so only valid known data can be entered in the input field.
         input_filter = Input(placeholder='Filter',
                     validators=[devicecode_filter.FilterValidator(bootloaders=bootloaders,
                                     brands=brands, baud_rates=baud_rates, odms=odms,
@@ -374,10 +374,13 @@ class DevicecodeUI(App):
                 sdks=sdks, serials=serials, serial_baud_rates=serial_baud_rates, years=years,
                 types=device_types)
 
+        # Build the data trees. Depending on the value of 'is_filtered' the
+        # trees will be unfolded (if a filter has been applied) or not (all
+        # data is displayed, with or without overlays).
         self.brand_tree.build_tree(data['brands_to_devices'], is_filtered)
         self.odm_tree.build_tree(data['odm_to_devices'], is_filtered)
 
-        # build the various datatables.
+        # Build the various datatables.
         brand_datatable_data = collections.Counter(data['brand_data'])
         brand_odm_datatable_data = collections.Counter(data['brand_odm'])
         brand_cpu_datatable_data = collections.Counter(data['brand_cpu'])
@@ -390,13 +393,14 @@ class DevicecodeUI(App):
                                brand_cpu_datatable_data, odm_cpu_datatable_data,
                                odm_connector_data, chip_vendor_connector_data, year_datatable_data)
 
-        # reset the data areas
+        # Reset the data areas to get rid of old data that might have
+        # been displayed for a device that was previously selected.
         self.reset_areas()
 
     def build_data_tables(self, brand_datatable_data, brand_odm_datatable_data,
                           brand_cpu_datatable_data, odm_cpu_datatable_data,
                           odm_connector_data, chip_vendor_connector_data, year_datatable_data):
-        '''Clear and rebuild the data tables'''
+        '''Clear and rebuild the data tables/'''
         self.brand_data_table.clear()
         rank = 1
         for i in brand_datatable_data.most_common():
@@ -440,7 +444,7 @@ class DevicecodeUI(App):
             rank += 1
 
     def reset_areas(self):
-        '''Reset the data areas to prevent old data being displayed'''
+        '''Reset the data areas to prevent old data being displayed.'''
         self.device_data_area.update('')
         self.regulatory_data_area.update('')
         self.model_data_area.update('')
