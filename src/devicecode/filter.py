@@ -167,95 +167,98 @@ class FilterValidator(Validator):
                 if name not in self.token_names:
                     return self.failure("Invalid name")
 
+                error_message = ''
+
                 # then check each individual token
                 if name == 'bootloader':
                     if token_value not in self.bootloaders:
-                        return self.failure("Invalid bootloader")
+                        error_message = "Invalid bootloader"
                 elif name == 'brand':
                     if token_value not in self.brands:
-                        return self.failure("Invalid brand")
+                        error_message = "Invalid brand"
                 elif name == 'chip':
                     if token_value not in self.chips:
-                        return self.failure("Invalid chip")
+                        error_message = "Invalid chip"
                 elif name == 'chip_type':
                     if token_value not in self.chip_types:
-                        return self.failure("Invalid chip type")
+                        error_message = "Invalid chip type"
                 elif name == 'chip_vendor':
                     if token_value not in self.chip_vendors:
-                        return self.failure("Invalid chip vendor")
+                        error_message = "Invalid chip vendor"
                 elif name == 'connector':
                     if token_value not in self.connectors:
-                        return self.failure("Invalid connector")
+                        error_message = "Invalid connector"
                 elif name == 'baud':
                     try:
-                        int(token_value)
+                        if int(token_value) not in self.baud_rates:
+                            error_message = "Invalid baud rate"
                     except:
-                        return self.failure("Invalid baud rate")
-                    if int(token_value) not in self.baud_rates:
-                        return self.failure("Invalid baud rate")
+                        error_message = "Invalid baud rate"
                 elif name == 'cve':
                     if token_value not in ['no', 'yes']:
-                        return self.failure("Invalid CVE information")
+                        error_message = "Invalid CVE information"
                 elif name == 'cveid':
                     if token_value not in self.cveids:
-                        return self.failure("Invalid CVE id")
+                        error_message = "Invalid CVE id"
                 elif name == 'ignore_brand':
                     if token_value not in self.brands:
-                        return self.failure("Invalid brand")
+                        error_message = "Invalid brand"
                 elif name == 'ignore_odm':
                     if token_value not in self.odms:
-                        return self.failure("Invalid ODM")
+                        error_message = "Invalid ODM"
                 elif name == 'fccid':
                     if token_value not in self.fcc_ids:
-                        return self.failure("Invalid FCC")
+                        error_message = "Invalid FCC"
                 elif name == 'file':
                     if token_value not in self.files:
-                        return self.failure("Invalid file")
+                        error_message = "Invalid file"
                 elif name == 'ip':
                     if token_value not in self.ips:
-                        return self.failure("Invalid IP")
+                        error_message = "Invalid IP"
                 elif name == 'odm':
                     if token_value not in self.odms:
-                        return self.failure("Invalid ODM")
+                        error_message = "Invalid ODM"
                 elif name == 'password':
                     if token_value not in self.passwords:
-                        return self.failure("Invalid password")
+                        error_message = "Invalid password"
                 elif name == 'package':
                     if token_value not in self.packages:
-                        return self.failure("Invalid package")
+                        error_message = "Invalid package"
                 elif name == 'partition':
                     if token_value not in self.partitions:
-                        return self.failure("Invalid partition")
+                        error_message = "Invalid partition"
                 elif name == 'rootfs':
                     if token_value not in self.rootfs:
-                        return self.failure("Invalid rootfs")
+                        error_message = "Invalid rootfs"
                 elif name == 'sdk':
                     if token_value not in self.sdks:
-                        return self.failure("Invalid SDK")
+                        error_message = "Invalid SDK"
                 #elif name == 'type':
                     #if token_value not in self.device_types:
-                        #return self.failure("Invalid type")
+                        #error_message = "Invalid type"
                 elif name == 'fcc':
                     if token_value not in ['no', 'invalid', 'yes']:
-                        return self.failure("Invalid FCC information")
+                        error_message = "Invalid FCC information"
                 elif name in ['jtag', 'serial']:
                     if token_value not in ['no', 'unknown', 'yes']:
-                        return self.failure("Invalid JTAG/serial port information")
+                        error_message = "Invalid JTAG/serial port information"
                 elif name in ['origin', 'ignore_origin']:
                     if token_value not in ['techinfodepot', 'wikidevi', 'openwrt']:
-                        return self.failure("Invalid origin")
+                        error_message = "Invalid origin"
                 elif name == 'year':
                     years = token_value.split(':', maxsplit=1)
                     for year in years:
                         try:
                             valid_year=int(year)
+                            if valid_year < 1990 or valid_year > 2040:
+                                error_message = "Invalid year"
                         except:
-                            return self.failure("Invalid year")
-                        if valid_year < 1990 or valid_year > 2040:
-                            return self.failure("Invalid year")
+                            error_message = "Invalid year"
                 elif name == 'overlays':
                     if token_value not in ['off']:
-                        return self.failure("Invalid overlay flag")
+                        error_message = "Invalid overlay flag"
+                if error_message:
+                    return self.failure(error_message)
             return self.success()
         except ValueError:
             return self.failure('Incomplete')
