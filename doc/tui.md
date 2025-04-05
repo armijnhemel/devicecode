@@ -109,7 +109,11 @@ different for each field):
 name?params=value
 ```
 
-The format of `params` has not been defined yet.
+`params` are as follows:
+
+```
+param1:value1;param2:value2
+```
 
 `name` can be one of:
 
