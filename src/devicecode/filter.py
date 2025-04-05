@@ -42,12 +42,17 @@ def process_filter(event: Input.Submitted):
         for t in tokens:
             # First split the tokens in names and values
             # and optional parameters
-
             params = {}
 
             name_params, value = t.split('=', maxsplit=1)
             if '?' in name_params:
                 name, args = name_params.split('?', maxsplit=1)
+                split_args = args.split(';')
+                for split_arg in split_args:
+                    if ':' in split_arg:
+                        param_name, param_value = split_arg.split(':', maxsplit=1)
+                        if param_name and param_value:
+                            params[param_name] = param_value
             else:
                 name = name_params
 
