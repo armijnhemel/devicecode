@@ -38,6 +38,7 @@ class SuggestDevices(Suggester):
 
         # some values are always hardcoded
         self.suggestion_table['cve'] = ['no', 'yes']
+        self.suggestion_table['fcc'] = ['no', 'yes']
         self.suggestion_table['jtag'] = ['no', 'unknown', 'yes']
         self.suggestion_table['serial'] = ['no', 'unknown', 'yes']
         self.suggestion_table['origin'] = ['techinfodepot', 'wikidevi', 'openwrt']
