@@ -18,14 +18,14 @@ def process_filter(event: Input.Submitted):
                        'connector': 'connectors', 'cve': 'cves', 'cveid': 'cveids',
                        'fccid': 'fccs', 'file': 'files', 'flag': 'flags',
                        'ignore_brand': 'ignore_brands', 'ignore_odm': 'ignore_odms',
-                       'ignore_origin': 'ignore_origins', 'ip': 'ips', 'jtags': 'jtags',
+                       'ignore_origin': 'ignore_origins', 'ip': 'ips', 'jtag': 'jtags',
                        'odm': 'odms', 'os': 'operating_systems', 'origin': 'origins',
                        'package': 'packages', 'partition': 'partitions', 'password': 'passwords',
                        'program': 'programs', 'rootfs': 'rootfs', 'sdk': 'sdks',
                        'serial': 'serials', 'baud': 'serial_baud_rates', 'type': 'device_types'}
 
     for name, result_name in name_to_results.items():
-        result[result_name] = set()
+        result[result_name] = []
 
     # Then add some special cases.
     result['years'] = []
@@ -59,7 +59,7 @@ def process_filter(event: Input.Submitted):
             # Process each known name. First the generic case
             # that's all the same.
             if name in name_to_results:
-                result[name_to_results[name]].add(value)
+                result[name_to_results[name]].append((value, params))
                 result['is_filtered'] = True
 
             # Then the special cases.
@@ -69,6 +69,7 @@ def process_filter(event: Input.Submitted):
                     if len(input_years) > 1:
                         result['years'] += list(range(int(input_years[0]), int(input_years[1]) + 1))
                     else:
+                        #result['years'] += [(int(x), params) for x in input_years]
                         result['years'] += [int(x) for x in input_years]
                     result['is_filtered'] = True
                 case 'overlays':

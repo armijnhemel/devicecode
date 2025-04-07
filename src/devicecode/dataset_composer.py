@@ -17,30 +17,30 @@ class DatasetComposer():
         # Optional filters with data for devices that should
         # be shown or ignored. If these filters are all empty,
         # then the data set will be the full data (unfiltered).
-        filter_baud_rates = kwargs.get('serial_baud_rates', set())
-        filter_bootloaders = kwargs.get('bootloaders', set())
-        filter_brands = kwargs.get('brands', set())
-        filter_chips = kwargs.get('chips', set())
-        filter_chip_types = kwargs.get('chip_types', set())
-        filter_chip_vendors = kwargs.get('chip_vendors', set())
-        filter_connectors = kwargs.get('connectors', set())
-        filter_cves = kwargs.get('cves', set())
-        filter_cveids = kwargs.get('cveids', set())
-        filter_device_types = kwargs.get('types', set())
-        filter_fccs = kwargs.get('fccs', set())
-        filter_files = kwargs.get('files', set())
-        filter_flags = kwargs.get('flags', set())
-        filter_ignore_brands = kwargs.get('ignore_brands', set())
-        filter_ignore_odms = kwargs.get('ignore_odms', set())
-        filter_ignore_origins = kwargs.get('ignore_origins', set())
-        filter_ips = kwargs.get('ips', set())
-        filter_jtags = kwargs.get('jtags',set())
+        filter_baud_rates = kwargs.get('serial_baud_rates', [])
+        filter_bootloaders = kwargs.get('bootloaders', [])
+        filter_brands = kwargs.get('brands', [])
+        filter_chips = kwargs.get('chips', [])
+        filter_chip_types = kwargs.get('chip_types', [])
+        filter_chip_vendors = kwargs.get('chip_vendors', [])
+        filter_connectors = kwargs.get('connectors', [])
+        filter_cves = kwargs.get('cves', [])
+        filter_cveids = kwargs.get('cveids', [])
+        filter_device_types = kwargs.get('types', [])
+        filter_fccs = kwargs.get('fccs', [])
+        filter_files = kwargs.get('files', [])
+        filter_flags = kwargs.get('flags', [])
+        filter_ignore_brands = kwargs.get('ignore_brands', [])
+        filter_ignore_odms = kwargs.get('ignore_odms', [])
+        filter_ignore_origins = kwargs.get('ignore_origins', [])
+        filter_ips = kwargs.get('ips', [])
+        filter_jtags = kwargs.get('jtags',[])
         filter_odms = kwargs.get('odms', [])
         filter_operating_systems = kwargs.get('operating_systems', [])
         filter_origins = kwargs.get('origins', [])
         filter_packages = kwargs.get('packages', [])
         filter_partitions = kwargs.get('partitions', [])
-        filter_passwords = kwargs.get('passwords', set())
+        filter_passwords = kwargs.get('passwords', [])
         filter_programs = kwargs.get('programs', [])
         filter_rootfs = kwargs.get('rootfs', [])
         filter_sdks = kwargs.get('sdks', [])
@@ -163,9 +163,9 @@ class DatasetComposer():
             brand_name = device['brand']
 
             # filter brands
-            if filter_brands and brand_name.lower() not in filter_brands:
+            if filter_brands and brand_name.lower() not in [x[0] for x in filter_brands]:
                 continue
-            if filter_ignore_brands and brand_name.lower() in filter_ignore_brands:
+            if filter_ignore_brands and brand_name.lower() in [x[0] for x in filter_ignore_brands]:
                 continue
 
             # filter ODMs
@@ -174,47 +174,51 @@ class DatasetComposer():
             else:
                 filter_manufacturer_name = device['manufacturer']['name'].lower()
             if filter_odms:
-                if filter_manufacturer_name not in filter_odms:
+                if filter_manufacturer_name not in [x[0] for x in filter_odms]:
                     continue
             if filter_ignore_odms:
-                if filter_manufacturer_name in filter_ignore_odms:
+                if filter_manufacturer_name in [x[0] for x in filter_ignore_odms]:
                     continue
 
             # then filter various other things
             if filter_device_types:
-                if not set(map(lambda x: x.lower(), device['device_types'])).intersection(filter_device_types):
+                dev_types = [x[0] for x in filter_device_types]
+                if not {x.lower() for x in device['device_types']}.intersection(dev_types):
                     continue
             if filter_flags:
-                if not set(map(lambda x: x.lower(), device['flags'])).intersection(filter_flags):
+                ff_flags = [x[0] for x in filter_flags]
+                if not set(map(lambda x: x.lower(), device['flags'])).intersection(ff_flags):
                     continue
             if filter_passwords:
-                if device['defaults']['password'] not in filter_passwords:
+                if device['defaults']['password'] not in [x[0] for x in filter_passwords]:
                     continue
             if filter_bootloaders:
-                if device['software']['bootloader']['manufacturer'].lower() not in filter_bootloaders:
+                f_bootloaders = [x[0] for x in filter_bootloaders]
+                if device['software']['bootloader']['manufacturer'].lower() not in f_bootloaders:
                     continue
             if filter_jtags:
-                if device['has_jtag'] not in filter_jtags:
+                if device['has_jtag'] not in [x[0] for x in filter_jtags]:
                     continue
             if filter_operating_systems:
-                if device['software']['os'].lower() not in filter_operating_systems:
+                if device['software']['os'].lower() not in [x[0] for x in filter_operating_systems]:
                     continue
             if filter_serials:
-                if device['has_serial_port'] not in filter_serials:
+                if device['has_serial_port'] not in [x[0] for x in filter_serials]:
                     continue
             if filter_connectors:
-                if device['serial']['connector'].lower() not in filter_connectors:
+                if device['serial']['connector'].lower() not in [x[0] for x in filter_connectors]:
                     continue
             if filter_baud_rates:
-                if device['serial']['baud_rate'] not in filter_baud_rates:
+                if device['serial']['baud_rate'] not in [x[0] for x in filter_baud_rates]:
                     continue
             if filter_ips:
-                if device['defaults']['ip'] not in filter_ips:
+                if device['defaults']['ip'] not in [x[0] for x in filter_ips]:
                     continue
             if filter_cves:
-                if 'yes' in filter_cves and 'no' in filter_cves:
+                f_cves = [x[0] for x in filter_cves]
+                if 'yes' in f_cves and 'no' in f_cves:
                     pass
-                elif 'yes' in filter_cves:
+                elif 'yes' in f_cves:
                     if not device['regulatory']['cve']:
                         continue
                 else:
@@ -239,15 +243,17 @@ class DatasetComposer():
                     continue
 
             if filter_cveids:
+                f_cveids = [x[0] for x in filter_cveids]
                 cv = [x.lower() for x in device['regulatory']['cve']]
-                if not set(cv).intersection(filter_cveids):
+                if not set(cv).intersection(f_cveids):
                     continue
 
             if filter_programs:
                 show_node = False
+                f_programs = [x[0] for x in filter_programs]
                 if 'programs' in device['software']:
                     for prog in device['software']['programs']:
-                        if prog['name'].lower() in filter_programs:
+                        if prog['name'].lower() in f_programs:
                             show_node = True
                             break
                 if not show_node:
@@ -255,9 +261,10 @@ class DatasetComposer():
 
             if filter_files:
                 show_node = False
+                f_files = [x[0] for x in filter_files]
                 if 'files' in device['software']:
                     for prog in device['software']['files']:
-                        if prog['name'].lower() in filter_files:
+                        if prog['name'].lower() in f_files:
                             show_node = True
                             break
                 if not show_node:
@@ -265,8 +272,9 @@ class DatasetComposer():
 
             if filter_chips:
                 show_node = False
+                f_chips = [x[0] for x in filter_chips]
                 for cpu in device['cpus']:
-                    if cpu['model'].lower() in filter_chips:
+                    if cpu['model'].lower() in f_chips:
                         show_node = True
                         break
                 if not show_node:
@@ -274,8 +282,9 @@ class DatasetComposer():
 
             if filter_chip_types:
                 show_node = False
+                f_chip_types = [x[0] for x in filter_chip_types]
                 for cpu in device['cpus']:
-                    if cpu['chip_type'].lower() in filter_chip_types:
+                    if cpu['chip_type'].lower() in f_chip_types:
                         show_node = True
                         break
                 if not show_node:
@@ -283,8 +292,9 @@ class DatasetComposer():
 
             if filter_chip_vendors:
                 show_node = False
+                f_chip_vendors = [x[0] for x in filter_chip_vendors]
                 for cpu in device['cpus']:
-                    if cpu['manufacturer'].lower() in filter_chip_vendors:
+                    if cpu['manufacturer'].lower() in f_chip_vendors:
                         show_node = True
                         break
                 if not show_node:
@@ -292,8 +302,9 @@ class DatasetComposer():
 
             if filter_ignore_origins:
                 show_node = True
+                f_ignore_origins = [x[0] for x in filter_ignore_origins]
                 for origin in device['origins']:
-                    if origin['origin'].lower() in filter_ignore_origins:
+                    if origin['origin'].lower() in f_ignore_origins:
                         show_node = False
                         break
                 if not show_node:
@@ -301,8 +312,9 @@ class DatasetComposer():
 
             if filter_origins:
                 show_node = False
+                f_origins = [x[0] for x in filter_origins]
                 for origin in device['origins']:
-                    if origin['origin'].lower() in filter_origins:
+                    if origin['origin'].lower() in f_origins:
                         show_node = True
                         break
                 if not show_node:
@@ -310,8 +322,9 @@ class DatasetComposer():
 
             if filter_packages:
                 show_node = False
+                f_packages = [x[0] for x in filter_packages]
                 for package in device['software']['packages']:
-                    if package['name'].lower() in filter_packages:
+                    if package['name'].lower() in f_packages:
                         show_node = True
                         break
                 if not show_node:
@@ -319,8 +332,9 @@ class DatasetComposer():
 
             if filter_partitions:
                 show_node = False
+                f_partitions = [x[0] for x in filter_partitions]
                 for partition in device['software']['partitions']:
-                    if partition['name'].lower() in filter_partitions:
+                    if partition['name'].lower() in f_partitions:
                         show_node = True
                         break
                 if not show_node:
@@ -328,28 +342,29 @@ class DatasetComposer():
 
             if filter_rootfs:
                 show_node = False
+                f_rootfs = [x[0] for x in filter_rootfs]
                 for fs in device['software']['rootfs']:
-                    if fs.lower() in filter_rootfs:
+                    if fs.lower() in f_rootfs:
                         show_node = True
                         break
                 if not show_node:
                     continue
 
             if filter_sdks:
-                if device['software']['sdk']['name'].lower() not in filter_sdks:
+                f_sdks = [x[0] for x in filter_sdks]
+                if device['software']['sdk']['name'].lower() not in f_sdks:
                     continue
 
             if filter_fccs:
                 show_node = False
+                f_fccs = [x[0] for x in filter_fccs]
                 for fcc_id in device['regulatory']['fcc_ids']:
-                    if fcc_id['fcc_id'].lower() in filter_fccs:
+                    if fcc_id['fcc_id'].lower() in f_fccs:
                         show_node = True
                         break
                 if not show_node:
                     continue
 
-            if brand_name not in brands_to_devices:
-                brands_to_devices[brand_name] = []
             model = device['model']['model']
             if device['model']['revision'] != '':
                 model += " "
@@ -383,6 +398,9 @@ class DatasetComposer():
             manufacturer_name = device['manufacturer']['name']
             if manufacturer_name == '':
                 manufacturer_name = '***UNKNOWN***'
+
+            if brand_name not in brands_to_devices:
+                brands_to_devices[brand_name] = []
 
             brands_to_devices[brand_name].append({'model': model, 'data': device,
                                                   'labels': sorted(labels)})
