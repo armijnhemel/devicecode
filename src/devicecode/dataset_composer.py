@@ -27,7 +27,7 @@ class DatasetComposer():
         filter_cves = kwargs.get('cves', [])
         filter_cveids = kwargs.get('cveids', [])
         filter_device_types = kwargs.get('types', [])
-        filter_fccs = kwargs.get('fccs', [])
+        filter_fccs = kwargs.get('fccids', [])
         filter_files = kwargs.get('files', [])
         filter_flags = kwargs.get('flags', [])
         filter_ignore_brands = kwargs.get('ignore_brands', [])
