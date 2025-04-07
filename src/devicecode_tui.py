@@ -308,6 +308,7 @@ class DevicecodeUI(App):
         cves = result['cves']
         cveids = result['cveids']
         device_types = result['device_types']
+        fccs = result['fccs']
         fccids = result['fccids']
         files = result['files']
         flags = result['flags']
@@ -334,7 +335,7 @@ class DevicecodeUI(App):
         data = self.dataset.compose_data_sets(use_overlays=overlay, bootloaders=bootloaders,
                 brands=brands, odms=odms, chips=chips, chip_types=chip_types,
                 chip_vendors=chip_vendors, connectors=connectors, cves=cves, cveids=cveids,
-                fccids=fccids, files=files, flags=flags, ignore_brands=ignore_brands,
+                fccs=fccs, fccids=fccids, files=files, flags=flags, ignore_brands=ignore_brands,
                 ignore_odms=ignore_odms, ignore_origins=ignore_origins, ips=ips, jtags=jtags,
                 operating_systems=operating_systems, origins=origins, passwords=passwords,
                 packages=packages, partitions=partitions, programs=programs, rootfs=rootfs,

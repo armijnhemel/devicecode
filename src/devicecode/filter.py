@@ -17,7 +17,7 @@ def process_filter(event: Input.Submitted):
     name_to_results = {'bootloader': 'bootloaders', 'brand': 'brands', 'chip': 'chips',
                        'chip_type': 'chip_types', 'chip_vendor': 'chip_vendors',
                        'connector': 'connectors', 'cve': 'cves', 'cveid': 'cveids',
-                       'fccid': 'fccids', 'file': 'files', 'flag': 'flags',
+                       'fcc': 'fccs', 'fccid': 'fccids', 'file': 'files', 'flag': 'flags',
                        'ignore_brand': 'ignore_brands', 'ignore_odm': 'ignore_odms',
                        'ignore_origin': 'ignore_origins', 'ip': 'ips', 'jtag': 'jtags',
                        'odm': 'odms', 'os': 'operating_systems', 'origin': 'origins',

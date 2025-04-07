@@ -27,7 +27,8 @@ class DatasetComposer():
         filter_cves = kwargs.get('cves', [])
         filter_cveids = kwargs.get('cveids', [])
         filter_device_types = kwargs.get('types', [])
-        filter_fccs = kwargs.get('fccids', [])
+        filter_fccs = kwargs.get('fccs', [])
+        filter_fccids = kwargs.get('fccids', [])
         filter_files = kwargs.get('files', [])
         filter_flags = kwargs.get('flags', [])
         filter_ignore_brands = kwargs.get('ignore_brands', [])
@@ -356,10 +357,21 @@ class DatasetComposer():
                     continue
 
             if filter_fccs:
-                show_node = False
                 f_fccs = [x[0] for x in filter_fccs]
+                if 'yes' in f_fccs and 'no' in f_fccs:
+                    pass
+                elif 'yes' in f_fccs:
+                    if not device['regulatory']['fcc_ids']:
+                        continue
+                else:
+                    if device['regulatory']['fcc_ids']:
+                        continue
+
+            if filter_fccids:
+                show_node = False
+                f_fccids = [x[0] for x in filter_fccids]
                 for fcc_id in device['regulatory']['fcc_ids']:
-                    if fcc_id['fcc_id'].lower() in f_fccs:
+                    if fcc_id['fcc_id'].lower() in f_fccids:
                         show_node = True
                         break
                 if not show_node:
