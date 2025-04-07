@@ -390,22 +390,28 @@ class DatasetComposer():
 
             device_types.update(device['device_types'])
 
-            # compute the labels used in the leaves
+            # Compute the labels used in the leaves.
             labels = set()
             for f in device['flags']:
+                # Telephone related
                 if "voip" in f.lower() or 'telephone' in f.lower() or " phone" in f.lower():
                     labels.add(":phone:")
             for d in device['device_types']:
+                # Telephone related
                 if "voip" in d.lower() or 'telephone' in d.lower() or " phone" in d.lower():
                     labels.add(":phone:")
             if 'linux' in device['software']['os'].lower():
+                # Linux (kernel) based.
                 labels.add(":penguin:")
             if 'android' in device['software']['os'].lower():
+                # Android. Should always include Linux?
                 labels.add(":robot:")
             if 'fcc_data' in device:
+                # Extracted FCC data is present. This might be a bit confusing as when
+                # there is no FCC data, but there is an FCC id this label is not shown.
                 labels.add("\U000024BB")
 
-            # store the manufacturer name. If it is empty
+            # Store the manufacturer name. If it is empty
             # assign it a value.
             manufacturer_name = device['manufacturer']['name']
             if manufacturer_name == '':
