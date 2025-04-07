@@ -100,39 +100,6 @@ class DevicecodeUI(App):
 
     CSS_PATH = "devicecode_tui.css"
 
-    # A list of tokens for filtering. This is a list of dicts.
-    TOKEN_NAMES = [{'name': 'baud', 'has_params': False},
-                   {'name': 'bootloader', 'has_params': True, 'params': ['version']},
-                   {'name': 'brand', 'has_params': False},
-                   {'name': 'chip', 'has_params': False},
-                   {'name': 'chip_type', 'has_params': False},
-                   {'name': 'chip_vendor', 'has_params': False},
-                   {'name': 'connector', 'has_params': False},
-                   {'name': 'cve', 'has_params': False},
-                   {'name': 'cveid', 'has_params': False},
-                   {'name': 'fccid', 'has_params': False},
-                   {'name': 'file', 'has_params': False},
-                   {'name': 'flag', 'has_params': False},
-                   {'name': 'ignore_brand', 'has_params': False},
-                   {'name': 'ignore_odm', 'has_params': False},
-                   {'name': 'ignore_origin', 'has_params': False},
-                   {'name': 'ip', 'has_params': False},
-                   {'name': 'jtag', 'has_params': True, 'params': ['populated']},
-                   {'name': 'odm', 'has_params': False},
-                   {'name': 'origin', 'has_params': False},
-                   {'name': 'os', 'has_params': False},
-                   {'name': 'overlays', 'has_params': False},
-                   {'name': 'package', 'has_params': False},
-                   {'name': 'partition', 'has_params': False},
-                   {'name': 'password', 'has_params': False},
-                   {'name': 'program', 'has_params': False},
-                   {'name': 'rootfs', 'has_params': False},
-                   {'name': 'sdk', 'has_params': True, 'params': ['version']},
-                   {'name': 'serial', 'has_params': True, 'params': ['populated']},
-                   {'name': 'type', 'has_params': False},
-                   {'name': 'year', 'has_params': False},
-                  ]
-
     def __init__(self, devices, overlays, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.devices = devices
@@ -243,8 +210,8 @@ class DevicecodeUI(App):
                                     files=files, ips=ips, packages=packages,
                                     partitions=partitions, passwords=passwords,
                                     programs=programs, rootfs=rootfs, sdks=sdks,
-                                    types=device_types, token_names=self.TOKEN_NAMES)],
-                    suggester=Suggester.SuggestDevices(self.TOKEN_NAMES, case_sensitive=False,
+                                    types=device_types, token_names=defaults.TOKEN_NAMES)],
+                    suggester=Suggester.SuggestDevices(defaults.TOKEN_NAMES, case_sensitive=False,
                     baud_rates=sorted(baud_rates), bootloaders=sorted(bootloaders),
                     brands=sorted(brands), chips=sorted(chips), chip_types=sorted(chip_types),
                     chip_vendors=sorted(chip_vendors), connectors=sorted(connectors),

@@ -559,6 +559,38 @@ REGEX_MINIUPNPD_ALT = re.compile(r'miniupnpd\[\d+\]:\s*(\w*)? listening on port 
 # example:   723 root       6404 S   /usr/sbin/smbd -D
 REGEX_PS = re.compile(r'\s*\d+\s+\w+\s+\d+\s+\w+\s+([/\w\d\s\-_\.\+\*&]*)')
 
+TOKEN_NAMES = [{'name': 'baud', 'has_params': False},
+               {'name': 'bootloader', 'has_params': True, 'params': ['version']},
+               {'name': 'brand', 'has_params': False},
+               {'name': 'chip', 'has_params': False},
+               {'name': 'chip_type', 'has_params': False},
+               {'name': 'chip_vendor', 'has_params': False},
+               {'name': 'connector', 'has_params': False},
+               {'name': 'cve', 'has_params': False},
+               {'name': 'cveid', 'has_params': False},
+               {'name': 'fccid', 'has_params': False},
+               {'name': 'file', 'has_params': False},
+               {'name': 'flag', 'has_params': False},
+               {'name': 'ignore_brand', 'has_params': False},
+               {'name': 'ignore_odm', 'has_params': False},
+               {'name': 'ignore_origin', 'has_params': False},
+               {'name': 'ip', 'has_params': False},
+               {'name': 'jtag', 'has_params': True, 'params': ['populated']},
+               {'name': 'odm', 'has_params': False},
+               {'name': 'origin', 'has_params': False},
+               {'name': 'os', 'has_params': False},
+               {'name': 'overlays', 'has_params': False},
+               {'name': 'package', 'has_params': False},
+               {'name': 'partition', 'has_params': False},
+               {'name': 'password', 'has_params': False},
+               {'name': 'program', 'has_params': False},
+               {'name': 'rootfs', 'has_params': False},
+               {'name': 'sdk', 'has_params': True, 'params': ['version']},
+               {'name': 'serial', 'has_params': True, 'params': ['populated']},
+               {'name': 'type', 'has_params': False},
+               {'name': 'year', 'has_params': False},
+              ]
+
 # a list of verified Atheros and Qualcomm Atheros chips (meaning model numbers exist)
 ATHEROS_CHIPS = set([
     'AR9344', 'AR9331',

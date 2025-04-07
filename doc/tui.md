@@ -376,7 +376,7 @@ When adding a new filtering option the code needs to be changed in a few
 places, depending on what functionality is needed. The four places where
 code needs to be changed:
 
-* `deviceode_tui.py` - the dictionary `TOKEN_NAMES` needs to be updated.
+* `deviceode/defaults.py` - the dictionary `TOKEN_NAMES` needs to be updated.
 * `devicecode/suggester.py` - this code controls the type ahead suggestions.
   This is not mandatory to have for filtering, but it is useful for users.
 * `devicecode/filter.py` - this code controls the filtering validation, as well
