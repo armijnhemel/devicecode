@@ -8,6 +8,7 @@ import shlex
 from textual.validation import ValidationResult, Validator
 from textual.widgets import Input
 
+
 def process_filter(event: Input.Submitted):
     '''Process filter statements: tokenize and add to right data structures'''
     result = {}
@@ -82,37 +83,6 @@ def process_filter(event: Input.Submitted):
 class FilterValidator(Validator):
     '''Syntax validator for the filtering language.'''
 
-    # A mapping for filter error messages. These are most likely
-    # never seen by a user but could come in handy for debugging.
-    NAME_TO_ERROR = {'bootloader': 'Invalid bootloader',
-                     'brand': 'Invalid brand', 'ignore_brand': 'Invalid brand',
-                     'chip': 'Invalid chip',
-                     'chip_type': 'Invalid chip type',
-                     'chip_vendor': 'Invalid chip vendor',
-                     'connector': 'Invalid connector',
-                     'baud': 'Invalid baud rate',
-                     'cve': 'Invalid CVE information',
-                     'cveid': 'Invalid CVE id',
-                     'fcc': 'Invalid FCC information',
-                     'fccid': 'Invalid FCC',
-                     'file': 'Invalid file',
-                     'ip': 'Invalid IP',
-                     'odm': 'Invalid ODM',
-                     'ignore_odm': 'Invalid ODM',
-                     'origin': 'Invalid origin',
-                     'ignore_origin': 'Invalid origin',
-                     'overlays': 'Invalid overlay flag',
-                     'package': 'Invalid package',
-                     'partition': 'Invalid partition',
-                     'password': 'Invalid password',
-                     'rootfs': 'Invalid rootfs',
-                     'sdk': 'Invalid SDK',
-                     'type': 'Invalid device type',
-                     'jtag': 'Invalid JTAG/serial port information',
-                     'serial': 'Invalid JTAG/serial port information',
-                     'year': 'Invalid year',
-                    }
-
     def __init__(self, **kwargs):
         # Known values: only these will be regarded as valid.
         self.baud_rates = kwargs.get('baud_rates', set())
@@ -135,6 +105,12 @@ class FilterValidator(Validator):
         self.sdks = kwargs.get('sdks', set())
         self.token_names_params = kwargs.get('token_names', [])
         self.token_names = list(map(lambda x: x['name'], self.token_names_params))
+
+        # A mapping for filter error messages. These are most likely
+        # never seen by a user but could come in handy for debugging.
+        self.name_to_error = {}
+        for i in self.token_names_params:
+            self.name_to_error[i['name']] = i['error']
 
     def validate(self, value: str) -> ValidationResult:
         try:
@@ -245,7 +221,7 @@ class FilterValidator(Validator):
                             is_error = True
 
                 if is_error:
-                    return self.failure(self.NAME_TO_ERROR[name])
+                    return self.failure(self.name_to_error[name])
             return self.success()
         except ValueError:
             return self.failure('Incomplete')
