@@ -34,9 +34,8 @@ def process_filter(event: Input.Submitted):
     result['overlay'] = True
 
     if event.validation_result is not None:
-        # Input was already syntactically validated before
-        # being sent here so it can be processed without any
-        # extra checks.
+        # Input was already validated before being sent here
+        # so it can be processed without any extra checks.
 
         tokens = shlex.split(event.value.lower())
 
@@ -81,7 +80,7 @@ def process_filter(event: Input.Submitted):
 
 
 class FilterValidator(Validator):
-    '''Syntax validator for the filtering language.'''
+    '''Validator for the filtering language (syntax and values).'''
 
     def __init__(self, **kwargs):
         # Known values: only these will be regarded as valid.
@@ -126,9 +125,16 @@ class FilterValidator(Validator):
 
                 # Verify if the token is well formed
                 # and if it has a valid name.
+                params = {}
                 name_params, token_value = t.split('=', maxsplit=1)
                 if '?' in name_params:
                     name, args = name_params.split('?', maxsplit=1)
+                    split_args = args.split(';')
+                    for split_arg in split_args:
+                        if ':' in split_arg:
+                            param_name, param_value = split_arg.split(':', maxsplit=1)
+                            if param_name and param_value:
+                                params[param_name] = param_value
                 else:
                     name = name_params
                 if name not in self.token_names:
