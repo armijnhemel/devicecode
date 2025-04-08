@@ -373,8 +373,8 @@ year=2018 year=2019 year=2020
 ### Adding more filter options
 
 When adding a new filtering option the code needs to be changed in a few
-places, depending on what functionality is needed. The four places where
-code needs to be changed:
+places, depending on what functionality is needed. The places where code needs
+to be changed:
 
 * `deviceode/defaults.py` - the dictionary `TOKEN_NAMES` needs to be updated.
 * `devicecode/suggester.py` - this code controls the type ahead suggestions.
@@ -383,7 +383,8 @@ code needs to be changed:
   as splitting the code and putting the data into the right data structures.
 * `devicecode/dataset_composer.py` - this code compiles the data sets that are
   used for displaying, optionally filtering results using data obtained earlier
-  (and can be considered to be the actual filter)
+  (and can be considered to be the actual filter).
+* `deviceode_tui.py` - the `process_filter()` method needs to be changed.
 
 [rich]:https://github.com/Textualize/rich
 [textual]:https://github.com/Textualize/textual
