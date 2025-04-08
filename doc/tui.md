@@ -67,6 +67,7 @@ following extra icons are used:
   has VoIP functionality
 * circled F - the device has information extracted from documents downloaded
   from FCC
+* face screaming in fear - the device has a known CVE associated with it
 
 ## Filtering
 
