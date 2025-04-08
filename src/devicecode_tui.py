@@ -706,25 +706,40 @@ class DevicecodeUI(App):
 
     def build_model_report(self, result):
         '''Construct Markdown with device model information'''
+        # mapping of labels to names in result['model']
+        labels_model = [
+            ('Model', 'model'),
+            ('Part number', 'part_number'),
+            ('PCB id', 'pcb_id'),
+            ('Revision', 'revision'),
+            ('Serial number', 'serial_number'),
+            ('Series', 'series'),
+            ('Submodel', 'submodel'),
+            ('Subrevision', 'subrevision'),
+                 ]
+
+        # mapping of labels to names in result['manufacturer']
+        labels_manufacturer = [
+            ('Manufacturer', 'name'),
+            ('Country', 'country'),
+            ('Model', 'model'),
+            ('Revision', 'revision'),
+                 ]
+
         new_markdown = ""
         if result:
             new_markdown += "# Model information\n"
             new_markdown += "| | |\n|--|--|\n"
-            new_markdown += f"|**Model** | {result['model']['model']}\n"
-            new_markdown += f"|**Part number** |{ result['model']['part_number']}\n"
-            new_markdown += f"|**PCB id** | {result['model']['pcb_id']}\n"
-            new_markdown += f"|**Revision** | {result['model']['revision']}\n"
-            new_markdown += f"|**Serial number** | {result['model']['serial_number']}\n"
-            new_markdown += f"|**Series** | {result['model']['series']}\n"
-            new_markdown += f"|**Submodel** | {result['model']['submodel']}\n"
-            new_markdown += f"|**Subrevision** | {result['model']['subrevision']}\n"
+
+            for label, name in labels_model:
+                new_markdown += f"|**{label}** | {result['model'][name]}\n"
 
             new_markdown += "# ODM information\n"
             new_markdown += "| | |\n|--|--|\n"
-            new_markdown += f"|**Manufacturer** | {result['manufacturer']['name']}\n"
-            new_markdown += f"|**Country** | {result['manufacturer']['country']}\n"
-            new_markdown += f"|**Model** | {result['manufacturer']['model']}\n"
-            new_markdown += f"|**Revision** | {result['manufacturer']['revision']}\n"
+
+            for label, name in labels_manufacturer:
+                new_markdown += f"|**{label}** | {result['manufacturer'][name]}\n"
+
         return new_markdown
 
     def build_network_report(self, result):
