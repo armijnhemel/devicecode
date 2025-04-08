@@ -410,9 +410,6 @@ class DatasetComposer():
 
             device_types.update(device['device_types'])
 
-            for cveid in device['regulatory']['cve']:
-                cveids.add(cveid.lower())
-
             # Compute the labels used in the leaves.
             labels = set()
             for f in device['flags']:
@@ -433,7 +430,7 @@ class DatasetComposer():
                 # Extracted FCC data is present. This might be a bit confusing as when
                 # there is no FCC data, but there is an FCC id this label is not shown.
                 labels.add("\U000024BB")
-            if cveids:
+            if device['regulatory']['cve']:
                 labels.add(":face_screaming_in_fear:")
 
             # Store the manufacturer name. If it is empty
@@ -501,6 +498,9 @@ class DatasetComposer():
 
                 if chip['model'] != '':
                     chips.add(chip['model'].lower())
+
+            for cveid in device['regulatory']['cve']:
+                cveids.add(cveid.lower())
 
             for fcc_id in device['regulatory']['fcc_ids']:
                 fcc_ids.add(fcc_id['fcc_id'].lower())
