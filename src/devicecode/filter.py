@@ -16,7 +16,7 @@ def process_filter(event: Input.Submitted):
     # A mapping of token names to names used in the result dict.
     name_to_results = {'bootloader': 'bootloaders', 'brand': 'brands', 'chip': 'chips',
                        'chip_type': 'chip_types', 'chip_vendor': 'chip_vendors',
-                       'connector': 'connectors', 'cve': 'cves', 'cveid': 'cveids',
+                       'connector': 'connectors', 'cpe': 'cpes', 'cve': 'cves', 'cveid': 'cveids',
                        'fcc': 'fccs', 'fccid': 'fccids', 'file': 'files', 'flag': 'flags',
                        'ignore_brand': 'ignore_brands', 'ignore_odm': 'ignore_odms',
                        'ignore_origin': 'ignore_origins', 'ip': 'ips', 'jtag': 'jtags',
@@ -177,6 +177,9 @@ class FilterValidator(Validator):
                             if int(token_value) not in self.baud_rates:
                                 is_error = True
                         except:
+                            is_error = True
+                    case 'cpe':
+                        if token_value not in ['no', 'yes']:
                             is_error = True
                     case 'cve':
                         if token_value not in ['no', 'yes']:

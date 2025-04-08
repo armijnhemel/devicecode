@@ -37,6 +37,7 @@ class SuggestDevices(Suggester):
             self.suggestion_table[i] = kwargs.get(suggestion_names[i], [])
 
         # some values are always hardcoded
+        self.suggestion_table['cpe'] = ['no', 'yes']
         self.suggestion_table['cve'] = ['no', 'yes']
         self.suggestion_table['fcc'] = ['no', 'yes']
         self.suggestion_table['jtag'] = ['no', 'unknown', 'yes']

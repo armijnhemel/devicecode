@@ -24,6 +24,7 @@ class DatasetComposer():
         filter_chip_types = kwargs.get('chip_types', [])
         filter_chip_vendors = kwargs.get('chip_vendors', [])
         filter_connectors = kwargs.get('connectors', [])
+        filter_cpes = kwargs.get('cpes', [])
         filter_cves = kwargs.get('cves', [])
         filter_cveids = kwargs.get('cveids', [])
         filter_device_types = kwargs.get('types', [])
@@ -224,6 +225,16 @@ class DatasetComposer():
             if filter_ips:
                 if device['defaults']['ip'] not in [x[0] for x in filter_ips]:
                     continue
+            if filter_cpes:
+                f_cpes = [x[0] for x in filter_cpes]
+                if 'yes' in f_cpes and 'no' in f_cpes:
+                    pass
+                elif 'yes' in f_cpes:
+                    if not device['regulatory']['cpe']['cpe23']:
+                        continue
+                else:
+                    if device['regulatory']['cpe']['cpe23']:
+                        continue
             if filter_cves:
                 f_cves = [x[0] for x in filter_cves]
                 if 'yes' in f_cves and 'no' in f_cves:

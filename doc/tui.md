@@ -124,6 +124,7 @@ param1:value1;param2:value2
 * `chip_type`
 * `chip_vendor`
 * `connector`
+* `cpe`
 * `cve`
 * `cveid`
 * `fccid`
@@ -236,6 +237,11 @@ devices.
 
 `connector` can be used to filter connectors (serial port only for now, JTAG
 in the future as well).
+
+##### CPE
+
+`cpe` can be used to show devices that have, or don't have, an associated CPE.
+Valid values are `yes` and `no`.
 
 ##### CVE
 

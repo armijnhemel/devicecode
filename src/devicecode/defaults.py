@@ -567,6 +567,7 @@ TOKEN_NAMES = [{'name': 'baud', 'has_params': False, 'error': 'Invalid baud rate
                {'name': 'chip_type', 'has_params': False, 'error': 'Invalid chip type'},
                {'name': 'chip_vendor', 'has_params': False, 'error': 'Invalid chip vendor'},
                {'name': 'connector', 'has_params': False, 'error': 'Invalid connector'},
+               {'name': 'cpe', 'has_params': False, 'error': 'Invalid CPE information'},
                {'name': 'cve', 'has_params': False, 'error': 'Invalid CVE information'},
                {'name': 'cveid', 'has_params': False, 'error': 'Invalid CVE id'},
                {'name': 'fcc', 'has_params': False, 'error': 'Invalid FCC information'},
