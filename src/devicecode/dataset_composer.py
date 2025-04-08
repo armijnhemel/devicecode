@@ -455,7 +455,6 @@ class DatasetComposer():
             odm_to_devices[manufacturer_name][brand_name].append({'model': model, 'data': device,
                                                                   'labels': sorted(labels)})
             odms.add(manufacturer_name.lower())
-            brand_odm.append((brand_name, manufacturer_name))
 
             if device['defaults']['ip'] != '':
                 ips.add(device['defaults']['ip'])
