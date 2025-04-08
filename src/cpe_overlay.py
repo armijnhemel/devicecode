@@ -238,8 +238,9 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
 
                             # Then process advisories, as there are sometimes CVE
                             # identifiers or other identifiers in there. Please
-                            # note that these references are not necessarily correct.
-                            # Filter these later.
+                            # note that these references are not necessarily correct
+                            # so cross correlate them with a list of known valid CVE
+                            # ids, which will only work if all valid CVEs are known.
                             if 'advisory' in reference_type.lower():
                                 # try to extract a known CVE identifier
                                 cve_res = re.findall(r'CVE-\d{4}-\d{4,5}', href)
