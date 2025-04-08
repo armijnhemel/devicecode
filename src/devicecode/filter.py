@@ -103,7 +103,7 @@ class FilterValidator(Validator):
         self.rootfs = kwargs.get('rootfs', set())
         self.sdks = kwargs.get('sdks', set())
         self.token_names_params = kwargs.get('token_names', [])
-        self.token_names = list(map(lambda x: x['name'], self.token_names_params))
+        self.token_names = [x['name'] for x in self.token_names_params]
 
         # A mapping for filter error messages. These are most likely
         # never seen by a user but could come in handy for debugging.
