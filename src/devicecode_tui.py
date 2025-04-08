@@ -31,7 +31,7 @@ PART_TO_NAME = {'h': 'hardware', 'a': 'application',
 class BrandTree(Tree):
 
     def build_tree(self, brands_to_devices, is_filtered=False):
-        '''Build the initial brand_tree.'''
+        '''Build the brand_tree given a collections of brands and devices.'''
         self.reset("DeviceCode brand results")
         for brand in sorted(brands_to_devices.keys(), key=str.casefold):
             # Add each brand as a node. Then add each model as a leaf.
@@ -54,7 +54,7 @@ class BrandTree(Tree):
 class OdmTree(Tree):
 
     def build_tree(self, odm_to_devices, is_filtered=False):
-        '''Build the initial odm_tree.'''
+        '''Build the odm_tree given a collections of ODMs, brands and devices.'''
         self.reset("DeviceCode OEM results")
 
         # add each manufacturer as a node. Then add each brand as a subtree
