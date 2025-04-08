@@ -111,6 +111,16 @@ class FilterValidator(Validator):
         for i in self.token_names_params:
             self.name_to_error[i['name']] = i['error']
 
+        # A mapping for names to parameters. This can be used to verify
+        # if parameters are actually correct. Unsure if this is a useful
+        # feature or not, so disable it for now.
+        self.name_to_params = {}
+        for i in self.token_names_params:
+            if 'params' in i:
+                self.name_to_params[i['name']] = i['params']
+
+        self.verify_params = False
+
     def validate(self, value: str) -> ValidationResult:
         try:
             # Split the value into individual tokens
@@ -225,6 +235,13 @@ class FilterValidator(Validator):
                     case 'overlays':
                         if token_value not in ['off']:
                             is_error = True
+
+                # Then check the parameters, if enabled.
+                if self.verify_params:
+                    if name in self.name_to_params:
+                        for p in params:
+                            if p not in self.name_to_params[name]:
+                                is_error = True
 
                 if is_error:
                     return self.failure(self.name_to_error[name])
