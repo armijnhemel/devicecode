@@ -200,6 +200,15 @@ class DatasetComposer():
             if filter_jtags:
                 if device['has_jtag'] not in [x[0] for x in filter_jtags]:
                     continue
+
+                # Process the parameters. These only make sense if
+                # there actually is a JTAG port.
+                if device['has_jtag'] == 'yes':
+                    show_node = True
+                    for param_args in [x[1] for x in filter_jtags]:
+                        pass
+                    if not show_node:
+                        continue
             if filter_operating_systems:
                 if device['software']['os'].lower() not in [x[0] for x in filter_operating_systems]:
                     continue
