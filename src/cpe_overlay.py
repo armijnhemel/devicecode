@@ -94,7 +94,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
 
         # create the overlay directories
         overlay_directory = output_directory / p.name / 'overlays'
-        overlay_directory.mkdir(exist_ok=True)
+        overlay_directory.mkdir(parents=True, exist_ok=True)
 
     if not devicecode_dirs:
         print(f"No valid directories found in {devicecode_directory}, should contain one of {valid_directory_names}.", file=sys.stderr)
