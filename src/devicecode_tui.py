@@ -428,8 +428,10 @@ class DevicecodeUI(App):
         # TODO: often terminals (such as MATE terminal in Fedora) will
         # already open a link when clicking on it, causing the link to be opened
         # multiple times. Is this desirable?
-        if event.href.startswith('http://') or event.href.startswith('https://'):
-            webbrowser.open(event.href)
+        for i in ['https://', 'http://']:
+            if event.href.startswith(i):
+                webbrowser.open(event.href)
+                break
 
     def on_tree_tree_highlighted(self, event: Tree.NodeHighlighted[None]) -> None:
         pass
