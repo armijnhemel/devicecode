@@ -126,7 +126,8 @@ class DevicecodeUI(App):
         self.brand_odm_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.odm_cpu_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
         self.odm_connector_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
-        self.chip_vendor_connector_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
+        self.chip_vendor_connector_data_table: DataTable() = DataTable(fixed_columns=1,
+                                                                       cursor_type='row')
         self.year_data_table: DataTable() = DataTable(fixed_columns=1, cursor_type='row')
 
         # first create a DatasetComposer object and populate it with
@@ -322,6 +323,7 @@ class DevicecodeUI(App):
         self.fcc_area.update('')
 
     def on_markdown_link_clicked(self, event: Markdown.LinkClicked) -> None:
+        '''Open a link in an external browser.'''
         # TODO: often terminals (such as MATE terminal in Fedora) will
         # already open a link when clicking on it, causing the link to be opened
         # multiple times. Is this desirable?
@@ -353,8 +355,8 @@ class DevicecodeUI(App):
 
     def build_chips_report(self, results):
         '''Construct Markdown with chip related information'''
+        new_markdown = ""
         if results:
-            new_markdown = ''
             if results['cpus']:
                 new_markdown += f"# Main chips ({len(results['cpus'])})\n"
                 new_markdown += "| | |\n|--|--|\n"
@@ -412,13 +414,13 @@ class DevicecodeUI(App):
                     new_markdown += f"| **Model** | {r['model']}|\n"
                     #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
                     new_markdown += "| | |\n"
-            return new_markdown
-        return "No known chips"
+        return new_markdown
 
     def build_regulatory_report(self, result):
         '''Construct Markdown with regulatory and commercial information
            such as FCC ids, Amazon article numbers, WiFi certification, etc.'''
         new_markdown = ""
+        base_url = 'https://fcc.report/FCC-ID'
         if result:
             new_markdown += "# Regulatory\n"
             new_markdown += "| | |\n|--|--|\n"
@@ -436,7 +438,7 @@ class DevicecodeUI(App):
                     fcc_date = fcc['fcc_date']
                     fcc_type = fcc['fcc_type']
                     grantee = fcc.get('grantee', '')
-                    new_markdown += f"|[{fcc_id}](<https://fcc.report/FCC-ID/{fcc_id}>)|{fcc_date}|{fcc_type}|{grantee}|\n"
+                    new_markdown += f"|[{fcc_id}](<{base_url}/{fcc_id}>)|{fcc_date}|{fcc_type}|{grantee}|\n"
 
             # CPE
             if result['regulatory']['cpe'] and result['regulatory']['cpe']['cpe']:
@@ -445,8 +447,9 @@ class DevicecodeUI(App):
                 new_markdown += f"|**CPE**|{result['regulatory']['cpe']['cpe']}|\n"
                 new_markdown += f"|**CPE 2.3**|{result['regulatory']['cpe']['cpe23']}|\n"
 
-                part_full_name = PART_TO_NAME[result['regulatory']['cpe']['part']]
-                new_markdown += f"|**Part**|{result['regulatory']['cpe']['part']} ({part_full_name})|\n"
+                part = result['regulatory']['cpe']['part']
+                part_full_name = PART_TO_NAME[part]
+                new_markdown += f"|**Part**|{part} ({part_full_name})|\n"
 
             # CVE
             if result['regulatory']['cve']:
@@ -454,24 +457,33 @@ class DevicecodeUI(App):
                 for c in sorted(result['regulatory']['cve']):
                     new_markdown += f"[{c}](<https://www.cve.org/CVERecord?id={c}>)\n"
 
+            # mapping of labels to names in result['commercial']
+            labels_commercial = [
+                ('Availability', 'availability'),
+                ('Release date', 'release_date'),
+                ('Deal Extreme item number', 'deal_extreme'),
+                     ]
+
             # Commercial information
             new_markdown += "# Commercial\n"
             new_markdown += "| | |\n|--|--|\n"
-            new_markdown += f"|**Availability** | {result['commercial']['availability']}\n"
-            new_markdown += f"|**Release date** | {result['commercial']['release_date']}\n"
+            for label, name in labels_commercial:
+                new_markdown += f"|**{label}** | {result['commercial'][name]}\n"
+
             eans = ", ".join(result['commercial']['ean'])
             new_markdown += f"|**International Article Number** | {eans}\n"
+
             upcs = ", ".join(result['commercial']['upc'])
             new_markdown += f"|**Universal Product Code** | {upcs}\n"
+
             neweggs = ", ".join(result['commercial']['newegg'])
             new_markdown += f"|**Newegg item number** | {neweggs}\n"
-            new_markdown += f"|**Deal Extreme item number** | {result['commercial']['deal_extreme']}\n"
 
         return new_markdown
 
     def build_serial_jtag_report(self, result):
         '''Construct Markdown with serial port and JTAG information'''
-        new_markdown = ''
+        new_markdown = ""
         if result:
             if result['has_jtag'] == 'yes':
                 new_markdown += "# JTAG\n"
@@ -643,7 +655,7 @@ class DevicecodeUI(App):
 
     def build_network_report(self, result):
         '''Construct Markdown with network information'''
-        new_markdown = ''
+        new_markdown = ""
         if result:
             new_markdown += "# Network information\n"
             new_markdown += "| | |\n|--|--|\n"
@@ -701,7 +713,7 @@ class DevicecodeUI(App):
             ('Output voltage', 'output_voltage'),
                  ]
 
-        new_markdown = ''
+        new_markdown = ""
         if result:
             new_markdown += "# Power Supply\n"
             new_markdown += "| | |\n|--|--|\n"
@@ -782,7 +794,7 @@ def main(devicecode_directory, wiki_type, no_overlays):
         sys.exit(1)
 
     # verify the directory names, they should be one of the following
-    valid_directories = ['TechInfoDepot', 'WikiDevi', 'OpenWrt']
+    valid_directories = ['TechInfoDepot', 'WikiDevi', 'OpenWrt', 'squashed']
 
     # The wiki directories should have a fixed structure. There should
     # always be a directory 'devices' (with device data). Optionally there
@@ -808,7 +820,7 @@ def main(devicecode_directory, wiki_type, no_overlays):
             devicecode_directories.append(devices_dir)
 
     if not devicecode_directories:
-        print(f"No valid directories found in {devicecode_directory}, should be one of {valid_directories}.", file=sys.stderr)
+        print(f"No valid directories found in {devicecode_directory}, should be one of {', '.join(valid_directories)}.", file=sys.stderr)
         sys.exit(1)
 
     devices = []
@@ -820,7 +832,7 @@ def main(devicecode_directory, wiki_type, no_overlays):
             if not result_file.is_file():
                 continue
             try:
-                with open(result_file, 'r') as wiki_file:
+                with open(result_file, 'r', encoding='utf-8') as wiki_file:
                     device = json.load(wiki_file)
                     devices.append(device)
             except json.decoder.JSONDecodeError:
@@ -835,7 +847,7 @@ def main(devicecode_directory, wiki_type, no_overlays):
                 if device_name not in overlays:
                     overlays[device_name] = []
                 try:
-                    with open(result_file, 'r') as wiki_file:
+                    with open(result_file, 'r', encoding='utf-8') as wiki_file:
                         overlay = json.load(wiki_file)
                         if 'type' not in overlay:
                             continue
