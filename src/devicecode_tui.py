@@ -134,7 +134,8 @@ class DevicecodeUI(App):
         self.dataset = dataset_composer.DatasetComposer(self.devices, self.overlays)
 
     def compose(self) -> ComposeResult:
-        '''Compose the initial data set using all data.'''
+        '''Compose the initial data sets using all data,
+           initialize the UI elements and build the interface.'''
         data = self.dataset.compose_data_sets()
 
         brands_to_devices = data['brands_to_devices']
@@ -171,8 +172,8 @@ class DevicecodeUI(App):
                     valid_empty=True)
 
         # Yield all UI elements. The UI is a container with an app grid. On the
-        # left there are tabs, each containing a tree. On the right there is an
-        # area to display the results.
+        # left there are tabs, each containing a tree or a data table. On the right
+        # there is an area to display the results using various tabs.
         yield Header()
         with Container(id='app-grid'):
             with Container(id='left-grid'):
@@ -242,17 +243,15 @@ class DevicecodeUI(App):
         if event.validation_result and not event.validation_result.is_valid:
             return
 
+        # Retrieve the, optionally filtered, data and compose new data sets
         result = devicecode_filter.process_filter(event)
-
-        is_filtered = result['is_filtered']
-
         data = self.dataset.compose_data_sets(result)
 
-        # Build the data trees. Depending on the value of 'is_filtered' the
-        # trees will be unfolded (if a filter has been applied) or not (all
-        # data is displayed, with or without overlays).
-        self.brand_tree.build_tree(data['brands_to_devices'], is_filtered)
-        self.odm_tree.build_tree(data['odm_to_devices'], is_filtered)
+        # Build the data trees. Depending on the value of 'is_filtered' in the
+        # result the # trees will be unfolded (if a filter has been applied) or
+        # not (all data is displayed, with or without overlays).
+        self.brand_tree.build_tree(data['brands_to_devices'], result['is_filtered'])
+        self.odm_tree.build_tree(data['odm_to_devices'], result['is_filtered'])
 
         # Build the various datatables.
         self.build_data_tables(data)
