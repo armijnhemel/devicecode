@@ -33,8 +33,8 @@ class SuggestDevices(Suggester):
             'type': 'types'}
 
         self.suggestion_table = {}
-        for i in suggestion_names:
-            self.suggestion_table[i] = kwargs.get(suggestion_names[i], [])
+        for name, suggestion in suggestion_names.items():
+            self.suggestion_table[name] = kwargs.get(suggestion, [])
 
         # some values are always hardcoded
         self.suggestion_table['cpe'] = ['no', 'yes']
