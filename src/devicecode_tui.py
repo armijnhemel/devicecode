@@ -139,34 +139,12 @@ class DevicecodeUI(App):
 
         brands_to_devices = data['brands_to_devices']
         odm_to_devices = data['odm_to_devices']
-        baud_rates = data['baud_rates']
-        bootloaders = data['bootloaders']
-        brands = data['brands']
         brand_data = data['brand_data']
-        chips = data['chips']
-        chip_types = data['chip_types']
-        chip_vendors = data['chip_vendors']
-        connectors = data['connectors']
-        cveids = data['cveids']
-        device_types = data['types']
-        odms = data['odms']
-        fcc_ids = data['fcc_ids']
-        flags = data['flags']
-        files = data['files']
-        ips = data['ips']
         brand_odm = data['brand_odm']
         brand_cpu = data['brand_cpu']
         odm_cpu = data['odm_cpu']
         odm_connector = data['odm_connector']
-        operating_systems = defaults.KNOWN_OS
-        packages = data['packages']
-        partitions = data['partitions']
-        passwords = data['passwords']
-        programs = data['programs']
-        rootfs = data['rootfs']
-        sdks = data['sdks']
         chip_vendor_connector = data['chip_vendor_connector']
-        years = data['years']
         year_data = data['year_data']
 
         # Declare the data table column names
@@ -205,16 +183,8 @@ class DevicecodeUI(App):
         input_filter = Input(placeholder='Filter',
                     validators=[devicecode_filter.FilterValidator(data,
                                     token_names=defaults.TOKEN_NAMES)],
-                    suggester=Suggester.SuggestDevices(defaults.TOKEN_NAMES, case_sensitive=False,
-                    baud_rates=sorted(baud_rates), bootloaders=sorted(bootloaders),
-                    brands=sorted(brands), chips=sorted(chips), chip_types=sorted(chip_types),
-                    chip_vendors=sorted(chip_vendors), connectors=sorted(connectors),
-                    cveids=sorted(cveids), ips=sorted(ips), odms=sorted(odms),
-                    operating_systems=sorted(operating_systems), fcc_ids=sorted(fcc_ids),
-                    files=sorted(files), flags=sorted(flags), packages=sorted(packages),
-                    partitions=sorted(partitions), passwords=sorted(passwords),
-                    programs=sorted(programs), rootfs=sorted(rootfs), sdks=sorted(sdks),
-                    types=sorted(device_types)),
+                    suggester=Suggester.SuggestDevices(defaults.TOKEN_NAMES, data,
+                              case_sensitive=False),
                     valid_empty=True)
 
         # Yield all UI elements. The UI is a container with an app grid. On the

@@ -12,8 +12,7 @@ class SuggestDevices(Suggester):
     '''A custom suggester, based on the SuggestFromList example from Textual'''
 
     def __init__(
-        self, suggestions: Iterable[str], *, case_sensitive: bool = True,
-    **kwargs) -> None:
+        self, suggestions: Iterable[str], data, case_sensitive: bool = True) -> None:
         super().__init__(case_sensitive=case_sensitive)
         self._suggestions = list(map(lambda x: x['name'], suggestions))
         self._for_comparison = (
@@ -34,7 +33,7 @@ class SuggestDevices(Suggester):
 
         self.suggestion_table = {}
         for name, suggestion in suggestion_names.items():
-            self.suggestion_table[name] = kwargs.get(suggestion, [])
+            self.suggestion_table[name] = sorted(data.get(suggestion, []))
 
         # some values are always hardcoded
         self.suggestion_table['cpe'] = ['no', 'yes']
