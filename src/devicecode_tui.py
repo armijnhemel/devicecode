@@ -138,8 +138,14 @@ class DevicecodeUI(App):
            initialize the UI elements and build the interface.'''
         data = self.dataset.compose_data_sets()
 
-        brands_to_devices = data['brands_to_devices']
-        odm_to_devices = data['odm_to_devices']
+        # build the various trees.
+        self.brand_tree.show_root = False
+        self.brand_tree.root.expand()
+        self.brand_tree.build_tree(data['brands_to_devices'])
+
+        self.odm_tree.show_root = False
+        self.odm_tree.root.expand()
+        self.odm_tree.build_tree(data['odm_to_devices'])
 
         # Declare the data table column names
         self.brand_data_table.add_columns("rank", "count", "brand")
@@ -152,15 +158,6 @@ class DevicecodeUI(App):
 
         # Build the various datatables.
         self.build_data_tables(data)
-
-        # build the various trees.
-        self.brand_tree.show_root = False
-        self.brand_tree.root.expand()
-        self.brand_tree.build_tree(brands_to_devices)
-
-        self.odm_tree.show_root = False
-        self.odm_tree.root.expand()
-        self.odm_tree.build_tree(odm_to_devices)
 
         # Create the input field. Use the data for the suggester and filter
         # validator so only valid known data can be entered in the input field.
@@ -247,8 +244,8 @@ class DevicecodeUI(App):
         result = devicecode_filter.process_filter(event)
         data = self.dataset.compose_data_sets(result)
 
-        # Build the data trees. Depending on the value of 'is_filtered' in the
-        # result the # trees will be unfolded (if a filter has been applied) or
+        # Rebuild the data trees. Depending on the value of 'is_filtered' in the
+        # result the trees will be unfolded (if a filter has been applied) or
         # not (all data is displayed, with or without overlays).
         self.brand_tree.build_tree(data['brands_to_devices'], result['is_filtered'])
         self.odm_tree.build_tree(data['odm_to_devices'], result['is_filtered'])
@@ -262,7 +259,6 @@ class DevicecodeUI(App):
 
     def build_data_tables(self, data):
         '''Clear and rebuild the data tables/'''
-        # Build the various datatables.
         brand_datatable_data = collections.Counter(data['brand_data'])
         brand_odm_datatable_data = collections.Counter(data['brand_odm'])
         brand_cpu_datatable_data = collections.Counter(data['brand_cpu'])
