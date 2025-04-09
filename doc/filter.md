@@ -292,10 +292,10 @@ places, depending on what functionality is needed. The places where code needs
 to be changed:
 
 * `deviceode/defaults.py` - the dictionary `TOKEN_NAMES` needs to be updated.
-* `devicecode/suggester.py` - this code controls the type ahead suggestions.
+* `devicecode/suggester.py` - controls the type ahead suggestions in the TUI.
   This is not mandatory to have for filtering, but it is useful for users.
-* `devicecode/filter.py` - this code controls the filtering validation, as well
-  as splitting the code and putting the data into the right data structures.
-* `devicecode/dataset_composer.py` - this code compiles the data sets that are
-  used for displaying, optionally filtering results using data obtained earlier
-  (and can be considered to be the actual filter).
+* `devicecode/filter.py` - controls the filtering validation, as well as
+  splitting the code and putting the data into the right data structures.
+* `devicecode/dataset_composer.py` - compiles the data sets that are used for
+  displaying or pretty printing, optionally filtering results using data
+  obtained earlier (and can be considered to be the actual filter).
