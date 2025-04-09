@@ -139,13 +139,6 @@ class DevicecodeUI(App):
 
         brands_to_devices = data['brands_to_devices']
         odm_to_devices = data['odm_to_devices']
-        brand_data = data['brand_data']
-        brand_odm = data['brand_odm']
-        brand_cpu = data['brand_cpu']
-        odm_cpu = data['odm_cpu']
-        odm_connector = data['odm_connector']
-        chip_vendor_connector = data['chip_vendor_connector']
-        year_data = data['year_data']
 
         # Declare the data table column names
         self.brand_data_table.add_columns("rank", "count", "brand")
@@ -157,17 +150,7 @@ class DevicecodeUI(App):
         self.year_data_table.add_columns("rank", "count", "year")
 
         # Build the various datatables.
-        brand_datatable_data = collections.Counter(brand_data)
-        brand_odm_datatable_data = collections.Counter(brand_odm)
-        brand_cpu_datatable_data = collections.Counter(brand_cpu)
-        odm_cpu_datatable_data = collections.Counter(odm_cpu)
-        odm_connector_data = collections.Counter(odm_connector)
-        chip_vendor_connector_data = collections.Counter(chip_vendor_connector)
-        year_datatable_data = collections.Counter(year_data)
-
-        self.build_data_tables(brand_datatable_data, brand_odm_datatable_data,
-                               brand_cpu_datatable_data, odm_cpu_datatable_data,
-                               odm_connector_data, chip_vendor_connector_data, year_datatable_data)
+        self.build_data_tables(data)
 
         # build the various trees.
         self.brand_tree.show_root = False
@@ -272,6 +255,15 @@ class DevicecodeUI(App):
         self.odm_tree.build_tree(data['odm_to_devices'], is_filtered)
 
         # Build the various datatables.
+        self.build_data_tables(data)
+
+        # Reset the data areas to get rid of old data that might have
+        # been displayed for a device that was previously selected.
+        self.reset_areas()
+
+    def build_data_tables(self, data):
+        '''Clear and rebuild the data tables/'''
+        # Build the various datatables.
         brand_datatable_data = collections.Counter(data['brand_data'])
         brand_odm_datatable_data = collections.Counter(data['brand_odm'])
         brand_cpu_datatable_data = collections.Counter(data['brand_cpu'])
@@ -280,18 +272,6 @@ class DevicecodeUI(App):
         chip_vendor_connector_data = collections.Counter(data['chip_vendor_connector'])
         year_datatable_data = collections.Counter(data['year_data'])
 
-        self.build_data_tables(brand_datatable_data, brand_odm_datatable_data,
-                               brand_cpu_datatable_data, odm_cpu_datatable_data,
-                               odm_connector_data, chip_vendor_connector_data, year_datatable_data)
-
-        # Reset the data areas to get rid of old data that might have
-        # been displayed for a device that was previously selected.
-        self.reset_areas()
-
-    def build_data_tables(self, brand_datatable_data, brand_odm_datatable_data,
-                          brand_cpu_datatable_data, odm_cpu_datatable_data,
-                          odm_connector_data, chip_vendor_connector_data, year_datatable_data):
-        '''Clear and rebuild the data tables/'''
         self.brand_data_table.clear()
         rank = 1
         for i in brand_datatable_data.most_common():
