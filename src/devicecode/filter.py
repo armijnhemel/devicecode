@@ -82,26 +82,26 @@ def process_filter(event: Input.Submitted):
 class FilterValidator(Validator):
     '''Validator for the filtering language (syntax and values).'''
 
-    def __init__(self, **kwargs):
+    def __init__(self, data, **kwargs):
         # Known values: only these will be regarded as valid.
-        self.baud_rates = kwargs.get('baud_rates', set())
-        self.bootloaders = kwargs.get('bootloaders', set())
-        self.brands = kwargs.get('brands', set())
-        self.cveids = kwargs.get('cveids', set())
-        self.odms = kwargs.get('odms', set())
-        self.chips = kwargs.get('chips', set())
-        self.chip_types = kwargs.get('chip_types', set())
-        self.chip_vendors = kwargs.get('chip_vendors', set())
-        self.connectors = kwargs.get('connectors', set())
-        self.device_types = kwargs.get('types', set())
-        self.fcc_ids = kwargs.get('fcc_ids', set())
-        self.files = kwargs.get('files', set())
-        self.ips = kwargs.get('ips', set())
-        self.packages = kwargs.get('packages', set())
-        self.partitions = kwargs.get('partitions', set())
-        self.passwords = kwargs.get('passwords', set())
-        self.rootfs = kwargs.get('rootfs', set())
-        self.sdks = kwargs.get('sdks', set())
+        self.baud_rates = data.get('baud_rates', set())
+        self.bootloaders = data.get('bootloaders', set())
+        self.brands = data.get('brands', set())
+        self.cveids = data.get('cveids', set())
+        self.odms = data.get('odms', set())
+        self.chips = data.get('chips', set())
+        self.chip_types = data.get('chip_types', set())
+        self.chip_vendors = data.get('chip_vendors', set())
+        self.connectors = data.get('connectors', set())
+        self.device_types = data.get('types', set())
+        self.fcc_ids = data.get('fcc_ids', set())
+        self.files = data.get('files', set())
+        self.ips = data.get('ips', set())
+        self.packages = data.get('packages', set())
+        self.partitions = data.get('partitions', set())
+        self.passwords = data.get('passwords', set())
+        self.rootfs = data.get('rootfs', set())
+        self.sdks = data.get('sdks', set())
         self.token_names_params = kwargs.get('token_names', [])
         self.token_names = [x['name'] for x in self.token_names_params]
 

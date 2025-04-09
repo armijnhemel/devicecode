@@ -203,14 +203,8 @@ class DevicecodeUI(App):
         # Create the input field. Use the data for the suggester and filter
         # validator so only valid known data can be entered in the input field.
         input_filter = Input(placeholder='Filter',
-                    validators=[devicecode_filter.FilterValidator(bootloaders=bootloaders,
-                                    brands=brands, baud_rates=baud_rates, odms=odms,
-                                    chips=chips, chip_types=chip_types, chip_vendors=chip_vendors,
-                                    connectors=connectors, cveids=cveids, fcc_ids=fcc_ids,
-                                    files=files, ips=ips, packages=packages,
-                                    partitions=partitions, passwords=passwords,
-                                    programs=programs, rootfs=rootfs, sdks=sdks,
-                                    types=device_types, token_names=defaults.TOKEN_NAMES)],
+                    validators=[devicecode_filter.FilterValidator(data,
+                                    token_names=defaults.TOKEN_NAMES)],
                     suggester=Suggester.SuggestDevices(defaults.TOKEN_NAMES, case_sensitive=False,
                     baud_rates=sorted(baud_rates), bootloaders=sorted(bootloaders),
                     brands=sorted(brands), chips=sorted(chips), chip_types=sorted(chip_types),
