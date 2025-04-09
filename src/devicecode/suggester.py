@@ -21,8 +21,8 @@ class SuggestDevices(Suggester):
             else [suggestion.casefold() for suggestion in self._suggestions]
         )
 
-        # mapping of filter name to kwargs names
-        # The 'kwargs' are used below to populate the suggestion table
+        # Mapping of filter name to names in the data dictionary containing
+        # the values for the suggestion table.
         suggestion_names = {'bootloader': 'bootloaders', 'brand': 'brands',
             'ignore_brand': 'brands', 'chip': 'chips', 'chip_type': 'chip_types',
             'chip_vendor': 'chip_vendors', 'connector': 'connectors', 'cveid': 'cveids',
@@ -35,7 +35,7 @@ class SuggestDevices(Suggester):
         for name, suggestion in suggestion_names.items():
             self.suggestion_table[name] = sorted(data.get(suggestion, []))
 
-        # some values are always hardcoded
+        # Some values are always hardcoded.
         self.suggestion_table['cpe'] = ['no', 'yes']
         self.suggestion_table['cve'] = ['no', 'yes']
         self.suggestion_table['fcc'] = ['no', 'yes']
@@ -81,4 +81,4 @@ class SuggestDevices(Suggester):
         for idx, suggestion in enumerate(self._for_comparison):
             if suggestion.startswith(check_value):
                 return value + self._suggestions[idx][len(check_value):]
-        return None
+        return
