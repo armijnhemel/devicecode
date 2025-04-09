@@ -1144,8 +1144,7 @@ def parse_serial_jtag(serial_string):
 
 @click.command(short_help='Process TechInfoDepot or WikiDevi XML dump or OpenWrt CSV')
 @click.option('--input', '-i', 'input_file', required=True,
-              help='Wiki top level dump file',
-              type=click.Path('r', path_type=pathlib.Path))
+              help='Wiki top level dump file', type=click.File('r'))
 @click.option('--output', '-o', 'output_directory', required=True, help='JSON output directory',
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--wiki-type', required=True,
@@ -1200,10 +1199,12 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
     if wiki_type in ['TechInfoDepot', 'WikiDevi']:
         # load XML
         try:
-            with open(input_file) as wiki_dump:
-                wiki_info = defusedxml.minidom.parse(wiki_dump)
+            wiki_info = defusedxml.minidom.parse(input_file)
         except xml.parsers.expat.ExpatError:
-            print(f"{input_file} is not a valid XML file, exiting.", file=sys.stderr)
+            print(f"{input_file.name} is not a valid XML file, exiting.", file=sys.stderr)
+            sys.exit(1)
+        except UnicodeDecodeError:
+            print(f"{input_file.name} is not a valid XML file, exiting.", file=sys.stderr)
             sys.exit(1)
 
         # store which devices were processed. This is information needed
@@ -1794,6 +1795,10 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                                 pass
                                                             case '\'\'unit\'s serial number\'\'':
                                                                 device.defaults.password_comment = 'unit\'s serial number'
+                                                            case '\'\'last 8 digits of serial number\'\'':
+                                                                device.defaults.password_comment = value
+                                                            case '\'\'Serial Number of Unit\'\'':
+                                                                device.defaults.password_comment = value
                                                             case '(sticker on the bottom of device)':
                                                                 device.defaults.password_comment = 'sticker on the bottom of the device'
                                                             case 'On the back of the router':
@@ -1811,6 +1816,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             case 'set on first login':
                                                                 device.defaults.password_comment = 'set at first login'
                                                             case 'QR Code':
+                                                                device.defaults.password_comment = value
+                                                            case 'Written on the back of the device':
                                                                 device.defaults.password_comment = value
                                                             case other:
                                                                 device.defaults.password = value
@@ -2463,8 +2470,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
         # the OpenWrt CSV dump has 74 fields, but only a few
         # are (currently) interesting (see documentation in doc/ )
         OpenWrtDevice = namedtuple('OpenWrtDevice', 'pid, devicetype, brand, model, version, fccid, availability, whereavailable, supportedsincecommit, supportedsincerel, supportedcurrentrel, unsupported_functions, target, subtarget, packagearchitecture, bootloader, cpu, cpucores, cpumhz, flashmb, rammb, ethernet100mports, ethernetgbitports, ethernet1gports, ethernet2_5gports, ethernet5gports, ethernet10gports, sfp_ports, sfp_plus_ports, switch, vlan, modem, commentsnetworkports, wlanhardware, wlan24ghz, wlan50ghz, wlancomments, wlandriver, detachableantennas, bluetooth, usbports, sataports, commentsusbsataports, videoports, audioports, phoneports, commentsavports, serial, serialconnectionparameters, jtag, ledcount, buttoncount, gpios, powersupply, devicepage, device_techdata owrt_forum_topic_url, lede_forum_topic_url, forumsearch, gitsearch, wikideviurl, oemdevicehomepageurl, firmwareoemstockurl, firmwareopenwrtinstallurl, firmwareopenwrtupgradeurl, firmwareopenwrtsnapshotinstallurl, firmwareopenwrtsnapshotupgradeurl, installationmethods, commentinstallation, recoverymethods, commentrecovery, picture, comments, page')
-        with open(input_file) as toh:
-            csv_reader = csv.reader(toh, dialect='excel-tab')
+        try:
+            csv_reader = csv.reader(input_file, dialect='excel-tab')
             is_first_line = True
             for line in csv_reader:
                 if is_first_line:
@@ -2758,7 +2765,9 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                     (outputmsg, errormsg) = p.communicate()
                     if p.returncode != 0:
                         print(f"{processed_json_file} could not be committed", file=sys.stderr)
-
+        except:
+            print(f"{input_file.name} is not a valid CSV file", file=sys.stderr)
+            sys.exit(1)
 
 
 if __name__ == "__main__":
