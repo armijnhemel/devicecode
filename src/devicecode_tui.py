@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import collections
-import json
 import pathlib
 import sys
 import webbrowser
@@ -137,16 +136,16 @@ class DevicecodeUI(App):
     def compose(self) -> ComposeResult:
         '''Compose the initial data sets using all data,
            initialize the UI elements and build the interface.'''
-        data = self.dataset.compose_data_sets()
+        dataset = self.dataset.compose_data_sets()
 
         # build the various trees.
         self.brand_tree.show_root = False
         self.brand_tree.root.expand()
-        self.brand_tree.build_tree(data['brands_to_devices'])
+        self.brand_tree.build_tree(dataset['brands_to_devices'])
 
         self.odm_tree.show_root = False
         self.odm_tree.root.expand()
-        self.odm_tree.build_tree(data['odm_to_devices'])
+        self.odm_tree.build_tree(dataset['odm_to_devices'])
 
         # Declare the data table column names
         self.brand_data_table.add_columns("rank", "count", "brand")
@@ -158,14 +157,14 @@ class DevicecodeUI(App):
         self.year_data_table.add_columns("rank", "count", "year")
 
         # Build the various datatables.
-        self.build_data_tables(data)
+        self.build_data_tables(dataset)
 
         # Create the input field. Use the data for the suggester and filter
         # validator so only valid known data can be entered in the input field.
         input_filter = Input(placeholder='Filter',
-                    validators=[devicecode_filter.FilterValidator(data,
+                    validators=[devicecode_filter.FilterValidator(dataset,
                                     token_names=defaults.TOKEN_NAMES)],
-                    suggester=Suggester.SuggestDevices(defaults.TOKEN_NAMES, data,
+                    suggester=Suggester.SuggestDevices(defaults.TOKEN_NAMES, dataset,
                               case_sensitive=False),
                     valid_empty=True)
 
@@ -243,30 +242,30 @@ class DevicecodeUI(App):
 
         # Retrieve the, optionally filtered, data and compose new data sets
         result = devicecode_filter.process_filter(event)
-        data = self.dataset.compose_data_sets(result)
+        dataset = self.dataset.compose_data_sets(result)
 
         # Rebuild the data trees. Depending on the value of 'is_filtered' in the
         # result the trees will be unfolded (if a filter has been applied) or
         # not (all data is displayed, with or without overlays).
-        self.brand_tree.build_tree(data['brands_to_devices'], result['is_filtered'])
-        self.odm_tree.build_tree(data['odm_to_devices'], result['is_filtered'])
+        self.brand_tree.build_tree(dataset['brands_to_devices'], result['is_filtered'])
+        self.odm_tree.build_tree(dataset['odm_to_devices'], result['is_filtered'])
 
         # Build the various datatables.
-        self.build_data_tables(data)
+        self.build_data_tables(dataset)
 
         # Reset the data areas to get rid of old data that might have
         # been displayed for a device that was previously selected.
         self.reset_areas()
 
-    def build_data_tables(self, data):
+    def build_data_tables(self, dataset):
         '''Clear and rebuild the data tables/'''
-        brand_datatable_data = collections.Counter(data['brand_data'])
-        brand_odm_datatable_data = collections.Counter(data['brand_odm'])
-        brand_cpu_datatable_data = collections.Counter(data['brand_cpu'])
-        odm_cpu_datatable_data = collections.Counter(data['odm_cpu'])
-        odm_connector_data = collections.Counter(data['odm_connector'])
-        chip_vendor_connector_data = collections.Counter(data['chip_vendor_connector'])
-        year_datatable_data = collections.Counter(data['year_data'])
+        brand_datatable_data = collections.Counter(dataset['brand_data'])
+        brand_odm_datatable_data = collections.Counter(dataset['brand_odm'])
+        brand_cpu_datatable_data = collections.Counter(dataset['brand_cpu'])
+        odm_cpu_datatable_data = collections.Counter(dataset['odm_cpu'])
+        odm_connector_data = collections.Counter(dataset['odm_connector'])
+        chip_vendor_connector_data = collections.Counter(dataset['chip_vendor_connector'])
+        year_datatable_data = collections.Counter(dataset['year_data'])
 
         self.brand_data_table.clear()
         rank = 1
