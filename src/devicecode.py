@@ -1794,6 +1794,10 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                                 pass
                                                             case '\'\'unit\'s serial number\'\'':
                                                                 device.defaults.password_comment = 'unit\'s serial number'
+                                                            case '\'\'last 8 digits of serial number\'\'':
+                                                                device.defaults.password_comment = value
+                                                            case '\'\'Serial Number of Unit\'\'':
+                                                                device.defaults.password_comment = value
                                                             case '(sticker on the bottom of device)':
                                                                 device.defaults.password_comment = 'sticker on the bottom of the device'
                                                             case 'On the back of the router':
@@ -1811,6 +1815,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             case 'set on first login':
                                                                 device.defaults.password_comment = 'set at first login'
                                                             case 'QR Code':
+                                                                device.defaults.password_comment = value
+                                                            case 'Written on the back of the device':
                                                                 device.defaults.password_comment = value
                                                             case other:
                                                                 device.defaults.password = value
