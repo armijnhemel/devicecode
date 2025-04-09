@@ -1830,7 +1830,13 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
 
                                                     # manufacturer
                                                     elif identifier in ['countrymanuf', 'manuf_country']:
-                                                        device.manufacturer.country = defaults.COUNTRY_REWRITE.get(value, value)
+                                                        if value.startswith('<!--') and value.endswith('-->'):
+                                                            country = value[4:].split('-->')[0].strip()
+                                                        elif '<!--' in value and not value.startswith('<!--'):
+                                                            country = value.split('<!--')[0].strip()
+                                                        else:
+                                                            country = value
+                                                        device.manufacturer.country = defaults.COUNTRY_REWRITE.get(country, country)
                                                     elif identifier == 'manuf':
                                                         if device.manufacturer.name == '':
                                                             if '<!--' in value and not value.startswith('<!--'):
