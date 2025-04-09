@@ -209,7 +209,7 @@ class DevicecodeUI(App):
                     baud_rates=sorted(baud_rates), bootloaders=sorted(bootloaders),
                     brands=sorted(brands), chips=sorted(chips), chip_types=sorted(chip_types),
                     chip_vendors=sorted(chip_vendors), connectors=sorted(connectors),
-                    cveids=sorted(cveids), odms=sorted(odms),
+                    cveids=sorted(cveids), ips=sorted(ips), odms=sorted(odms),
                     operating_systems=sorted(operating_systems), fcc_ids=sorted(fcc_ids),
                     files=sorted(files), flags=sorted(flags), packages=sorted(packages),
                     partitions=sorted(partitions), passwords=sorted(passwords),
