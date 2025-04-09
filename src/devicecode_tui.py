@@ -244,14 +244,12 @@ class DevicecodeUI(App):
                     with TabPane('ODM/CPU vendor'):
                         with VerticalScroll():
                             yield self.odm_cpu_data_table
-                    '''
                     with TabPane('ODM/connector'):
                         with VerticalScroll():
                             yield self.odm_connector_data_table
                     with TabPane('CPU vendor/connector'):
                         with VerticalScroll():
                             yield self.chip_vendor_connector_data_table
-                    '''
             with TabbedContent(id='result-tabs'):
                 with TabPane('Device'):
                     with VerticalScroll():
