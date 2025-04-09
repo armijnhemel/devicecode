@@ -22,7 +22,7 @@ from textual.widgets import Footer, Markdown, Tree, TabbedContent, TabPane, Inpu
 import devicecode.filter as devicecode_filter
 from devicecode import dataset_composer
 from devicecode import suggester as Suggester
-from devicecode import defaults
+from devicecode import data, defaults
 
 PART_TO_NAME = {'h': 'hardware', 'a': 'application',
                 'o': 'operating system'}
@@ -823,39 +823,7 @@ def main(devicecode_directory, wiki_type, no_overlays):
         print(f"No valid directories found in {devicecode_directory}, should be one of {', '.join(valid_directories)}.", file=sys.stderr)
         sys.exit(1)
 
-    devices = []
-    overlays = {}
-
-    # store device data and overlays
-    for devicecode_dir in devicecode_directories:
-        for result_file in devicecode_dir.glob('**/*'):
-            if not result_file.is_file():
-                continue
-            try:
-                with open(result_file, 'r', encoding='utf-8') as wiki_file:
-                    device = json.load(wiki_file)
-                    devices.append(device)
-            except json.decoder.JSONDecodeError:
-                pass
-
-        overlays_directory = devicecode_dir.parent / 'overlays'
-        if not no_overlays and overlays_directory.exists() and overlays_directory.is_dir():
-            for result_file in overlays_directory.glob('**/*'):
-                if not result_file.is_file():
-                    continue
-                device_name = result_file.parent.name
-                if device_name not in overlays:
-                    overlays[device_name] = []
-                try:
-                    with open(result_file, 'r', encoding='utf-8') as wiki_file:
-                        overlay = json.load(wiki_file)
-                        if 'type' not in overlay:
-                            continue
-                        if overlay['type'] != 'overlay':
-                            continue
-                        overlays[device_name].append(overlay)
-                except json.decoder.JSONDecodeError:
-                    pass
+    devices, overlays = data.read_data(devicecode_directories, no_overlays)
 
     app = DevicecodeUI(devices, overlays)
     app.run()
