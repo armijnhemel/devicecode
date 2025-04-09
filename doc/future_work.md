@@ -33,17 +33,17 @@ isn't known which ODM made the device. This makes making comparisons between
 devices more difficult.
 
 If this information becomes available it can be stored in an overlay separate
-from the original data. Two existing overlays are:
+from the original data. Existing overlays are:
 
 * FCC dates
 * OUI information (networking)
+* CPE mapping, plus derived CVE information
 
 ### Possible overlays
 
 * CPU type information: for many devices the chip vendor and model are given
   but not the architecture (ARM/MIPS/etc.). By using some lookup table mapping
   model to architecture it should be fairly simple to create these overlays.
-* CPE mapping: see <https://nvd.nist.gov/products/cpe>
 
 ## Add software update information/press releases
 
