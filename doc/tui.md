@@ -391,7 +391,6 @@ to be changed:
 * `devicecode/dataset_composer.py` - this code compiles the data sets that are
   used for displaying, optionally filtering results using data obtained earlier
   (and can be considered to be the actual filter).
-* `deviceode_tui.py` - the `process_filter()` method needs to be changed.
 
 [rich]:https://github.com/Textualize/rich
 [textual]:https://github.com/Textualize/textual

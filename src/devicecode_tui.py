@@ -299,49 +299,9 @@ class DevicecodeUI(App):
 
         result = devicecode_filter.process_filter(event)
 
-        bootloaders = result['bootloaders']
-        brands = result['brands']
-        chips = result['chips']
-        chip_types = result['chip_types']
-        chip_vendors = result['chip_vendors']
-        connectors = result['connectors']
-        cpes = result['cpes']
-        cves = result['cves']
-        cveids = result['cveids']
-        device_types = result['device_types']
-        fccs = result['fccs']
-        fccids = result['fccids']
-        files = result['files']
-        flags = result['flags']
-        ignore_brands = result['ignore_brands']
-        ignore_odms = result['ignore_odms']
-        ignore_origins = result['ignore_origins']
-        ips = result['ips']
-        jtags = result['jtags']
-        odms = result['odms']
-        operating_systems = result['operating_systems']
-        origins = result['origins']
-        packages = result['packages']
-        partitions = result['partitions']
-        passwords = result['passwords']
-        programs = result['programs']
-        rootfs = result['rootfs']
-        sdks = result['sdks']
-        serials = result['serials']
-        serial_baud_rates = result['serial_baud_rates']
-        years = result['years']
         is_filtered = result['is_filtered']
-        overlay = result['overlay']
 
-        data = self.dataset.compose_data_sets(use_overlays=overlay, bootloaders=bootloaders,
-            brands=brands, odms=odms, chips=chips, chip_types=chip_types,
-            chip_vendors=chip_vendors, connectors=connectors, cpes=cpes, cves=cves, cveids=cveids,
-            fccs=fccs, fccids=fccids, files=files, flags=flags, ignore_brands=ignore_brands,
-            ignore_odms=ignore_odms, ignore_origins=ignore_origins, ips=ips, jtags=jtags,
-            operating_systems=operating_systems, origins=origins, passwords=passwords,
-            packages=packages, partitions=partitions, programs=programs, rootfs=rootfs,
-            sdks=sdks, serials=serials, serial_baud_rates=serial_baud_rates, years=years,
-            types=device_types)
+        data = self.dataset.compose_data_sets(result)
 
         # Build the data trees. Depending on the value of 'is_filtered' the
         # trees will be unfolded (if a filter has been applied) or not (all
