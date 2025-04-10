@@ -62,7 +62,8 @@ def compare(devicecode_directory, wiki_type, no_overlays):
 @click.option('--wiki-type', type=click.Choice(VALID_DIRECTORIES, case_sensitive=False))
 @click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
 @click.option('--value', help='value to print', required=True,
-              type=click.Choice(['baudrate_serial', 'baudrate_jtag', 'cve']))
+              type=click.Choice(['baudrate_serial', 'baudrate_jtag', 'connector_jtag',
+                                 'connector_serial', 'cve', 'pcbid']))
 @click.option('--pretty', help='pretty print format', required=True,
               type=click.Choice(['list', 'line', 'counter']))
 def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
@@ -90,9 +91,21 @@ def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
             for d in devices:
                 if d['serial']['baud_rate'] != 0:
                     value_counter.update([d['serial']['baud_rate']])
+        case 'connector_jtag':
+            for d in devices:
+                if d['jtag']['connector']:
+                    value_counter.update([d['jtag']['connector']])
+        case 'connector_serial':
+            for d in devices:
+                if d['serial']['connector']:
+                    value_counter.update([d['serial']['connector']])
         case 'cve':
             for d in devices:
                 value_counter.update(d['regulatory']['cve'])
+        case 'pcbid':
+            for d in devices:
+                if d['model']['pcb_id']:
+                    value_counter.update([d['model']['pcb_id']])
 
     match pretty:
         case 'list':
