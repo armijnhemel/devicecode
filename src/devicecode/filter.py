@@ -22,7 +22,7 @@ def process_filter(event: Input.Submitted):
                        'ignore_origin': 'ignore_origins', 'ip': 'ips', 'jtag': 'jtags',
                        'odm': 'odms', 'os': 'operating_systems', 'origin': 'origins',
                        'package': 'packages', 'partition': 'partitions', 'password': 'passwords',
-                       'program': 'programs', 'rootfs': 'rootfs', 'sdk': 'sdks',
+                       'pcbid': 'pcbids', 'program': 'programs', 'rootfs': 'rootfs', 'sdk': 'sdks',
                        'serial': 'serials', 'baud': 'serial_baud_rates', 'type': 'device_types'}
 
     for name, result_name in name_to_results.items():
@@ -100,6 +100,7 @@ class FilterValidator(Validator):
         self.packages = data.get('packages', set())
         self.partitions = data.get('partitions', set())
         self.passwords = data.get('passwords', set())
+        self.pcbids = data.get('pcbids', set())
         self.rootfs = data.get('rootfs', set())
         self.sdks = data.get('sdks', set())
         self.token_names_params = kwargs.get('token_names', [])
@@ -207,6 +208,9 @@ class FilterValidator(Validator):
                             is_error = True
                     case 'partition':
                         if token_value not in self.partitions:
+                            is_error = True
+                    case 'pcbid':
+                        if token_value not in self.pcbids:
                             is_error = True
                     case 'rootfs':
                         if token_value not in self.rootfs:

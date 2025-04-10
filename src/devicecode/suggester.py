@@ -28,8 +28,8 @@ class SuggestDevices(Suggester):
             'chip_vendor': 'chip_vendors', 'connector': 'connectors', 'cveid': 'cveids',
             'fccid': 'fcc_ids', 'file': 'files', 'flag': 'flags', 'ip': 'ips', 'odm': 'odms',
             'ignore_odm': 'odms', 'package': 'packages', 'partition': 'partitions',
-            'password': 'passwords', 'program': 'programs', 'rootfs': 'rootfs', 'sdk': 'sdks',
-            'type': 'types'}
+            'password': 'passwords', 'pcbid': 'pcbids', 'program': 'programs', 'rootfs': 'rootfs',
+            'sdk': 'sdks', 'type': 'types'}
 
         self.suggestion_table = {}
         for name, suggestion in suggestion_names.items():

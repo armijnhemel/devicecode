@@ -587,6 +587,7 @@ TOKEN_NAMES = [{'name': 'baud', 'has_params': False, 'error': 'Invalid baud rate
                {'name': 'package', 'has_params': False, 'error': 'Invalid package'},
                {'name': 'partition', 'has_params': False, 'error': 'Invalid partition'},
                {'name': 'password', 'has_params': False, 'error': 'Invalid password'},
+               {'name': 'pcbid', 'has_params': False, 'error': 'Invalid PCB id'},
                {'name': 'program', 'has_params': False, 'error': 'Invalid program'},
                {'name': 'rootfs', 'has_params': False, 'error': 'Invalid rootfs'},
                {'name': 'sdk', 'has_params': True, 'params': ['version'], 'error': 'Invalid SDK'},

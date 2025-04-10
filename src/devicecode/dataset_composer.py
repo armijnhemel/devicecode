@@ -43,6 +43,7 @@ class DatasetComposer():
         filter_packages = result.get('packages', [])
         filter_partitions = result.get('partitions', [])
         filter_passwords = result.get('passwords', [])
+        filter_pcbids = result.get('pcbids', [])
         filter_programs = result.get('programs', [])
         filter_rootfs = result.get('rootfs', [])
         filter_sdks = result.get('sdks', [])
@@ -104,6 +105,9 @@ class DatasetComposer():
 
         # known default passwords
         passwords = set()
+
+        # known PCB ids
+        pcbids = set()
 
         # known programs
         programs = set()
@@ -224,6 +228,9 @@ class DatasetComposer():
                     continue
             if filter_ips:
                 if device['defaults']['ip'] not in [x[0] for x in filter_ips]:
+                    continue
+            if filter_pcbids:
+                if device['model']['pcb_id'].lower() not in [x[0] for x in filter_pcbids]:
                     continue
             if filter_cpes:
                 f_cpes = [x[0] for x in filter_cpes]
@@ -464,6 +471,9 @@ class DatasetComposer():
             if device['defaults']['password'] != '':
                 passwords.add(device['defaults']['password'])
 
+            if device['model']['pcb_id'] != '':
+                pcbids.add(device['model']['pcb_id'].lower())
+
             if device['software']['bootloader']['manufacturer'] != '':
                 bootloaders.add(device['software']['bootloader']['manufacturer'].lower())
 
@@ -541,5 +551,5 @@ class DatasetComposer():
                 'brand_odm': brand_odm, 'brand_cpu': brand_cpu, 'odm_cpu': odm_cpu,
                 'odm_connector': odm_connector, 'chip_vendor_connector': chip_vendor_connector,
                 'packages': packages, 'partitions': partitions, 'passwords': passwords,
-                'programs': programs, 'rootfs': rootfs, 'sdks': sdks, 'types': device_types,
-                'years': years, 'year_data': year_data}
+                'pcbids': pcbids, 'programs': programs, 'rootfs': rootfs, 'sdks': sdks,
+                'types': device_types, 'years': years, 'year_data': year_data}
