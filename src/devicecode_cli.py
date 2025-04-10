@@ -27,6 +27,31 @@ VALID_DIRECTORIES = ['TechInfoDepot', 'WikiDevi', 'OpenWrt']
 class DeviceCodeException(Exception):
     pass
 
+def get_directories(devicecode_directory, wiki_type):
+    # The wiki directories should have a fixed structure. There should
+    # always be a directory 'devices' (with device data). Optionally there
+    # can be a directory called 'overlays' with overlay files.
+    # If present the 'squashed' directory will always be chosen and
+    # the other directories will be ignored.
+    squashed_directory = devicecode_directory / 'squashed' / 'devices'
+    if squashed_directory.exists() and not wiki_type:
+        devicecode_directories = [squashed_directory]
+    else:
+        devicecode_directories = []
+        for p in devicecode_directory.iterdir():
+            if not p.is_dir():
+                continue
+            if not p.name in VALID_DIRECTORIES:
+                continue
+            if wiki_type:
+                if p.name != wiki_type:
+                    continue
+            devices_dir = p / 'devices'
+            if not (devices_dir.exists() and devices_dir.is_dir()):
+                continue
+            devicecode_directories.append(devices_dir)
+    return devicecode_directories
+
 @click.group()
 def app():
     pass
@@ -172,31 +197,6 @@ def search(devicecode_directory, wiki_type, no_overlays, filter_string):
         sys.exit(1)
 
     devices, overlays = data.read_data(devicecode_directories, no_overlays)
-
-def get_directories(devicecode_directory, wiki_type):
-    # The wiki directories should have a fixed structure. There should
-    # always be a directory 'devices' (with device data). Optionally there
-    # can be a directory called 'overlays' with overlay files.
-    # If present the 'squashed' directory will always be chosen and
-    # the other directories will be ignored.
-    squashed_directory = devicecode_directory / 'squashed' / 'devices'
-    if squashed_directory.exists() and not wiki_type:
-        devicecode_directories = [squashed_directory]
-    else:
-        devicecode_directories = []
-        for p in devicecode_directory.iterdir():
-            if not p.is_dir():
-                continue
-            if not p.name in VALID_DIRECTORIES:
-                continue
-            if wiki_type:
-                if p.name != wiki_type:
-                    continue
-            devices_dir = p / 'devices'
-            if not (devices_dir.exists() and devices_dir.is_dir()):
-                continue
-            devicecode_directories.append(devices_dir)
-    return devicecode_directories
 
 
 if __name__ == "__main__":
