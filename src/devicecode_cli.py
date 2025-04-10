@@ -28,6 +28,7 @@ class DeviceCodeException(Exception):
     pass
 
 def get_directories(devicecode_directory, wiki_type):
+    '''Create a list of valid DeviceCode directories'''
     # The wiki directories should have a fixed structure. There should
     # always be a directory 'devices' (with device data). Optionally there
     # can be a directory called 'overlays' with overlay files.
@@ -187,6 +188,7 @@ def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
 @click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
 @click.option('--filter', 'filter_string', help='filter string')
 def search(devicecode_directory, wiki_type, no_overlays, filter_string):
+    '''Search the DeviceCode data using a filter string'''
     if not devicecode_directory.is_dir():
         print(f"Directory {devicecode_directory} is not a valid directory, exiting.",
               file=sys.stderr)
