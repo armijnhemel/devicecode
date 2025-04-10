@@ -21,6 +21,8 @@ be displayed:
 * `ip` - default IP address
 * `jtag` - device has a JTAG port
 * `login` - default login
+* `odm` - name of the original design manufacturer (ODM)
+* `odm_country` - ODM country
 * `password` - default password
 * `pcbid` - PCB identifier printed on the board
 * `serial` - device has a serial port

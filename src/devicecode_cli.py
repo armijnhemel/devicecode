@@ -63,7 +63,8 @@ def compare(devicecode_directory, wiki_type, no_overlays):
 @click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
 @click.option('--value', help='value to print', required=True,
               type=click.Choice(['baudrate_serial', 'baudrate_jtag', 'connector_jtag',
-                                 'connector_serial', 'cve', 'ip', 'jtag', 'login', 'password',
+                                 'connector_serial', 'cve', 'ip', 'jtag', 'login',
+                                 'odm', 'odm_country', 'password',
                                  'pcbid', 'serial']))
 @click.option('--pretty', help='pretty print format', required=True,
               type=click.Choice(['list', 'line', 'counter']))
@@ -115,6 +116,18 @@ def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
             for d in devices:
                 if d['defaults']['logins']:
                     value_counter.update(d['defaults']['logins'])
+        case 'odm':
+            for d in devices:
+                if d['manufacturer']['name']:
+                    value_counter.update([d['manufacturer']['name']])
+                else:
+                    value_counter.update(['***UNKNOWN***'])
+        case 'odm_country':
+            for d in devices:
+                if d['manufacturer']['country']:
+                    value_counter.update([d['manufacturer']['country']])
+                else:
+                    value_counter.update(['***UNKNOWN***'])
         case 'password':
             for d in devices:
                 if d['defaults']['password']:
