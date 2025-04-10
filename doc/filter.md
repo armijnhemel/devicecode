@@ -51,6 +51,7 @@ param1:value1;param2:value2
 * `package`
 * `partition`
 * `password`
+* `pcbid`
 * `program`
 * `rootfs`
 * `sdk`
@@ -241,6 +242,10 @@ has certain name for a partition (for example: `u-boot-env` or `nvram`).
 
 Currently `password` can only be used to show devices with one or more default
 passwords.
+
+### pcbid
+
+`pcbid` can be used to show devices with a certain PCB id.
 
 ### Program
 
