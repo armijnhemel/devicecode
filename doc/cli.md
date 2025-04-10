@@ -33,6 +33,7 @@ in a variety of formats:
 * `list` - a deduplicated list of values
 * `counter` - deduplicated, one line per value, with frequency count, most
   common value printed first
+* `json` - deduplicated, JSON version of name plus frequency count
 
 ```
 $ python devicecode_cli.py dump -d ~/git/devicecode-data/ --value=cve --pretty=counter

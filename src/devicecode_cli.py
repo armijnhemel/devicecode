@@ -92,7 +92,7 @@ def compare(devicecode_directory, wiki_type, no_overlays):
                                  'odm', 'odm_country', 'password',
                                  'pcbid', 'serial']))
 @click.option('--pretty', help='pretty print format', required=True,
-              type=click.Choice(['list', 'line', 'counter']))
+              type=click.Choice(['list', 'line', 'counter', 'json']))
 def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
     '''Dump lists of known values'''
     if not devicecode_directory.is_dir():
@@ -175,6 +175,8 @@ def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
         case 'counter':
             for v, count in value_counter.most_common():
                 print(count, v)
+        case 'json':
+            print(json.dumps(value_counter, indent=4))
 
 
 @app.command(short_help='Search DeviceCode data set using a filter')
