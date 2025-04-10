@@ -24,6 +24,7 @@ VALID_DIRECTORIES = ['TechInfoDepot', 'WikiDevi', 'OpenWrt']
 
 
 class DeviceCodeException(Exception):
+    '''Generic DeviceCode Exception'''
     pass
 
 def get_directories(devicecode_directory, wiki_type):
