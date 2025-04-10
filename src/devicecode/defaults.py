@@ -65,6 +65,7 @@ BRAND_REWRITE = {'FON Wireless': 'Fon Wireless',
 
 # sometimes different names are used for the same country
 COUNTRY_REWRITE = {'United States': 'USA',
+                   'US': 'USA',
                    'United Kingdom': 'UK',
                    'China,Taiwan': 'China, Taiwan',
                    '\u200eChina': 'China',
