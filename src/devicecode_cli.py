@@ -14,7 +14,6 @@ import click
 
 import devicecode.filter as devicecode_filter
 from devicecode import dataset_composer
-from devicecode import suggester as Suggester
 from devicecode import data, defaults
 
 PART_TO_NAME = {'h': 'hardware', 'a': 'application',
