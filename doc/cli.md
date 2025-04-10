@@ -19,8 +19,10 @@ be displayed:
 * `connector_jtag` - (on board) connector or solder pad for JTAG
 * `connector_serial` - (on board) connector or solder pad for serial
 * `ip` - default IP address
+* `jtag` - device has a JTAG port
 * `password` - default password
 * `pcbid` - PCB identifier printed on the board
+* `serial` - device has a serial port
 
 in a variety of formats:
 

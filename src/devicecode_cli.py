@@ -63,7 +63,8 @@ def compare(devicecode_directory, wiki_type, no_overlays):
 @click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
 @click.option('--value', help='value to print', required=True,
               type=click.Choice(['baudrate_serial', 'baudrate_jtag', 'connector_jtag',
-                                 'connector_serial', 'cve', 'ip', 'password', 'pcbid']))
+                                 'connector_serial', 'cve', 'ip', 'jtag', 'password',
+                                 'pcbid', 'serial']))
 @click.option('--pretty', help='pretty print format', required=True,
               type=click.Choice(['list', 'line', 'counter']))
 def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
@@ -106,6 +107,10 @@ def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
             for d in devices:
                 if d['defaults']['ip']:
                     value_counter.update([d['defaults']['ip']])
+        case 'jtag':
+            for d in devices:
+                if d['has_jtag']:
+                    value_counter.update([d['has_jtag']])
         case 'password':
             for d in devices:
                 if d['defaults']['password']:
@@ -114,6 +119,10 @@ def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
             for d in devices:
                 if d['model']['pcb_id']:
                     value_counter.update([d['model']['pcb_id']])
+        case 'serial':
+            for d in devices:
+                if d['has_serial_port']:
+                    value_counter.update([d['has_serial_port']])
 
     match pretty:
         case 'list':
