@@ -31,7 +31,7 @@ class DeviceCodeException(Exception):
 def app():
     pass
 
-@app.command(short_help='Devicecode device comparer')
+@app.command(short_help='Device comparer')
 @click.option('--directory', '-d', 'devicecode_directory',
               help='DeviceCode results directory', required=True,
               type=click.Path(path_type=pathlib.Path, exists=True))
@@ -55,7 +55,7 @@ def compare(devicecode_directory, wiki_type, no_overlays):
     #devices = data.read_data_with_overlays(devicecode_directories, no_overlays)
 
 
-@app.command(short_help='Devicecode value dumper')
+@app.command(short_help='Dump values from DeviceCode')
 @click.option('--directory', '-d', 'devicecode_directory',
               help='DeviceCode results directory', required=True,
               type=click.Path(path_type=pathlib.Path, exists=True))
@@ -126,13 +126,14 @@ def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
                 print(count, v)
 
 
-@app.command(short_help='DeviceCode CLI')
+@app.command(short_help='Search DeviceCode data set using a filter')
 @click.option('--directory', '-d', 'devicecode_directory',
               help='DeviceCode results directory', required=True,
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--wiki-type', type=click.Choice(VALID_DIRECTORIES, case_sensitive=False))
 @click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
-def search(devicecode_directory, wiki_type, no_overlays):
+@click.option('--filter', 'filter_string', help='filter string')
+def search(devicecode_directory, wiki_type, no_overlays, filter_string):
     if not devicecode_directory.is_dir():
         print(f"Directory {devicecode_directory} is not a valid directory, exiting.",
               file=sys.stderr)
