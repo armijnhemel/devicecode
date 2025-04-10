@@ -18,6 +18,8 @@ be displayed:
 * `cveids` - CVE identifiers
 * `connector_jtag` - (on board) connector or solder pad for JTAG
 * `connector_serial` - (on board) connector or solder pad for serial
+* `ip` - default IP address
+* `password` - default password
 * `pcbid` - PCB identifier printed on the board
 
 in a variety of formats:
