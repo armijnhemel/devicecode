@@ -65,7 +65,8 @@ BRAND_REWRITE = {'FON Wireless': 'Fon Wireless',
 
 # sometimes different names are used for the same country
 COUNTRY_REWRITE = {'United States': 'USA',
-                   'United Kingdom': 'UK'}
+                   'United Kingdom': 'UK',
+                   'China,Taiwan': 'China, Taiwan'}
 
 DEVICE_REWRITE = {'access pint': 'access point',
                   'outdppr access point': 'outdoor access point',
