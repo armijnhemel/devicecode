@@ -64,7 +64,14 @@ Other methods to decide if devices are similar:
 2. ODM and chipset
 3. similar software fingerprint: files, programs, packages
 
-## Filtering
+## Searching devices using a filter
+
+With the same filtering language as used in the TUI it is possible to search
+for devices with the CLI. Output formats are:
+
+* `compact` - list of model names of devices
+* `compact-json` - list of model names of devices in JSON
+* `json` - list with device information (full data)
 
 For more information about the filtering language read the
 [filtering language documentation](filter.md).
