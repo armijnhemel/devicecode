@@ -187,7 +187,9 @@ def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
 @click.option('--wiki-type', type=click.Choice(VALID_DIRECTORIES, case_sensitive=False))
 @click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
 @click.option('--filter', 'filter_string', help='filter string')
-def search(devicecode_directory, wiki_type, no_overlays, filter_string):
+@click.option('--pretty', help='pretty print format', required=True,
+              type=click.Choice(['compact', 'compact-json', 'json']))
+def search(devicecode_directory, wiki_type, no_overlays, filter_string, pretty):
     '''Search the DeviceCode data using a filter string'''
     if not devicecode_directory.is_dir():
         print(f"Directory {devicecode_directory} is not a valid directory, exiting.",
@@ -203,13 +205,15 @@ def search(devicecode_directory, wiki_type, no_overlays, filter_string):
     # Read the device and overlay data
     devices, overlays = data.read_data(devicecode_directories, no_overlays)
 
-    # Compose the dataset using the initial data.
+    # Compose the dataset with the initial data.
     composer = dataset_composer.DatasetComposer(devices, overlays)
     dataset = composer.compose_data_sets()
 
+    # Create a validator that has been primed with all valid data.
+    validator = devicecode_filter.FilterValidator(dataset, token_names=defaults.TOKEN_NAMES)
+
     # Validate the filter string. Return all data if the filter string is empty.
     if filter_string:
-        validator = devicecode_filter.FilterValidator(dataset, token_names=defaults.TOKEN_NAMES)
         validation_result = validator.validate(filter_string)
         failures = validation_result.failures
         if failures:
@@ -217,9 +221,19 @@ def search(devicecode_directory, wiki_type, no_overlays, filter_string):
             print(f"Filter string validation failure: \"{description}\".", file=sys.stderr)
             sys.exit(1)
 
-        # create the filter values
+        # Create the filter values.
         filter_result = devicecode_filter.process_filter(filter_string)
+
+        # Create the filtered data set.
         dataset = composer.compose_data_sets(filter_result)
+
+    for d in dataset['brands_to_devices']:
+        for device in dataset['brands_to_devices'][d]:
+            match pretty:
+                case 'json':
+                    print(json.dumps(device, indent=4))
+                case _:
+                    print(device)
 
 
 if __name__ == "__main__":
