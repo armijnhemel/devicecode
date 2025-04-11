@@ -200,7 +200,26 @@ def search(devicecode_directory, wiki_type, no_overlays, filter_string):
         print(f"No valid device directories found in {devicecode_directory}.", file=sys.stderr)
         sys.exit(1)
 
+    # Read the device and overlay data
     devices, overlays = data.read_data(devicecode_directories, no_overlays)
+
+    # Compose the dataset using the initial data.
+    composer = dataset_composer.DatasetComposer(devices, overlays)
+    dataset = composer.compose_data_sets()
+
+    # Validate the filter string. Return all data if the filter string is empty.
+    if filter_string:
+        validator = devicecode_filter.FilterValidator(dataset, token_names=defaults.TOKEN_NAMES)
+        validation_result = validator.validate(filter_string)
+        failures = validation_result.failures
+        if failures:
+            description = failures[0].description
+            print(f"Filter string validation failure: \"{description}\".", file=sys.stderr)
+            sys.exit(1)
+
+        # create the filter values
+        filter_result = devicecode_filter.process_filter(filter_string)
+        dataset = composer.compose_data_sets(filter_result)
 
 
 if __name__ == "__main__":
