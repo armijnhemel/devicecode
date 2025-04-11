@@ -6,7 +6,6 @@
 
 import json
 import pathlib
-import sys
 
 # import XML processing that guards against several XML attacks
 import defusedxml.minidom
