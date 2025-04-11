@@ -8,8 +8,6 @@ import json
 import pathlib
 import sys
 
-from typing import Any
-
 import click
 
 import devicecode.filter as devicecode_filter
