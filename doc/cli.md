@@ -15,9 +15,11 @@ be displayed:
 
 * `baudrate_jtag` - baud rate used for JTAG
 * `baudrate_serial` - baud rate used for serial
-* `cveids` - CVE identifiers
+* `cpeid` - CPE identifiers
+* `cveid` - CVE identifiers
 * `connector_jtag` - (on board) connector or solder pad for JTAG
 * `connector_serial` - (on board) connector or solder pad for serial
+* `fccid` - FCC identifiers
 * `ip` - default IP address
 * `jtag` - device has a JTAG port
 * `login` - default login

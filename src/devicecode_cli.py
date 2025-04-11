@@ -87,7 +87,7 @@ def compare(devicecode_directory, wiki_type, no_overlays):
 @click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
 @click.option('--value', help='value to print', required=True,
               type=click.Choice(['baudrate_serial', 'baudrate_jtag', 'connector_jtag',
-                            'connector_serial', 'cpe', 'cve', 'fccid', 'ip', 'jtag',
+                            'connector_serial', 'cpeid', 'cveid', 'fccid', 'ip', 'jtag',
                              'login', 'odm', 'odm_country', 'password', 'pcbid',
                              'serial']))
 @click.option('--pretty', help='pretty print format', required=True,
@@ -125,12 +125,12 @@ def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
             for d in devices:
                 if d['serial']['connector']:
                     value_counter.update([d['serial']['connector']])
-        case 'cve':
-            for d in devices:
-                value_counter.update(d['regulatory']['cve'])
-        case 'cpe':
+        case 'cpeid':
             for d in devices:
                 value_counter.update([d['regulatory']['cpe']['cpe23']])
+        case 'cveid':
+            for d in devices:
+                value_counter.update(d['regulatory']['cve'])
         case 'fccid':
             for d in devices:
                 value_counter.update([x['fcc_id'] for x in d['regulatory']['fcc_ids']])
