@@ -86,10 +86,10 @@ def compare(devicecode_directory, wiki_type, no_overlays):
 @click.option('--wiki-type', type=click.Choice(VALID_DIRECTORIES, case_sensitive=False))
 @click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
 @click.option('--value', help='value to print', required=True,
-              type=click.Choice(['baudrate_serial', 'baudrate_jtag', 'connector_jtag',
-                            'connector_serial', 'cpeid', 'cveid', 'fccid', 'ip', 'jtag',
-                             'login', 'odm', 'odm_country', 'password', 'pcbid',
-                             'serial']))
+              type=click.Choice(['baudrate_serial', 'baudrate_jtag', 'bootloader',
+                         'connector_jtag', 'connector_serial', 'cpeid', 'cveid',
+                         'fccid', 'ip', 'jtag', 'login', 'odm', 'odm_country',
+                         'password', 'pcbid', 'serial']))
 @click.option('--pretty', help='pretty print format', required=True,
               type=click.Choice(['list', 'line', 'counter', 'json']))
 def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
@@ -117,6 +117,10 @@ def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
             for d in devices:
                 if d['serial']['baud_rate'] != 0:
                     value_counter.update([d['serial']['baud_rate']])
+        case 'bootloader':
+            for d in devices:
+                if d['software']['bootloader']['manufacturer']:
+                    value_counter.update([d['software']['bootloader']['manufacturer']])
         case 'connector_jtag':
             for d in devices:
                 if d['jtag']['connector']:

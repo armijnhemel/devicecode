@@ -15,6 +15,8 @@ be displayed:
 
 * `baudrate_jtag` - baud rate used for JTAG
 * `baudrate_serial` - baud rate used for serial
+* `bootloader` - name of the bootloader manufacturer (open source project,
+   or commercial vendor)
 * `cpeid` - CPE identifiers
 * `cveid` - CVE identifiers
 * `connector_jtag` - (on board) connector or solder pad for JTAG
