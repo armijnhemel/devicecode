@@ -6,10 +6,9 @@
 import shlex
 
 from textual.validation import ValidationResult, Validator
-from textual.widgets import Input
 
 
-def process_filter(event: Input.Submitted):
+def process_filter(filter_string):
     '''Process filter statements: tokenize and add to right data structures'''
     result = {}
 
@@ -33,11 +32,11 @@ def process_filter(event: Input.Submitted):
     result['is_filtered'] = False
     result['overlay'] = True
 
-    if event.validation_result is not None:
+    if filter_string:
         # Input was already validated before being sent here
         # so it can be processed without any extra checks.
 
-        tokens = shlex.split(event.value.lower())
+        tokens = shlex.split(filter_string.lower())
 
         for t in tokens:
             # First split the tokens in names and values

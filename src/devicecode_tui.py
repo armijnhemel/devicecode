@@ -241,7 +241,11 @@ class DevicecodeUI(App):
             return
 
         # Retrieve the, optionally filtered, data and compose new data sets
-        result = devicecode_filter.process_filter(event)
+        filter_string = ''
+        if event.validation_result is not None:
+            filter_string = event.value
+
+        result = devicecode_filter.process_filter(filter_string)
         dataset = self.dataset.compose_data_sets(result)
 
         # Rebuild the data trees. Depending on the value of 'is_filtered' in the
