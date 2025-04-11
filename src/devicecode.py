@@ -1646,6 +1646,7 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                             device.radios.append(Radio())
 
                                         for param in f.params:
+                                            param = param.replace('\u200e', '')
                                             if '=' in param:
                                                 # some elements are a list, the first one
                                                 # will always contain the identifier
