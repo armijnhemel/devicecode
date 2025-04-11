@@ -227,13 +227,16 @@ def search(devicecode_directory, wiki_type, no_overlays, filter_string, pretty):
         # Create the filtered data set.
         dataset = composer.compose_data_sets(filter_result)
 
+    result_devices = []
     for d in dataset['brands_to_devices']:
         for device in dataset['brands_to_devices'][d]:
-            match pretty:
-                case 'json':
-                    print(json.dumps(device, indent=4))
-                case _:
-                    print(device)
+            result_devices.append(device)
+    match pretty:
+        case 'json':
+            print(json.dumps(result_devices, indent=4))
+        case _:
+            for device in devices:
+                print(device)
 
 
 if __name__ == "__main__":
