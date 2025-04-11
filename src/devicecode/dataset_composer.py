@@ -27,7 +27,7 @@ class DatasetComposer():
         filter_cpes = result.get('cpes', [])
         filter_cves = result.get('cves', [])
         filter_cveids = result.get('cveids', [])
-        filter_device_types = result.get('types', [])
+        filter_device_types = result.get('device_types', [])
         filter_fccs = result.get('fccs', [])
         filter_fccids = result.get('fccids', [])
         filter_files = result.get('files', [])
@@ -415,7 +415,7 @@ class DatasetComposer():
                 model += " "
                 model += device['model']['subrevision']
 
-            device_types.update(device['device_types'])
+            device_types.update([x.lower() for x in device['device_types']])
 
             # Compute the labels used in the leaves.
             labels = set()

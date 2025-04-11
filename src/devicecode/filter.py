@@ -217,9 +217,9 @@ class FilterValidator(Validator):
                     case 'sdk':
                         if token_value not in self.sdks:
                             is_error = True
-                    #case 'type':
-                        #if token_value not in self.device_types:
-                            #is_error = True
+                    case 'type':
+                        if token_value not in self.device_types:
+                            is_error = True
                     case 'fcc':
                         if token_value not in ['no', 'invalid', 'yes']:
                             is_error = True
