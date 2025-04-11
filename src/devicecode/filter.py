@@ -106,8 +106,8 @@ class FilterValidator(Validator):
         self.token_names_params = kwargs.get('token_names', [])
         self.token_names = [x['name'] for x in self.token_names_params]
 
-        # A mapping for filter error messages. These are most likely
-        # never seen by a user but could come in handy for debugging.
+        # A mapping for filter error messages. These are not displayed
+        # in the TUI, but they are used in the CLI.
         self.name_to_error = {}
         for i in self.token_names_params:
             self.name_to_error[i['name']] = i['error']
