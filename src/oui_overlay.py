@@ -13,7 +13,6 @@ import sys
 
 import click
 
-import devicecode.defaults as defaults
 
 @click.command(short_help='Create OUI overlay files to provide additional data')
 @click.option('--manufacturer', '-m', 'manufacturer_file', required=True,
@@ -102,7 +101,7 @@ def main(manufacturer_file, devicecode_directory, output_directory, use_git, wik
                 continue
 
             try:
-                with open(result_file, 'r') as wiki_file:
+                with open(result_file, 'r', encoding='utf-8') as wiki_file:
                     device = json.load(wiki_file)
                     if 'network' not in device:
                         continue
@@ -137,7 +136,7 @@ def main(manufacturer_file, devicecode_directory, output_directory, use_git, wik
                         overlay_data['data'] = {'ethernet_oui': ethernet_oui_overlays, 'wireless_oui': wireless_oui_overlays}
                         overlay_file = overlay_directory / result_file.stem / 'network_oui.json'
                         overlay_file.parent.mkdir(parents=True, exist_ok=True)
-                        with open(overlay_file, 'w') as overlay:
+                        with open(overlay_file, 'w', encoding='utf-8') as overlay:
                             overlay.write(json.dumps(overlay_data, indent=4))
                         if use_git:
                             # add the file

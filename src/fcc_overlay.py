@@ -37,7 +37,7 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git,
         sys.exit(1)
 
     fcc_grantees = {}
-    with open(grantees, 'r') as grantee:
+    with open(grantees, 'r', encoding='utf-8') as grantee:
         try:
             fcc_grantees = json.load(grantee)
         except json.decoder.JSONDecodeError:
@@ -97,7 +97,7 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git,
                 continue
 
             try:
-                with open(result_file, 'r') as wiki_file:
+                with open(result_file, 'r', encoding='utf-8') as wiki_file:
                     device = json.load(wiki_file)
                     if 'regulatory' not in device:
                         continue
@@ -142,7 +142,7 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git,
                             # load the file with approved dates, if it exists
                             descriptions_file = processed_fcc_directory / fcc_id / 'descriptions.json'
                             if descriptions_file.exists():
-                                with open(descriptions_file, 'r') as desc:
+                                with open(descriptions_file, 'r', encoding='utf-8') as desc:
                                     descriptions = json.load(desc)
 
                                 # check if the device ifself is a module
@@ -153,7 +153,7 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git,
 
                             approved_file = processed_fcc_directory / fcc_id / 'approved_dates.json'
                             if approved_file.exists():
-                                with open(approved_file, 'r') as approved:
+                                with open(approved_file, 'r', encoding='utf-8') as approved:
                                     dates += json.load(approved)
 
                                 # if there is no date at all create an overlay with
@@ -219,7 +219,7 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git,
                                 text_data_file = processed_fcc_directory / fcc_id / d['name'] / 'text.json'
                                 if is_main_fcc:
                                     if text_data_file.exists():
-                                        with open(text_data_file, 'r') as text_data:
+                                        with open(text_data_file, 'r', encoding='utf-8') as text_data:
                                             text_hints = json.load(text_data)
                                             overlay_fcc_extracted_text.append({'fcc_id': fcc_id, 'pdf': d['name'], 'type': d['type'], 'description': d['description'], 'hints': text_hints})
                                             write_fcc_extracted_text = True
@@ -243,7 +243,7 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git,
                         fcc_id_overlay_data['data'] = overlay_fcc_ids
                         overlay_file = overlay_directory / result_file.stem / 'fcc_id.json'
                         overlay_file.parent.mkdir(parents=True, exist_ok=True)
-                        with open(overlay_file, 'w') as overlay:
+                        with open(overlay_file, 'w', encoding='utf-8') as overlay:
                             overlay.write(json.dumps(fcc_id_overlay_data, indent=4))
                         if use_git:
                             # add the file
@@ -265,7 +265,7 @@ def main(devicecode_directory, output_directory, grantees, report_only, use_git,
                         fcc_extract_text_overlay_data['data'] = overlay_fcc_extracted_text
                         overlay_file = overlay_directory / result_file.stem / 'fcc_extracted.json'
                         overlay_file.parent.mkdir(parents=True, exist_ok=True)
-                        with open(overlay_file, 'w') as overlay:
+                        with open(overlay_file, 'w', encoding='utf-8') as overlay:
                             overlay.write(json.dumps(fcc_extract_text_overlay_data, indent=4))
                         if use_git:
                             # add the file

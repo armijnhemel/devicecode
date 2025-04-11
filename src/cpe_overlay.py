@@ -125,7 +125,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
         if not delta_json.exists():
             print(f"{delta_json} is not a valid cvelistV5 delta file, exiting.", file=sys.stderr)
             sys.exit(1)
-        with open(delta_json, 'r') as cve_file:
+        with open(delta_json, 'r', encoding='utf-8') as cve_file:
             try:
                 cve_json = json.load(cve_file)
             except json.decoder.JSONDecodeError:
@@ -139,7 +139,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
             parent, _, files = p
             for f in files:
                 if f.startswith('CVE'):
-                    with open(parent / f, 'r') as cve_file:
+                    with open(parent / f, 'r', encoding='utf-8') as cve_file:
                         try:
                             cve_json = json.load(cve_file)
                             if cve_json['cveMetadata']['state'] == 'REJECTED':
@@ -192,7 +192,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                 # reduce memory usage
                 element.clear()
                 continue
-                parsed_cpe = cpe.CPE(cpe_name)
+                #parsed_cpe = cpe.CPE(cpe_name)
             else:
                 # reduce memory usage
                 element.clear()
@@ -294,7 +294,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                 if f.startswith('CVE'):
                     if pathlib.Path(f).stem not in cve_ids:
                         continue
-                    with open(parent / f, 'r') as cve_file:
+                    with open(parent / f, 'r', encoding='utf-8') as cve_file:
                         try:
                             cve_json = json.load(cve_file)
                             for container in cve_json['containers'].get('adp', []):
@@ -318,7 +318,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                 continue
 
             try:
-                with open(result_file, 'r') as wiki_file:
+                with open(result_file, 'r', encoding='utf-8') as wiki_file:
                     device = json.load(wiki_file)
 
                     overlay_data = {'type': 'overlay', 'name': 'cpe',
@@ -364,7 +364,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                         overlay_data['data'] = cpe_data
                         overlay_file = overlay_directory / result_file.stem / 'cpe.json'
                         overlay_file.parent.mkdir(parents=True, exist_ok=True)
-                        with open(overlay_file, 'w') as overlay:
+                        with open(overlay_file, 'w', encoding='utf-8') as overlay:
                             overlay.write(json.dumps(overlay_data, indent=4))
 
                         if use_git:
@@ -393,7 +393,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                             cve_overlay_file = overlay_directory / result_file.stem / 'cve.json'
                             cve_overlay_file.parent.mkdir(parents=True, exist_ok=True)
 
-                            with open(cve_overlay_file, 'w') as overlay:
+                            with open(cve_overlay_file, 'w', encoding='utf-8') as overlay:
                                 overlay.write(json.dumps(cve_overlay_data, indent=4))
 
                             if use_git:
