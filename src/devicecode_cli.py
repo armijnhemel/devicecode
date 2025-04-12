@@ -69,8 +69,7 @@ def compare(devicecode_directory, wiki_type, no_overlays):
         print(f"No valid device directories found in {devicecode_directory}.", file=sys.stderr)
         sys.exit(1)
 
-    #devices, overlays = data.read_data(devicecode_directories, no_overlays)
-    #devices = data.read_data_with_overlays(devicecode_directories, no_overlays)
+    devices = data.read_data_with_overlays(devicecode_directories, no_overlays)
 
 
 @app.command(short_help='Dump values from DeviceCode')
