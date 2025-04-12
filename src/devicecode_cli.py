@@ -21,10 +21,6 @@ PART_TO_NAME = {'h': 'hardware', 'a': 'application',
 VALID_DIRECTORIES = ['TechInfoDepot', 'WikiDevi', 'OpenWrt']
 
 
-class DeviceCodeException(Exception):
-    '''Generic DeviceCode Exception'''
-    pass
-
 def get_directories(devicecode_directory, wiki_type):
     '''Create a list of valid DeviceCode directories'''
     # The wiki directories should have a fixed structure. There should
