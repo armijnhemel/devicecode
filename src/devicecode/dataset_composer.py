@@ -6,6 +6,8 @@
 import copy
 
 class DatasetComposer():
+    '''Object to store a DeviceCode data set, plus methods
+       to filter the data'''
     def __init__(self, devices, overlays):
         # keep a full copy of the original data
         self.devices = devices
