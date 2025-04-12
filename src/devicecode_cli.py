@@ -72,6 +72,16 @@ def compare(devicecode_directory, wiki_type, model, no_overlays):
 
     devices = data.read_data_with_overlays(devicecode_directories, no_overlays)
 
+    # First check to see if the model actually exists in the data set
+    # TODO: alternatively allow a path to the JSON file with the device data
+    model_data = None
+    for d in devices:
+        pass
+
+    if not model_data:
+        print(f"No matching model found for {model}.", file=sys.stderr)
+        sys.exit(1)
+
 
 @app.command(short_help='Dump values from DeviceCode')
 @click.option('--directory', '-d', 'devicecode_directory',
