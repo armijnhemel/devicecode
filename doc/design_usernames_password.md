@@ -26,7 +26,7 @@ in? There is simply not enough contextual information available to determine
 this.
 
 Currently the `<!-- Leave blank -->` entry is ignored, but not as a default
-value in `devicecode_defaults.py`. Instead it is ignored in the main code in
+value in `devicecode/defaults.py`. Instead it is ignored in the main code in
 `devicecode.py`.
 
 ### Blank passwords

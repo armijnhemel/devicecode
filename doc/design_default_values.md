@@ -59,7 +59,7 @@ default at the time.
 
 ## Ignoring default values
 
-Default values are ignored and not even processed. In `devicecode_defaults.py`
+Default values are ignored and not even processed. In `devicecode/defaults.py`
 a lookup table called `DEFAULT_VALUE` is defined with default values for most
 identifiers. Default values are a list of strings. If a value for an identifier
 matches one of the default values for that identifier (full match, not partial)
