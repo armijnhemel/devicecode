@@ -11,18 +11,19 @@ Statements resemble bash shell commands and exports and are of the form:
 name=value
 ```
 
-In the future this will be extended to allow extra parameters (which will be
-different for each field):
+Extra parameters can be supplied as follows:
 
 ```
 name?params=value
 ```
 
-`params` are as follows:
+where `params` is as follows:
 
 ```
 param1:value1;param2:value2
 ```
+
+### Names
 
 `name` can be one of:
 
@@ -119,85 +120,85 @@ example:
 brand="Banana Pi"
 ```
 
-### Baud rate
+#### Baud rate
 
 `baud` can be used to filter on the baud rate of the serial port (if present).
 
-### Bootloader
+#### Bootloader
 
 `bootloader` can be used to filter on bootloader.
 
-### Brand
+#### Brand
 
 There are two ways to filter brands:
 
 1. use the `brand` statement to show devices from one or more brands
 2. use the `ignore_brand` statement to hide devices from one or more brands
 
-### Chip type
+#### Chip type
 
 Currently `chip_type` can only be used to show the type of the main CPU in one
 or more devices.
 
-### Chip vendor
+#### Chip vendor
 
 Currently `chip_vendor` can only be used to show the main CPU in one or more
 devices.
 
-### Connector
+#### Connector
 
 `connector` can be used to filter connectors (serial port only for now, JTAG
 in the future as well).
 
-### CPE
+#### CPE
 
 `cpe` can be used to show devices that have, or don't have, an associated CPE.
 Valid values are `yes` and `no`.
 
-### CVE
+#### CVE
 
 `cve` can be used to show devices that have, or don't have, an associated CVE.
 Valid values are `yes` and `no`.
 
-### CVE id
+#### CVE id
 
 `cveid` can be used to show devices associated with a certain CVE identifier.
 
-### FCC
+#### FCC
 
 `fcc` can be used to show if devices have an FCC identifier. Valid values are
 `no`, `invalid` or `yes`.
 
-### FCC id
+#### FCC id
 
 `fccid` can be used to show devices associated with a certain FCC identifier.
 
-### File
+#### File
 
 `file` can be used to show devices with certain files.
 
-### Flag
+#### Flag
 
 `flag` can be used to show devices with certain flags.
 
-### IP
+#### IP
 
 `ip` can be used to show devices using a certain default IP address (for
 example `192.168.1.1`).
 
-### ODM
+#### ODM
 
 There are two ways to filter ODMs:
 
 1. use the `odm` statement to show devices made by one or more ODMs
 2. use the `ignore_odm` statement to hide devices made by one or more ODMs
 
-### Default operating system
+#### Default operating system
 
 `os` can be used to show the default operating system that is installed on
 the device.
 
-### Origin
+#### Origin
 
 There are two ways to filter origins (OpenWrt, TechInfoDepot, WikiDevi)::
 
@@ -210,7 +211,7 @@ For example, to show devices that are in OpenWrt, but not in WikiDevi use:
 
 `origin=openwrt ignore_origin=wikidevi`
 
-### Overlays
+#### Overlays
 
 `overlays` can be used to disable showing any overlays as sometimes it is
 interesting to only show the "pure" data from the Wiki. Overlays can be
@@ -224,52 +225,52 @@ Please note: this will only work if there actually are any overlays. In the
 current `squashed` data set all overlays have already been applied (this will
 be changed in the future) so there it doesn't have any effect.
 
-### Serial
+#### Serial
 
 `serial` can be used to show if a device has a serial port, or if it is not
 known. Valid values are `yes`, `no` and `unknown`.
 
-### JTAG
+#### JTAG
 
 `jtag` can be used to show if a device has a JTAG port, or if it is not
 known. Valid values are `yes`, `no` and `unknown`.
 
-### Package
+#### Package
 
 `package` can be used to show devices containing the package. Package
 information is currently extracted from parsing boot logs.
 
-### Partition
+#### Partition
 
 `partition` can be used to show devices where the Linux kernel commandline
 has certain name for a partition (for example: `u-boot-env` or `nvram`).
 
-### Password
+#### Password
 
 Currently `password` can only be used to show devices with one or more default
 passwords.
 
-### pcbid
+#### pcbid
 
 `pcbid` can be used to show devices with a certain PCB id.
 
-### Program
+#### Program
 
 `program` can be used to show devices containing specific program names as
 extracted from output of the `ps` command.
 
-### root file system type
+#### root file system type
 
 `rootfs` can be used to show devices where the Linux kernel has support for
 having the root file system on a certain file system type (such as `squashfs`
 or `jffs2`).
 
-### SDK
+#### SDK
 
 `sdk` can be used to show devices with references to a certain SDK, such as
 `LSDK` (Atheros and Qualcomm Atheros).
 
-### Year
+#### Year
 
 `year` can be used to show devices that have a year associated with it. This
 year is either one of:
@@ -295,6 +296,33 @@ which is equivalent to:
 ```
 year=2018 year=2019 year=2020
 ```
+
+## Parameters
+
+Parameters can be supplied as follows:
+
+```
+name?params=value
+```
+
+where `params` is as follows:
+
+```
+param1:value1;param2:value2
+```
+
+The parameters and values are stored as a dictionary which can then be accessed
+by the filtering code. Because keys in dictionaries are unique it means that
+each paramter can only be supplied once. If a parameter is supplied multiple
+times, then only the last value will be recorded in the dictionary.
+
+Example:
+
+```
+jtag?populated:yes;populated:no=yes
+```
+
+will yield `{'populated': 'no'}`.
 
 # Adding more filter options
 
