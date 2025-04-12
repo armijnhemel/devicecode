@@ -238,7 +238,7 @@ def search(devicecode_directory, wiki_type, no_overlays, filter_string, pretty):
         case 'compact-json':
             print(json.dumps(sorted(device_names_and_models), indent=4))
         case 'json':
-            print(json.dumps(sorted(result_devices), indent=4))
+            print(json.dumps(result_devices, indent=4))
 
 
 if __name__ == "__main__":
