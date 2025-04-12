@@ -20,9 +20,9 @@ After looking at the data a few things become clear:
    own data before the template, others append it.
 4. a combination of 2. and 3.
 
-All these can be found when processing `cpu1spd`.
+Examples of all these can be found when processing `cpu1spd`.
 
-There are three known default values:
+## 1: There are three known default values:
 
 ```
 <!-- CPU1 speed, MHz, GHz, Leave blank if unknown -->
@@ -34,7 +34,7 @@ Note that the first and the last option are contradicting each other, which
 means that the entered data is inconsistent depending on which value was the
 default at the time.
 
-Examples of 2:
+## 2: data is merely updated inside comment tags
 
 ```
 <!-- up to 180 MHz -->
@@ -42,7 +42,7 @@ Examples of 2:
 <!-- 32-bit MCU & 2.4GHz Wi-Fi, Single-core CPU @160MHz -->
 ```
 
-Examples of 3:
+## 3: template values are not removed
 
 ```
 1.2 GHz<!-- 1.2 GHz  -->
@@ -50,7 +50,7 @@ Examples of 3:
 600<!-- undocumented -->
 ```
 
-Examples of 4:
+## 4: data is updated inside comment tags and template values are not removed
 
 ```
 1.4 GHz<!-- 1.4 GHz 1.4 GHz (+ 2x NPU @1.5GHz) -->

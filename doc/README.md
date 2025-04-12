@@ -9,7 +9,7 @@ This directory contains the documentation for DeviceCode.
 ## Design
 
 * [Parsing chip information](design_chip.md)
-* [Default TechInfoDepot and WikiDevi values](design_default_values.md)
+* [Default TechInfoDepot values](design_default_values.md)
 * [FCC downloads](design_fcc_downloads.md)
 * [Parsing free text fields](design_free_text.md)
 * [Parsing user names and passwords](design_usernames_password.md)
