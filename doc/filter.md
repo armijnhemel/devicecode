@@ -314,7 +314,8 @@ param1:value1;param2:value2
 The parameters and values are stored as a dictionary which can then be accessed
 by the filtering code. Because keys in dictionaries are unique it means that
 each paramter can only be supplied once. If a parameter is supplied multiple
-times, then only the last value will be recorded in the dictionary.
+times in a single parameter statement, then only the last value will be
+recorded in the dictionary.
 
 Example:
 
@@ -323,6 +324,13 @@ jtag?populated:yes;populated:no=yes
 ```
 
 will yield `{'populated': 'no'}`.
+
+The workaround is to include the statement twice but with a different parameter
+value:
+
+```
+jtag?populated:yes=yes jtag?populated:no=yes
+```
 
 # Adding more filter options
 
@@ -338,3 +346,10 @@ to be changed:
 * `devicecode/dataset_composer.py` - compiles the data sets that are used for
   displaying or pretty printing, optionally filtering results using data
   obtained earlier (and can be considered to be the actual filter).
+
+If extra parameters are used for filtering the code needs to be changed in:
+
+* `deviceode/defaults.py` - the dictionary `TOKEN_NAMES` needs to be updated.
+* `devicecode/dataset_composer.py` - parameter filtering needs to be added to
+   the appropriate places. As parameter filtering is not generic this might be
+   a bit more work.
