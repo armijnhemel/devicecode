@@ -57,9 +57,10 @@ def app():
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--wiki-type', type=click.Choice(VALID_DIRECTORIES,
               case_sensitive=False))
+@click.option('--model', '-m', required=True, help='device model name')
 @click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
-def compare(devicecode_directory, wiki_type, no_overlays):
-    '''Compare devices'''
+def compare(devicecode_directory, wiki_type, model, no_overlays):
+    '''Compare devices given a brand and model number'''
     if not devicecode_directory.is_dir():
         raise click.ClickException(f"Directory {devicecode_directory} is not a valid directory.")
 
