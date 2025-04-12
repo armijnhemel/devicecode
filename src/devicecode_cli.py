@@ -65,9 +65,7 @@ def app():
 def compare(devicecode_directory, wiki_type, no_overlays):
     '''Compare devices'''
     if not devicecode_directory.is_dir():
-        print(f"Directory {devicecode_directory} is not a valid directory, exiting.",
-              file=sys.stderr)
-        sys.exit(1)
+        raise click.ClickException(f"Directory {devicecode_directory} is not a valid directory.")
 
     devicecode_directories = get_directories(devicecode_directory, wiki_type)
 
@@ -95,9 +93,7 @@ def compare(devicecode_directory, wiki_type, no_overlays):
 def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
     '''Dump lists of known values'''
     if not devicecode_directory.is_dir():
-        print(f"Directory {devicecode_directory} is not a valid directory, exiting.",
-              file=sys.stderr)
-        sys.exit(1)
+        raise click.ClickException(f"Directory {devicecode_directory} is not a valid directory.")
 
     devicecode_directories = get_directories(devicecode_directory, wiki_type)
 
@@ -200,9 +196,7 @@ def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
 def search(devicecode_directory, wiki_type, no_overlays, filter_string, pretty):
     '''Search the DeviceCode data using a filter string'''
     if not devicecode_directory.is_dir():
-        print(f"Directory {devicecode_directory} is not a valid directory, exiting.",
-              file=sys.stderr)
-        sys.exit(1)
+        raise click.ClickException(f"Directory {devicecode_directory} is not a valid directory.")
 
     devicecode_directories = get_directories(devicecode_directory, wiki_type)
 
