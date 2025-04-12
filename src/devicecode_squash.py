@@ -645,12 +645,10 @@ def squash_overlay(device_one, device_two, device_three, debug=False, verbose=Fa
 @click.option('--verbose', is_flag=True, help='be verbose (for debuging)')
 def main(devicecode_directory, output_directory, use_git, debug, verbose):
     if not output_directory.is_dir():
-        print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
-        sys.exit(1)
+        raise click.ClickException(f"Directory {output_directory} is not a valid directory.")
 
     if not devicecode_directory.is_dir():
-        print(f"{devicecode_directory} is not a directory, exiting.", file=sys.stderr)
-        sys.exit(1)
+        raise click.ClickException(f"Directory {devicecode_directory} is not a valid directory.")
 
     if use_git:
         if shutil.which('git') is None:

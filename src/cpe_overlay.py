@@ -37,16 +37,13 @@ PART_TO_NAME = {'h': 'hardware', 'a': 'application',
               case_sensitive=False))
 def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, cve_directory):
     if not output_directory.is_dir():
-        print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
-        sys.exit(1)
+        raise click.ClickException(f"Directory {output_directory} is not a valid directory.")
 
     if not devicecode_directory.is_dir():
-        print(f"{devicecode_directory} is not a directory, exiting.", file=sys.stderr)
-        sys.exit(1)
+        raise click.ClickException(f"Directory {devicecode_directory} is not a valid directory.")
 
     if cve_directory and not cve_directory.is_dir():
-        print(f"{cve_directory} is not a directory, exiting.", file=sys.stderr)
-        sys.exit(1)
+        raise click.ClickException(f"Directory {cve_directory} is not a valid directory.")
 
     if cve_directory and not (cve_directory / 'cves').exists():
         print(f"{cve_directory} is not a valid cvelistV5 directory, exiting.", file=sys.stderr)

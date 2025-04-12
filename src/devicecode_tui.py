@@ -792,9 +792,7 @@ class DevicecodeUI(App):
 @click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
 def main(devicecode_directory, wiki_type, no_overlays):
     if not devicecode_directory.is_dir():
-        print(f"Directory {devicecode_directory} is not a valid directory, exiting.",
-              file=sys.stderr)
-        sys.exit(1)
+        raise click.ClickException(f"Directory {devicecode_directory} is not a valid directory.")
 
     # verify the directory names, they should be one of the following
     valid_directories = ['TechInfoDepot', 'WikiDevi', 'OpenWrt', 'squashed']

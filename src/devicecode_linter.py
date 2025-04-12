@@ -25,8 +25,7 @@ import defusedxml.minidom
               type=click.Choice(['TechInfoDepot', 'WikiDevi'], case_sensitive=False))
 def main(devicecode_directory, input_file, wiki_type, remove):
     if not devicecode_directory.is_dir():
-        print(f"{devicecode_directory} is not a directory, exiting.", file=sys.stderr)
-        sys.exit(1)
+        raise click.ClickException(f"Directory {devicecode_directory} is not a valid directory.")
 
     # load XML
     with open(input_file) as wiki_dump:

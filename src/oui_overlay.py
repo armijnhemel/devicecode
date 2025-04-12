@@ -28,12 +28,10 @@ import click
               case_sensitive=False))
 def main(manufacturer_file, devicecode_directory, output_directory, use_git, wiki_type):
     if not output_directory.is_dir():
-        print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
-        sys.exit(1)
+        raise click.ClickException(f"Directory {output_directory} is not a valid directory.")
 
     if not devicecode_directory.is_dir():
-        print(f"{devicecode_directory} is not a directory, exiting.", file=sys.stderr)
-        sys.exit(1)
+        raise click.ClickException(f"Directory {devicecode_directory} is not a valid directory.")
 
     if use_git:
         if shutil.which('git') is None:

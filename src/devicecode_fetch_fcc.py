@@ -40,8 +40,7 @@ TIMEOUT = 60
               help='do not download any data, only reprocess already downloaded data')
 def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_download):
     if not output_directory.is_dir():
-        print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
-        sys.exit(1)
+        raise click.ClickException(f"Directory {output_directory} is not a valid directory.")
 
     fcc_grantees = {}
     if grantees is not None:

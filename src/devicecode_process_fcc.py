@@ -514,12 +514,10 @@ def process_fcc(task):
 @click.option('--clean-output', is_flag=True, help='only write clean results (no raw results)')
 def main(fccids, fcc_input_directory, output_directory, jobs, verbose, force, process_uninteresting, no_images, no_text, clean_output):
     if not fcc_input_directory.is_dir():
-        print(f"{fcc_input_directory} is not a directory, exiting.", file=sys.stderr)
-        sys.exit(1)
+        raise click.ClickException(f"Directory {fcc_input_directory} is not a valid directory.")
 
     if not output_directory.is_dir():
-        print(f"{output_directory} is not a directory, exiting.", file=sys.stderr)
-        sys.exit(1)
+        raise click.ClickException(f"Directory {output_directory} is not a valid directory.")
 
     # create a directory for images per FCC id. This is where
     # all images will be stored. The rest will be hardlinked. This is
