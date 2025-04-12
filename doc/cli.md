@@ -10,8 +10,11 @@ quickly inspect the data.
 
 ## Dumping data
 
-To quickly dump data the `dump` mode of the CLI can be used. Several things can
-be displayed:
+To quickly dump data the `dump` mode of the CLI can be used. A good use for
+this is to find out the valid values in the data set, so they can be used in
+the TUI, which (currently) cannot display the full list of values.
+
+The following things can be displayed:
 
 * `baudrate_jtag` - baud rate used for JTAG
 * `baudrate_serial` - baud rate used for serial
@@ -38,6 +41,8 @@ in a variety of formats:
 * `counter` - deduplicated, one line per value, with frequency count, most
   common value printed first
 * `json` - deduplicated, JSON version of name plus frequency count
+
+For example:
 
 ```
 $ python devicecode_cli.py dump -d ~/git/devicecode-data/ --value=cve --pretty=counter
@@ -71,11 +76,22 @@ Other methods to decide if devices are similar:
 ## Searching devices using a filter
 
 With the same filtering language as used in the TUI it is possible to search
-for devices with the CLI. Output formats are:
+for devices with the CLI. Output formats currently supported are:
 
 * `compact` - list of model names of devices
 * `compact-json` - list of model names of devices in JSON
-* `json` - list with device information (full data)
+* `json` - list with device information (full device data)
+
+For example:
+
+```
+$ python devicecode_cli.py search -d ~/git/devicecode-data/ --filter=" brand=asus cve=yes" --pretty=compact
+ASUS RT-AC86U (1.40)
+ASUS RT-AX55
+ASUS RT-AX56U V2 (B1)
+ASUS RT-AX88U A1
+ASUS RT-N12+ B1
+```
 
 For more information about the filtering language read the
 [filtering language documentation](filter.md).

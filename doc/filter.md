@@ -36,6 +36,7 @@ param1:value1;param2:value2
 * `cpe`
 * `cve`
 * `cveid`
+* `fcc`
 * `fccid`
 * `file`
 * `flag`
@@ -46,8 +47,8 @@ param1:value1;param2:value2
 * `jtag`
 * `odm`
 * `origin`
-* `overlay`
 * `os`
+* `overlays`
 * `package`
 * `partition`
 * `password`
@@ -162,6 +163,11 @@ Valid values are `yes` and `no`.
 
 `cveid` can be used to show devices associated with a certain CVE identifier.
 
+### FCC
+
+`fcc` can be used to show if devices have an FCC identifier. Valid values are
+`no`, `invalid` or `yes`.
+
 ### FCC id
 
 `fccid` can be used to show devices associated with a certain FCC identifier.
@@ -204,9 +210,9 @@ For example, to show devices that are in OpenWrt, but not in WikiDevi use:
 
 `origin=openwrt ignore_origin=wikidevi`
 
-### Overlay
+### Overlays
 
-`overlay` can be used to disable showing any overlays as sometimes it is
+`overlays` can be used to disable showing any overlays as sometimes it is
 interesting to only show the "pure" data from the Wiki. Overlays can be
 disabled as follows:
 
