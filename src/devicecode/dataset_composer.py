@@ -232,6 +232,25 @@ class DatasetComposer():
             if filter_serials:
                 if device['has_serial_port'] not in [x[0] for x in filter_serials]:
                     continue
+
+                # Process the parameters. These only make sense if
+                # there actually is a serial port.
+                if device['has_serial_port'] == 'yes':
+                    # process every instance in filter_serials
+                    show_node = False
+                    for _, params in filter_serials:
+                        if not params:
+                            show_node = True
+                        else:
+                            for param_name,  param_value in params.items():
+                                if param_name == 'populated':
+                                    if param_value == device['serial']['populated']:
+                                        show_node = True
+                                        break
+                        if show_node:
+                            break
+                    if not show_node:
+                        continue
             if filter_connectors:
                 if device['serial']['connector'].lower() not in [x[0] for x in filter_connectors]:
                     continue
