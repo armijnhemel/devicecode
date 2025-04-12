@@ -209,9 +209,19 @@ class DatasetComposer():
                 # Process the parameters. These only make sense if
                 # there actually is a JTAG port.
                 if device['has_jtag'] == 'yes':
-                    show_node = True
-                    for param_args in [x[1] for x in filter_jtags]:
-                        pass
+                    # process every instance in filter_jtags
+                    show_node = False
+                    for _, params in filter_jtags:
+                        if not params:
+                            show_node = True
+                        else:
+                            for param_name,  param_value in params.items():
+                                if param_name == 'populated':
+                                    if param_value == device['jtag']['populated']:
+                                        show_node = True
+                                        break
+                        if show_node:
+                            break
                     if not show_node:
                         continue
             if filter_operating_systems:

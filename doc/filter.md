@@ -352,4 +352,4 @@ If extra parameters are used for filtering the code needs to be changed in:
 * `deviceode/defaults.py` - the dictionary `TOKEN_NAMES` needs to be updated.
 * `devicecode/dataset_composer.py` - parameter filtering needs to be added to
    the appropriate places. As parameter filtering is not generic this might be
-   a bit more work.
+   a bit more work. A good example is the JTAG filtering code.
