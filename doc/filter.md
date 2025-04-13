@@ -332,6 +332,9 @@ value:
 jtag?populated:yes=yes jtag?populated:no=yes
 ```
 
+See `TOKEN_NAMES` in `deviceode/defaults.py` to see for which names parameter
+filtering is (somewhat) supported.
+
 # Adding more filter options
 
 When adding a new filtering option the code needs to be changed in a few

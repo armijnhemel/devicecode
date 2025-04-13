@@ -32,6 +32,7 @@ The following things can be displayed:
 * `odm_country` - ODM country
 * `password` - default password
 * `pcbid` - PCB identifier printed on the board
+* `sdk` - name of Software Development Kit (SDK) that was used
 * `serial` - device has a serial port
 
 in a variety of formats:
