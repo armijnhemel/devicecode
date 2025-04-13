@@ -93,7 +93,7 @@ def compare(devicecode_directory, wiki_type, model, no_overlays):
               type=click.Choice(['baudrate_serial', 'baudrate_jtag', 'bootloader',
                          'connector_jtag', 'connector_serial', 'cpeid', 'cveid',
                          'fccid', 'ip', 'jtag', 'login', 'odm', 'odm_country',
-                         'password', 'pcbid', 'serial']))
+                         'password', 'pcbid', 'sdk', 'serial']))
 @click.option('--pretty', help='pretty print format', required=True,
               type=click.Choice(['list', 'line', 'counter', 'json']))
 def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
@@ -172,6 +172,12 @@ def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
             for d in devices:
                 if d['model']['pcb_id']:
                     value_counter.update([d['model']['pcb_id']])
+        case 'sdk':
+            for d in devices:
+                if d['software']['sdk']['name']:
+                    value_counter.update([d['software']['sdk']['name']])
+                else:
+                    value_counter.update(['***UNKNOWN***'])
         case 'serial':
             for d in devices:
                 if d['has_serial_port']:
