@@ -204,6 +204,26 @@ class DatasetComposer():
                 f_bootloaders = [x[0] for x in filter_bootloaders]
                 if device['software']['bootloader']['manufacturer'].lower() not in f_bootloaders:
                     continue
+
+                # Process the parameters. These only make sense if
+                # there actually is a bootloader
+                if device['software']['bootloader']['manufacturer']:
+                    # process every instance in filter_bootloaders
+                    show_node = False
+                    for _, params in filter_bootloaders:
+                        if not params:
+                            show_node = True
+                        else:
+                            for param_name,  param_value in params.items():
+                                if param_name == 'version':
+                                    if param_value == device['software']['bootloader']['version'].lower():
+                                        show_node = True
+                                        break
+
+                        if show_node:
+                            break
+                    if not show_node:
+                        continue
             if filter_jtags:
                 if device['has_jtag'] not in [x[0] for x in filter_jtags]:
                     continue
