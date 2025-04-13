@@ -414,6 +414,25 @@ class DatasetComposer():
                 if device['software']['sdk']['name'].lower() not in f_sdks:
                     continue
 
+                # Process the parameters. These only make sense if
+                # there actually is an SDK
+                if device['software']['sdk']['name']:
+                    # process every instance in filter_sdks
+                    show_node = False
+                    for _, params in filter_sdks:
+                        if not params:
+                            show_node = True
+                        else:
+                            for param_name,  param_value in params.items():
+                                if param_name == 'version':
+                                    if param_value == device['software']['sdk']['version'].lower():
+                                        show_node = True
+                                        break
+
+                        if show_node:
+                            break
+                    if not show_node:
+                        continue
             if filter_fccs:
                 f_fccs = [x[0] for x in filter_fccs]
                 if 'yes' in f_fccs and 'no' in f_fccs:
