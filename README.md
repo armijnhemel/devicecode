@@ -141,14 +141,14 @@ of the TUI (design, filtering language, and so on) see the
 Simply point the script to the top level data directory:
 
 ```console
-$ python devicecode_tui.py -d /path/to/top/level
+$ python devicecode_tui.py navigate -d /path/to/top/level
 ```
 
 for example if the [devicecode-data][devicecode-data] repository was cloned
 in `$HOME/git/devicecode-data` the command would be:
 
 ```console
-$ python devicecode_tui.py -d ~/git/devicecode-data
+$ python devicecode_tui.py navigate -d ~/git/devicecode-data
 ```
 
 # Acknowledgements
