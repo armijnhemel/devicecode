@@ -469,7 +469,16 @@ class DatasetComposer():
                 f_fccids = [x[0] for x in filter_fccids]
                 for fcc_id in device['regulatory']['fcc_ids']:
                     if fcc_id['fcc_id'].lower() in f_fccids:
-                        show_node = True
+                        for _, params in filter_fccids:
+                            if not params:
+                                show_node = True
+                            else:
+                                for param_name, param_value in params.items():
+                                    if param_name == 'type':
+                                        if param_value == fcc_id['fcc_type']:
+                                            show_node = True
+                                            break
+                    if show_node:
                         break
                 if not show_node:
                     continue

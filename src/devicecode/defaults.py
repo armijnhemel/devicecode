@@ -577,7 +577,7 @@ TOKEN_NAMES = [{'name': 'baud', 'has_params': False, 'error': 'Invalid baud rate
                {'name': 'cve', 'has_params': False, 'error': 'Invalid CVE information'},
                {'name': 'cveid', 'has_params': False, 'error': 'Invalid CVE id'},
                {'name': 'fcc', 'has_params': False, 'error': 'Invalid FCC information'},
-               {'name': 'fccid', 'has_params': False, 'error': 'Invalid FCC'},
+               {'name': 'fccid', 'has_params': True, 'params': ['type'], 'error': 'Invalid FCC'},
                {'name': 'file', 'has_params': False, 'error': 'Invalid file'},
                {'name': 'flag', 'has_params': False, 'error': 'Invalid flag'},
                {'name': 'ignore_brand', 'has_params': False, 'error': 'Invalid brand'},
