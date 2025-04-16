@@ -92,6 +92,109 @@ class OdmTree(Tree):
                 node.remove()
             node.label = f"{node.label}  ({node_leaves})"
 
+class DeviceCodeComparer(App):
+    BINDINGS = [
+        Binding(key="ctrl+q", action="quit", description="Quit"),
+    ]
+
+    CSS_PATH = "devicecode_tui.css"
+
+    def __init__(self, devices, overlays, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.devices = devices
+        self.overlays = overlays
+
+        # Create Markdown areas (left)
+        self.device_data_area_left = Markdown()
+        self.regulatory_data_area_left = Markdown()
+        self.model_data_area_left = Markdown()
+        self.network_data_area_left = Markdown()
+        self.serial_jtag_area_left = Markdown()
+        self.software_area_left = Markdown()
+        self.chips_area_left = Markdown()
+        self.power_area_left = Markdown()
+        self.fcc_area_left = Markdown()
+
+        # Create Markdown areas (right)
+        self.device_data_area_right = Markdown()
+        self.regulatory_data_area_right = Markdown()
+        self.model_data_area_right = Markdown()
+        self.network_data_area_right = Markdown()
+        self.serial_jtag_area_right = Markdown()
+        self.software_area_right = Markdown()
+        self.chips_area_right = Markdown()
+        self.power_area_right = Markdown()
+        self.fcc_area_right = Markdown()
+
+    def compose(self) -> ComposeResult:
+        '''Compose the initial data sets using all data,
+           initialize the UI elements and build the interface.'''
+        # Yield all UI elements. The UI is a container with an app grid. On the
+        # left there are tabs, each containing a tree or a data table. On the right
+        # there is an area to display the results using various tabs.
+        yield Header()
+        with Container(id='app-grid'):
+            with TabbedContent(id='result-tabs-left'):
+                with TabPane('Device'):
+                    with VerticalScroll():
+                        yield self.device_data_area_left
+                with TabPane('Model & ODM'):
+                    with VerticalScroll():
+                        yield self.model_data_area_left
+                with TabPane('Network'):
+                    with VerticalScroll():
+                        yield self.network_data_area_left
+                with TabPane('Regulatory, CPE, CVE & Commercial'):
+                    with VerticalScroll():
+                        yield self.regulatory_data_area_left
+                with TabPane('Serial & JTAG'):
+                    with VerticalScroll():
+                        yield self.serial_jtag_area_left
+                with TabPane('Software'):
+                    with VerticalScroll():
+                        yield self.software_area_left
+                with TabPane('Chips'):
+                    with VerticalScroll():
+                        yield self.chips_area_left
+                with TabPane('Power'):
+                    with VerticalScroll():
+                        yield self.power_area_left
+                with TabPane('FCC documents'):
+                    with VerticalScroll():
+                        yield self.fcc_area_left
+            with TabbedContent(id='result-tabs-right'):
+                with TabPane('Device'):
+                    with VerticalScroll():
+                        yield self.device_data_area_right
+                with TabPane('Model & ODM'):
+                    with VerticalScroll():
+                        yield self.model_data_area_right
+                with TabPane('Network'):
+                    with VerticalScroll():
+                        yield self.network_data_area_right
+                with TabPane('Regulatory, CPE, CVE & Commercial'):
+                    with VerticalScroll():
+                        yield self.regulatory_data_area_right
+                with TabPane('Serial & JTAG'):
+                    with VerticalScroll():
+                        yield self.serial_jtag_area_right
+                with TabPane('Software'):
+                    with VerticalScroll():
+                        yield self.software_area_right
+                with TabPane('Chips'):
+                    with VerticalScroll():
+                        yield self.chips_area_right
+                with TabPane('Power'):
+                    with VerticalScroll():
+                        yield self.power_area_right
+                with TabPane('FCC documents'):
+                    with VerticalScroll():
+                        yield self.fcc_area_right
+
+        # show the footer with controls
+        yield Footer()
+
+
 class DeviceCodeUI(App):
     BINDINGS = [
         Binding(key="ctrl+q", action="quit", description="Quit"),
@@ -786,6 +889,52 @@ def build_device_report(result):
 @click.group()
 def app():
     pass
+
+@app.command(short_help='Compare two devices')
+@click.option('--directory', '-d', 'devicecode_directory',
+              help='DeviceCode results directory', required=True,
+              type=click.Path(path_type=pathlib.Path, exists=True))
+@click.option('--wiki-type', type=click.Choice(['TechInfoDepot', 'WikiDevi', 'OpenWrt'],
+              case_sensitive=False))
+@click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
+def compare(devicecode_directory, wiki_type, no_overlays):
+    if not devicecode_directory.is_dir():
+        raise click.ClickException(f"Directory {devicecode_directory} is not a valid directory.")
+
+    # verify the directory names, they should be one of the following
+    valid_directories = ['TechInfoDepot', 'WikiDevi', 'OpenWrt', 'squashed']
+
+    # The wiki directories should have a fixed structure. There should
+    # always be a directory 'devices' (with device data). Optionally there
+    # can be a directory called 'overlays' with overlay files.
+    # If present the 'squashed' directory will always be chosen and
+    # the other directories will be ignored.
+    squashed_directory = devicecode_directory / 'squashed' / 'devices'
+    if squashed_directory.exists() and not wiki_type:
+        devicecode_directories = [squashed_directory]
+    else:
+        devicecode_directories = []
+        for p in devicecode_directory.iterdir():
+            if not p.is_dir():
+                continue
+            if not p.name in valid_directories:
+                continue
+            if wiki_type:
+                if p.name != wiki_type:
+                    continue
+            devices_dir = p / 'devices'
+            if not (devices_dir.exists() and devices_dir.is_dir()):
+                continue
+            devicecode_directories.append(devices_dir)
+
+    if not devicecode_directories:
+        print(f"No valid directories found in {devicecode_directory}, should be one of {', '.join(valid_directories)}.", file=sys.stderr)
+        sys.exit(1)
+
+    devices, overlays = data.read_data(devicecode_directories, no_overlays)
+
+    devicecode_app = DeviceCodeComparer(devices, overlays)
+    devicecode_app.run()
 
 @app.command(short_help='Interactive DeviceCode result browser')
 @click.option('--directory', '-d', 'devicecode_directory',
