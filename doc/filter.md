@@ -335,6 +335,9 @@ jtag?populated:yes=yes jtag?populated:no=yes
 See `TOKEN_NAMES` in `deviceode/defaults.py` to see for which names parameter
 filtering is (somewhat) supported.
 
+It should be noted that currently there are no names for which two parameters
+are supported (as this requires some more thought).
+
 # Adding more filter options
 
 When adding a new filtering option the code needs to be changed in a few
@@ -352,7 +355,9 @@ to be changed:
 
 If extra parameters are used for filtering the code needs to be changed in:
 
-* `deviceode/defaults.py` - the dictionary `TOKEN_NAMES` needs to be updated.
+* `deviceode/defaults.py` - the dictionary `TOKEN_NAMES` needs to be updated
+  (this will be used in the future for extra verification)
 * `devicecode/dataset_composer.py` - parameter filtering needs to be added to
-   the appropriate places. As parameter filtering is not generic this might be
-   a bit more work. A good example is the JTAG filtering code.
+  the appropriate places. As parameter filtering is not generic this might be
+  a bit more work. Good examples are the JTAG filtering code and the FCC id
+  filtering code.
