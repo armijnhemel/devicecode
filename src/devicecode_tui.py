@@ -341,447 +341,447 @@ class DevicecodeUI(App):
     def on_tree_node_selected(self, event: Tree.NodeSelected[None]) -> None:
         '''Display the reports of a node when it is selected'''
         if event.node.data is not None and 'title' in event.node.data:
-            self.device_data_area.update(self.build_device_report(event.node.data))
-            self.model_data_area.update(self.build_model_report(event.node.data))
-            self.network_data_area.update(self.build_network_report(event.node.data['network']))
-            self.regulatory_data_area.update(self.build_regulatory_report(event.node.data))
-            self.serial_jtag_area.update(self.build_serial_jtag_report(event.node.data))
-            self.software_area.update(self.build_software_report(event.node.data['software']))
-            self.chips_area.update(self.build_chips_report(event.node.data))
-            self.power_area.update(self.build_power_report(event.node.data))
-            self.fcc_area.update(self.build_fcc_report(event.node.data.get('fcc_data', {})))
+            self.device_data_area.update(build_device_report(event.node.data))
+            self.model_data_area.update(build_model_report(event.node.data))
+            self.network_data_area.update(build_network_report(event.node.data['network']))
+            self.regulatory_data_area.update(build_regulatory_report(event.node.data))
+            self.serial_jtag_area.update(build_serial_jtag_report(event.node.data))
+            self.software_area.update(build_software_report(event.node.data['software']))
+            self.chips_area.update(build_chips_report(event.node.data))
+            self.power_area.update(build_power_report(event.node.data))
+            self.fcc_area.update(build_fcc_report(event.node.data.get('fcc_data', {})))
         else:
             self.reset_areas()
 
     def on_tree_node_collapsed(self, event: Tree.NodeCollapsed[None]) -> None:
         pass
 
-    def build_chips_report(self, results):
-        '''Construct Markdown with chip related information'''
-        new_markdown = ""
-        if results:
-            if results['cpus']:
-                new_markdown += f"# Main chips ({len(results['cpus'])})\n"
+def build_chips_report(results):
+    '''Construct Markdown with chip related information'''
+    new_markdown = ""
+    if results:
+        if results['cpus']:
+            new_markdown += f"# Main chips ({len(results['cpus'])})\n"
+            new_markdown += "| | |\n|--|--|\n"
+            for r in results['cpus']:
+                new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                new_markdown += f"| **Model** | {r['model']}|\n"
+                new_markdown += f"| **Type** | {r['chip_type']}|\n"
+                new_markdown += f"| **Revision** | {r['chip_type_revision']}|\n"
+                #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                new_markdown += "| | |\n"
+        if results['flash']:
+            new_markdown += f"# Flash chips ({len(results['flash'])})\n"
+            new_markdown += "| | |\n|--|--|\n"
+            for r in results['flash']:
+                new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                new_markdown += f"| **Model** | {r['model']}|\n"
+                #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                new_markdown += "| | |\n"
+        if results['network']:
+            if results['network']['chips']:
+                new_markdown += f"# Network chips ({len(results['network']['chips'])})\n"
                 new_markdown += "| | |\n|--|--|\n"
-                for r in results['cpus']:
-                    new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
-                    new_markdown += f"| **Model** | {r['model']}|\n"
-                    new_markdown += f"| **Type** | {r['chip_type']}|\n"
-                    new_markdown += f"| **Revision** | {r['chip_type_revision']}|\n"
-                    #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
-                    new_markdown += "| | |\n"
-            if results['flash']:
-                new_markdown += f"# Flash chips ({len(results['flash'])})\n"
-                new_markdown += "| | |\n|--|--|\n"
-                for r in results['flash']:
-                    new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
-                    new_markdown += f"| **Model** | {r['model']}|\n"
-                    #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
-                    new_markdown += "| | |\n"
-            if results['network']:
-                if results['network']['chips']:
-                    new_markdown += f"# Network chips ({len(results['network']['chips'])})\n"
-                    new_markdown += "| | |\n|--|--|\n"
-                    for r in results['network']['chips']:
-                        new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
-                        new_markdown += f"| **Model** | {r['model']}|\n"
-                        #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
-                        new_markdown += "| | |\n"
-            if results['switch']:
-                new_markdown += f"# Switch chips ({len(results['switch'])})\n"
-                new_markdown += "| | |\n|--|--|\n"
-                for r in results['switch']:
+                for r in results['network']['chips']:
                     new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
                     new_markdown += f"| **Model** | {r['model']}|\n"
                     #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
                     new_markdown += "| | |\n"
-            if results['radios']:
-                radios = []
-                for r in results['radios']:
-                    if r['chips']:
-                        radios += r['chips']
-                if radios:
-                    new_markdown += f"# Radio chips ({len(radios)})\n"
-                    new_markdown += "| | |\n|--|--|\n"
-                    for r in radios:
-                        new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
-                        new_markdown += f"| **Model** | {r['model']}|\n"
-                        #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
-                        new_markdown += "| | |\n"
-            if results['additional_chips']:
-                new_markdown += f"# Additional chips ({len(results['additional_chips'])})\n"
+        if results['switch']:
+            new_markdown += f"# Switch chips ({len(results['switch'])})\n"
+            new_markdown += "| | |\n|--|--|\n"
+            for r in results['switch']:
+                new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                new_markdown += f"| **Model** | {r['model']}|\n"
+                #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                new_markdown += "| | |\n"
+        if results['radios']:
+            radios = []
+            for r in results['radios']:
+                if r['chips']:
+                    radios += r['chips']
+            if radios:
+                new_markdown += f"# Radio chips ({len(radios)})\n"
                 new_markdown += "| | |\n|--|--|\n"
-                for r in results['additional_chips']:
-                    new_markdown += f"| **Description** | {r['description']}|\n"
+                for r in radios:
                     new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
                     new_markdown += f"| **Model** | {r['model']}|\n"
                     #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
                     new_markdown += "| | |\n"
-        return new_markdown
-
-    def build_regulatory_report(self, result):
-        '''Construct Markdown with regulatory and commercial information
-           such as FCC ids, Amazon article numbers, WiFi certification, etc.'''
-        new_markdown = ""
-        base_url = 'https://fcc.report/FCC-ID'
-        if result:
-            new_markdown += "# Regulatory\n"
+        if results['additional_chips']:
+            new_markdown += f"# Additional chips ({len(results['additional_chips'])})\n"
             new_markdown += "| | |\n|--|--|\n"
-            new_markdown += f"|**Industry Canada ids** | {', '.join(result['regulatory']['industry_canada_ids'])}\n"
-            new_markdown += f"|**US ids** | {', '.join(result['regulatory']['us_ids'])}\n"
-            new_markdown += f"|**WiFi certified** |{ result['regulatory']['wifi_certified']}\n"
-            new_markdown += f"|**WiFi date** | {result['regulatory']['wifi_certified_date']}\n"
+            for r in results['additional_chips']:
+                new_markdown += f"| **Description** | {r['description']}|\n"
+                new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                new_markdown += f"| **Model** | {r['model']}|\n"
+                #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                new_markdown += "| | |\n"
+    return new_markdown
 
-            # FCC
-            if result['regulatory']['fcc_ids']:
-                new_markdown += "# FCC\n"
-                new_markdown += "|FCC id|date|type|grantee|\n|--|--|--|--|\n"
-                for fcc in result['regulatory']['fcc_ids']:
-                    fcc_id = fcc['fcc_id']
-                    fcc_date = fcc['fcc_date']
-                    fcc_type = fcc['fcc_type']
-                    grantee = fcc.get('grantee', '')
-                    new_markdown += f"|[{fcc_id}](<{base_url}/{fcc_id}>)|{fcc_date}|{fcc_type}|{grantee}|\n"
+def build_regulatory_report(result):
+    '''Construct Markdown with regulatory and commercial information
+       such as FCC ids, Amazon article numbers, WiFi certification, etc.'''
+    new_markdown = ""
+    base_url = 'https://fcc.report/FCC-ID'
+    if result:
+        new_markdown += "# Regulatory\n"
+        new_markdown += "| | |\n|--|--|\n"
+        new_markdown += f"|**Industry Canada ids** | {', '.join(result['regulatory']['industry_canada_ids'])}\n"
+        new_markdown += f"|**US ids** | {', '.join(result['regulatory']['us_ids'])}\n"
+        new_markdown += f"|**WiFi certified** |{ result['regulatory']['wifi_certified']}\n"
+        new_markdown += f"|**WiFi date** | {result['regulatory']['wifi_certified_date']}\n"
 
-            # CPE
-            if result['regulatory']['cpe'] and result['regulatory']['cpe']['cpe']:
-                new_markdown += "# CPE\n"
-                new_markdown += "| | |\n|--|--|\n"
-                new_markdown += f"|**CPE**|{result['regulatory']['cpe']['cpe']}|\n"
-                new_markdown += f"|**CPE 2.3**|{result['regulatory']['cpe']['cpe23']}|\n"
+        # FCC
+        if result['regulatory']['fcc_ids']:
+            new_markdown += "# FCC\n"
+            new_markdown += "|FCC id|date|type|grantee|\n|--|--|--|--|\n"
+            for fcc in result['regulatory']['fcc_ids']:
+                fcc_id = fcc['fcc_id']
+                fcc_date = fcc['fcc_date']
+                fcc_type = fcc['fcc_type']
+                grantee = fcc.get('grantee', '')
+                new_markdown += f"|[{fcc_id}](<{base_url}/{fcc_id}>)|{fcc_date}|{fcc_type}|{grantee}|\n"
 
-                part = result['regulatory']['cpe']['part']
-                part_full_name = PART_TO_NAME[part]
-                new_markdown += f"|**Part**|{part} ({part_full_name})|\n"
-
-            # CVE
-            if result['regulatory']['cve']:
-                new_markdown += "# CVE\n"
-                for c in sorted(result['regulatory']['cve']):
-                    new_markdown += f"[{c}](<https://www.cve.org/CVERecord?id={c}>)\n"
-
-            # mapping of labels to names in result['commercial']
-            labels_commercial = [
-                ('Availability', 'availability'),
-                ('Release date', 'release_date'),
-                ('Deal Extreme item number', 'deal_extreme'),
-                     ]
-
-            # Commercial information
-            new_markdown += "# Commercial\n"
+        # CPE
+        if result['regulatory']['cpe'] and result['regulatory']['cpe']['cpe']:
+            new_markdown += "# CPE\n"
             new_markdown += "| | |\n|--|--|\n"
-            for label, name in labels_commercial:
-                new_markdown += f"|**{label}** | {result['commercial'][name]}\n"
+            new_markdown += f"|**CPE**|{result['regulatory']['cpe']['cpe']}|\n"
+            new_markdown += f"|**CPE 2.3**|{result['regulatory']['cpe']['cpe23']}|\n"
 
-            eans = ", ".join(result['commercial']['ean'])
-            new_markdown += f"|**International Article Number** | {eans}\n"
+            part = result['regulatory']['cpe']['part']
+            part_full_name = PART_TO_NAME[part]
+            new_markdown += f"|**Part**|{part} ({part_full_name})|\n"
 
-            upcs = ", ".join(result['commercial']['upc'])
-            new_markdown += f"|**Universal Product Code** | {upcs}\n"
+        # CVE
+        if result['regulatory']['cve']:
+            new_markdown += "# CVE\n"
+            for c in sorted(result['regulatory']['cve']):
+                new_markdown += f"[{c}](<https://www.cve.org/CVERecord?id={c}>)\n"
 
-            neweggs = ", ".join(result['commercial']['newegg'])
-            new_markdown += f"|**Newegg item number** | {neweggs}\n"
-
-        return new_markdown
-
-    def build_serial_jtag_report(self, result):
-        '''Construct Markdown with serial port and JTAG information'''
-        new_markdown = ""
-        if result:
-            if result['has_jtag'] == 'yes':
-                new_markdown += "# JTAG\n"
-                new_markdown += "| | |\n|--|--|\n"
-                if result['jtag']['baud_rate'] != 0:
-                    new_markdown += f"|**Baud rate** | {result['jtag']['baud_rate']}\n"
-                else:
-                    new_markdown += "|**Baud rate** |\n"
-                new_markdown += f"|**Connector** |{ result['jtag']['connector']}\n"
-                if result['jtag']['number_of_pins'] != 0:
-                    new_markdown += f"|**Number of pins** | {result['jtag']['number_of_pins']}\n"
-                else:
-                    new_markdown += "|**Number of pins** | \n"
-                new_markdown += f"|**Populated** | {result['jtag']['populated']}\n"
-                if result['jtag']['voltage']:
-                    new_markdown += f"|**Voltage** | {result['jtag']['voltage']}\n"
-                else:
-                    new_markdown += "|**Voltage** |\n"
-            if result['has_serial_port'] == 'yes':
-                new_markdown += "# Serial port\n"
-                new_markdown += "| | |\n|--|--|\n"
-                if result['serial']['baud_rate'] != 0:
-                    new_markdown += f"|**Baud rate** | {result['serial']['baud_rate']}\n"
-                else:
-                    new_markdown += "|**Baud rate** |\n"
-                new_markdown += f"|**Connector** |{ result['serial']['connector']}\n"
-                if result['serial']['number_of_pins'] != 0:
-                    new_markdown += f"|**Number of pins** | {result['serial']['number_of_pins']}\n"
-                else:
-                    new_markdown += "|**Number of pins** | \n"
-                new_markdown += f"|**Populated** | {result['serial']['populated']}\n"
-                if result['serial']['data_parity_stop']:
-                    new_markdown += f"|**Data/parity/stop** | {result['serial']['data_parity_stop']}\n"
-                else:
-                    new_markdown += "|**Data/parity/stop** |\n"
-                if result['serial']['voltage']:
-                    new_markdown += f"|**Voltage** | {result['serial']['voltage']}\n"
-                else:
-                    new_markdown += "|**Voltage** |\n"
-                if result['serial']['comments']:
-                    new_markdown += f"|**Comments** | {result['serial']['comments']}\n"
-                else:
-                    new_markdown += "|**Comments** |\n"
-        return new_markdown
-
-    def build_fcc_report(self, result):
-        '''Construct Markdown with information from downloaded FCC reports'''
-        new_markdown = ""
-        base_url = 'https://fcc.report/FCC-ID'
-        if result:
-            for pdf in result:
-                fcc_id = pdf['fcc_id']
-                pdf_name = pdf['pdf']
-                new_markdown += f"# [{pdf_name}](<{base_url}/{fcc_id}/{pdf_name}>): {pdf['type']} - {pdf['description']}\n"
-                new_markdown += "| Page | Type | Hint | Extra data|\n|--|--|--|--|\n"
-                for hint in pdf['hints']:
-                    page = hint['page']
-                    for hint_result in hint['results']:
-                        extra_data = hint_result.get('extra_data', '')
-                        new_markdown += f"|{page} | {hint_result['type']} | {hint_result['value']} | {extra_data} |\n"
-        return new_markdown
-
-    def build_software_report(self, result):
-        '''Construct Markdown with software related information, such as
-           bootloader, packages, partitions, file names, etcetera'''
-        new_markdown = ""
-        if result:
-            # bootloader
-            new_markdown += "# Bootloader\n"
-            new_markdown += "| | |\n|--|--|\n"
-            new_markdown += f"|**Name** |{ result['bootloader']['manufacturer']}\n"
-            new_markdown += f"|**Version** |{ result['bootloader']['version']}\n"
-            new_markdown += f"|**Modified** |{ result['bootloader']['vendor_modified']}\n"
-            extra_infos = ", ".join(result['bootloader']['extra_info'])
-            new_markdown += f"|**Extra info** | {extra_infos}\n"
-
-            # software
-            new_markdown += "# Operating system & Third party software\n"
-            new_markdown += "| | |\n|--|--|\n"
-            new_markdown += f"|**OS** |{ result['os']}\n"
-            third_parties = ", ".join(result['third_party'])
-            new_markdown += f"|**Third party software** | {third_parties}\n"
-            #new_markdown += f"|**DD-WRT** |{ result['ddwrt']}\n"
-            #new_markdown += f"|**Gargoyle** |{ result['gargoyle']}\n"
-            #new_markdown += f"|**OpenWrt** |{ result['openwrt']}\n"
-            #new_markdown += f"|**Tomato** |{ result['tomato']}\n"
-
-            # SDK
-            new_markdown += "# SDK\n"
-            new_markdown += "| | |\n|--|--|\n"
-            new_markdown += f"|**Name** |{ result['sdk']['name']}\n"
-            new_markdown += f"|**Version** |{ result['sdk']['version']}\n"
-            new_markdown += f"|**Vendor** |{ result['sdk']['vendor']}\n"
-
-            # Partitions
-            new_markdown += "# Partitions\n"
-            new_markdown += "|Name|\n|--|\n"
-            for p in result['partitions']:
-                new_markdown += f"| {p['name']} |\n"
-
-            # rootfs
-            new_markdown += "# Rootfs\n"
-            new_markdown += "|Name|\n|--|\n"
-            for p in result['rootfs']:
-                new_markdown += f"| {p} |\n"
-
-            # packages
-            new_markdown += "# Packages\n"
-            new_markdown += "|Name|Version|Type|\n|--|--|--|\n"
-            for p in result['packages']:
-                versions = ", ".join(p['versions'])
-                new_markdown += f"| {p['name']} | {versions} | {p['package_type']}\n"
-
-            # Programs
-            if 'programs' in result:
-                new_markdown += "# Programs\n"
-                new_markdown += "| | |\n|--|--|\n"
-                for p in result['programs']:
-                    new_markdown += f"|**Name** |{p['name']}\n"
-                    new_markdown += f"|**Full name** |{p['full_name']}\n"
-                    new_markdown += f"|**Parameters** |{' '.join( p['parameters'])}\n"
-                    new_markdown += f"|**Origin** |{p['origin']}\n"
-                    new_markdown += "||\n"
-            # Files
-            if 'files' in result:
-                new_markdown += "# Files\n"
-                new_markdown += "|Name|Type|User|Group|\n|--|--|--|--|\n"
-                for p in result['files']:
-                    new_markdown += f"|{p['name']}|{p['file_type']}|{p['user']}|{p['group']}\n"
-        return new_markdown
-
-    def build_model_report(self, result):
-        '''Construct Markdown with device model information'''
-        # mapping of labels to names in result['model']
-        labels_model = [
-            ('Model', 'model'),
-            ('Part number', 'part_number'),
-            ('PCB id', 'pcb_id'),
-            ('Revision', 'revision'),
-            ('Serial number', 'serial_number'),
-            ('Series', 'series'),
-            ('Submodel', 'submodel'),
-            ('Subrevision', 'subrevision'),
+        # mapping of labels to names in result['commercial']
+        labels_commercial = [
+            ('Availability', 'availability'),
+            ('Release date', 'release_date'),
+            ('Deal Extreme item number', 'deal_extreme'),
                  ]
 
-        # mapping of labels to names in result['manufacturer']
-        labels_manufacturer = [
-            ('Manufacturer', 'name'),
-            ('Country', 'country'),
-            ('Model', 'model'),
-            ('Revision', 'revision'),
-                 ]
+        # Commercial information
+        new_markdown += "# Commercial\n"
+        new_markdown += "| | |\n|--|--|\n"
+        for label, name in labels_commercial:
+            new_markdown += f"|**{label}** | {result['commercial'][name]}\n"
 
-        new_markdown = ""
-        if result:
-            new_markdown += "# Model information\n"
+        eans = ", ".join(result['commercial']['ean'])
+        new_markdown += f"|**International Article Number** | {eans}\n"
+
+        upcs = ", ".join(result['commercial']['upc'])
+        new_markdown += f"|**Universal Product Code** | {upcs}\n"
+
+        neweggs = ", ".join(result['commercial']['newegg'])
+        new_markdown += f"|**Newegg item number** | {neweggs}\n"
+
+    return new_markdown
+
+def build_serial_jtag_report(result):
+    '''Construct Markdown with serial port and JTAG information'''
+    new_markdown = ""
+    if result:
+        if result['has_jtag'] == 'yes':
+            new_markdown += "# JTAG\n"
             new_markdown += "| | |\n|--|--|\n"
-
-            for label, name in labels_model:
-                new_markdown += f"|**{label}** | {result['model'][name]}\n"
-
-            new_markdown += "# ODM information\n"
+            if result['jtag']['baud_rate'] != 0:
+                new_markdown += f"|**Baud rate** | {result['jtag']['baud_rate']}\n"
+            else:
+                new_markdown += "|**Baud rate** |\n"
+            new_markdown += f"|**Connector** |{ result['jtag']['connector']}\n"
+            if result['jtag']['number_of_pins'] != 0:
+                new_markdown += f"|**Number of pins** | {result['jtag']['number_of_pins']}\n"
+            else:
+                new_markdown += "|**Number of pins** | \n"
+            new_markdown += f"|**Populated** | {result['jtag']['populated']}\n"
+            if result['jtag']['voltage']:
+                new_markdown += f"|**Voltage** | {result['jtag']['voltage']}\n"
+            else:
+                new_markdown += "|**Voltage** |\n"
+        if result['has_serial_port'] == 'yes':
+            new_markdown += "# Serial port\n"
             new_markdown += "| | |\n|--|--|\n"
+            if result['serial']['baud_rate'] != 0:
+                new_markdown += f"|**Baud rate** | {result['serial']['baud_rate']}\n"
+            else:
+                new_markdown += "|**Baud rate** |\n"
+            new_markdown += f"|**Connector** |{ result['serial']['connector']}\n"
+            if result['serial']['number_of_pins'] != 0:
+                new_markdown += f"|**Number of pins** | {result['serial']['number_of_pins']}\n"
+            else:
+                new_markdown += "|**Number of pins** | \n"
+            new_markdown += f"|**Populated** | {result['serial']['populated']}\n"
+            if result['serial']['data_parity_stop']:
+                new_markdown += f"|**Data/parity/stop** | {result['serial']['data_parity_stop']}\n"
+            else:
+                new_markdown += "|**Data/parity/stop** |\n"
+            if result['serial']['voltage']:
+                new_markdown += f"|**Voltage** | {result['serial']['voltage']}\n"
+            else:
+                new_markdown += "|**Voltage** |\n"
+            if result['serial']['comments']:
+                new_markdown += f"|**Comments** | {result['serial']['comments']}\n"
+            else:
+                new_markdown += "|**Comments** |\n"
+    return new_markdown
 
-            for label, name in labels_manufacturer:
-                new_markdown += f"|**{label}** | {result['manufacturer'][name]}\n"
+def build_fcc_report(result):
+    '''Construct Markdown with information from downloaded FCC reports'''
+    new_markdown = ""
+    base_url = 'https://fcc.report/FCC-ID'
+    if result:
+        for pdf in result:
+            fcc_id = pdf['fcc_id']
+            pdf_name = pdf['pdf']
+            new_markdown += f"# [{pdf_name}](<{base_url}/{fcc_id}/{pdf_name}>): {pdf['type']} - {pdf['description']}\n"
+            new_markdown += "| Page | Type | Hint | Extra data|\n|--|--|--|--|\n"
+            for hint in pdf['hints']:
+                page = hint['page']
+                for hint_result in hint['results']:
+                    extra_data = hint_result.get('extra_data', '')
+                    new_markdown += f"|{page} | {hint_result['type']} | {hint_result['value']} | {extra_data} |\n"
+    return new_markdown
 
-        return new_markdown
+def build_software_report(result):
+    '''Construct Markdown with software related information, such as
+       bootloader, packages, partitions, file names, etcetera'''
+    new_markdown = ""
+    if result:
+        # bootloader
+        new_markdown += "# Bootloader\n"
+        new_markdown += "| | |\n|--|--|\n"
+        new_markdown += f"|**Name** |{ result['bootloader']['manufacturer']}\n"
+        new_markdown += f"|**Version** |{ result['bootloader']['version']}\n"
+        new_markdown += f"|**Modified** |{ result['bootloader']['vendor_modified']}\n"
+        extra_infos = ", ".join(result['bootloader']['extra_info'])
+        new_markdown += f"|**Extra info** | {extra_infos}\n"
 
-    def build_network_report(self, result):
-        '''Construct Markdown with network information'''
-        new_markdown = ""
-        if result:
-            new_markdown += "# Network information\n"
+        # software
+        new_markdown += "# Operating system & Third party software\n"
+        new_markdown += "| | |\n|--|--|\n"
+        new_markdown += f"|**OS** |{ result['os']}\n"
+        third_parties = ", ".join(result['third_party'])
+        new_markdown += f"|**Third party software** | {third_parties}\n"
+        #new_markdown += f"|**DD-WRT** |{ result['ddwrt']}\n"
+        #new_markdown += f"|**Gargoyle** |{ result['gargoyle']}\n"
+        #new_markdown += f"|**OpenWrt** |{ result['openwrt']}\n"
+        #new_markdown += f"|**Tomato** |{ result['tomato']}\n"
+
+        # SDK
+        new_markdown += "# SDK\n"
+        new_markdown += "| | |\n|--|--|\n"
+        new_markdown += f"|**Name** |{ result['sdk']['name']}\n"
+        new_markdown += f"|**Version** |{ result['sdk']['version']}\n"
+        new_markdown += f"|**Vendor** |{ result['sdk']['vendor']}\n"
+
+        # Partitions
+        new_markdown += "# Partitions\n"
+        new_markdown += "|Name|\n|--|\n"
+        for p in result['partitions']:
+            new_markdown += f"| {p['name']} |\n"
+
+        # rootfs
+        new_markdown += "# Rootfs\n"
+        new_markdown += "|Name|\n|--|\n"
+        for p in result['rootfs']:
+            new_markdown += f"| {p} |\n"
+
+        # packages
+        new_markdown += "# Packages\n"
+        new_markdown += "|Name|Version|Type|\n|--|--|--|\n"
+        for p in result['packages']:
+            versions = ", ".join(p['versions'])
+            new_markdown += f"| {p['name']} | {versions} | {p['package_type']}\n"
+
+        # Programs
+        if 'programs' in result:
+            new_markdown += "# Programs\n"
             new_markdown += "| | |\n|--|--|\n"
-            new_markdown += f"|**DOCSIS version** | {result['docsis_version']}\n"
-            new_markdown += f"|**LAN ports** | {result['lan_ports']}\n"
+            for p in result['programs']:
+                new_markdown += f"|**Name** |{p['name']}\n"
+                new_markdown += f"|**Full name** |{p['full_name']}\n"
+                new_markdown += f"|**Parameters** |{' '.join( p['parameters'])}\n"
+                new_markdown += f"|**Origin** |{p['origin']}\n"
+                new_markdown += "||\n"
+        # Files
+        if 'files' in result:
+            new_markdown += "# Files\n"
+            new_markdown += "|Name|Type|User|Group|\n|--|--|--|--|\n"
+            for p in result['files']:
+                new_markdown += f"|{p['name']}|{p['file_type']}|{p['user']}|{p['group']}\n"
+    return new_markdown
 
-            # OUIs
-            ethernet_oui_values = []
-            for e in result['ethernet_oui']:
-                if e['name'] != '':
-                    ethernet_oui_values.append(f"{e['oui']} ({e['name']})")
-                else:
-                    ethernet_oui_values.append(e['oui'])
-            ethernet_ouis = ", ".join(ethernet_oui_values)
-            new_markdown += f"|**Ethernet OUI** | {ethernet_ouis}\n"
+def build_model_report(result):
+    '''Construct Markdown with device model information'''
+    # mapping of labels to names in result['model']
+    labels_model = [
+        ('Model', 'model'),
+        ('Part number', 'part_number'),
+        ('PCB id', 'pcb_id'),
+        ('Revision', 'revision'),
+        ('Serial number', 'serial_number'),
+        ('Series', 'series'),
+        ('Submodel', 'submodel'),
+        ('Subrevision', 'subrevision'),
+             ]
 
-            wireless_oui_values = []
-            for e in result['wireless_oui']:
-                if e['name'] != '':
-                    wireless_oui_values.append(f"{e['oui']} ({e['name']})")
-                else:
-                    wireless_oui_values.append(e['oui'])
-            wireless_ouis = ", ".join(wireless_oui_values)
-            new_markdown += f"|**Wireless OUI** | {wireless_ouis}\n"
+    # mapping of labels to names in result['manufacturer']
+    labels_manufacturer = [
+        ('Manufacturer', 'name'),
+        ('Country', 'country'),
+        ('Model', 'model'),
+        ('Revision', 'revision'),
+             ]
 
-            if result['chips']:
-                new_markdown += f"# Network chips ({len(result['chips'])})\n"
-                new_markdown += "| | |\n|--|--|\n"
-                for r in result['chips']:
-                    new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
-                    new_markdown += f"| **Model** | {r['model']}|\n"
-                    #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
-                    new_markdown += "| | |\n"
-        return new_markdown
+    new_markdown = ""
+    if result:
+        new_markdown += "# Model information\n"
+        new_markdown += "| | |\n|--|--|\n"
 
-    def build_power_report(self, result):
-        '''Construct Markdown with power supply information'''
+        for label, name in labels_model:
+            new_markdown += f"|**{label}** | {result['model'][name]}\n"
 
-        # mapping of labels to names in result['power_supply']
-        labels = [
-            ('Brand', 'brand'),
-            ('Model', 'model'),
-            ('Revision', 'revision'),
-            ('Style', 'style'),
-            ('Country', 'country'),
-            ('e-level', 'e_level'),
-            ('Input amperage', 'input_amperage'),
-            ('Input connector', 'input_connector'),
-            ('Input current', 'input_current'),
-            ('Input Hz', 'input_hz'),
-            ('Input voltage', 'input_voltage'),
-            ('Output amperage', 'output_amperage'),
-            ('Output connector', 'output_connector'),
-            ('Output current', 'output_current'),
-            ('Output voltage', 'output_voltage'),
-                 ]
+        new_markdown += "# ODM information\n"
+        new_markdown += "| | |\n|--|--|\n"
 
-        new_markdown = ""
-        if result:
-            new_markdown += "# Power Supply\n"
+        for label, name in labels_manufacturer:
+            new_markdown += f"|**{label}** | {result['manufacturer'][name]}\n"
+
+    return new_markdown
+
+def build_network_report(result):
+    '''Construct Markdown with network information'''
+    new_markdown = ""
+    if result:
+        new_markdown += "# Network information\n"
+        new_markdown += "| | |\n|--|--|\n"
+        new_markdown += f"|**DOCSIS version** | {result['docsis_version']}\n"
+        new_markdown += f"|**LAN ports** | {result['lan_ports']}\n"
+
+        # OUIs
+        ethernet_oui_values = []
+        for e in result['ethernet_oui']:
+            if e['name'] != '':
+                ethernet_oui_values.append(f"{e['oui']} ({e['name']})")
+            else:
+                ethernet_oui_values.append(e['oui'])
+        ethernet_ouis = ", ".join(ethernet_oui_values)
+        new_markdown += f"|**Ethernet OUI** | {ethernet_ouis}\n"
+
+        wireless_oui_values = []
+        for e in result['wireless_oui']:
+            if e['name'] != '':
+                wireless_oui_values.append(f"{e['oui']} ({e['name']})")
+            else:
+                wireless_oui_values.append(e['oui'])
+        wireless_ouis = ", ".join(wireless_oui_values)
+        new_markdown += f"|**Wireless OUI** | {wireless_ouis}\n"
+
+        if result['chips']:
+            new_markdown += f"# Network chips ({len(result['chips'])})\n"
             new_markdown += "| | |\n|--|--|\n"
-            for label, name in labels:
-                new_markdown += f"|**{label}** | {result['power_supply'][name]}\n"
-        return new_markdown
+            for r in result['chips']:
+                new_markdown += f"| **Manufacturer** | {r['manufacturer']}|\n"
+                new_markdown += f"| **Model** | {r['model']}|\n"
+                #new_markdown += f"| **Extra info** | {r['extra_info']}|\n"
+                new_markdown += "| | |\n"
+    return new_markdown
 
-    def build_device_report(self, result):
-        '''Construct Markdown with top level device information'''
-        new_markdown = ""
-        if result:
-            new_markdown = "| | |\n|--|--|\n"
-            new_markdown += f"|**Title** | {result['title']}\n"
-            new_markdown += f"|**Brand** | {result['brand']}\n"
+def build_power_report(result):
+    '''Construct Markdown with power supply information'''
 
-            declared_years = set()
-            if result['commercial']['release_date']:
-                declared_years.add(result['commercial']['release_date'][:4])
-            for f in result['regulatory']['fcc_ids']:
-                if f['fcc_date']:
-                    if f['fcc_type'] in ['main', 'unknown']:
-                        declared_years.add(f['fcc_date'][:4])
-            if result['regulatory']['wifi_certified_date']:
-                declared_years.add(result['regulatory']['wifi_certified_date'][:4])
+    # mapping of labels to names in result['power_supply']
+    labels = [
+        ('Brand', 'brand'),
+        ('Model', 'model'),
+        ('Revision', 'revision'),
+        ('Style', 'style'),
+        ('Country', 'country'),
+        ('e-level', 'e_level'),
+        ('Input amperage', 'input_amperage'),
+        ('Input connector', 'input_connector'),
+        ('Input current', 'input_current'),
+        ('Input Hz', 'input_hz'),
+        ('Input voltage', 'input_voltage'),
+        ('Output amperage', 'output_amperage'),
+        ('Output connector', 'output_connector'),
+        ('Output current', 'output_current'),
+        ('Output voltage', 'output_voltage'),
+             ]
 
-            estimated_years = ", ".join(sorted(declared_years))
-            new_markdown += f"|**Estimated year** | {estimated_years}\n"
+    new_markdown = ""
+    if result:
+        new_markdown += "# Power Supply\n"
+        new_markdown += "| | |\n|--|--|\n"
+        for label, name in labels:
+            new_markdown += f"|**{label}** | {result['power_supply'][name]}\n"
+    return new_markdown
 
-            # Taglines, flags, device types
-            taglines = ", ".join(result['taglines'])
-            new_markdown += f"|**Taglines** | {taglines}\n"
-            device_types = ", ".join(result['device_types'])
-            new_markdown += f"|**Device types** | {device_types}\n"
-            flags = ", ".join(result['flags'])
-            new_markdown += f"|**Flags** | {flags}\n"
+def build_device_report(result):
+    '''Construct Markdown with top level device information'''
+    new_markdown = ""
+    if result:
+        new_markdown = "| | |\n|--|--|\n"
+        new_markdown += f"|**Title** | {result['title']}\n"
+        new_markdown += f"|**Brand** | {result['brand']}\n"
 
-            # Web sites
-            product_pages = " , ".join(result['web']['product_page'])
-            new_markdown += f"|**Product pages** | {product_pages}\n"
-            support_pages = " , ".join(result['web']['support_page'])
-            new_markdown += f"|**Support pages** | {support_pages}\n"
+        declared_years = set()
+        if result['commercial']['release_date']:
+            declared_years.add(result['commercial']['release_date'][:4])
+        for f in result['regulatory']['fcc_ids']:
+            if f['fcc_date']:
+                if f['fcc_type'] in ['main', 'unknown']:
+                    declared_years.add(f['fcc_date'][:4])
+        if result['regulatory']['wifi_certified_date']:
+            declared_years.add(result['regulatory']['wifi_certified_date'][:4])
 
-            # Default values
-            new_markdown += f"|**IP address** | {result['defaults']['ip']}\n"
-            new_markdown += f"|**IP address comment** | {result['defaults']['ip_comment']}\n"
-            logins = " , ".join(result['defaults']['logins'])
-            new_markdown += f"|**Logins** | {logins}\n"
-            new_markdown += f"|**Login comment** | {result['defaults']['logins_comment']}\n"
-            new_markdown += f"|**Password** | {result['defaults']['password']}\n"
-            new_markdown += f"|**Password comment** | {result['defaults']['password_comment']}\n"
+        estimated_years = ", ".join(sorted(declared_years))
+        new_markdown += f"|**Estimated year** | {estimated_years}\n"
 
-            new_markdown += "# Data origin\n"
-            new_markdown += "|Origin|URL|\n|--|--|\n"
+        # Taglines, flags, device types
+        taglines = ", ".join(result['taglines'])
+        new_markdown += f"|**Taglines** | {taglines}\n"
+        device_types = ", ".join(result['device_types'])
+        new_markdown += f"|**Device types** | {device_types}\n"
+        flags = ", ".join(result['flags'])
+        new_markdown += f"|**Flags** | {flags}\n"
 
-            origin_to_url = {'TechInfoDepot': 'https://techinfodepot.shoutwiki.com/wiki',
-                             'WikiDevi': 'https://wikidevi.wi-cat.ru',
-                             'OpenWrt': 'https://openwrt.org'}
+        # Web sites
+        product_pages = " , ".join(result['web']['product_page'])
+        new_markdown += f"|**Product pages** | {product_pages}\n"
+        support_pages = " , ".join(result['web']['support_page'])
+        new_markdown += f"|**Support pages** | {support_pages}\n"
 
-            for origin in result['origins']:
-                origin_url = origin_to_url.get(origin['origin'], '')
-                if origin_url:
-                    origin_data_url = f"<{origin_url}/{origin['data_url']}>"
-                    new_markdown += f"{origin['origin']}|{origin_data_url}\n"
+        # Default values
+        new_markdown += f"|**IP address** | {result['defaults']['ip']}\n"
+        new_markdown += f"|**IP address comment** | {result['defaults']['ip_comment']}\n"
+        logins = " , ".join(result['defaults']['logins'])
+        new_markdown += f"|**Logins** | {logins}\n"
+        new_markdown += f"|**Login comment** | {result['defaults']['logins_comment']}\n"
+        new_markdown += f"|**Password** | {result['defaults']['password']}\n"
+        new_markdown += f"|**Password comment** | {result['defaults']['password_comment']}\n"
 
-        return new_markdown
+        new_markdown += "# Data origin\n"
+        new_markdown += "|Origin|URL|\n|--|--|\n"
+
+        origin_to_url = {'TechInfoDepot': 'https://techinfodepot.shoutwiki.com/wiki',
+                         'WikiDevi': 'https://wikidevi.wi-cat.ru',
+                         'OpenWrt': 'https://openwrt.org'}
+
+        for origin in result['origins']:
+            origin_url = origin_to_url.get(origin['origin'], '')
+            if origin_url:
+                origin_data_url = f"<{origin_url}/{origin['data_url']}>"
+                new_markdown += f"{origin['origin']}|{origin_data_url}\n"
+
+    return new_markdown
 
 @click.group()
 def app():
@@ -830,8 +830,8 @@ def navigate(devicecode_directory, wiki_type, no_overlays):
 
     devices, overlays = data.read_data(devicecode_directories, no_overlays)
 
-    app = DevicecodeUI(devices, overlays)
-    app.run()
+    devicecode_app = DevicecodeUI(devices, overlays)
+    devicecode_app.run()
 
 if __name__ == "__main__":
     app()
