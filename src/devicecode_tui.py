@@ -783,14 +783,18 @@ class DevicecodeUI(App):
 
         return new_markdown
 
-@click.command(short_help='Interactive DeviceCode result browser')
+@click.group()
+def app():
+    pass
+
+@app.command(short_help='Interactive DeviceCode result browser')
 @click.option('--directory', '-d', 'devicecode_directory',
               help='DeviceCode results directory', required=True,
               type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--wiki-type', type=click.Choice(['TechInfoDepot', 'WikiDevi', 'OpenWrt'],
               case_sensitive=False))
 @click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
-def main(devicecode_directory, wiki_type, no_overlays):
+def navigate(devicecode_directory, wiki_type, no_overlays):
     if not devicecode_directory.is_dir():
         raise click.ClickException(f"Directory {devicecode_directory} is not a valid directory.")
 
@@ -830,4 +834,4 @@ def main(devicecode_directory, wiki_type, no_overlays):
     app.run()
 
 if __name__ == "__main__":
-    main()
+    app()
