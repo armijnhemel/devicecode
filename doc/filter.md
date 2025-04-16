@@ -332,11 +332,69 @@ value:
 jtag?populated:yes=yes jtag?populated:no=yes
 ```
 
-See `TOKEN_NAMES` in `deviceode/defaults.py` to see for which names parameter
-filtering is (somewhat) supported.
+See `TOKEN_NAMES` in `deviceode/defaults.py` to see for an up to date list of
+which names parameter filtering is (somewhat) supported.
 
 It should be noted that currently there are no names for which two parameters
 are supported (as this requires some more thought).
+
+The following parameters are supported:
+
+### Serial & JTAG: populated
+
+The `populated` parameter can be used for serial and jtag to find devices where
+the headers are populated (`yes`, `no`, `unknown`):
+
+```
+$ python devicecode_cli.py search -d ~/git/devicecode-data/ --pretty=compact --filter='brand=d-link serial?populated:yes=yes'
+D-Link DAP-2590 A2
+D-Link DIR-685 A1
+D-Link DSL-2500U /BRU/D D1
+D-Link DVA-G3810BN A1 /TL
+D-Link DVG-N5402SP A1
+D-Link DWL-G820 A1
+```
+
+### FCC id: type
+
+The `type` parameter can be used to find `main` or `auxiliary` FCC ids:
+
+```
+$ python devicecode_cli.py search -d ~/git/devicecode-data/ --pretty=compact --filter='fccid?type:auxiliary=M4Y-XG-600'
+AboCom ARM904
+D-Link DI-624 A1
+Hawking HWR54G
+Linksys WPS54G U2
+Motorola WPS870G
+OTC Wireless AVCW-G
+Soyo AWRO3101
+Wistron NeWeb AP-300G
+Wistron NeWeb RT-200G
+Zonet ZSR1104WE
+ZyXEL G-1000
+ZyXEL G-3000H
+ZyXEL HomeSafe 100W
+ZyXEL Prestige 334W
+```
+
+### Bootloader: version
+
+The `version` parameter can be used to find specific versions of bootloaders:
+
+```
+$ python devicecode_cli.py search -d ~/git/devicecode-data/ --pretty=compact --filter='bootloader?version:1.1.3=u-boot' | wc -l
+100
+```
+
+### SDK: version
+
+The `version` parameter can be used to find specific versions of SDKs:
+
+```
+$ python devicecode_cli.py search -d ~/git/devicecode-data/ --pretty=compact --filter='sdk?version:9.2.0_U10.1020=lsdk'
+ALFA Network AP120C
+ALFA Network AP121
+```
 
 # Adding more filter options
 
