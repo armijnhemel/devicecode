@@ -92,7 +92,7 @@ class OdmTree(Tree):
                 node.remove()
             node.label = f"{node.label}  ({node_leaves})"
 
-class DevicecodeUI(App):
+class DeviceCodeUI(App):
     BINDINGS = [
         Binding(key="ctrl+q", action="quit", description="Quit"),
     ]
@@ -830,7 +830,7 @@ def navigate(devicecode_directory, wiki_type, no_overlays):
 
     devices, overlays = data.read_data(devicecode_directories, no_overlays)
 
-    devicecode_app = DevicecodeUI(devices, overlays)
+    devicecode_app = DeviceCodeUI(devices, overlays)
     devicecode_app.run()
 
 if __name__ == "__main__":
