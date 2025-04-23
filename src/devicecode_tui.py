@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import collections
+import copy
 import pathlib
 import sys
 import webbrowser
@@ -99,32 +100,32 @@ class DeviceCodeComparer(App):
 
     CSS_PATH = "devicecode_tui.css"
 
-    def __init__(self, devices, overlays, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, first, second, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.devices = devices
-        self.overlays = overlays
+        self.first = first
+        self.second = second
 
         # Create Markdown areas (left)
-        self.device_data_area_left = Markdown()
-        self.regulatory_data_area_left = Markdown()
-        self.model_data_area_left = Markdown()
-        self.network_data_area_left = Markdown()
-        self.serial_jtag_area_left = Markdown()
-        self.software_area_left = Markdown()
-        self.chips_area_left = Markdown()
-        self.power_area_left = Markdown()
-        self.fcc_area_left = Markdown()
+        self.device_data_area_left = Markdown(build_device_report(self.first))
+        self.model_data_area_left = Markdown(build_model_report(self.first))
+        self.network_data_area_left = Markdown(build_network_report(self.first['network']))
+        self.regulatory_data_area_left = Markdown(build_regulatory_report(self.first))
+        self.serial_jtag_area_left = Markdown(build_serial_jtag_report(self.first))
+        self.software_area_left = Markdown(build_software_report(self.first['software']))
+        self.chips_area_left = Markdown(build_chips_report(self.first))
+        self.power_area_left = Markdown(build_power_report(self.first))
+        self.fcc_area_left = Markdown(build_fcc_report(self.first.get('fcc_data', {})))
 
         # Create Markdown areas (right)
-        self.device_data_area_right = Markdown()
-        self.regulatory_data_area_right = Markdown()
-        self.model_data_area_right = Markdown()
-        self.network_data_area_right = Markdown()
-        self.serial_jtag_area_right = Markdown()
-        self.software_area_right = Markdown()
-        self.chips_area_right = Markdown()
-        self.power_area_right = Markdown()
-        self.fcc_area_right = Markdown()
+        self.device_data_area_right = Markdown(build_device_report(self.second))
+        self.model_data_area_right = Markdown(build_model_report(self.second))
+        self.network_data_area_right = Markdown(build_network_report(self.second['network']))
+        self.regulatory_data_area_right = Markdown(build_regulatory_report(self.second))
+        self.serial_jtag_area_right = Markdown(build_serial_jtag_report(self.second))
+        self.software_area_right = Markdown(build_software_report(self.second['software']))
+        self.chips_area_right = Markdown(build_chips_report(self.second))
+        self.power_area_right = Markdown(build_power_report(self.second))
+        self.fcc_area_right = Markdown(build_fcc_report(self.second.get('fcc_data', {})))
 
     def compose(self) -> ComposeResult:
         '''Compose the initial data sets using all data,
@@ -883,7 +884,6 @@ def build_device_report(result):
             if origin_url:
                 origin_data_url = f"<{origin_url}/{origin['data_url']}>"
                 new_markdown += f"{origin['origin']}|{origin_data_url}\n"
-
     return new_markdown
 
 @click.group()
@@ -897,7 +897,9 @@ def app():
 @click.option('--wiki-type', type=click.Choice(['TechInfoDepot', 'WikiDevi', 'OpenWrt'],
               case_sensitive=False))
 @click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
-def compare(devicecode_directory, wiki_type, no_overlays):
+@click.option('--first', required=True, help='name of first device')
+@click.option('--second', required=True, help='name of second device')
+def compare(devicecode_directory, wiki_type, no_overlays, first, second):
     if not devicecode_directory.is_dir():
         raise click.ClickException(f"Directory {devicecode_directory} is not a valid directory.")
 
@@ -933,7 +935,24 @@ def compare(devicecode_directory, wiki_type, no_overlays):
 
     devices, overlays = data.read_data(devicecode_directories, no_overlays)
 
-    devicecode_app = DeviceCodeComparer(devices, overlays)
+    # Search the data for the two device names
+    first_device = second_device = None
+    for d in devices:
+        if d['title'] == first:
+            first_device = copy.deepcopy(d)
+        elif d['title'] == second:
+            second_device = copy.deepcopy(d)
+        if first_device and second_device:
+            break
+
+    if not first_device:
+        print(f"{first=} is not a valid device.", file=sys.stderr)
+        sys.exit(1)
+    if not second_device:
+        print(f"{second=} is not a valid device.", file=sys.stderr)
+        sys.exit(1)
+
+    devicecode_app = DeviceCodeComparer(first_device, second_device)
     devicecode_app.run()
 
 @app.command(short_help='Interactive DeviceCode result browser')
