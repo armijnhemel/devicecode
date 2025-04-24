@@ -64,7 +64,11 @@ Devices tend to be the same have devices have the same:
    are then the other devices with the same ODM and model.
 2. main FCC identifier - if devices have the same FCC identifier, then they
    tend to be the exact same device, plus or minus perhaps some extras like a
-   harddisk, or a different colour casing.
+   harddisk, or a different colour casing. Each FCC identifier in the data set
+   has a `type` associated with it: `main` for the main FCC id (for the
+   specific device), `auxiliary` for peripherals with a separate FCC id, such
+   as Mini-PCI cards for WiFi, or `unknown` for when it isn't clear. Only FCC
+   identifiers with type `main` are useful.
 3. PCB id - although vendors could potentially use the same PCB id as other
    vendors they typically don't.
 
