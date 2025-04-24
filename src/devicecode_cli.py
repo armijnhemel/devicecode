@@ -61,7 +61,9 @@ def app():
 @click.option('--model', '-m', required=True, help='device model name')
 @click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
 @click.option('--report', default=1, help='number of devices to report')
-def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report):
+@click.option('--pretty', help='pretty print format', required=True,
+              type=click.Choice(['list', 'line', 'json']))
+def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report, pretty):
     '''Find the nearest device(s) given a brand and model number'''
     if not devicecode_directory.is_dir():
         raise click.ClickException(f"Directory {devicecode_directory} is not a valid directory.")
