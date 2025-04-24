@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import collections
+import copy
 import json
 import pathlib
 import sys
@@ -51,7 +52,7 @@ def get_directories(devicecode_directory, wiki_type):
 def app():
     pass
 
-@app.command(short_help='Device comparer')
+@app.command(short_help='Find nearest device')
 @click.option('--directory', '-d', 'devicecode_directory',
               help='DeviceCode results directory', required=True,
               type=click.Path(path_type=pathlib.Path, exists=True))
@@ -59,8 +60,8 @@ def app():
               case_sensitive=False))
 @click.option('--model', '-m', required=True, help='device model name')
 @click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
-def compare(devicecode_directory, wiki_type, model, no_overlays):
-    '''Compare devices given a brand and model number'''
+def find_nearest(devicecode_directory, wiki_type, model, no_overlays):
+    '''Find the nearest device(s) given a brand and model number'''
     if not devicecode_directory.is_dir():
         raise click.ClickException(f"Directory {devicecode_directory} is not a valid directory.")
 
@@ -73,13 +74,15 @@ def compare(devicecode_directory, wiki_type, model, no_overlays):
     devices = data.read_data_with_overlays(devicecode_directories, no_overlays)
 
     # First check to see if the model actually exists in the data set
-    # TODO: alternatively allow a path to the JSON file with the device data
+    # TODO: alternatively allow a path to the JSON file with the device data?
     model_data = None
     for d in devices:
-        pass
+        if d['title'] == model:
+            model_data = copy.deepcopy(d)
+            break
 
     if not model_data:
-        print(f"No matching model found for {model}.", file=sys.stderr)
+        print(f"{model=} is not a valid device.", file=sys.stderr)
         sys.exit(1)
 
 
