@@ -7,7 +7,12 @@ output.
 A TUI (text user interface) can be a quick and easy way to browse and search
 results. [Textual][textual] and [Rich][rich] are very suited for this task.
 
-## Representing results
+There are two modes in the TUI:
+
+1. navigating results via a tree
+2. comparing results of two devices
+
+## Navigating results
 
 There are many ways results can be represented and there is no single best way
 to represent these results. Depending on which element is the most important
@@ -69,7 +74,7 @@ following extra icons are used:
   from FCC
 * face screaming in fear - the device has a known CVE associated with it
 
-## Filtering
+### Filtering
 
 The trees with devices can be searched using a special filtering language
 (tables can currently not be filtered).
@@ -93,6 +98,17 @@ filter on a few attributes, such as:
 For more information about the filtering language read the
 [filtering language documentation](filter.md).
 
+## Comparing two devices
+
+A different mode is to compare the results of two devices side by side. For
+this you need to know the of the devices (which you can get by inspecting
+either the JSON file, or by using the "dump mode" in the CLI):
+
+```
+$ python devicecode_tui.py compare -d ~/git/devicecode-data/ --first="ZyXEL X-550" --second="ZyXEL X150N"
+```
+
+![Screenshot of the device comparer showing two results](tui-compare-devices.png)
 
 [rich]:https://github.com/Textualize/rich
 [textual]:https://github.com/Textualize/textual
