@@ -49,9 +49,9 @@ For example:
 $ python devicecode_cli.py dump -d ~/git/devicecode-data/ --value=cve --pretty=counter
 ```
 
-## Comparing devices
+## Finding nearest devices
 
-Finding the closest device, or a set of closest devices, given a device, is a
+Finding the nearest device, or a set of nearest devices, given a device, is a
 very powerful feature, as it is a lot easier to reason about a device if you
 have more information available. For example, if you know that a device is very
 close to a device with a known vulnerability, then that device could
@@ -60,10 +60,12 @@ therefore a good method for triaging.
 
 Devices tend to be the same have devices have the same:
 
-1. main FCC identifier - if devices have the same FCC identifier, then they
+1. known ODM model - some devices are simply rebranded. The closest devices
+   are then the other devices with the same ODM and model.
+2. main FCC identifier - if devices have the same FCC identifier, then they
    tend to be the exact same device, plus or minus perhaps some extras like a
    harddisk, or a different colour casing.
-2. PCB id - although vendors could potentially use the same PCB id as other
+3. PCB id - although vendors could potentially use the same PCB id as other
    vendors they typically don't.
 
 Other methods to decide if devices are similar:
