@@ -60,10 +60,14 @@ def app():
               case_sensitive=False))
 @click.option('--model', '-m', required=True, help='device model name')
 @click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
-def find_nearest(devicecode_directory, wiki_type, model, no_overlays):
+@click.option('--report', default=1, help='number of devices to report')
+def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report):
     '''Find the nearest device(s) given a brand and model number'''
     if not devicecode_directory.is_dir():
         raise click.ClickException(f"Directory {devicecode_directory} is not a valid directory.")
+
+    if report <= 0:
+        raise click.ClickException(f"{report=} needs to be larger than 1.")
 
     devicecode_directories = get_directories(devicecode_directory, wiki_type)
 
@@ -84,6 +88,28 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays):
     if not model_data:
         print(f"{model=} is not a valid device.", file=sys.stderr)
         sys.exit(1)
+
+    closest = []
+    closest_found = 0
+
+    for d in devices:
+        if d['title'] == model:
+            continue
+        # first check the ODM model
+        if model_data['manufacturer']['model'] != '':
+            # first check to see if the ODM has the
+            # device as well
+            if d['brand'] == model_data['manufacturer']['name']:
+                if d['model']['model'] == model_data['manufacturer']['model']:
+                    closest.append(d)
+            elif d['manufacturer']['name'] == model_data['manufacturer']['name']:
+                if d['manufacturer']['model'] == model_data['manufacturer']['model']:
+                    closest.append(d)
+        if len(closest) >= report:
+            break
+
+    for d in closest:
+        print(d['title'])
 
 
 @app.command(short_help='Dump values from DeviceCode')

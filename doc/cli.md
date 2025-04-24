@@ -76,6 +76,12 @@ Other methods to decide if devices are similar:
 2. ODM and chipset
 3. similar software fingerprint: files, programs, packages
 
+For example:
+
+```
+$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="ZyXEL X150N"
+```
+
 ## Searching devices using a filter
 
 With the same filtering language as used in the TUI it is possible to search
