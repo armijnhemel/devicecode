@@ -78,12 +78,13 @@ Other methods to decide if devices are similar:
    chipset vendor. If any errors are in the software provided by the chipset
    vendor, then these are likely in more devices made with that SDK.
 2. ODM and chipset
-3. similar software fingerprint: files, programs, packages
+3. software fingerprint - files, programs, packages
+4. partition layout
 
 For example:
 
 ```
-$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="ZyXEL X150N"
+$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="ZyXEL X150N" --pretty=line --report=100
 ```
 
 ## Searching devices using a filter
