@@ -95,6 +95,7 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report):
     for d in devices:
         if d['title'] == model:
             continue
+
         # first check the ODM model
         if model_data['manufacturer']['model'] != '':
             # first check to see if the ODM has the
@@ -102,9 +103,22 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report):
             if d['brand'] == model_data['manufacturer']['name']:
                 if d['model']['model'] == model_data['manufacturer']['model']:
                     closest.append(d)
-            elif d['manufacturer']['name'] == model_data['manufacturer']['name']:
+                    continue
+            if d['manufacturer']['name'] == model_data['manufacturer']['name']:
                 if d['manufacturer']['model'] == model_data['manufacturer']['model']:
                     closest.append(d)
+                    continue
+
+        # then check FCC information
+        if model_data['regulatory']['fcc_ids'] and d['regulatory']['fcc_ids']:
+            for f in model_data['regulatory']['fcc_ids']:
+                if f['fcc_type'] != 'main':
+                    continue
+                for f_id in d['regulatory']['fcc_ids']:
+                    if f_id['fcc_id'] == f['fcc_id']:
+                        closest.append(d)
+                        break
+
         if len(closest) >= report:
             break
 
