@@ -58,7 +58,7 @@ close to a device with a known vulnerability, then that device could
 potentially also be affected by that vulnerability. Finding close devices is
 therefore a good method for triaging.
 
-Devices tend to be the same have devices have the same:
+For exact matches it is likely that some of these are identical:
 
 1. known ODM model - some devices are simply rebranded. The closest devices
    are then the other devices with the same ODM and model.
@@ -72,7 +72,7 @@ Devices tend to be the same have devices have the same:
 3. PCB id - although vendors could potentially use the same PCB id as other
    vendors they typically don't.
 
-Other methods to decide if devices are similar:
+Other things to look at to decide if devices are similar:
 
 1. SDK version - most software choices are not made by the ODM, but by the
    chipset vendor. If any errors are in the software provided by the chipset
@@ -81,10 +81,29 @@ Other methods to decide if devices are similar:
 3. software fingerprint - files, programs, packages
 4. partition layout
 
-For example:
+Example invocations:
 
 ```
 $ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="ZyXEL X150N" --pretty=line --report=100
+device: 'AboCom WR5506', reason='OEM model', match_type='exact'
+```
+
+```
+$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="Senao CAP4200AG" --report=10000 --pretty=line
+device: 'Adtran Bluesocket BSAP-1925', reason='PCB id', match_type='exact'
+device: 'AirTight Networks SS-300-AT-C-55', reason='FCC id', match_type='exact'
+device: 'AirTight Networks SS-300-AT-C-55', reason='PCB id', match_type='exact'
+device: 'PowerCloud Systems CAP324', reason='FCC id', match_type='exact'
+device: 'WatchGuard AP100', reason='FCC id', match_type='exact'
+device: 'WatchGuard AP100', reason='PCB id', match_type='exact'
+device: 'WatchGuard AP200', reason='FCC id', match_type='exact'
+device: 'WatchGuard AP200', reason='PCB id', match_type='exact'
+```
+
+```
+$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="AboCom ARM904" --report=10000 --pretty=line
+device: 'Hawking HWR54G', reason='FCC id', match_type='exact'
+device: 'Soyo AWRO3101', reason='FCC id', match_type='exact'
 ```
 
 ## Searching devices using a filter
