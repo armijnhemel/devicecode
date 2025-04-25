@@ -98,17 +98,19 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report, pr
         if d['title'] == model:
             continue
 
+        match_type = 'exact'
+
         # first check the ODM model
         if model_data['manufacturer']['model'] != '':
             # first check to see if the ODM has the
             # device as well
             if d['brand'] == model_data['manufacturer']['name']:
                 if d['model']['model'] == model_data['manufacturer']['model']:
-                    closest.append(d)
+                    closest.append((d, 'OEM model', match_type))
                     continue
             if d['manufacturer']['name'] == model_data['manufacturer']['name']:
                 if d['manufacturer']['model'] == model_data['manufacturer']['model']:
-                    closest.append(d)
+                    closest.append((d, 'OEM model', match_type))
                     continue
 
         # then check FCC information
@@ -118,14 +120,20 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report, pr
                     continue
                 for f_id in d['regulatory']['fcc_ids']:
                     if f_id['fcc_id'] == f['fcc_id']:
-                        closest.append(d)
+                        closest.append((d, 'FCC id', match_type))
                         break
+
+        # then check PCB identifier
+        if model_data['model']['pcb_id'] != '':
+            if d['model']['pcb_id'] == model_data['model']['pcb_id']:
+                closest.append((d, 'PCB id', match_type))
+                continue
 
         if len(closest) >= report:
             break
 
-    for d in closest:
-        print(d['title'])
+    for (d, reason, match_type) in closest:
+        print(f"device: '{d['title']}', {reason=}, {match_type=}")
 
 
 @app.command(short_help='Dump values from DeviceCode')
