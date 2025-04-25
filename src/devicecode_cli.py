@@ -142,6 +142,21 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report, pr
                     matches[d['title']] = []
                 matches[d['title']].append((d, 'SDK', match_type))
 
+        # then check partitions
+        if model_data['software']['partitions']:
+            partition_names = set([x['name'] for x in model_data['software']['partitions']])
+            device_partitions = set([x['name'] for x in d['software']['partitions']])
+            if partition_names == device_partitions:
+                if d['title'] not in matches:
+                    matches[d['title']] = []
+                matches[d['title']].append((d, 'partitions', match_type))
+            '''
+            elif len(partition_names.intersection(device_partitions)):
+                if d['title'] not in matches:
+                    matches[d['title']] = []
+                matches[d['title']].append((d, 'partitions', 'weak'))
+            '''
+
         if len(matches) >= report:
             break
 

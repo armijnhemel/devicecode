@@ -124,19 +124,22 @@ Matching device found: 'WatchGuard AP200' with 2 criteria
  - PCB id, match type: exact
 ```
 
-SDK match example:
+SDK and partitions match example:
 
 ```
 $ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="TP-LINK TL-WA901ND v1.x" --pretty=line --report=100
-Matching device found: 'TP-LINK TL-WA901ND v2.x' with 2 criteria
+Matching device found: 'TP-LINK TL-WA901ND v2.x' with 3 criteria
  - FCC id, match type: exact
  - SDK, match type: possible
+ - partitions, match type: possible
 
-Matching device found: 'TP-LINK TL-WA901ND v3.x' with 1 criteria
+Matching device found: 'TP-LINK TL-WA901ND v3.x' with 2 criteria
  - SDK, match type: possible
+ - partitions, match type: possible
 
-Matching device found: 'TP-LINK TL-WA901ND v4.x' with 1 criteria
+Matching device found: 'TP-LINK TL-WA901ND v4.x' with 2 criteria
  - SDK, match type: possible
+ - partitions, match type: possible
 ```
 
 ## Searching devices using a filter
