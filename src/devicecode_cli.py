@@ -129,6 +129,14 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report, pr
                 closest.append((d, 'PCB id', match_type))
                 continue
 
+        match_type = 'possible'
+
+        # then check SDK vendor and version
+        if model_data['software']['sdk']['name'] != '':
+            if d['software']['sdk'] == model_data['software']['sdk']:
+                closest.append((d, 'SDK', match_type))
+                continue
+
         if len(closest) >= report:
             break
 
