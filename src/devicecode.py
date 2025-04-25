@@ -966,6 +966,7 @@ def parse_os(os_string):
                         sdk_version = ''
                     result['sdk'] = 'LSDK'
                     result['sdk_version'] = sdk_version
+                    result['sdk_vendor'] = 'Qualcomm Atheros'
                 if 'Android' in os_field:
                     result['distribution'] = 'Android'
                 elif 'Debian' in os_field:
@@ -2039,6 +2040,10 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             result = parse_os(value)
                                                             if result:
                                                                 device.software.os = result['os']
+                                                                if device.software.sdk.name == '' and 'sdk' in result:
+                                                                    device.software.sdk.name = result['sdk']
+                                                                    device.software.sdk.version = result['sdk_version']
+                                                                    device.software.sdk.vendor = result['sdk_vendor']
                                                     elif identifier in ['stockbootloader', 'stock_bootloader', 'stock_boot']:
                                                         bootloader_split = value.split(';')
 
