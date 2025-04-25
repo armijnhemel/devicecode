@@ -86,39 +86,57 @@ OEM match example:
 
 ```
 $ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="ZyXEL X150N" --pretty=line --report=100
-device: 'AboCom WR5506', reason='OEM model', match_type='exact'
+Matching device found: 'AboCom WR5506' with 1 criteria
+ - OEM model, match type: exact
 ```
 
 FCC id match example:
 
 ```
 $ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="AboCom ARM904" --report=10000 --pretty=line
-device: 'Hawking HWR54G', reason='FCC id', match_type='exact'
-device: 'Soyo AWRO3101', reason='FCC id', match_type='exact'
+Matching device found: 'Hawking HWR54G' with 1 criteria
+ - FCC id, match type: exact
+
+Matching device found: 'Soyo AWRO3101' with 1 criteria
+ - FCC id, match type: exact
 ```
 
 PCB id match example:
 
 ```
 $ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="Senao CAP4200AG" --report=10000 --pretty=line
-device: 'Adtran Bluesocket BSAP-1925', reason='PCB id', match_type='exact'
-device: 'AirTight Networks SS-300-AT-C-55', reason='FCC id', match_type='exact'
-device: 'AirTight Networks SS-300-AT-C-55', reason='PCB id', match_type='exact'
-device: 'PowerCloud Systems CAP324', reason='FCC id', match_type='exact'
-device: 'WatchGuard AP100', reason='FCC id', match_type='exact'
-device: 'WatchGuard AP100', reason='PCB id', match_type='exact'
-device: 'WatchGuard AP200', reason='FCC id', match_type='exact'
-device: 'WatchGuard AP200', reason='PCB id', match_type='exact'
+Matching device found: 'Adtran Bluesocket BSAP-1925' with 1 criteria
+ - PCB id, match type: exact
+
+Matching device found: 'AirTight Networks SS-300-AT-C-55' with 2 criteria
+ - FCC id, match type: exact
+ - PCB id, match type: exact
+
+Matching device found: 'PowerCloud Systems CAP324' with 1 criteria
+ - FCC id, match type: exact
+
+Matching device found: 'WatchGuard AP100' with 2 criteria
+ - FCC id, match type: exact
+ - PCB id, match type: exact
+
+Matching device found: 'WatchGuard AP200' with 2 criteria
+ - FCC id, match type: exact
+ - PCB id, match type: exact
 ```
 
 SDK match example:
 
 ```
 $ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="TP-LINK TL-WA901ND v1.x" --pretty=line --report=100
-device: 'TP-LINK TL-WA901ND v2.x', reason='FCC id', match_type='exact'
-device: 'TP-LINK TL-WA901ND v2.x', reason='SDK', match_type='possible'
-device: 'TP-LINK TL-WA901ND v3.x', reason='SDK', match_type='possible'
-device: 'TP-LINK TL-WA901ND v4.x', reason='SDK', match_type='possible'
+Matching device found: 'TP-LINK TL-WA901ND v2.x' with 2 criteria
+ - FCC id, match type: exact
+ - SDK, match type: possible
+
+Matching device found: 'TP-LINK TL-WA901ND v3.x' with 1 criteria
+ - SDK, match type: possible
+
+Matching device found: 'TP-LINK TL-WA901ND v4.x' with 1 criteria
+ - SDK, match type: possible
 ```
 
 ## Searching devices using a filter
