@@ -91,8 +91,7 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report, pr
         print(f"{model=} is not a valid device.", file=sys.stderr)
         sys.exit(1)
 
-    closest = []
-    closest_found = 0
+    matches = {}
 
     for d in devices:
         if d['title'] == model:
@@ -106,12 +105,14 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report, pr
             # device as well
             if d['brand'] == model_data['manufacturer']['name']:
                 if d['model']['model'] == model_data['manufacturer']['model']:
-                    closest.append((d, 'OEM model', match_type))
-                    continue
+                    if d['title'] not in matches:
+                        matches[d['title']] = []
+                    matches[d['title']].append((d, 'OEM model', match_type))
             if d['manufacturer']['name'] == model_data['manufacturer']['name']:
                 if d['manufacturer']['model'] == model_data['manufacturer']['model']:
-                    closest.append((d, 'OEM model', match_type))
-                    continue
+                    if d['title'] not in matches:
+                        matches[d['title']] = []
+                    matches[d['title']].append((d, 'OEM model', match_type))
 
         # then check FCC information
         if model_data['regulatory']['fcc_ids'] and d['regulatory']['fcc_ids']:
@@ -120,28 +121,35 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report, pr
                     continue
                 for f_id in d['regulatory']['fcc_ids']:
                     if f_id['fcc_id'] == f['fcc_id']:
-                        closest.append((d, 'FCC id', match_type))
+                        if d['title'] not in matches:
+                            matches[d['title']] = []
+                            matches[d['title']].append((d, 'FCC id', match_type))
                         break
 
         # then check PCB identifier
         if model_data['model']['pcb_id'] != '':
             if d['model']['pcb_id'] == model_data['model']['pcb_id']:
-                closest.append((d, 'PCB id', match_type))
-                continue
+                if d['title'] not in matches:
+                    matches[d['title']] = []
+                matches[d['title']].append((d, 'PCB id', match_type))
 
         match_type = 'possible'
 
         # then check SDK vendor and version
         if model_data['software']['sdk']['name'] != '':
             if d['software']['sdk'] == model_data['software']['sdk']:
-                closest.append((d, 'SDK', match_type))
-                continue
+                if d['title'] not in matches:
+                    matches[d['title']] = []
+                matches[d['title']].append((d, 'SDK', match_type))
 
-        if len(closest) >= report:
+        if len(matches) >= report:
             break
 
-    for (d, reason, match_type) in closest:
-        print(f"device: '{d['title']}', {reason=}, {match_type=}")
+    for match, match_results in matches.items():
+        print(f"Matching device found: '{match}' with {len(match_results)} criteria")
+        for _, match_value, match_type in match_results:
+            print(f' - {match_value}, match type: {match_type}')
+        print()
 
 
 @app.command(short_help='Dump values from DeviceCode')
