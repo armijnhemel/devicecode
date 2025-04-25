@@ -81,12 +81,23 @@ Other things to look at to decide if devices are similar:
 3. software fingerprint - files, programs, packages
 4. partition layout
 
-Example invocations:
+
+OEM match example:
 
 ```
 $ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="ZyXEL X150N" --pretty=line --report=100
 device: 'AboCom WR5506', reason='OEM model', match_type='exact'
 ```
+
+FCC id match example:
+
+```
+$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="AboCom ARM904" --report=10000 --pretty=line
+device: 'Hawking HWR54G', reason='FCC id', match_type='exact'
+device: 'Soyo AWRO3101', reason='FCC id', match_type='exact'
+```
+
+PCB id match example:
 
 ```
 $ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="Senao CAP4200AG" --report=10000 --pretty=line
@@ -100,10 +111,14 @@ device: 'WatchGuard AP200', reason='FCC id', match_type='exact'
 device: 'WatchGuard AP200', reason='PCB id', match_type='exact'
 ```
 
+SDK match example:
+
 ```
-$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="AboCom ARM904" --report=10000 --pretty=line
-device: 'Hawking HWR54G', reason='FCC id', match_type='exact'
-device: 'Soyo AWRO3101', reason='FCC id', match_type='exact'
+$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="TP-LINK TL-WA901ND v1.x" --pretty=line --report=100
+device: 'TP-LINK TL-WA901ND v2.x', reason='FCC id', match_type='exact'
+device: 'TP-LINK TL-WA901ND v2.x', reason='SDK', match_type='possible'
+device: 'TP-LINK TL-WA901ND v3.x', reason='SDK', match_type='possible'
+device: 'TP-LINK TL-WA901ND v4.x', reason='SDK', match_type='possible'
 ```
 
 ## Searching devices using a filter
