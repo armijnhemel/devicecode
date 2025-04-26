@@ -1,4 +1,4 @@
-# Processing CPE and CVE data
+# Processing CPE, CVE and Exploit DB data
 
 Common Platform Enumeration, or [CPE][cpe], is naming convention for software,
 hardware, operating systems, and so on, and is used extensively in the security
@@ -98,8 +98,29 @@ for example:
 $ python cpe_overlay.py -d ~/git/devicecode-data/ -o ~/git/devicecode-data/ -c official-cpe-dictionary_v2.3.xml -e ~/git/cvelistV5/
 ```
 
+## Cross correlating CPEs with Exploit DB information, via CVEs
+
+Using an extra indirection it is also possible to link known Exploits to CPEs
+(and thus to devices). The public [Exploit DB](exploitdb) dataset has exploits
+that are linked to CVEs. By linking those to CPEs and devices it is possible to
+find exploits for devices.
+
+To generate overlays for exploitdb a checkout of the Git repository of the data
+is needed. This can then be supplied to the overlay creation script:
+
+```
+$ python cpe_overlay.py -d /path/to/devices/data -o /path/to/output/data -c /path/to/cpe/dictionary -e /path/to/cves --exploitdb=/path/to/exploitdb
+```
+
+for example:
+
+```
+$ python cpe_overlay.py -d ~/git/devicecode-data/ -o ~/git/devicecode-data/ -c official-cpe-dictionary_v2.3.xml -e ~/git/cvelistV5/ --exploitdb=/home/devicecode/git/exploitdb/
+```
+
 [cpe]:https://nvd.nist.gov/products/cpe
 [cve-2006-2561]:https://nvd.nist.gov/vuln/detail/CVE-2006-2561
 [cve-2024-9915]:https://nvd.nist.gov/vuln/detail/CVE-2024-9915
 [cve-2024-9915-archive]:https://github.com/CVEProject/cvelistV5/blob/5d27562a7b563760aa456cd42d13a1971a6ef77a/cves/2024/9xxx/CVE-2024-9915.json
 [cvelistv5]:https://github.com/CVEProject/cvelistV5
+[exploitdb]:https://gitlab.com/exploit-database/exploitdb

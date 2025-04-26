@@ -4,6 +4,7 @@
 # Licensed under Apache 2.0, see LICENSE file for details
 # SPDX-License-Identifier: Apache-2.0
 
+import csv
 import json
 import os
 import pathlib
@@ -30,12 +31,15 @@ PART_TO_NAME = {'h': 'hardware', 'a': 'application',
 @click.option('--output', '-o', 'output_directory', required=True,
               help='top level output directory, overlays will be stored in a subdirectory called \'overlay\'',
               type=click.Path(path_type=pathlib.Path, exists=True))
-@click.option('--cve-directory', '-e', 'cve_directory',
-              help='CVE list directory', type=click.Path(path_type=pathlib.Path, exists=True))
+@click.option('--cve-directory', '-e', 'cve_directory', help='CVE list directory',
+              type=click.Path(path_type=pathlib.Path, exists=True))
 @click.option('--use-git', is_flag=True, help='use Git (not recommended, see documentation)')
 @click.option('--wiki-type', type=click.Choice(['TechInfoDepot', 'WikiDevi', 'OpenWrt'],
               case_sensitive=False))
-def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, cve_directory):
+@click.option('--exploitdb', 'exploitdb', help='Exploit-DB results directory',
+              type=click.Path(path_type=pathlib.Path, exists=True))
+def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, cve_directory,
+         exploitdb):
     if not output_directory.is_dir():
         raise click.ClickException(f"Directory {output_directory} is not a valid directory.")
 
@@ -47,6 +51,13 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
 
     if cve_directory and not (cve_directory / 'cves').exists():
         print(f"{cve_directory} is not a valid cvelistV5 directory, exiting.", file=sys.stderr)
+        sys.exit(1)
+
+    if exploitdb and not exploitdb.is_dir():
+        raise click.ClickException(f"Directory {exploitdb} is not a valid directory.")
+
+    if exploitdb and not (exploitdb / 'files_exploits.csv').exists():
+        print(f"{exploitdb} is not a valid Exploit-DB directory, exiting.", file=sys.stderr)
         sys.exit(1)
 
     if use_git:
@@ -113,6 +124,9 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
     # keep a mapping from CPE to a list of CVEs
     cpe_to_cve = {}
 
+    # keep a mapping from CPEs to a list of exploits (via CVEs)
+    cpe_to_exploit = {}
+
     # a list of known CVE ids
     cve_ids = set()
 
@@ -144,6 +158,23 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                             cve_ids.add(pathlib.Path(f).stem)
                         except json.decoder.JSONDecodeError:
                             continue
+
+    cve_to_exploit = {}
+    if exploitdb:
+        with open(exploitdb / 'files_exploits.csv', encoding='utf-8') as exploits:
+            csv_reader = csv.reader(exploits)
+            is_first_line = True
+            for line in csv_reader:
+                if is_first_line:
+                    is_first_line = False
+                    continue
+                exploit = line[1]
+                cves = line[11].split(';')
+                for cve in cves:
+                    if re.match(r'CVE-\d{4}-\d{4,5}', cve):
+                        if cve not in cve_to_exploit:
+                            cve_to_exploit[cve] = set()
+                        cve_to_exploit[cve].add(exploit)
 
     for event, element in et.iterparse(cpe_file):
         if element.tag == f"{{{ns}}}generator":
@@ -277,6 +308,11 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                         if cpe23 not in cpe_to_cve:
                             cpe_to_cve[cpe23] = []
                         cpe_to_cve[cpe23] += cves
+                        for c in cves:
+                            if c in cve_to_exploit:
+                                if cpe23 not in cpe_to_exploit:
+                                    cpe_to_exploit[cpe23] = []
+                                cpe_to_exploit[cpe23] += cve_to_exploit[c]
 
             # reduce memory usage
             element.clear()
@@ -409,6 +445,34 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                                 (outputmsg, errormsg) = p.communicate()
                                 if p.returncode != 0:
                                     print(f"{cve_overlay_file} could not be committed",
+                                          file=sys.stderr)
+
+                        # write explot overlay file
+                        if cpe_data['cpe23'] in cpe_to_exploit:
+                            exploit_overlay_data = {'type': 'overlay', 'name': 'exploitdb',
+                                                'data': sorted(set(cpe_to_exploit[cpe_data['cpe23']]))}
+                            exploit_overlay_file = overlay_directory / result_file.stem / 'exploitdb.json'
+                            exploit_overlay_file.parent.mkdir(parents=True, exist_ok=True)
+
+                            with open(exploit_overlay_file, 'w', encoding='utf-8') as overlay:
+                                overlay.write(json.dumps(exploit_overlay_data, indent=4))
+
+                            if use_git:
+                                p = subprocess.Popen(['git', 'add', exploit_overlay_file],
+                                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                                     close_fds=True)
+                                (outputmsg, errormsg) = p.communicate()
+                                if p.returncode != 0:
+                                    print(f"{exploit_overlay_file} could not be added", file=sys.stderr)
+
+                                commit_message = f'Add Exploit-DB overlay for {result_file.stem}'
+
+                                p = subprocess.Popen(['git', 'commit', "-m", commit_message],
+                                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                                     close_fds=True)
+                                (outputmsg, errormsg) = p.communicate()
+                                if p.returncode != 0:
+                                    print(f"{exploit_overlay_file} could not be committed",
                                           file=sys.stderr)
 
             except json.decoder.JSONDecodeError:
