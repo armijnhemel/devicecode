@@ -81,6 +81,11 @@ Other things to look at to decide if devices are similar:
 3. software fingerprint - files, programs, packages
 4. partition layout
 
+These can be looked at in isolation, but also be combined to give more reliable
+results: especially for weak results this makes sense. For example, if there is
+a single partition name that devices have in common it doesn't say much, but if
+it is made by the same OEM, with the same chip, then the case for devices being
+similar becomes stronger.
 
 OEM match example:
 
