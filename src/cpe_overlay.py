@@ -124,6 +124,11 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
     # keep a mapping from CPE to a list of CVEs
     cpe_to_cve = {}
 
+    # keep a mapping from device to a list of CVEs. This is for
+    # devices for which there is no CPE, but for which a match
+    # could be found using the title.
+    device_title_to_cve = {}
+
     # keep a mapping from CPEs to a list of exploits (via CVEs)
     cpe_to_exploit = {}
 
@@ -337,6 +342,14 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                                         if cpe23 not in cpe_to_cve:
                                             cpe_to_cve[cpe23] = []
                                         cpe_to_cve[cpe23].append(cve_json['cveMetadata']['cveId'])
+                            if 'cna' in cve_json['containers']:
+                                for affected in cve_json['containers']['cna'].get('affected', []):
+                                    if 'vendor' in affected and 'product' in affected:
+                                        if affected['vendor'] != 'n/a' and affected['product'] != 'n/a':
+                                            affected_title = f"{affected['vendor']} {affected['product']}"
+                                            if affected_title not in device_title_to_cve:
+                                                device_title_to_cve[affected_title] = []
+                                            device_title_to_cve[affected_title].append(cve_json['cveMetadata']['cveId'])
                         except json.decoder.JSONDecodeError:
                             continue
 
@@ -364,7 +377,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                         title = device['title'].lower()
                         write_overlay = True
                     else:
-                        # then check if there modified title (so without spaces) is the same
+                        # then check if the modified title (so without spaces) is the same
                         mod_title = device['title'].lower().replace(' ', '')
                         if mod_title in titles_mod_to_title:
                             title = titles_mod_to_title[mod_title]
@@ -418,11 +431,22 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                             if p.returncode != 0:
                                 print(f"{overlay_file} could not be committed", file=sys.stderr)
 
+                        cve_overlay_data = {}
+
                         # write CVE overlay file
                         if cpe_data['cpe23'] in cpe_to_cve:
+                            cve_data = set(cpe_to_cve[cpe_data['cpe23']])
+                            if device['title'] in device_title_to_cve:
+                                cve_data.update( device_title_to_cve[device['title']])
                             cve_overlay_data = {'type': 'overlay', 'name': 'cve',
                                                 'metadata': cve_metadata,
-                                                'data': sorted(set(cpe_to_cve[cpe_data['cpe23']]))}
+                                                'data': sorted(cve_data)}
+                        elif device['title'] in device_title_to_cve:
+                            cve_data = set( device_title_to_cve[device['title']])
+                            cve_overlay_data = {'type': 'overlay', 'name': 'cve',
+                                                'metadata': cve_metadata,
+                                                'data': sorted(cve_data)}
+                        if cve_overlay_data:
                             cve_overlay_file = overlay_directory / result_file.stem / 'cve.json'
                             cve_overlay_file.parent.mkdir(parents=True, exist_ok=True)
 
