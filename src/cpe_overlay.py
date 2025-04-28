@@ -506,7 +506,7 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                                     print(f"{cve_overlay_file} could not be committed",
                                           file=sys.stderr)
 
-                        # write explot overlay file
+                        # write exploit overlay file
                         if cpe_data['cpe23'] in cpe_to_exploit:
                             exploit_overlay_data = {'type': 'overlay', 'name': 'exploitdb',
                                                 'data': sorted(set(cpe_to_exploit[cpe_data['cpe23']]))}
