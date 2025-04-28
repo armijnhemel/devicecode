@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import csv
+import datetime
 import json
 import os
 import pathlib
@@ -49,8 +50,18 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
     if cve_directory and not cve_directory.is_dir():
         raise click.ClickException(f"Directory {cve_directory} is not a valid directory.")
 
-    if cve_directory and not (cve_directory / 'cves').exists():
-        print(f"{cve_directory} is not a valid cvelistV5 directory, exiting.", file=sys.stderr)
+    is_cvelist5 = False
+    is_fkie_cad_nvd = False
+    if cve_directory and (cve_directory / 'cves').exists():
+        is_cvelist5 = True
+    elif cve_directory and (cve_directory / '_state.csv').exists():
+        is_fkie_cad_nvd = True
+
+    #if not (is_cvelist5 or is_fkie_cad_nvd):
+    if not is_cvelist5:
+        #print(f"{cve_directory} is not a valid cvelistV5 or FKIE-cad nvd directory, exiting.",
+        print(f"{cve_directory} is not a valid cvelistV5 directory, exiting.",
+              file=sys.stderr)
         sys.exit(1)
 
     if exploitdb and not exploitdb.is_dir():
@@ -136,22 +147,46 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
     cve_ids = set()
 
     if cve_directory:
-        # parse the delta.json file for the time stamp
-        delta_json = cve_directory / 'cves' / 'delta.json'
-        if not delta_json.exists():
-            print(f"{delta_json} is not a valid cvelistV5 delta file, exiting.", file=sys.stderr)
-            sys.exit(1)
-        with open(delta_json, 'r', encoding='utf-8') as cve_file:
-            try:
-                cve_json = json.load(cve_file)
-            except json.decoder.JSONDecodeError:
-                print(f"{delta_json} is not a valid cvelistV5 delta file, exiting.",
-                      file=sys.stderr)
+        if is_cvelist5:
+            # parse the delta.json file for the time stamp
+            delta_json = cve_directory / 'cves' / 'delta.json'
+            if not delta_json.exists():
+                print(f"{delta_json} is not a valid cvelistV5 delta file, exiting.", file=sys.stderr)
                 sys.exit(1)
-            cve_metadata = {'timestamp': cve_json['fetchTime']}
+            with open(delta_json, 'r', encoding='utf-8') as cve_file:
+                try:
+                    cve_json = json.load(cve_file)
+                except json.decoder.JSONDecodeError:
+                    print(f"{delta_json} is not a valid cvelistV5 delta file, exiting.",
+                          file=sys.stderr)
+                    sys.exit(1)
+                cve_metadata = {'timestamp': cve_json['fetchTime']}
+        else:
+            with open(cve_directory / '_state.csv', encoding='utf-8') as cve_csv:
+                csv_reader = csv.reader(cve_csv)
+                is_first_line = True
+                latest_timestamp = None
+                latest_timestamp_string = ''
+                for line in csv_reader:
+                    if is_first_line:
+                        is_first_line = False
+                        continue
+                    timestamp = datetime.datetime.fromisoformat(line[4])
+                    if not latest_timestamp:
+                        latest_timestamp = timestamp
+                        latest_timestamp_string = line[4]
+                    elif latest_timestamp < timestamp:
+                        latest_timestamp = timestamp
+                        latest_timestamp_string = line[4]
+                cve_metadata = {'timestamp': latest_timestamp_string}
+
+        if is_cvelist5:
+            cve_dir = cve_directory / 'cves'
+        else:
+            cve_dir = cve_directory
 
         # walk the CVE data, if it exists
-        for p in (cve_directory / 'cves').walk():
+        for p in cve_dir.walk():
             parent, _, files = p
             for f in files:
                 if f.startswith('CVE'):
