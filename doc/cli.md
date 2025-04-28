@@ -90,7 +90,7 @@ similar becomes stronger.
 OEM match example:
 
 ```
-$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="ZyXEL X150N" --pretty=line --report=100
+$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="ZyXEL X150N" --report=100
 Matching device found: 'AboCom WR5506' with 1 criteria
  - OEM model, match type: exact
 ```
@@ -98,7 +98,7 @@ Matching device found: 'AboCom WR5506' with 1 criteria
 FCC id match example:
 
 ```
-$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="AboCom ARM904" --report=10000 --pretty=line
+$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="AboCom ARM904" --report=10000
 Matching device found: 'Hawking HWR54G' with 1 criteria
  - FCC id, match type: exact
 
@@ -109,7 +109,7 @@ Matching device found: 'Soyo AWRO3101' with 1 criteria
 PCB id match example:
 
 ```
-$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="Senao CAP4200AG" --report=10000 --pretty=line
+$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="Senao CAP4200AG" --report=10000
 Matching device found: 'Adtran Bluesocket BSAP-1925' with 1 criteria
  - PCB id, match type: exact
 
@@ -132,7 +132,7 @@ Matching device found: 'WatchGuard AP200' with 2 criteria
 SDK and partitions match example:
 
 ```
-$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="TP-LINK TL-WA901ND v1.x" --pretty=line --report=100
+$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ --model="TP-LINK TL-WA901ND v1.x" --report=100
 Matching device found: 'TP-LINK TL-WA901ND v2.x' with 3 criteria
  - FCC id, match type: exact
  - SDK, match type: possible
