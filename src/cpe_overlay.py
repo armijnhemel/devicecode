@@ -477,10 +477,11 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                                                 'metadata': cve_metadata,
                                                 'data': sorted(cve_data)}
                         elif device['title'] in device_title_to_cve:
-                            cve_data = set( device_title_to_cve[device['title']])
+                            cve_data = set(device_title_to_cve[device['title']])
                             cve_overlay_data = {'type': 'overlay', 'name': 'cve',
                                                 'metadata': cve_metadata,
                                                 'data': sorted(cve_data)}
+
                         if cve_overlay_data:
                             cve_overlay_file = overlay_directory / result_file.stem / 'cve.json'
                             cve_overlay_file.parent.mkdir(parents=True, exist_ok=True)
@@ -506,13 +507,32 @@ def main(cpe_file, devicecode_directory, output_directory, use_git, wiki_type, c
                                     print(f"{cve_overlay_file} could not be committed",
                                           file=sys.stderr)
 
+                        exploit_overlay_data = {}
+
                         # write exploit overlay file
                         if cpe_data['cpe23'] in cpe_to_exploit:
+                            exploits = set(cpe_to_exploit[cpe_data['cpe23']])
+                            if device['title'] in device_title_to_cve:
+                                cve_data = set(device_title_to_cve[device['title']])
+                                for cve in cve_data:
+                                    if cve in cve_to_exploit:
+                                        exploits.update(cve_to_exploit[cve])
                             exploit_overlay_data = {'type': 'overlay', 'name': 'exploitdb',
-                                                'data': sorted(set(cpe_to_exploit[cpe_data['cpe23']]))}
+                                                'data': sorted(exploits)}
+                        else:
+                            if device['title'] in device_title_to_cve:
+                                cve_data = set(device_title_to_cve[device['title']])
+                                exploits = set()
+                                for cve in cve_data:
+                                    if cve in cve_to_exploit:
+                                        exploits.update(cve_to_exploit[cve])
+                                if exploits:
+                                    exploit_overlay_data = {'type': 'overlay', 'name': 'exploitdb',
+                                                        'data': sorted(exploits)}
+
+                        if exploit_overlay_data:
                             exploit_overlay_file = overlay_directory / result_file.stem / 'exploitdb.json'
                             exploit_overlay_file.parent.mkdir(parents=True, exist_ok=True)
-
                             with open(exploit_overlay_file, 'w', encoding='utf-8') as overlay:
                                 overlay.write(json.dumps(exploit_overlay_data, indent=4))
 
