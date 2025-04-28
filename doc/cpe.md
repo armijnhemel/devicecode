@@ -68,6 +68,12 @@ Surprisingly, the NVD website entry for [CVE-2024-9915][cve-2024-9915] uses a
 corrected CPE, so it seems that the data that is used for the NVD website is
 cleaned up first, but changes are not applied to the official Git repository.
 
+There seems to be an extra data source for the data on the NVD website. As
+an example, [CVE-2004-1790][cve-2004-1790-nvd] contains a CPE for a device, but
+the official CPE dictionary does not have an entry for this particular device
+and the cvelist5 repository also doesn't have it. It is available in the
+[FKIE-cad][fkie-cad-nvd] data feed.
+
 Sometimes the CPE data contains references to CVEs, but not vice versa, for
 example:
 
@@ -124,3 +130,5 @@ $ python cpe_overlay.py -d ~/git/devicecode-data/ -o ~/git/devicecode-data/ -c o
 [cve-2024-9915-archive]:https://github.com/CVEProject/cvelistV5/blob/5d27562a7b563760aa456cd42d13a1971a6ef77a/cves/2024/9xxx/CVE-2024-9915.json
 [cvelistv5]:https://github.com/CVEProject/cvelistV5
 [exploitdb]:https://gitlab.com/exploit-database/exploitdb
+[cve-2004-1790-nvd]:https://nvd.nist.gov/vuln/detail/CVE-2004-1790
+[fkie-cad-nvd]:https://github.com/fkie-cad/nvd-json-data-feeds
