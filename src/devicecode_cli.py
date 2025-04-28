@@ -150,12 +150,17 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report, pr
                 if d['title'] not in matches:
                     matches[d['title']] = []
                 matches[d['title']].append((d, 'partitions', match_type))
-            '''
+        '''
+        # then aggregate some weak things. There have to be at least
+        # three or four things to consider it a good match.
+        if model_data['software']['partitions']:
+            partition_names = set([x['name'] for x in model_data['software']['partitions']])
+            device_partitions = set([x['name'] for x in d['software']['partitions']])
             elif len(partition_names.intersection(device_partitions)):
                 if d['title'] not in matches:
                     matches[d['title']] = []
                 matches[d['title']].append((d, 'partitions', 'weak'))
-            '''
+        '''
 
         if len(matches) >= report:
             break
