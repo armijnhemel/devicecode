@@ -147,6 +147,23 @@ Matching device found: 'TP-LINK TL-WA901ND v4.x' with 2 criteria
  - partitions, match type: possible
 ```
 
+Some CVE information is printed, if available:
+
+```
+$ python devicecode_cli.py find-nearest -d ~/git/devicecode-data/ -m "Tenda A18" --report=10000
+Matching device found: 'Rock space RSD0607' with 1 criteria
+ - FCC id, match type: exact
+
+Matching device found: 'Rock space RSD0608' with 1 criteria
+ - FCC id, match type: exact
+
+Matching device found: 'Tenda A15' with 1 criteria
+ - FCC id, match type: exact, CVEs: CVE-2024-0531, CVE-2024-0532, CVE-2024-0533, CVE-2024-0534
+
+Matching device found: 'Tenda Mesh3s' with 1 criteria
+ - FCC id, match type: exact
+```
+
 ## Searching devices using a filter
 
 With the same filtering language as used in the TUI it is possible to search

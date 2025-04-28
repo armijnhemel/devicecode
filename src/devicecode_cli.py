@@ -95,6 +95,8 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report):
         if d['title'] == model:
             continue
 
+        cves = d['regulatory']['cve']
+
         match_type = 'exact'
 
         # first check the ODM model
@@ -105,12 +107,12 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report):
                 if d['model']['model'] == model_data['manufacturer']['model']:
                     if d['title'] not in matches:
                         matches[d['title']] = []
-                    matches[d['title']].append((d, 'OEM model', match_type))
+                    matches[d['title']].append((d, 'OEM model', match_type, cves))
             if d['manufacturer']['name'] == model_data['manufacturer']['name']:
                 if d['manufacturer']['model'] == model_data['manufacturer']['model']:
                     if d['title'] not in matches:
                         matches[d['title']] = []
-                    matches[d['title']].append((d, 'OEM model', match_type))
+                    matches[d['title']].append((d, 'OEM model', match_type, cves))
 
         # then check FCC information
         if model_data['regulatory']['fcc_ids'] and d['regulatory']['fcc_ids']:
@@ -121,7 +123,7 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report):
                     if f_id['fcc_id'] == f['fcc_id']:
                         if d['title'] not in matches:
                             matches[d['title']] = []
-                            matches[d['title']].append((d, 'FCC id', match_type))
+                            matches[d['title']].append((d, 'FCC id', match_type, cves))
                         break
 
         # then check PCB identifier
@@ -129,7 +131,7 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report):
             if d['model']['pcb_id'] == model_data['model']['pcb_id']:
                 if d['title'] not in matches:
                     matches[d['title']] = []
-                matches[d['title']].append((d, 'PCB id', match_type))
+                matches[d['title']].append((d, 'PCB id', match_type, cves))
 
         match_type = 'possible'
 
@@ -138,7 +140,7 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report):
             if d['software']['sdk'] == model_data['software']['sdk']:
                 if d['title'] not in matches:
                     matches[d['title']] = []
-                matches[d['title']].append((d, 'SDK', match_type))
+                matches[d['title']].append((d, 'SDK', match_type, cves))
 
         # then check partitions
         if model_data['software']['partitions']:
@@ -147,7 +149,7 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report):
             if partition_names == device_partitions:
                 if d['title'] not in matches:
                     matches[d['title']] = []
-                matches[d['title']].append((d, 'partitions', match_type))
+                matches[d['title']].append((d, 'partitions', match_type, cves))
         '''
         # then aggregate some weak things. There have to be at least
         # three or four things to consider it a good match.
@@ -157,7 +159,7 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report):
             elif len(partition_names.intersection(device_partitions)):
                 if d['title'] not in matches:
                     matches[d['title']] = []
-                matches[d['title']].append((d, 'partitions', 'weak'))
+                matches[d['title']].append((d, 'partitions', 'weak', cves))
         '''
 
         if len(matches) >= report:
@@ -165,8 +167,11 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report):
 
     for match, match_results in matches.items():
         print(f"Matching device found: '{match}' with {len(match_results)} criteria")
-        for _, match_value, match_type in match_results:
-            print(f' - {match_value}, match type: {match_type}')
+        for _, match_value, match_type, cves in match_results:
+            if len(cves) > 0:
+                print(f' - {match_value}, match type: {match_type}, CVEs: {", ".join(cves)}')
+            else:
+                print(f' - {match_value}, match type: {match_type}')
         print()
 
 
