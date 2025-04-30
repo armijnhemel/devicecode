@@ -183,7 +183,7 @@ def find_nearest(devicecode_directory, wiki_type, model, no_overlays, report):
 @click.option('--no-overlays', is_flag=True, help='do not apply overlay data')
 @click.option('--value', help='value to print', required=True,
               type=click.Choice(['baudrate_serial', 'baudrate_jtag', 'bootloader',
-                         'connector_jtag', 'connector_serial', 'cpeid', 'cveid',
+                         'brand', 'connector_jtag', 'connector_serial', 'cpeid', 'cveid',
                          'fccid', 'ip', 'jtag', 'login', 'odm', 'odm_country',
                          'password', 'pcbid', 'sdk', 'serial']))
 @click.option('--pretty', help='pretty print format', required=True,
@@ -215,6 +215,10 @@ def dump(devicecode_directory, wiki_type, no_overlays, value, pretty):
             for d in devices:
                 if d['software']['bootloader']['manufacturer']:
                     value_counter.update([d['software']['bootloader']['manufacturer']])
+        case 'brand':
+            for d in devices:
+                if d['brand']:
+                    value_counter.update([d['brand']])
         case 'connector_jtag':
             for d in devices:
                 if d['jtag']['connector']:
