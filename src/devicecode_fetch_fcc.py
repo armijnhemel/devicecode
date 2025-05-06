@@ -36,9 +36,11 @@ TIMEOUT = 60
 @click.option('--force', is_flag=True, help='always force downloads')
 @click.option('--gentle', is_flag=True, help=f'pause {SLEEP_INTERVAL} seconds between downloads')
 @click.option('--no-pdf', is_flag=True, help='do not download PDFs, just metadata')
+@click.option('--skip-known', is_flag=True, help='skip FCC ids for which there is already data')
 @click.option('--no-download', is_flag=True,
               help='do not download any data, only reprocess already downloaded data')
-def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_download):
+def main(fccids, output_directory, grantees, verbose, force,
+         gentle, no_pdf, skip_known, no_download):
     if not output_directory.is_dir():
         raise click.ClickException(f"Directory {output_directory} is not a valid directory.")
 
@@ -103,6 +105,10 @@ def main(fccids, output_directory, grantees, verbose, force, gentle, no_pdf, no_
         try:
             store_directory = output_directory/fcc_id
             if not no_download:
+                if skip_known and store_directory.exists():
+                    if verbose:
+                        print(f"Store directory for {fcc_id} already exists, skipping")
+                    continue
                 # grab stuff from fcc report
                 if verbose:
                     print(f"Downloading main page for {fcc_id}")

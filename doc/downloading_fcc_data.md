@@ -73,6 +73,15 @@ $ python devicecode_fetch_fcc.py -o ~/fcc-data --gentle 2AGN7-X9
 
 Using the `--gentle` option is highly recommended.
 
+To skip downloading data for devices for which data was already downloaded use
+the `--skip-known` flag. This will skip any FCC id for which a directory exists
+regardless of if the data is complete or not. This option should be used if the
+previously downloaded dataset is complete:
+
+```console
+$ python devicecode_fetch_fcc.py -o ~/fcc-data --skip-known 2AGN7-X9
+```
+
 To only download the metadata, but not the PDFs themselves, use the `--no-pdf`
 flag:
 
