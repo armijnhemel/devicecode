@@ -11,7 +11,7 @@ let
     dataclasses-json
     defusedxml
     mwparserfromhell
-    pdfminer
+    pdfminer-six
     pillow
     requests
     rich
