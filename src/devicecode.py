@@ -2303,7 +2303,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                                 else:
                                                                     device.web.wikidevi = value.split('<!-- ')[0].strip()
                                                             else:
-                                                                device.web.wikidevi = value
+                                                                if value != 'no':
+                                                                    device.web.wikidevi = value
                                                         # Low quality data, ignore for now
                                                         elif identifier == 'wikipedia':
                                                             #device.web.wikipedia = value
