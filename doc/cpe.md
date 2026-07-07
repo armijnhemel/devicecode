@@ -1,5 +1,8 @@
 # Processing CPE, CVE and Exploit DB data
 
+NOTE: this documentation is outdated, as the CPE data is no longer available
+in XML!
+
 Common Platform Enumeration, or [CPE][cpe], is naming convention for software,
 hardware, operating systems, and so on, and is used extensively in the security
 industry, for example on the NVD CVE pages, where CPEs are used for listing so
