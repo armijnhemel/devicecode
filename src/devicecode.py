@@ -1720,7 +1720,8 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
                                                             continue
                                                         device.model.pcb_id = value
                                                     elif identifier in ['image1', 'image2']:
-                                                        device.images.append(value)
+                                                        if value != 'none':
+                                                            device.images.append(value)
 
                                                     # commercial information
                                                     elif identifier == 'availability':
