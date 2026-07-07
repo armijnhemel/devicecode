@@ -136,7 +136,7 @@ Note: there appear to be differences depending on which version of
 TechInfoDepot is used and the different subsites do not seem to be properly
 synced. The English language subsite sometimes seems to have more data, so it
 might be better to go to <https://en.techinfodepot.shoutwiki.com/wiki/Special:Export>
-to create the export.
+to create the export, although this site doesn't always seem to be available.
 
 ### WikiDevi
 

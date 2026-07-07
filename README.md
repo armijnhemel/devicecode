@@ -158,7 +158,8 @@ NLnet with financial support from the European Commission's Next Generation
 Internet programme, under the aegis of DG Communications Networks, Content and
 Technology under grant agreement No 101069594.
 
-[techinfodepot]:http://en.techinfodepot.shoutwiki.com/wiki/Main_Page
+[techinfodepot]:https://techinfodepot.shoutwiki.com/wiki/Main_Page
+[techinfodepot_en]:http://en.techinfodepot.shoutwiki.com/wiki/Main_Page
 [metacrap]:https://people.well.com/user/doctorow/metacrap.htm
 [wikidevi]:https://wikidevi.wi-cat.ru/
 [openwrt]:https://openwrt.org/
