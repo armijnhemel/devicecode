@@ -1725,7 +1725,12 @@ def main(input_file, output_directory, wiki_type, grantees, debug, use_git):
 
                                                     # commercial information
                                                     elif identifier == 'availability':
-                                                        device.commercial.availability = value
+                                                        if value.lower() == 'eol':
+                                                            device.commercial.availability = 'end of life'
+                                                        elif value.lower() == 'discontinued':
+                                                            device.commercial.availability = 'discontinued'
+                                                        else:
+                                                            device.commercial.availability = value
                                                     elif identifier in ['estreldate', 'est_release_date', 'est_reoease_date']:
                                                         device.commercial.release_date = parse_date(value)
                                                     elif identifier == 'dx_sku':
